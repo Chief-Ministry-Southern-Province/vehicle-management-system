@@ -24,6 +24,13 @@ const menuItems = [
       {
         name: "Vehicle Requests",
         path: "/createvehiclerequest",
+        //path: "/requesthistory",
+        icon: <FiFileText />,
+      },
+      {
+        name: "Request History",
+        //path: "/createvehiclerequest",
+        path: "/requesthistory",
         icon: <FiFileText />,
       },
     ],

@@ -10,6 +10,8 @@ import SecretaryDashboard from './pages/dashboard/SecretaryDashboard';
 import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
 import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
+import RequestHistory from './pages/requests/RequestHistory';
+import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
 
 function App() {
   
@@ -29,6 +31,8 @@ function App() {
             <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
 
             <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
+            <Route path="/requesthistory" element={<RequestHistory />} />
+            <Route path="/employee/requests/:id" element={<EmployeeRequestDetails />} />
 
           </Routes>
 

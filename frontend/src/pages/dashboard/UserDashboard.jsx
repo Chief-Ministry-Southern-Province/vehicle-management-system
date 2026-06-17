@@ -7,6 +7,7 @@ import {
   FiCalendar,
   FiPlus,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 import {
   LineChart,
@@ -84,6 +85,8 @@ function StatCard({ title, value, icon, color }) {
 }
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -100,7 +103,10 @@ export default function UserDashboard() {
             </p>
           </div>
 
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition">
+          <button 
+            onClick={() => navigate('/createvehiclerequest')}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
+          >
             <FiPlus />
             Create New Request
           </button>
