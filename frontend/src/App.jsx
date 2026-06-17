@@ -12,6 +12,7 @@ import UserDashboard from './pages/dashboard/UserDashboard';
 import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
+import PendingRecommendations from './pages/recommendations/PendingRecommendations';
 
 function App() {
   
@@ -24,15 +25,23 @@ function App() {
 
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/userdashboard" element={<UserDashboard />} />
-            <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
-            <Route path="/departmentofficerdashboard" element={<DepartmentOfficerDashboard />} />
-            <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
-            <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
 
+            <Route path="/userdashboard" element={<UserDashboard />} />
             <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
             <Route path="/requesthistory" element={<RequestHistory />} />
             <Route path="/employee/requests/:id" element={<EmployeeRequestDetails />} />
+
+
+            <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
+            
+            <Route path="/departmentofficerdashboard" element={<DepartmentOfficerDashboard />} />
+            <Route path="/pendingrecommendations" element={<PendingRecommendations />} />
+            
+            <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
+            
+            <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
+
+            
 
           </Routes>
 
