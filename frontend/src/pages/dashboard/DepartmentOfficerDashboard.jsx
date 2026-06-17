@@ -1,4 +1,4 @@
-function DepartmentOfficerDashboard() {
+ export default function DepartmentOfficerDashboard() {
   return (
     <div>
       <h1>Department Officer Dashboard</h1>
@@ -6,5 +6,3 @@ function DepartmentOfficerDashboard() {
     </div>
   );
 }
-
-export default DepartmentOfficerDashboard;

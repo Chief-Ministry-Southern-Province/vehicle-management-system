@@ -9,6 +9,7 @@ import DepartmentSecretaryDashboard from './pages/dashboard/DeputySecretaryDashb
 import SecretaryDashboard from './pages/dashboard/SecretaryDashboard';
 import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
+import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 
 function App() {
   
@@ -19,13 +20,16 @@ function App() {
 
           <Toaster position="top-right"/>
 
-          <Routes path="/">
+          <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/userdashboard" element={<UserDashboard />} />
             <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
             <Route path="/departmentofficerdashboard" element={<DepartmentOfficerDashboard />} />
             <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
             <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
+
+            <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
+
           </Routes>
 
         </div>
