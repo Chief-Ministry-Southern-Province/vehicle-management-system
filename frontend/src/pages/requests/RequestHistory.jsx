@@ -102,7 +102,9 @@ export default function RequestHistory() {
             </p>
           </div>
 
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg flex items-center gap-2">
+          <button 
+            onClick={() => navigate('/createvehiclerequest')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg flex items-center gap-2">
             <FiPlus />
             Create New Request
           </button>
