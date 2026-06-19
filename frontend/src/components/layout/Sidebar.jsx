@@ -10,6 +10,7 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
+import { useRole } from "../../context/useRole";
 
 const menuItems = [
   {
@@ -19,19 +20,27 @@ const menuItems = [
         name: "Dashboard",
         path: "/userdashboard",
         icon: <FiGrid />,
-        active: true,
+        roles: ["employee"],
       },
       {
         name: "Vehicle Requests",
         path: "/createvehiclerequest",
         //path: "/requesthistory",
         icon: <FiFileText />,
+        roles: ["employee"],
       },
       {
         name: "Request History",
         //path: "/createvehiclerequest",
         path: "/requesthistory",
         icon: <FiFileText />,
+        roles: ["employee"],
+      },
+      {
+        name: "Dashboard",
+        path: "/departmentofficerdashboard",
+        icon: <FiGrid />,
+        roles: ["department_head"],
       },
     ],
   },
@@ -78,6 +87,7 @@ const menuItems = [
 
 export default function Sidebar() {
     const location = useLocation();
+    const { role } = useRole();
 
 
   return (
@@ -121,7 +131,9 @@ export default function Sidebar() {
 
             <div className="space-y-1 px-3">
 
-              {section.items.map((item) => (
+              {section.items
+                .filter((item) => !item.roles || item.roles.includes(role))
+                .map((item) => (
                 // <button
                 //   key={item.name}
                 //   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
@@ -142,20 +154,20 @@ export default function Sidebar() {
                 // </button>
 
                 <Link
-  key={item.name}
-  to={item.path}
-  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-    location.pathname === item.path
-      ? "bg-blue-50 text-blue-600"
-      : "text-gray-600 hover:bg-gray-100"
-  }`}
->
-  <span className="text-lg">
-    {item.icon}
-  </span>
-
-  <span>{item.name}</span>
-</Link>
+                  key={item.name}
+                  to={item.path}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    location.pathname === item.path
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="text-lg">
+                    {item.icon}
+                  </span>
+                
+                  <span>{item.name}</span>
+                </Link>
               ))}
 
             </div>

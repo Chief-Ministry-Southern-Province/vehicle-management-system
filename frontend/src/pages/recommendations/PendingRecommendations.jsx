@@ -5,8 +5,11 @@ import RecommendationTable from "../../components/recommendations/Recommendation
 import RecommendationInfoCards from "../../components/recommendations/RecommendationInfoCards";
 
 import { FiFileText, FiGrid } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function PendingRecommendations() {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -29,7 +32,9 @@ export default function PendingRecommendations() {
               Export PDF
             </button>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/departmentofficerdashboard')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
               <FiGrid />
               View Dashboard
             </button>

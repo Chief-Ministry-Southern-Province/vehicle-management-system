@@ -30,14 +30,18 @@ function App() {
             <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
             <Route path="/requesthistory" element={<RequestHistory />} />
             <Route path="/employee/requests/:id" element={<EmployeeRequestDetails />} />
-
-
-            <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
             
+
             <Route path="/departmentofficerdashboard" element={<DepartmentOfficerDashboard />} />
             <Route path="/pendingrecommendations" element={<PendingRecommendations />} />
             
+
+            <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
+
+
             <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
+            
+
             
             <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
 

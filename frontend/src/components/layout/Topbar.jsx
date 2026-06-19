@@ -1,11 +1,26 @@
 import { FiBell, FiSearch } from "react-icons/fi";
+import { useRole } from "../../context/useRole";
 
 export default function Topbar() {
+    const { role, setRole } = useRole();
+
     return (
         <div className="h-16 bg-white border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
-                <h1 className="fornt-semibold text-xl">Vehicle Management System</h1>
-                <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">Emoloyee</span>
+                <h1 className="font-semibold text-xl">Vehicle Management System</h1>
+                <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">Employee</span>
+                
+                <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="px-3 py-1 bg-slate-100 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        
+                    <option value="employee">Employee</option>
+                    <option value="department_head">Department Head</option>
+                    <option value="section_officer">Section Officer</option>
+                    <option value="assistant_secretary">Assistant Secretary</option>
+                    <option value="secretary">Secretary</option>
+                </select>
             </div>
 
             <div className="flex items-center gap-5">

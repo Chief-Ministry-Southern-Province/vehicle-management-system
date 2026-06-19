@@ -5,8 +5,11 @@ import DepartmentChart from "../../components/departmentOfficer/DepartmentChart"
 import ActivityTimeline from "../../components/departmentOfficer/ActivityTimeline";
 
 import { FiCalendar, FiClock } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function DepartmentOfficerDashboard() {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -33,7 +36,9 @@ export default function DepartmentOfficerDashboard() {
               May 2024
             </button>
 
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/pendingrecommendations')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
               <FiClock />
               View Pending (8)
             </button>
