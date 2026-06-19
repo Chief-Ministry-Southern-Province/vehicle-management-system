@@ -1,8 +1,4 @@
-import {
-  FiSearch,
-  FiFilter,
-  FiMoreHorizontal,
-} from "react-icons/fi";
+import {FiSearch,FiFilter,FiMoreHorizontal,} from "react-icons/fi";
 
 export default function RecommendationFilters() {
   return (
