@@ -38,6 +38,12 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["department_head"],
       },
+      {
+        name: "Request History",
+        path: "/departmentrequesthistory",
+        icon: <FiGrid />,
+        roles: ["department_head"],
+      },
     ],
   },
   {
