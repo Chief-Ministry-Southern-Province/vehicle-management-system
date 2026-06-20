@@ -2,72 +2,107 @@ import {
   FiClock,
   FiAlertCircle,
   FiCheckCircle,
+  FiTrendingUp,
 } from "react-icons/fi";
+
+const stats = [
+  {
+    title: "Pending Recommendations",
+    value: "12",
+    description: "4 requests pending over 24 hours",
+    trend: "+18%",
+    trendText: "vs last week",
+    icon: FiClock,
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
+    border: "border-blue-100",
+  },
+  {
+    title: "High Priority Requests",
+    value: "03",
+    description: "Requires immediate recommendation",
+    trend: "+2",
+    trendText: "new today",
+    icon: FiAlertCircle,
+    iconBg: "bg-red-100",
+    iconColor: "text-red-600",
+    border: "border-red-100",
+  },
+  {
+    title: "Completed Today",
+    value: "08",
+    description: "Recommended / Rejected in last 24h",
+    trend: "+24%",
+    trendText: "efficiency increase",
+    icon: FiCheckCircle,
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    border: "border-green-100",
+  },
+];
 
 export default function RecommendationStats() {
   return (
-    <div className="grid lg:grid-cols-3 gap-5">
+    <div className="grid lg:grid-cols-3 gap-6">
+      {stats.map((stat, index) => {
+        const Icon = stat.icon;
 
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">
-              Total Pending
-            </p>
+        return (
+          <div
+            key={index}
+            className={`relative overflow-hidden bg-white rounded-2xl border ${stat.border} shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}
+          >
+            {/* Top Accent Line */}
+            <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-400" />
 
-            <h2 className="text-4xl font-bold mt-2">
-              12
-            </h2>
+            <div className="p-6">
 
-            <p className="text-xs text-gray-400 mt-3">
-              4 requests pending over 24 hours
-            </p>
+              {/* Header */}
+              <div className="flex justify-between items-start">
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    {stat.title}
+                  </p>
+
+                  <h2 className="text-4xl font-bold text-gray-900 mt-3">
+                    {stat.value}
+                  </h2>
+                </div>
+
+                <div
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center ${stat.iconBg}`}
+                >
+                  <Icon
+                    className={`text-2xl ${stat.iconColor}`}
+                  />
+                </div>
+
+              </div>
+
+              {/* Description */}
+              <p className="text-sm text-gray-500 mt-4">
+                {stat.description}
+              </p>
+
+              {/* Trend */}
+              <div className="flex items-center gap-2 mt-5">
+
+                <div className="flex items-center gap-1 text-green-600 text-sm font-semibold">
+                  <FiTrendingUp />
+                  {stat.trend}
+                </div>
+
+                <span className="text-sm text-gray-400">
+                  {stat.trendText}
+                </span>
+
+              </div>
+
+            </div>
           </div>
-
-          <FiClock className="text-blue-500 text-2xl" />
-        </div>
-      </div>
-
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">
-              High Priority
-            </p>
-
-            <h2 className="text-4xl font-bold mt-2">
-              03
-            </h2>
-
-            <p className="text-xs text-gray-400 mt-3">
-              Requires immediate recommendation
-            </p>
-          </div>
-
-          <FiAlertCircle className="text-red-500 text-2xl" />
-        </div>
-      </div>
-
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <div>
-            <p className="text-gray-500 text-sm">
-              Completed Today
-            </p>
-
-            <h2 className="text-4xl font-bold mt-2">
-              08
-            </h2>
-
-            <p className="text-xs text-gray-400 mt-3">
-              Recommended / Rejected in last 24h
-            </p>
-          </div>
-
-          <FiCheckCircle className="text-green-500 text-2xl" />
-        </div>
-      </div>
-
+        );
+      })}
     </div>
   );
 }
