@@ -1,14 +1,4 @@
-import {
-  FiGrid,
-  FiFileText,
-  FiTruck,
-  FiDroplet,
-  FiTool,
-  FiSettings,
-  FiUsers,
-  FiBarChart2,
-  FiLogOut,
-} from "react-icons/fi";
+import {FiGrid,FiFileText,FiTruck,FiDroplet,FiTool,FiSettings,FiUsers,FiBarChart2,FiLogOut,} from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
 import { useRole } from "../../context/useRole";
 
@@ -39,6 +29,12 @@ const menuItems = [
       {
         name: "Dashboard",
         path: "/departmentofficerdashboard",
+        icon: <FiGrid />,
+        roles: ["department_head"],
+      },
+      {
+        name: "Vehicle Requests",
+        path: "/pendingrecommendations",
         icon: <FiGrid />,
         roles: ["department_head"],
       },
