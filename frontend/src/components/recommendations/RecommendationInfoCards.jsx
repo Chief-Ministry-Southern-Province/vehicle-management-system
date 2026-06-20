@@ -9,7 +9,7 @@ export default function RecommendationInfoCards() {
     <div className="grid lg:grid-cols-2 gap-6">
 
       {/* Recommendation Policy */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+      <div className="relative overflow-hidden bg-linear-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
 
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-40" />
 
@@ -55,7 +55,7 @@ export default function RecommendationInfoCards() {
       </div>
 
       {/* Fleet Status */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+      <div className="relative overflow-hidden bg-linear-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
 
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100 rounded-full blur-3xl opacity-40" />
 

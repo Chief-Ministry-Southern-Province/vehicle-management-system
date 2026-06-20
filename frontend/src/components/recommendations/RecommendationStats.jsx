@@ -53,7 +53,7 @@ export default function RecommendationStats() {
             className={`relative overflow-hidden bg-white rounded-2xl border ${stat.border} shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}
           >
             {/* Top Accent Line */}
-            <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-400" />
+            <div className="h-1 bg-linear-to-r from-blue-500 to-cyan-400" />
 
             <div className="p-6">
 
