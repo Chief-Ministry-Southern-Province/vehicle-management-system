@@ -17,7 +17,7 @@ export default function Topbar() {
                         
                     <option value="employee">Employee</option>
                     <option value="department_head">Department Head</option>
-                    <option value="section_officer">Section Officer</option>
+                    <option value="subject_officer">Subject Officer</option>
                     <option value="assistant_secretary">Assistant Secretary</option>
                     <option value="secretary">Secretary</option>
                 </select>

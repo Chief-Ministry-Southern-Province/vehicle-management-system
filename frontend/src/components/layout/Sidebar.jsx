@@ -44,6 +44,18 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["department_head"],
       },
+      {
+        name: "Dashboard",
+        path: "/subjectofficerdashboard",
+        icon: <FiGrid />,
+        roles: ["subject_officer"],
+      },
+      {
+        name: "Vehicle Requests",
+        path: "/pendingrecommendations",
+        icon: <FiGrid />,
+        roles: ["subject_officer"],
+      },
     ],
   },
   {
