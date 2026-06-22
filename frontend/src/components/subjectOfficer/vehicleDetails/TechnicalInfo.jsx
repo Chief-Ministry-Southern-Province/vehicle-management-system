@@ -1,89 +1,124 @@
+import {
+  FiCpu,
+  FiDroplet,
+  FiSettings,
+  FiHash,
+  FiShield,
+  FiCheckCircle,
+} from "react-icons/fi";
+
 export default function TechnicalInfo() {
+  const specs = [
+    {
+      icon: <FiCpu size={16} />,
+      label: "Engine Type",
+      value: "2.5L Hybrid",
+    },
+    {
+      icon: <FiDroplet size={16} />,
+      label: "Fuel Capacity",
+      value: "50 Liters",
+    },
+    {
+      icon: <FiSettings size={16} />,
+      label: "Transmission",
+      value: "eCVT Automatic",
+    },
+    {
+      icon: <FiHash size={16} />,
+      label: "VIN Number",
+      value: "JTM1234567890ABC",
+    },
+  ];
+
   return (
-    <>
-      <div className="bg-white border rounded-2xl p-6">
+    <div className="space-y-4">
 
-        <h3 className="text-xl font-bold mb-6">
-          Technical Specifications
-        </h3>
+      {/* Technical Specifications */}
+      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-        <div className="space-y-5">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <h3 className="font-semibold text-slate-900">
+            Technical Specifications
+          </h3>
+        </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-500">
-              Engine Type
-            </span>
+        <div className="p-5 space-y-4">
 
-            <span className="font-semibold">
-              2.5L Hybrid
-            </span>
-          </div>
+          {specs.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
 
-          <div className="flex justify-between">
-            <span className="text-gray-500">
-              Fuel Capacity
-            </span>
+                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+                  {item.icon}
+                </div>
 
-            <span className="font-semibold">
-              50 Liters
-            </span>
-          </div>
+                <span className="text-sm text-slate-500">
+                  {item.label}
+                </span>
 
-          <div className="flex justify-between">
-            <span className="text-gray-500">
-              Transmission
-            </span>
+              </div>
 
-            <span className="font-semibold">
-              eCVT Automatic
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">
-              VIN Number
-            </span>
-
-            <span className="font-semibold">
-              JTM1234567890ABC
-            </span>
-          </div>
+              <span className="font-medium text-sm text-slate-800">
+                {item.value}
+              </span>
+            </div>
+          ))}
 
         </div>
 
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+      {/* Compliance Card */}
+      <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-sky-50 shadow-sm">
 
-        <h3 className="text-xl font-bold mb-5">
-          Compliance & Insurance
-        </h3>
+        <div className="border-b border-blue-100 px-5 py-4">
+          <h3 className="flex items-center gap-2 font-semibold text-slate-900">
+            <FiShield className="text-blue-600" />
+            Compliance & Insurance
+          </h3>
+        </div>
 
-        <div className="space-y-4">
+        <div className="p-5 space-y-4">
 
-          <div className="flex justify-between">
-            <span className="text-gray-600">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-slate-500">
               Insurance Expiry
             </span>
 
-            <span className="font-semibold">
-              30 Dec 2024
+            <span className="font-medium text-slate-800">
+              30 Dec 2026
             </span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="text-gray-600">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-slate-500">
               Logbook Status
             </span>
 
-            <span className="font-semibold text-blue-600">
-              Digitized (Verified)
+            <span className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+              <FiCheckCircle size={12} />
+              Verified
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-slate-500">
+              Registration
+            </span>
+
+            <span className="text-sm font-medium text-green-600">
+              Active
             </span>
           </div>
 
         </div>
 
       </div>
-    </>
+
+    </div>
   );
 }
