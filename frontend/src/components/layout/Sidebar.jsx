@@ -63,6 +63,7 @@ const menuItems = [
     items: [
       {
         name: "Vehicle Directory",
+        path: "/vehicledirectory",
         icon: <FiTruck />,
       },
       {
