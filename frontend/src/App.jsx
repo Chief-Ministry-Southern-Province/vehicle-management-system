@@ -16,6 +16,7 @@ import PendingRecommendations from './pages/recommendations/PendingRecommendatio
 import RecommendationReview from './pages/recommendations/RecommendationReview';
 import DepartmentRequestHistory from './pages/recommendations/DepartmentRequestHistory';
 import VehicleDirectory from './pages/fleet/VehicleDirectory';
+import VehicleDetails from './pages/fleet/VehicleDetails';
 
 function App() {
   
@@ -44,6 +45,7 @@ function App() {
 
             <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
             <Route path="/vehicledirectory" element={<VehicleDirectory />}/>
+            <Route path="/vehicledetails" element={<VehicleDetails />}/>
 
 
             <Route path="/secretarydashboard" element={<SecretaryDashboard />} />

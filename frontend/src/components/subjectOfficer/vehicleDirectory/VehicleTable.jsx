@@ -4,6 +4,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const vehicles = [
   {
@@ -61,6 +62,9 @@ const getStatusStyle = (status) => {
 };
 
 export default function VehicleTable() {
+  const navigate = useNavigate();
+
+  
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
@@ -105,6 +109,7 @@ export default function VehicleTable() {
             {vehicles.map((vehicle) => (
               <tr
                 key={vehicle.reg}
+                onClick={() => navigate("/vehicledetails")}
                 className="border-b border-slate-100 transition hover:bg-slate-50"
               >
                 {/* Registration */}
