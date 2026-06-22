@@ -1,4 +1,9 @@
-import { FiMoreVertical } from "react-icons/fi";
+import {
+  FiMoreVertical,
+  FiTruck,
+  FiChevronLeft,
+  FiChevronRight,
+} from "react-icons/fi";
 
 const vehicles = [
   {
@@ -7,7 +12,7 @@ const vehicles = [
     year: "2022",
     type: "SUV",
     status: "Available",
-    service: "2023-11-15",
+    service: "15 Nov 2025",
     fuel: 85,
   },
   {
@@ -16,7 +21,7 @@ const vehicles = [
     year: "2021",
     type: "Sedan",
     status: "In-Use",
-    service: "2024-01-10",
+    service: "10 Jan 2026",
     fuel: 45,
   },
   {
@@ -25,7 +30,7 @@ const vehicles = [
     year: "2020",
     type: "SUV",
     status: "Maintenance",
-    service: "2024-03-01",
+    service: "01 Mar 2026",
     fuel: 10,
   },
   {
@@ -34,21 +39,12 @@ const vehicles = [
     year: "2023",
     type: "Sedan",
     status: "Available",
-    service: "2024-02-20",
+    service: "20 Feb 2026",
     fuel: 92,
-  },
-  {
-    reg: "GV-3325",
-    name: "Nissan Patrol",
-    year: "2019",
-    type: "SUV",
-    status: "In-Use",
-    service: "2023-10-05",
-    fuel: 30,
   },
 ];
 
-const getStatusColor = (status) => {
+const getStatusStyle = (status) => {
   switch (status) {
     case "Available":
       return "bg-green-100 text-green-700";
@@ -57,145 +53,183 @@ const getStatusColor = (status) => {
       return "bg-blue-100 text-blue-700";
 
     case "Maintenance":
-      return "bg-yellow-100 text-yellow-700";
-
-    case "Out of Service":
-      return "bg-red-100 text-red-700";
+      return "bg-amber-100 text-amber-700";
 
     default:
-      return "bg-gray-100";
+      return "bg-slate-100 text-slate-700";
   }
 };
 
 export default function VehicleTable() {
   return (
-    <>
-      <table className="w-full">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-        <thead className="bg-gray-50 border-b">
+      {/* Table */}
 
-          <tr className="text-left text-sm text-gray-500">
-            <th className="p-4">Reg. Number</th>
-            <th>Vehicle Details</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Last Service</th>
-            <th>Fuel</th>
-            <th>Actions</th>
-          </tr>
+      <div className="overflow-x-auto">
+        <table className="w-full">
 
-        </thead>
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-6 py-4 text-left">
+                Registration
+              </th>
 
-        <tbody>
+              <th className="px-6 py-4 text-left">
+                Vehicle
+              </th>
 
-          {vehicles.map((vehicle) => (
-            <tr
-              key={vehicle.reg}
-              className="border-b hover:bg-gray-50"
-            >
-              <td className="p-4 font-semibold text-blue-600">
-                {vehicle.reg}
-              </td>
+              <th className="px-6 py-4 text-left">
+                Type
+              </th>
 
-              <td>
-                <div>
-                  <h4 className="font-medium">
-                    {vehicle.name}
-                  </h4>
+              <th className="px-6 py-4 text-left">
+                Status
+              </th>
 
-                  <p className="text-sm text-gray-500">
-                    Year: {vehicle.year}
-                  </p>
-                </div>
-              </td>
+              <th className="px-6 py-4 text-left">
+                Last Service
+              </th>
 
-              <td>{vehicle.type}</td>
+              <th className="px-6 py-4 text-left">
+                Fuel Level
+              </th>
 
-              <td>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs ${getStatusColor(
-                    vehicle.status
-                  )}`}
-                >
-                  {vehicle.status}
-                </span>
-              </td>
+              <th className="px-6 py-4 text-center">
+                Action
+              </th>
+            </tr>
+          </thead>
 
-              <td>{vehicle.service}</td>
+          <tbody>
+            {vehicles.map((vehicle) => (
+              <tr
+                key={vehicle.reg}
+                className="border-b border-slate-100 transition hover:bg-slate-50"
+              >
+                {/* Registration */}
+                <td className="px-6 py-4">
+                  <span className="font-semibold text-blue-600">
+                    {vehicle.reg}
+                  </span>
+                </td>
 
-              <td className="w-44">
+                {/* Vehicle */}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
 
-                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <FiTruck size={18} />
+                    </div>
 
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div>
+                      <h4 className="font-medium text-slate-800">
+                        {vehicle.name}
+                      </h4>
 
-                    <div
-                      className={`h-full ${
-                        vehicle.fuel < 20
-                          ? "bg-red-500"
-                          : "bg-blue-500"
-                      }`}
-                      style={{
-                        width: `${vehicle.fuel}%`,
-                      }}
-                    />
+                      <p className="text-xs text-slate-500">
+                        Year {vehicle.year}
+                      </p>
+                    </div>
 
                   </div>
+                </td>
 
-                  <span className="text-xs">
-                    {vehicle.fuel}%
+                {/* Type */}
+                <td className="px-6 py-4 text-slate-600">
+                  {vehicle.type}
+                </td>
+
+                {/* Status */}
+                <td className="px-6 py-4">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(
+                      vehicle.status
+                    )}`}
+                  >
+                    {vehicle.status}
                   </span>
+                </td>
 
-                </div>
+                {/* Service */}
+                <td className="px-6 py-4 text-slate-600">
+                  {vehicle.service}
+                </td>
 
-              </td>
+                {/* Fuel */}
+                <td className="px-6 py-4 w-56">
+                  <div className="flex items-center gap-3">
 
-              <td>
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                  <FiMoreVertical />
-                </button>
-              </td>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className={`h-full rounded-full ${
+                          vehicle.fuel < 20
+                            ? "bg-red-500"
+                            : vehicle.fuel < 50
+                            ? "bg-amber-500"
+                            : "bg-green-500"
+                        }`}
+                        style={{
+                          width: `${vehicle.fuel}%`,
+                        }}
+                      />
+                    </div>
 
-            </tr>
-          ))}
+                    <span className="text-xs font-medium text-slate-600">
+                      {vehicle.fuel}%
+                    </span>
 
-        </tbody>
+                  </div>
+                </td>
 
-      </table>
+                {/* Action */}
+                <td className="px-6 py-4 text-center">
+                  <button className="rounded-xl p-2 transition hover:bg-slate-100">
+                    <FiMoreVertical />
+                  </button>
+                </td>
 
-      {/* Pagination */}
+              </tr>
+            ))}
+          </tbody>
 
-      <div className="flex justify-between items-center p-5">
+        </table>
+      </div>
 
-        <p className="text-sm text-gray-500">
-          Showing 8 of 42 vehicles
+      {/* Footer */}
+
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
+
+        <p className="text-sm text-slate-500">
+          Showing 1–8 of 42 vehicles
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
 
-          <button className="border px-3 py-1 rounded">
-            Previous
+          <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
+            <FiChevronLeft />
           </button>
 
-          <button className="bg-blue-600 text-white px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl bg-blue-600 text-sm font-medium text-white">
             1
           </button>
 
-          <button className="border px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl border border-slate-200 bg-white text-sm">
             2
           </button>
 
-          <button className="border px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl border border-slate-200 bg-white text-sm">
             3
           </button>
 
-          <button className="border px-3 py-1 rounded">
-            Next
+          <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
+            <FiChevronRight />
           </button>
 
         </div>
 
       </div>
-    </>
+
+    </div>
   );
 }

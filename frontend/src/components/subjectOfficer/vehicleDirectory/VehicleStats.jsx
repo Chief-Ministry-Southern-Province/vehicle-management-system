@@ -7,58 +7,59 @@ import {
 
 const stats = [
   {
-    title: "TOTAL FLEET",
+    title: "Fleet",
     value: "42",
-    icon: <FiTruck />,
+    icon: <FiTruck size={18} />,
+    bg: "bg-blue-50",
+    text: "text-blue-600",
   },
   {
-    title: "CURRENTLY AVAILABLE",
+    title: "Available",
     value: "28",
-    icon: <FiCheckCircle />,
+    icon: <FiCheckCircle size={18} />,
+    bg: "bg-green-50",
+    text: "text-green-600",
   },
   {
-    title: "UNDER MAINTENANCE",
+    title: "Maintenance",
     value: "05",
-    icon: <FiClock />,
+    icon: <FiClock size={18} />,
+    bg: "bg-amber-50",
+    text: "text-amber-600",
   },
   {
-    title: "URGENT REPAIRS",
+    title: "Repairs",
     value: "02",
-    icon: <FiAlertTriangle />,
-    danger: true,
+    icon: <FiAlertTriangle size={18} />,
+    bg: "bg-red-50",
+    text: "text-red-600",
   },
 ];
 
 export default function VehicleStats() {
   return (
-    <div className="grid lg:grid-cols-4 gap-5">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((item) => (
         <div
           key={item.title}
-          className="bg-white border rounded-2xl p-5 shadow-sm"
+          className="group bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300"
         >
-          <div className="flex justify-between items-center">
-
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 font-medium">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500 font-medium">
                 {item.title}
               </p>
 
-              <h2
-                className={`text-4xl font-bold mt-2 ${
-                  item.danger
-                    ? "text-red-500"
-                    : "text-gray-900"
-                }`}
-              >
+              <h2 className="text-2xl font-bold text-slate-900 mt-1">
                 {item.value}
               </h2>
             </div>
 
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600">
+            <div
+              className={`h-10 w-10 rounded-xl flex items-center justify-center ${item.bg} ${item.text}`}
+            >
               {item.icon}
             </div>
-
           </div>
         </div>
       ))}

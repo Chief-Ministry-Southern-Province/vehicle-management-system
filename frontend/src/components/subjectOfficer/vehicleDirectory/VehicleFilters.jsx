@@ -1,33 +1,57 @@
 import {
   FiSearch,
   FiFilter,
+  FiChevronDown,
 } from "react-icons/fi";
 
 export default function VehicleFilters() {
   return (
-    <div className="p-5 border-b">
+    <div className="border-b border-slate-200 bg-white px-5 py-4">
 
-      <div className="flex flex-wrap gap-4 items-center">
+      <div className="flex flex-wrap items-center gap-3">
 
-        <div className="relative flex-1 min-w-[300px]">
-
-          <FiSearch className="absolute left-4 top-4 text-gray-400" />
+        {/* Search */}
+        <div className="relative flex-1 min-w-[250px]">
+          <FiSearch
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          />
 
           <input
             type="text"
-            placeholder="Search by Registration No, Make, or Model..."
-            className="w-full border rounded-xl pl-11 py-3"
+            placeholder="Search vehicles..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
           />
-
         </div>
 
-        <button className="flex items-center gap-2 px-4 py-3 border rounded-xl hover:bg-gray-50">
-          <FiFilter />
+        {/* Status Filter */}
+        <select className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-500">
+          <option>All Status</option>
+          <option>Available</option>
+          <option>Assigned</option>
+          <option>Maintenance</option>
+          <option>Out of Service</option>
+        </select>
+
+        {/* Type Filter */}
+        <select className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-500">
+          <option>All Types</option>
+          <option>Car</option>
+          <option>Van</option>
+          <option>SUV</option>
+          <option>Bus</option>
+        </select>
+
+        {/* Filter Button */}
+        <button className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+          <FiFilter size={16} />
           Filters
         </button>
 
-        <button className="text-gray-500">
-          Sort By:
+        {/* Sort */}
+        <button className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+          Newest
+          <FiChevronDown size={16} />
         </button>
 
       </div>
