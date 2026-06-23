@@ -75,7 +75,9 @@ const menuItems = [
       },
       {
         name: "Service Records",
+        path: "/servicerecords",
         icon: <FiTool />,
+        roles: ["subject_officer"],
       },
       {
         name: "Repair Records",

@@ -19,6 +19,7 @@ import VehicleDirectory from './pages/fleet/VehicleDirectory';
 import VehicleDetails from './pages/fleet/VehicleDetails';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
 import FuelManagement from './pages/fleet/FuelManagement';
+import ServiceRecords from './pages/fleet/ServiceRecords';
 
 function App() {
   
@@ -49,6 +50,8 @@ function App() {
             <Route path="/vehicledetails" element={<VehicleDetails />}/>
             <Route path="/registervehicle" element={<RegisterVehicle />}/>
             <Route path="/fuelmanagement" element={<FuelManagement />}/>
+            <Route path="/servicerecords" element={<ServiceRecords />}/>
+            
 
 
             <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
