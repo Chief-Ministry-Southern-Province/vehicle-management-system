@@ -56,6 +56,12 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["subject_officer"],
       },
+      {
+        name: "Dashboard",
+        path: "/deputysecretarydashboard",
+        icon: <FiGrid />,
+        roles: ["assistant_secretary"],
+      },
     ],
   },
   {
