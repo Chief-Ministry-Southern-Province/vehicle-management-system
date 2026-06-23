@@ -8,7 +8,7 @@ import FuelLogs from "../../components/subjectOfficer/FuelLogs";
 import TodayAssignments from "../../components/subjectOfficer/TodayAssignments";
 import SupportCard from "../../components/subjectOfficer/SupportCard";
 
-import {FiBarChart2,FiPlus,FiDownload} from "react-icons/fi";
+import {FiBarChart2,FiPlus} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 export default function SubjectOfficerDashboard() {
