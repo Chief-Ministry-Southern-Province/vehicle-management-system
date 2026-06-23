@@ -7,7 +7,9 @@ import VehicleTable from "../../components/subjectOfficer/vehicleDirectory/Vehic
 import {
   FiDownload,
   FiPlus,
+  FiTruck,
 } from "react-icons/fi";
+
 import { useNavigate } from "react-router-dom";
 
 export default function VehicleDirectory() {
@@ -15,44 +17,64 @@ export default function VehicleDirectory() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
 
-        {/* Header */}
-        <div className="flex justify-between items-start">
+        {/* Premium Header */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 
-          <div>
-            <h1 className="text-4xl font-bold">
-              Vehicle Directory
-            </h1>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
-            <p className="text-gray-500 mt-2">
-              Manage and monitor all government fleet assets in one place.
-            </p>
-          </div>
+            <div>
 
-          <div className="flex gap-3">
+              <div className="flex items-center gap-2">
+                <FiTruck className="text-blue-600" />
 
-            <button className="flex items-center gap-2 border px-5 py-3 rounded-xl hover:bg-gray-50">
-              <FiDownload />
-              Export CSV
-            </button>
+                <span className="text-xs font-medium uppercase tracking-wider text-blue-600">
+                  Fleet Management
+                </span>
+              </div>
 
-            <button 
-                onClick={() => navigate('/registervehicle')}
-                className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl hover:bg-blue-700">
-              <FiPlus />
-              Add New Vehicle
-            </button>
+              <h1 className="mt-2 text-2xl font-bold text-slate-900">
+                Vehicle Directory
+              </h1>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Manage and monitor all government fleet assets from a single location.
+              </p>
+
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+
+              <button className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <FiDownload />
+                Export CSV
+              </button>
+
+              <button
+                onClick={() => navigate("/registervehicle")}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <FiPlus />
+                Add Vehicle
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
+        {/* Statistics */}
         <VehicleStats />
 
-        <div className="bg-white border rounded-2xl overflow-hidden">
+        {/* Directory Table */}
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+
           <VehicleFilters />
+
           <VehicleTable />
+
         </div>
 
       </div>
