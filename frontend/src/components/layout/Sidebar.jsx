@@ -65,10 +65,13 @@ const menuItems = [
         name: "Vehicle Directory",
         path: "/vehicledirectory",
         icon: <FiTruck />,
+        roles: ["subject_officer"],
       },
       {
         name: "Fuel Management",
+        path: "/fuelmanagement",
         icon: <FiDroplet />,
+        roles: ["subject_officer"],
       },
       {
         name: "Service Records",
