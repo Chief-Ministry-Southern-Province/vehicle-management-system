@@ -3,34 +3,39 @@ import {
   FiDollarSign,
   FiTrendingUp,
   FiTruck,
+  FiArrowUp,
 } from "react-icons/fi";
 
 const stats = [
   {
-    title: "Total Liters Consumed",
+    title: "Fuel Consumed",
     value: "1,452 L",
-    icon: <FiDroplet />,
+    icon: <FiDroplet size={20} />,
+    bg: "bg-blue-50",
     color: "text-blue-600",
     change: "+8.4%",
   },
   {
-    title: "Total Fuel Spend",
+    title: "Fuel Spend",
     value: "$1,816",
-    icon: <FiDollarSign />,
+    icon: <FiDollarSign size={20} />,
+    bg: "bg-green-50",
     color: "text-green-600",
     change: "-4.2%",
   },
   {
-    title: "Average Efficiency",
+    title: "Efficiency",
     value: "12.8 km/L",
-    icon: <FiTrendingUp />,
+    icon: <FiTrendingUp size={20} />,
+    bg: "bg-purple-50",
     color: "text-purple-600",
     change: "+2.1%",
   },
   {
-    title: "Vehicles Refueled",
+    title: "Refueled",
     value: "28",
-    icon: <FiTruck />,
+    icon: <FiTruck size={20} />,
+    bg: "bg-orange-50",
     color: "text-orange-600",
     change: "+5",
   },
@@ -38,35 +43,82 @@ const stats = [
 
 export default function FuelStats() {
   return (
-    <div className="grid lg:grid-cols-4 gap-5">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
       {stats.map((item) => (
         <div
           key={item.title}
-          className="bg-white border rounded-2xl p-6 shadow-sm"
+          className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-          <div className="flex justify-between items-center">
+          {/* Background Glow */}
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-slate-100 opacity-50 blur-2xl" />
+
+          <div className="relative flex items-start justify-between">
+
+            {/* Content */}
             <div>
-              <p className="text-sm text-gray-500">
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {item.title}
               </p>
 
-              <h2 className="text-3xl font-bold mt-2">
+              <h2 className="mt-3 text-3xl font-bold text-slate-900">
                 {item.value}
               </h2>
 
-              <p className="text-xs text-gray-400 mt-2">
-                {item.change} from last month
-              </p>
+              <div className="mt-4 flex items-center gap-2">
+
+                <span
+                  className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    item.change.startsWith("-")
+                      ? "bg-red-100 text-red-600"
+                      : "bg-green-100 text-green-600"
+                  }`}
+                >
+                  <FiArrowUp
+                    size={11}
+                    className={
+                      item.change.startsWith("-")
+                        ? "rotate-180"
+                        : ""
+                    }
+                  />
+                  {item.change}
+                </span>
+
+                <span className="text-xs text-slate-400">
+                  vs last month
+                </span>
+
+              </div>
+
             </div>
 
+            {/* Icon */}
             <div
-              className={`w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl ${item.color}`}
+              className={`flex h-14 w-14 items-center justify-center rounded-2xl ${item.bg} ${item.color} shadow-sm transition-transform duration-300 group-hover:scale-110`}
             >
               {item.icon}
             </div>
+
           </div>
+
+          {/* Bottom Accent */}
+          <div
+            className={`mt-5 h-1 rounded-full ${
+              item.color === "text-blue-600"
+                ? "bg-blue-500"
+                : item.color === "text-green-600"
+                ? "bg-green-500"
+                : item.color === "text-purple-600"
+                ? "bg-purple-500"
+                : "bg-orange-500"
+            }`}
+          />
+
         </div>
       ))}
+
     </div>
   );
 }

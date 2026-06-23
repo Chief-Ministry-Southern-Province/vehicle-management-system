@@ -1,6 +1,9 @@
 import {
   FiCheckCircle,
   FiClock,
+  FiChevronLeft,
+  FiChevronRight,
+  FiDroplet,
 } from "react-icons/fi";
 
 const logs = [
@@ -41,7 +44,7 @@ const logs = [
     driver: "James Miller",
     liters: 82,
     price: 1.25,
-    amount: 102.50,
+    amount: 102.5,
     status: "Verified",
   },
   {
@@ -58,108 +61,159 @@ const logs = [
 
 export default function FuelTable() {
   return (
-    <>
-      <table className="w-full">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-        <thead className="bg-gray-50 border-b">
+      {/* Table */}
+      <div className="overflow-x-auto">
 
-          <tr className="text-left text-sm text-gray-500">
-            <th className="p-4">Date</th>
-            <th>Vehicle</th>
-            <th>Driver</th>
-            <th>Liters</th>
-            <th>Price/L</th>
-            <th>Total Amount</th>
-            <th>Status</th>
-          </tr>
+        <table className="w-full">
 
-        </thead>
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
 
-        <tbody>
+              <th className="px-6 py-4 text-left">
+                Date
+              </th>
 
-          {logs.map((log, index) => (
-            <tr
-              key={index}
-              className="border-b hover:bg-gray-50"
-            >
-              <td className="p-4">{log.date}</td>
+              <th className="px-6 py-4 text-left">
+                Vehicle
+              </th>
 
-              <td>
-                <div>
-                  <h4 className="font-medium text-blue-600">
-                    {log.vehicle}
-                  </h4>
+              <th className="px-6 py-4 text-left">
+                Driver
+              </th>
 
-                  <p className="text-sm text-gray-500">
-                    {log.model}
-                  </p>
-                </div>
-              </td>
+              <th className="px-6 py-4 text-left">
+                Fuel
+              </th>
 
-              <td>{log.driver}</td>
+              <th className="px-6 py-4 text-left">
+                Price/L
+              </th>
 
-              <td>{log.liters} L</td>
+              <th className="px-6 py-4 text-left">
+                Amount
+              </th>
 
-              <td>${log.price}</td>
-
-              <td className="font-medium">
-                ${log.amount}
-              </td>
-
-              <td>
-                {log.status === "Verified" ? (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
-                    <FiCheckCircle />
-                    Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 text-xs font-medium">
-                    <FiClock />
-                    Pending
-                  </span>
-                )}
-              </td>
+              <th className="px-6 py-4 text-left">
+                Status
+              </th>
 
             </tr>
-          ))}
+          </thead>
 
-        </tbody>
+          <tbody>
 
-      </table>
+            {logs.map((log, index) => (
+              <tr
+                key={index}
+                className="border-b border-slate-100 transition hover:bg-slate-50"
+              >
 
-      {/* Pagination */}
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {log.date}
+                </td>
 
-      <div className="flex justify-between items-center p-5">
+                <td className="px-6 py-4">
 
-        <p className="text-sm text-gray-500">
-          Showing 5 of 128 records
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <FiDroplet size={18} />
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium text-blue-600">
+                        {log.vehicle}
+                      </h4>
+
+                      <p className="text-xs text-slate-500">
+                        {log.model}
+                      </p>
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {log.driver}
+                </td>
+
+                <td className="px-6 py-4">
+                  <span className="font-medium text-slate-800">
+                    {log.liters} L
+                  </span>
+                </td>
+
+                <td className="px-6 py-4 text-slate-600">
+                  ${log.price.toFixed(2)}
+                </td>
+
+                <td className="px-6 py-4">
+                  <span className="font-semibold text-slate-900">
+                    ${log.amount.toFixed(2)}
+                  </span>
+                </td>
+
+                <td className="px-6 py-4">
+
+                  {log.status === "Verified" ? (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                      <FiCheckCircle size={12} />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                      <FiClock size={12} />
+                      Pending
+                    </span>
+                  )}
+
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
+
+        <p className="text-sm text-slate-500">
+          Showing 1–5 of 128 fuel records
         </p>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
 
-          <button className="border px-3 py-1 rounded">
-            Previous
+          <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
+            <FiChevronLeft />
           </button>
 
-          <button className="bg-blue-600 text-white px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl bg-blue-600 text-sm font-medium text-white">
             1
           </button>
 
-          <button className="border px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl border border-slate-200 bg-white text-sm">
             2
           </button>
 
-          <button className="border px-3 py-1 rounded">
+          <button className="h-9 w-9 rounded-xl border border-slate-200 bg-white text-sm">
             3
           </button>
 
-          <button className="border px-3 py-1 rounded">
-            Next
+          <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
+            <FiChevronRight />
           </button>
 
         </div>
 
       </div>
-    </>
+
+    </div>
   );
 }
