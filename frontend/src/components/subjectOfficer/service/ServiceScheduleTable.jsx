@@ -1,4 +1,10 @@
-import { FiMoreHorizontal } from "react-icons/fi";
+import {
+  FiMoreHorizontal,
+  FiTool,
+  FiAlertTriangle,
+  FiClock,
+  FiCheckCircle,
+} from "react-icons/fi";
 
 const services = [
   {
@@ -35,74 +41,192 @@ const services = [
 
 export default function ServiceScheduleTable() {
   return (
-    <div className="bg-white border rounded-xl overflow-hidden">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-      <table className="w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
 
-        <thead className="bg-gray-50 border-b">
-          <tr className="text-left text-sm text-gray-500">
-            <th className="p-4">ID</th>
-            <th>Vehicle</th>
-            <th>Type</th>
-            <th>Vendor</th>
-            <th>Cost</th>
-            <th>Next Due</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
+        <div>
+          <h3 className="font-semibold text-slate-900">
+            Maintenance Schedule
+          </h3>
 
-        <tbody>
+          <p className="mt-1 text-sm text-slate-500">
+            Upcoming and active vehicle service records
+          </p>
+        </div>
 
-          {services.map((item) => (
-            <tr
-              key={item.id}
-              className="border-b hover:bg-gray-50"
-            >
-              <td className="p-4">{item.id}</td>
+        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-600">
+          {services.length} Records
+        </span>
 
-              <td>
-                <h4 className="font-medium">
-                  {item.vehicle}
-                </h4>
-                <p className="text-xs text-gray-500">
-                  {item.model}
-                </p>
-              </td>
+      </div>
 
-              <td>{item.type}</td>
+      {/* Table */}
+      <div className="overflow-x-auto">
 
-              <td>{item.vendor}</td>
+        <table className="w-full">
 
-              <td>{item.cost}</td>
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
 
-              <td>{item.due}</td>
+              <th className="px-6 py-4 text-left">
+                ID
+              </th>
 
-              <td>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs ${
-                    item.status === "Overdue"
-                      ? "bg-red-100 text-red-600"
-                      : item.status === "Due Soon"
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-green-100 text-green-600"
-                  }`}
-                >
-                  {item.status}
-                </span>
-              </td>
+              <th className="px-6 py-4 text-left">
+                Vehicle
+              </th>
 
-              <td>
-                <button>
-                  <FiMoreHorizontal />
-                </button>
-              </td>
+              <th className="px-6 py-4 text-left">
+                Service Type
+              </th>
+
+              <th className="px-6 py-4 text-left">
+                Vendor
+              </th>
+
+              <th className="px-6 py-4 text-left">
+                Cost
+              </th>
+
+              <th className="px-6 py-4 text-left">
+                Due Date
+              </th>
+
+              <th className="px-6 py-4 text-left">
+                Status
+              </th>
+
+              <th className="px-6 py-4 text-center">
+                Actions
+              </th>
+
             </tr>
-          ))}
+          </thead>
 
-        </tbody>
+          <tbody>
 
-      </table>
+            {services.map((item) => (
+              <tr
+                key={item.id}
+                className="border-b border-slate-100 transition hover:bg-slate-50"
+              >
+
+                <td className="px-6 py-4">
+
+                  <span className="font-medium text-slate-700">
+                    {item.id}
+                  </span>
+
+                </td>
+
+                <td className="px-6 py-4">
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <FiTool size={18} />
+                    </div>
+
+                    <div>
+
+                      <h4 className="font-medium text-slate-900">
+                        {item.vehicle}
+                      </h4>
+
+                      <p className="text-xs text-slate-500">
+                        {item.model}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {item.type}
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {item.vendor}
+                </td>
+
+                <td className="px-6 py-4 font-medium text-slate-900">
+                  {item.cost}
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {item.due}
+                </td>
+
+                <td className="px-6 py-4">
+
+                  {item.status === "Overdue" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                      <FiAlertTriangle size={12} />
+                      Overdue
+                    </span>
+                  )}
+
+                  {item.status === "Due Soon" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                      <FiClock size={12} />
+                      Due Soon
+                    </span>
+                  )}
+
+                  {item.status === "Scheduled" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                      <FiCheckCircle size={12} />
+                      Scheduled
+                    </span>
+                  )}
+
+                </td>
+
+                <td className="px-6 py-4 text-center">
+
+                  <button className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100">
+                    <FiMoreHorizontal />
+                  </button>
+
+                </td>
+
+              </tr>
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
+
+        <p className="text-sm text-slate-500">
+          Showing 3 maintenance schedules
+        </p>
+
+        <div className="flex gap-2">
+
+          <button className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">
+            Previous
+          </button>
+
+          <button className="rounded-xl bg-blue-600 px-3 py-2 text-sm text-white">
+            1
+          </button>
+
+          <button className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">
+            Next
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
   );

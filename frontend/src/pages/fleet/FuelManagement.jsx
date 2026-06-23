@@ -9,6 +9,7 @@ import FuelLogModal from "../../components/subjectOfficer/fuel/FuelLogModal";
 import {
   FiPlus,
   FiDownload,
+  FiDroplet,
 } from "react-icons/fi";
 
 export default function FuelManagement() {
@@ -17,44 +18,61 @@ export default function FuelManagement() {
   return (
     <DashboardLayout>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
 
-        {/* Header */}
+        {/* Premium Header */}
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-        <div className="flex justify-between items-start">
+          {/* Background Glow */}
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-blue-100 blur-3xl opacity-60" />
+          <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-cyan-100 blur-3xl opacity-40" />
 
-          <div>
-            <h1 className="text-4xl font-bold">
-              Fuel Management
-            </h1>
+          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
-            <p className="text-gray-500 mt-2">
-              Track fleet fuel usage, expenses and fuel logs.
-            </p>
-          </div>
+            <div>
 
-          <div className="flex gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                <FiDroplet size={14} />
+                Fuel Operations Center
+              </div>
 
-            <button className="border px-5 py-3 rounded-xl flex items-center gap-2">
-              <FiDownload />
-              Export CSV
-            </button>
+              <h1 className="mt-3 text-3xl font-bold text-slate-900">
+                Fuel Management
+              </h1>
 
-            <button
-              onClick={() => setOpenModal(true)}
-              className="bg-blue-600 text-white px-5 py-3 rounded-xl flex items-center gap-2"
-            >
-              <FiPlus />
-              Add Fuel Log
-            </button>
+              <p className="mt-2 text-slate-500">
+                Monitor fuel consumption, expenses, efficiency,
+                and vehicle fuel transaction records.
+              </p>
+
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+
+              <button className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                <FiDownload />
+                Export CSV
+              </button>
+
+              <button
+                onClick={() => setOpenModal(true)}
+                className="flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
+              >
+                <FiPlus />
+                Add Fuel Log
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
+        {/* KPI Cards */}
         <FuelStats />
 
-        <div className="bg-white border rounded-2xl overflow-hidden">
+        {/* Fuel Records */}
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
           <FuelFilters />
 
@@ -64,6 +82,7 @@ export default function FuelManagement() {
 
       </div>
 
+      {/* Fuel Log Modal */}
       {openModal && (
         <FuelLogModal
           onClose={() => setOpenModal(false)}
