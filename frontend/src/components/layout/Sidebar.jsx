@@ -96,7 +96,9 @@ const menuItems = [
       },
       {
         name: "Reports",
+        path: "/fleetanalytics",
         icon: <FiBarChart2 />,
+        roles: ["subject_officer"],
       },
       {
         name: "User Settings",
