@@ -5,7 +5,6 @@ import { Toaster } from 'react-hot-toast';
 
 import Login from './pages/auth/Login';
 import DepartmentOfficerDashboard from './pages/dashboard/DepartmentOfficerDashboard';
-import DepartmentSecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
 import SecretaryDashboard from './pages/dashboard/SecretaryDashboard';
 import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
@@ -22,6 +21,7 @@ import FuelManagement from './pages/fleet/FuelManagement';
 import ServiceRecords from './pages/fleet/ServiceRecords';
 import RepairRecords from './pages/fleet/RepairRecords';
 import FleetAnalytics from './pages/fleet/FleetAnalytics';
+import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
 
 function App() {
   
@@ -62,7 +62,7 @@ function App() {
             
 
             
-            <Route path="/deputysecretarydashboard" element={<DepartmentSecretaryDashboard />} />
+            <Route path="/deputysecretarydashboard" element={<DeputySecretaryDashboard />} />
 
             
 
