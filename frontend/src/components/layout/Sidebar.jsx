@@ -107,6 +107,12 @@ const menuItems = [
         roles: ["subject_officer"],
       },
       {
+        name: "Pending Approvals",
+        path: "/pendingapprovals",
+        icon: <FiLogOut />,
+        roles: ["assistant_secretary"],
+      },
+      {
         name: "User Settings",
         icon: <FiSettings />,
       },

@@ -22,6 +22,7 @@ import ServiceRecords from './pages/fleet/ServiceRecords';
 import RepairRecords from './pages/fleet/RepairRecords';
 import FleetAnalytics from './pages/fleet/FleetAnalytics';
 import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
+import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 
 function App() {
   
@@ -63,6 +64,7 @@ function App() {
 
             
             <Route path="/deputysecretarydashboard" element={<DeputySecretaryDashboard />} />
+            <Route path="/pendingapprovals" element={<PendingApprovals />} />
 
             
 
