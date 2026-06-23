@@ -75,11 +75,15 @@ const menuItems = [
       },
       {
         name: "Service Records",
+        path: "/servicerecords",
         icon: <FiTool />,
+        roles: ["subject_officer"],
       },
       {
         name: "Repair Records",
+        path: "/repairrecords",
         icon: <FiTool />,
+        roles: ["subject_officer"],
       },
     ],
   },
@@ -92,7 +96,9 @@ const menuItems = [
       },
       {
         name: "Reports",
+        path: "/fleetanalytics",
         icon: <FiBarChart2 />,
+        roles: ["subject_officer"],
       },
       {
         name: "User Settings",

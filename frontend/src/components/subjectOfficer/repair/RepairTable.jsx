@@ -1,67 +1,72 @@
 import {
-  FiCheckCircle,
+  FiTool,
+  FiAlertTriangle,
   FiClock,
   FiChevronLeft,
   FiChevronRight,
-  FiDroplet,
 } from "react-icons/fi";
 
-const logs = [
+const repairs = [
   {
-    date: "Oct 24, 2024",
-    vehicle: "GV-8821",
-    model: "Toyota Land Cruiser",
-    driver: "James Miller",
-    liters: 46.5,
-    price: 1.25,
-    amount: 58.13,
-    status: "Verified",
-  },
-  {
-    date: "Oct 23, 2024",
-    vehicle: "GV-4402",
-    model: "Honda Accord",
-    driver: "Robert Wilson",
-    liters: 39.2,
-    price: 1.21,
-    amount: 47.43,
-    status: "Verified",
-  },
-  {
-    date: "Oct 22, 2024",
-    vehicle: "GV-1193",
-    model: "Mitsubishi Pajero",
-    driver: "Michael Brown",
-    liters: 12.5,
-    price: 1.29,
-    amount: 16.12,
-    status: "Pending",
-  },
-  {
-    date: "Oct 21, 2024",
-    vehicle: "GV-7754",
-    model: "Toyota Camry",
-    driver: "James Miller",
-    liters: 82,
-    price: 1.25,
-    amount: 102.5,
-    status: "Verified",
-  },
-  {
-    date: "Oct 20, 2024",
-    vehicle: "GV-9921",
+    vehicle: "GV-8842",
     model: "Toyota Hilux",
-    driver: "Robert Wilson",
-    liters: 42.2,
-    price: 1.22,
-    amount: 51.48,
-    status: "Verified",
+    type: "Engine Overhaul",
+    severity: "Critical",
+    cost: "$775.00",
+    downtime: "5 Days",
+    date: "Oct 12, 2023",
+  },
+  {
+    vehicle: "GV-2109",
+    model: "Nissan Navara",
+    type: "Suspension Repair",
+    severity: "Moderate",
+    cost: "$320.00",
+    downtime: "2 Days",
+    date: "Oct 15, 2023",
+  },
+  {
+    vehicle: "GV-5512",
+    model: "Toyota Camry",
+    type: "Body Work",
+    severity: "Low",
+    cost: "$150.00",
+    downtime: "1 Day",
+    date: "Oct 18, 2023",
+  },
+  {
+    vehicle: "GV-9003",
+    model: "Isuzu D-Max",
+    type: "Brake System",
+    severity: "Critical",
+    cost: "$480.00",
+    downtime: "3 Days",
+    date: "Oct 20, 2023",
   },
 ];
 
-export default function FuelTable() {
+export default function RepairTable() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+
+        <div>
+          <h3 className="font-semibold text-slate-900">
+            Repair Records
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Track vehicle repair history and workshop activities.
+          </p>
+        </div>
+
+        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+          {repairs.length} Records
+        </span>
+
+      </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -72,31 +77,27 @@ export default function FuelTable() {
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
 
               <th className="px-6 py-4 text-left">
-                Date
-              </th>
-
-              <th className="px-6 py-4 text-left">
                 Vehicle
               </th>
 
               <th className="px-6 py-4 text-left">
-                Driver
+                Repair Type
               </th>
 
               <th className="px-6 py-4 text-left">
-                Fuel
+                Severity
               </th>
 
               <th className="px-6 py-4 text-left">
-                Price/L
+                Cost
               </th>
 
               <th className="px-6 py-4 text-left">
-                Amount
+                Downtime
               </th>
 
               <th className="px-6 py-4 text-left">
-                Status
+                Date
               </th>
 
             </tr>
@@ -104,32 +105,30 @@ export default function FuelTable() {
 
           <tbody>
 
-            {logs.map((log, index) => (
+            {repairs.map((item, index) => (
               <tr
                 key={index}
                 className="border-b border-slate-100 transition hover:bg-slate-50"
               >
-
-                <td className="px-6 py-4 text-sm text-slate-600">
-                  {log.date}
-                </td>
 
                 <td className="px-6 py-4">
 
                   <div className="flex items-center gap-3">
 
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                      <FiDroplet size={18} />
+                      <FiTool size={18} />
                     </div>
 
                     <div>
-                      <h4 className="font-medium text-blue-600">
-                        {log.vehicle}
+
+                      <h4 className="font-medium text-slate-900">
+                        {item.vehicle}
                       </h4>
 
                       <p className="text-xs text-slate-500">
-                        {log.model}
+                        {item.model}
                       </p>
+
                     </div>
 
                   </div>
@@ -137,39 +136,43 @@ export default function FuelTable() {
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-600">
-                  {log.driver}
-                </td>
-
-                <td className="px-6 py-4">
-                  <span className="font-medium text-slate-800">
-                    {log.liters} L
-                  </span>
-                </td>
-
-                <td className="px-6 py-4 text-slate-600">
-                  ${log.price.toFixed(2)}
-                </td>
-
-                <td className="px-6 py-4">
-                  <span className="font-semibold text-slate-900">
-                    ${log.amount.toFixed(2)}
-                  </span>
+                  {item.type}
                 </td>
 
                 <td className="px-6 py-4">
 
-                  {log.status === "Verified" ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                      <FiCheckCircle size={12} />
-                      Verified
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
-                      <FiClock size={12} />
-                      Pending
+                  {item.severity === "Critical" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                      <FiAlertTriangle size={12} />
+                      Critical
                     </span>
                   )}
 
+                  {item.severity === "Moderate" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                      <FiClock size={12} />
+                      Moderate
+                    </span>
+                  )}
+
+                  {item.severity === "Low" && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                      Low
+                    </span>
+                  )}
+
+                </td>
+
+                <td className="px-6 py-4 font-medium text-slate-900">
+                  {item.cost}
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {item.downtime}
+                </td>
+
+                <td className="px-6 py-4 text-sm text-slate-600">
+                  {item.date}
                 </td>
 
               </tr>
@@ -185,7 +188,7 @@ export default function FuelTable() {
       <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
 
         <p className="text-sm text-slate-500">
-          Showing 1–5 of 128 fuel records
+          Showing 1–4 of 42 repair records
         </p>
 
         <div className="flex items-center gap-2">

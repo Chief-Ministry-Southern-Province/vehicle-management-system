@@ -4,9 +4,9 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 
-export default function FuelFilters() {
+export default function ServiceFilters() {
   return (
-    <div className="border-b border-slate-200 bg-white px-5 py-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
 
@@ -20,17 +20,26 @@ export default function FuelFilters() {
 
           <input
             type="text"
-            placeholder="Search vehicle or driver..."
+            placeholder="Search vehicle, plate number, or model..."
             className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
           />
 
         </div>
 
+        {/* Service Status */}
+        <select className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white">
+          <option>All Status</option>
+          <option>Scheduled</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+          <option>Overdue</option>
+        </select>
+
         {/* Date Filter */}
         <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
 
           <FiCalendar
-            size={16}
+            size={15}
             className="text-slate-400"
           />
 
@@ -41,19 +50,10 @@ export default function FuelFilters() {
 
         </div>
 
-        {/* Fuel Type */}
-        <select className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white">
-          <option>All Fuel Types</option>
-          <option>Diesel</option>
-          <option>Petrol</option>
-          <option>Hybrid</option>
-          <option>Electric</option>
-        </select>
-
         {/* Filter Button */}
         <button className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
           <FiFilter size={16} />
-          Advanced Filters
+          Filters
         </button>
 
       </div>

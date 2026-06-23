@@ -1,46 +1,67 @@
 import {
   FiX,
-  FiUpload,
+  FiUploadCloud,
+  FiDroplet,
+  FiTruck,
+  FiCalendar,
+  FiUser,
+  FiActivity,
+  FiDollarSign,
 } from "react-icons/fi";
 
 export default function FuelLogModal({ onClose }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
 
-      <div className="bg-white rounded-2xl w-full max-w-4xl">
+      <div className="w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
 
         {/* Header */}
+        <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50 via-cyan-50 to-slate-50 px-6 py-5">
 
-        <div className="flex justify-between items-start p-6 border-b">
+          <div className="flex items-start justify-between">
 
-          <div>
-            <h2 className="text-2xl font-bold">
-              New Fuel Log Entry
-            </h2>
+            <div className="flex items-center gap-4">
 
-            <p className="text-gray-500 mt-1">
-              Record a new fuel transaction for the fleet.
-            </p>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg">
+                <FiDroplet size={20} />
+              </div>
+
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  New Fuel Log Entry
+                </h2>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Record fuel transactions and update fleet fuel consumption records.
+                </p>
+              </div>
+
+            </div>
+
+            <button
+              onClick={onClose}
+              className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+            >
+              <FiX size={20} />
+            </button>
+
           </div>
-
-          <button onClick={onClose}>
-            <FiX size={20} />
-          </button>
 
         </div>
 
-        {/* Form */}
+        {/* Content */}
+        <div className="max-h-[75vh] overflow-y-auto p-6">
 
-        <div className="p-6">
-
-          <div className="grid md:grid-cols-2 gap-5">
+          {/* Basic Details */}
+          <div className="grid gap-5 md:grid-cols-2">
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiTruck size={14} />
                 Vehicle
               </label>
 
-              <select className="w-full border rounded-xl px-4 py-3">
+              <select className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white">
                 <option>Select Vehicle</option>
                 <option>GV-9921</option>
                 <option>GV-8821</option>
@@ -48,82 +69,93 @@ export default function FuelLogModal({ onClose }) {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiCalendar size={14} />
                 Transaction Date
               </label>
 
               <input
                 type="date"
-                className="w-full border rounded-xl px-4 py-3"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiUser size={14} />
                 Driver
               </label>
 
               <input
                 placeholder="Assigned Driver"
-                className="w-full border rounded-xl px-4 py-3"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiDroplet size={14} />
                 Liters
               </label>
 
               <input
                 type="number"
-                className="w-full border rounded-xl px-4 py-3"
+                placeholder="0.00"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiDollarSign size={14} />
                 Unit Price
               </label>
 
               <input
                 type="number"
-                className="w-full border rounded-xl px-4 py-3"
+                placeholder="0.00"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">
-                Odometer Reading (KM)
+              <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiActivity size={14} />
+                Odometer Reading
               </label>
 
               <input
                 type="number"
-                className="w-full border rounded-xl px-4 py-3"
+                placeholder="KM Reading"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-blue-500 focus:bg-white"
               />
             </div>
 
           </div>
 
           {/* Fuel Type */}
-
           <div className="mt-6">
 
-            <label className="block mb-3 text-sm font-medium">
+            <label className="mb-3 block text-sm font-medium text-slate-700">
               Fuel Type
             </label>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
 
-              <button className="px-5 py-2 border rounded-lg bg-blue-50 text-blue-600 border-blue-500">
+              <button className="rounded-xl border border-blue-500 bg-blue-50 px-5 py-2 text-sm font-medium text-blue-600">
                 Diesel
               </button>
 
-              <button className="px-5 py-2 border rounded-lg">
+              <button className="rounded-xl border border-slate-200 px-5 py-2 text-sm hover:bg-slate-50">
                 Petrol
               </button>
 
-              <button className="px-5 py-2 border rounded-lg">
+              <button className="rounded-xl border border-slate-200 px-5 py-2 text-sm hover:bg-slate-50">
                 Electric
+              </button>
+
+              <button className="rounded-xl border border-slate-200 px-5 py-2 text-sm hover:bg-slate-50">
+                Hybrid
               </button>
 
             </div>
@@ -131,24 +163,32 @@ export default function FuelLogModal({ onClose }) {
           </div>
 
           {/* Upload */}
-
           <div className="mt-6">
 
-            <label className="block mb-3 text-sm font-medium">
+            <label className="mb-3 block text-sm font-medium text-slate-700">
               Receipt Upload
             </label>
 
-            <div className="border-2 border-dashed rounded-xl p-12 text-center">
+            <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-10 text-center transition hover:border-blue-500 hover:bg-blue-50">
 
-              <FiUpload className="mx-auto text-4xl text-gray-400 mb-4" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <FiUploadCloud
+                  size={28}
+                  className="text-blue-600"
+                />
+              </div>
 
-              <p className="font-medium">
-                Click to upload or drag and drop
+              <h4 className="mt-4 font-medium text-slate-800">
+                Upload Receipt
+              </h4>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Drag & drop files here or click to browse
               </p>
 
-              <p className="text-sm text-gray-500">
-                PNG, JPG, PDF up to 5MB
-              </p>
+              <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                PNG, JPG, PDF • Max 5MB
+              </span>
 
             </div>
 
@@ -157,18 +197,17 @@ export default function FuelLogModal({ onClose }) {
         </div>
 
         {/* Footer */}
-
-        <div className="border-t p-6 flex justify-end gap-3">
+        <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
 
           <button
             onClick={onClose}
-            className="border px-5 py-3 rounded-xl"
+            className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 hover:bg-white"
           >
             Cancel
           </button>
 
-          <button className="bg-blue-600 text-white px-5 py-3 rounded-xl">
-            Save Log Entry
+          <button className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700">
+            Save Fuel Log
           </button>
 
         </div>
