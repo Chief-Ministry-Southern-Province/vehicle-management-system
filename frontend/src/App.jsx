@@ -20,6 +20,7 @@ import VehicleDetails from './pages/fleet/VehicleDetails';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
 import FuelManagement from './pages/fleet/FuelManagement';
 import ServiceRecords from './pages/fleet/ServiceRecords';
+import RepairRecords from './pages/fleet/RepairRecords';
 
 function App() {
   
@@ -51,6 +52,7 @@ function App() {
             <Route path="/registervehicle" element={<RegisterVehicle />}/>
             <Route path="/fuelmanagement" element={<FuelManagement />}/>
             <Route path="/servicerecords" element={<ServiceRecords />}/>
+            <Route path="/repairrecords" element={<RepairRecords />}/>
             
 
 
