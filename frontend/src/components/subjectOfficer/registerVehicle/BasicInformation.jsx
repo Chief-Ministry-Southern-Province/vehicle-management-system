@@ -2,87 +2,104 @@ import { FiTruck } from "react-icons/fi";
 
 export default function BasicInformation() {
   return (
-    <div className="bg-white border rounded-2xl p-6">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-      <div className="flex items-center gap-3 mb-6">
+      {/* Header */}
+      <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50 via-indigo-50 to-slate-50 px-6 py-5">
 
-        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-          <FiTruck className="text-blue-600" />
-        </div>
+        <div className="flex items-center gap-4">
 
-        <div>
-          <h2 className="text-2xl font-bold">
-            Basic Identification
-          </h2>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg">
+            <FiTruck size={20} />
+          </div>
 
-          <p className="text-gray-500 text-sm">
-            General details used to identify the vehicle in the fleet.
-          </p>
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">
+              Basic Identification
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              General details used to identify the vehicle within the fleet registry.
+            </p>
+          </div>
+
         </div>
 
       </div>
 
-      <div className="grid md:grid-cols-2 gap-5">
+      {/* Form */}
+      <div className="p-6">
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            License Plate Number
-          </label>
+        <div className="grid gap-5 md:grid-cols-2">
 
-          <input
-            type="text"
-            placeholder="e.g. GV-1234-B"
-            className="w-full border rounded-xl px-4 py-3"
-          />
-        </div>
+          {/* License Plate */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              License Plate Number
+            </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Vehicle Category
-          </label>
+            <input
+              type="text"
+              placeholder="GV-1234-B"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
 
-          <select className="w-full border rounded-xl px-4 py-3">
-            <option>Executive Sedan</option>
-            <option>SUV</option>
-            <option>Van</option>
-            <option>Pickup</option>
-          </select>
-        </div>
+          {/* Category */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Vehicle Category
+            </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Manufacturer / Make
-          </label>
+            <select
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            >
+              <option>Executive Sedan</option>
+              <option>SUV</option>
+              <option>Van</option>
+              <option>Pickup</option>
+            </select>
+          </div>
 
-          <input
-            type="text"
-            placeholder="Toyota"
-            className="w-full border rounded-xl px-4 py-3"
-          />
-        </div>
+          {/* Manufacturer */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Manufacturer / Make
+            </label>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Model Name
-          </label>
+            <input
+              type="text"
+              placeholder="Toyota"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
 
-          <input
-            type="text"
-            placeholder="Camry Hybrid"
-            className="w-full border rounded-xl px-4 py-3"
-          />
-        </div>
+          {/* Model */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Model Name
+            </label>
 
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium mb-2">
-            Color Description
-          </label>
+            <input
+              type="text"
+              placeholder="Camry Hybrid"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
 
-          <input
-            type="text"
-            placeholder="Pearl White Metallic"
-            className="w-full border rounded-xl px-4 py-3"
-          />
+          {/* Color */}
+          <div className="md:col-span-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Color Description
+            </label>
+
+            <input
+              type="text"
+              placeholder="Pearl White Metallic"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+
         </div>
 
       </div>
