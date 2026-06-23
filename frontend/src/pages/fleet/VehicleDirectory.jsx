@@ -8,8 +8,11 @@ import {
   FiDownload,
   FiPlus,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function VehicleDirectory() {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -34,7 +37,9 @@ export default function VehicleDirectory() {
               Export CSV
             </button>
 
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl hover:bg-blue-700">
+            <button 
+                onClick={() => navigate('/registervehicle')}
+                className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl hover:bg-blue-700">
               <FiPlus />
               Add New Vehicle
             </button>

@@ -8,12 +8,12 @@ import FuelLogs from "../../components/subjectOfficer/FuelLogs";
 import TodayAssignments from "../../components/subjectOfficer/TodayAssignments";
 import SupportCard from "../../components/subjectOfficer/SupportCard";
 
-import {
-  FiBarChart2,
-  FiPlus,
-} from "react-icons/fi";
+import {FiBarChart2,FiPlus,FiDownload} from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function SubjectOfficerDashboard() {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -38,7 +38,9 @@ export default function SubjectOfficerDashboard() {
               View Analytics
             </button>
 
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl hover:bg-blue-700">
+            <button 
+              onClick={() => navigate('/registervehicle')} 
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl hover:bg-blue-700">
               <FiPlus />
               Register Vehicle
             </button>
