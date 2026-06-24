@@ -23,6 +23,8 @@ import RepairRecords from './pages/fleet/RepairRecords';
 import FleetAnalytics from './pages/fleet/FleetAnalytics';
 import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
+import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
+import PendingFinalApprovals from './pages/secretary.jsx/PendingFinalApprovals';
 
 function App() {
   
@@ -65,6 +67,8 @@ function App() {
             
             <Route path="/deputysecretarydashboard" element={<DeputySecretaryDashboard />} />
             <Route path="/pendingapprovals" element={<PendingApprovals />} />
+            <Route path="/approval/:id" element={<ApprovalWorkspace />} />
+            <Route path="/pendingfinalapprovals" element={<PendingFinalApprovals />} />
 
             
 

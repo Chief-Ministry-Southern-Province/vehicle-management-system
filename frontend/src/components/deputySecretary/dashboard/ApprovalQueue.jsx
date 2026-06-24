@@ -2,6 +2,7 @@ import {
   FiFilter,
   FiChevronDown,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const requests = [
   {
@@ -37,6 +38,7 @@ const requests = [
 ];
 
 export default function ApprovalQueue() {
+    const navigate = useNavigate();
   return (
     <div className="bg-white border rounded-2xl overflow-hidden">
 
@@ -75,6 +77,7 @@ export default function ApprovalQueue() {
 
           {requests.map((item) => (
             <tr
+              onClick={() => navigate('/approval/:id')}
               key={item.id}
               className="border-t hover:bg-slate-50"
             >
