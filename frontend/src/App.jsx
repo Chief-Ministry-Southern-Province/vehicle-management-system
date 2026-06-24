@@ -25,6 +25,7 @@ import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
 import PendingFinalApprovals from './pages/secretary.jsx/PendingFinalApprovals';
+import DriverDashboard from './pages/dashboard/DriverDashboard';
 
 function App() {
   
@@ -71,6 +72,8 @@ function App() {
             <Route path="/pendingfinalapprovals" element={<PendingFinalApprovals />} />
 
             
+            <Route path="/driverdashboard" element={<DriverDashboard />} />
+
 
           </Routes>
 

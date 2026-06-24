@@ -20,6 +20,7 @@ export default function Topbar() {
                     <option value="subject_officer">Subject Officer</option>
                     <option value="assistant_secretary">Assistant Secretary</option>
                     <option value="secretary">Secretary</option>
+                    <option value="driver">Driver</option>
                 </select>
             </div>
 

@@ -68,6 +68,12 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["secretary"],
       },
+      {
+        name: "Dashboard",
+        path: "/driverdashboard",
+        icon: <FiGrid />,
+        roles: ["driver"],
+      },
     ],
   },
   {
