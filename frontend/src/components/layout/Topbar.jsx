@@ -9,8 +9,8 @@ export default function Topbar() {
             <div className="flex items-center gap-4">
                 <h1 className="font-semibold text-xl">Vehicle Management System</h1>
                 <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">Employee</span>
-
-                {/* <select
+                
+                <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                     className="px-3 py-1 bg-slate-100 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -21,11 +21,7 @@ export default function Topbar() {
                     <option value="assistant_secretary">Assistant Secretary</option>
                     <option value="secretary">Secretary</option>
                     <option value="driver">Driver</option>
-                </select> */}
-
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
-                    {role?.replace("_", " ").toUpperCase()}
-                </span>
+                </select>
             </div>
 
             <div className="flex items-center gap-5">

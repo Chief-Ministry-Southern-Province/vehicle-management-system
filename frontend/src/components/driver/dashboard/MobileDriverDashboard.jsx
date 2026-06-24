@@ -7,7 +7,6 @@ import {
   FiDroplet,
   FiHome,
   FiUser,
-  FiClipboard,
 } from "react-icons/fi";
 
 export default function MobileDriverDashboard() {
