@@ -2,7 +2,6 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import RecommendationStats from "../../components/recommendations/RecommendationStats";
 import RecommendationFilters from "../../components/recommendations/RecommendationFilters";
 import RecommendationTable from "../../components/recommendations/RecommendationTable";
-import RecommendationInfoCards from "../../components/recommendations/RecommendationInfoCards";
 
 import { FiFileText, FiGrid } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -46,8 +45,6 @@ export default function PendingRecommendations() {
         <RecommendationFilters />
 
         <RecommendationTable />
-
-        <RecommendationInfoCards />
 
       </div>
     </DashboardLayout>

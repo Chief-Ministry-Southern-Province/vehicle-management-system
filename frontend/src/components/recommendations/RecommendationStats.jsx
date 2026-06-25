@@ -8,7 +8,7 @@ import {
 const stats = [
   {
     title: "Pending Recommendations",
-    value: "12",
+    value: "08",
     description: "4 requests pending over 24 hours",
     trend: "+18%",
     trendText: "vs last week",

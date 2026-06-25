@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const requests = [
   {
     id: "REQ-9012",
@@ -30,6 +32,8 @@ const requests = [
 ];
 
 export default function PendingRequestsTable() {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white border rounded-xl p-5">
 
@@ -45,7 +49,9 @@ export default function PendingRequestsTable() {
           </p>
         </div>
 
-        <button className="text-blue-600 text-sm">
+        <button 
+          onClick={() => navigate('/departmentrequesthistory')}
+          className="text-blue-600 text-sm">
           View All Recommendations
         </button>
 

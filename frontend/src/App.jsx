@@ -26,6 +26,8 @@ import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
 import PendingFinalApprovals from './pages/secretary.jsx/PendingFinalApprovals';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
+import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
 
 function App() {
   
@@ -38,6 +40,9 @@ function App() {
 
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
+
 
             <Route path="/userdashboard" element={<UserDashboard />} />
             <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
@@ -60,15 +65,14 @@ function App() {
             <Route path="/repairrecords" element={<RepairRecords />}/>
             <Route path="/fleetanalytics" element={<FleetAnalytics />}/>
             
-
-
-            <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
-            
-
             
             <Route path="/deputysecretarydashboard" element={<DeputySecretaryDashboard />} />
             <Route path="/pendingapprovals" element={<PendingApprovals />} />
             <Route path="/approval/:id" element={<ApprovalWorkspace />} />
+            
+
+
+            <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
             <Route path="/pendingfinalapprovals" element={<PendingFinalApprovals />} />
 
             

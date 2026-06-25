@@ -1,66 +1,94 @@
 import {
-  FiClock,
+  FiDatabase,
   FiCheckCircle,
   FiXCircle,
+  FiClock,
+  FiTrendingUp,
 } from "react-icons/fi";
+
+const stats = [
+  {
+    title: "TOTAL RECORDS",
+    value: "1,248",
+    icon: <FiDatabase size={18} />,
+    accent: "from-blue-500 to-indigo-600",
+    bg: "bg-blue-50",
+    iconColor: "text-blue-600",
+  },
+  {
+    title: "APPROVED",
+    value: "942",
+    icon: <FiCheckCircle size={18} />,
+    accent: "from-emerald-500 to-green-600",
+    bg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+  },
+  {
+    title: "REJECTED",
+    value: "148",
+    icon: <FiXCircle size={18} />,
+    accent: "from-red-500 to-rose-600",
+    bg: "bg-red-50",
+    iconColor: "text-red-600",
+  },
+  {
+    title: "PENDING",
+    value: "08",
+    icon: <FiClock size={18} />,
+    accent: "from-amber-500 to-orange-500",
+    bg: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+];
 
 export default function StatsCards() {
   return (
-    <div className="grid md:grid-cols-3 gap-5">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <FiClock className="text-blue-500 text-2xl" />
+      {stats.map((item) => (
+        <div
+          key={item.title}
+          className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+        >
 
-          <span className="text-xs text-green-600">
-            +12% from last week
-          </span>
+          {/* Top Gradient */}
+          <div
+            className={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r ${item.accent}`}
+          />
+
+          {/* Decorative Glow */}
+          <div
+            className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${item.bg} opacity-70`}
+          />
+
+          <div className="relative">
+
+            <div className="flex items-start justify-between">
+
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+                  {item.title}
+                </p>
+
+                <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
+                  {item.value}
+                </h2>
+
+              </div>
+
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} ${item.iconColor}`}
+              >
+                {item.icon}
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
-
-        <p className="text-gray-500 mt-4">
-          Pending Recommendation
-        </p>
-
-        <h2 className="text-4xl font-bold mt-2">
-          8
-        </h2>
-      </div>
-
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <FiCheckCircle className="text-blue-500 text-2xl" />
-
-          <span className="text-xs text-green-600">
-            +5% from last month
-          </span>
-        </div>
-
-        <p className="text-gray-500 mt-4">
-          Total Recommended (MTD)
-        </p>
-
-        <h2 className="text-4xl font-bold mt-2">
-          45
-        </h2>
-      </div>
-
-      <div className="bg-white border rounded-xl p-6">
-        <div className="flex justify-between">
-          <FiXCircle className="text-red-500 text-2xl" />
-
-          <span className="text-xs text-red-600">
-            -2% from last month
-          </span>
-        </div>
-
-        <p className="text-gray-500 mt-4">
-          Rejected This Month
-        </p>
-
-        <h2 className="text-4xl font-bold mt-2">
-          4
-        </h2>
-      </div>
+      ))}
 
     </div>
   );

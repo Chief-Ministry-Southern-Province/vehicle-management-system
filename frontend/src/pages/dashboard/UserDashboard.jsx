@@ -261,7 +261,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Request Trends */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        {/* <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <div className="mb-5">
             <h2 className="font-semibold text-lg">
               Request Trends
@@ -299,7 +299,7 @@ export default function UserDashboard() {
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
       </div>
     </DashboardLayout>
