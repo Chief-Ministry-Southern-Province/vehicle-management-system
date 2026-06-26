@@ -2,8 +2,6 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 
 import ApprovalStats from "../../components/secretary/approvalCenter/ApprovalStats";
 import ApprovalQueue from "../../components/secretary/approvalCenter/ApprovalQueue";
-import ApprovalTips from "../../components/secretary/approvalCenter/ApprovalTips";
-import ReturnActions from "../../components/secretary/approvalCenter/ReturnActions";
 
 import { FiInfo, FiCheckCircle } from "react-icons/fi";
 
@@ -52,19 +50,6 @@ export default function PendingFinalApprovals() {
         <div className="mt-6">
           <ApprovalQueue />
         </div>
-
-        <div className="grid lg:grid-cols-3 gap-6 mt-6">
-
-          <div className="lg:col-span-2">
-            <ApprovalTips />
-          </div>
-
-          <div>
-            <ReturnActions />
-          </div>
-
-        </div>
-
       </div>
     </DashboardLayout>
   );

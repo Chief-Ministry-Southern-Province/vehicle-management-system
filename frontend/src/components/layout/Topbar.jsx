@@ -1,9 +1,7 @@
 import { FiBell, FiSearch } from "react-icons/fi";
-import { useRole } from "../../context/useRole";
 import { useAuth } from "../../context/useAuth";
 
 export default function Topbar() {
-    const { role, setRole } = useRole();
     const { user } = useAuth();
 
     return (
@@ -11,8 +9,10 @@ export default function Topbar() {
             <div className="flex items-center gap-4">
                 <h1 className="font-semibold text-xl">Vehicle Management System</h1>
                 <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">
-                    {user?.role}
+                    {/* {user?.role} */}
+                    {/* {role?.replace("_", " ")} */}
                 </span>
+    
             </div>
 
             <div className="flex items-center gap-5">

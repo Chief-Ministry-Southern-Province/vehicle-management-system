@@ -6,7 +6,6 @@ import CriticalAlerts from "../../components/subjectOfficer/CriticalAlerts";
 import MaintenanceChart from "../../components/subjectOfficer/MaintenanceChart";
 import FuelLogs from "../../components/subjectOfficer/FuelLogs";
 import TodayAssignments from "../../components/subjectOfficer/TodayAssignments";
-import SupportCard from "../../components/subjectOfficer/SupportCard";
 
 import {FiBarChart2,FiPlus} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -69,8 +68,6 @@ export default function SubjectOfficerDashboard() {
           <FuelLogs />
 
           <TodayAssignments />
-
-          <SupportCard />
 
         </div>
 

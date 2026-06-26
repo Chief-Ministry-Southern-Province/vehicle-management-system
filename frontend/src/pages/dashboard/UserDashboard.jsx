@@ -10,8 +10,6 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -20,15 +18,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-
-const trendData = [
-  { month: "Jan", total: 4, approved: 3 },
-  { month: "Feb", total: 7, approved: 5 },
-  { month: "Mar", total: 5, approved: 4 },
-  { month: "Apr", total: 12, approved: 10 },
-  { month: "May", total: 8, approved: 7 },
-  { month: "Jun", total: 15, approved: 12 },
-];
+import RecentActivity from "../../components/employee/RecentActivity";
 
 const weeklyUsageData = [
   { day: "Mon", hours: 4.2 },
@@ -38,34 +28,6 @@ const weeklyUsageData = [
   { day: "Fri", hours: 4.8 },
   { day: "Sat", hours: 1.1 },
   { day: "Sun", hours: 0.4 },
-];
-
-const activities = [
-  {
-    title: "Request #REQ-8829 Allocated",
-    description: "Toyota Prius assigned for Field Visit",
-    time: "2 hours ago",
-  },
-  {
-    title: "Request #REQ-8830 Approved",
-    description: "Approved travel to Regional Office",
-    time: "5 hours ago",
-  },
-  {
-    title: "New Request Submitted",
-    description: "Awaiting department recommendation",
-    time: "Yesterday",
-  },
-  {
-    title: "Request #REQ-8821 Rejected",
-    description: "Vehicle unavailable for requested period",
-    time: "2 days ago",
-  },
-  {
-    title: "Journey Completed",
-    description: "Trip to Ministry HQ completed successfully",
-    time: "3 days ago",
-  },
 ];
 
 function StatCard({ title, value, icon, color }) {
@@ -147,66 +109,13 @@ export default function UserDashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
           {/* Recent Activity */}
-          <div className="xl:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="font-semibold text-lg">
-                  Recent Activity
-                </h2>
-
-                <p className="text-sm text-gray-500">
-                  Track the status of your vehicle requests
-                </p>
-              </div>
-
-              <button className="text-blue-600 text-sm hover:text-blue-700">
-                View All →
-              </button>
-            </div>
-
-            <div className="space-y-5">
-              {activities.map((activity, index) => (
-                <div
-                  key={index}
-                  className="border-b border-gray-100 pb-4 last:border-0"
-                >
-                  <h3 className="font-medium text-gray-800">
-                    {activity.title}
-                  </h3>
-
-                  <p className="text-gray-500 text-sm mt-1">
-                    {activity.description}
-                  </p>
-
-                  <span className="text-xs text-gray-400">
-                    {activity.time}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="xl:col-span-2 bg-white rounded-xl border border-gray-100 ">
+            <RecentActivity />
           </div>
+          
 
           {/* Right Side Cards */}
           <div className="space-y-6">
-
-            {/* Create Request Card */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-              <span className="bg-blue-100 text-blue-600 text-xs px-3 py-1 rounded-full">
-                Priority Feature
-              </span>
-
-              <h2 className="text-xl font-bold mt-4">
-                Need a vehicle?
-              </h2>
-
-              <p className="text-sm text-gray-500 mt-2">
-                Submit a new request for department approval.
-              </p>
-
-              <button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition">
-                Create New Request
-              </button>
-            </div>
 
             {/* Weekly Usage */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -259,48 +168,6 @@ export default function UserDashboard() {
 
           </div>
         </div>
-
-        {/* Request Trends */}
-        {/* <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-          <div className="mb-5">
-            <h2 className="font-semibold text-lg">
-              Request Trends
-            </h2>
-
-            <p className="text-sm text-gray-500">
-              Frequency of requests and approvals over the last 6 months
-            </p>
-          </div>
-
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="month" />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="#2563EB"
-                strokeWidth={3}
-                name="Total Requests"
-              />
-
-              <Line
-                type="monotone"
-                dataKey="approved"
-                stroke="#16A34A"
-                strokeWidth={3}
-                name="Approved Requests"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div> */}
-
       </div>
     </DashboardLayout>
   );

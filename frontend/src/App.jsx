@@ -24,7 +24,7 @@ import FleetAnalytics from './pages/fleet/FleetAnalytics';
 import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
-import PendingFinalApprovals from './pages/secretary.jsx/PendingFinalApprovals';
+import PendingFinalApprovals from './pages/secretary/PendingFinalApprovals';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';

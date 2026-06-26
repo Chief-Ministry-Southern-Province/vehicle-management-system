@@ -3,7 +3,6 @@ import {
   FiCheckCircle,
   FiXCircle,
   FiClock,
-  FiTrendingUp,
 } from "react-icons/fi";
 
 const stats = [

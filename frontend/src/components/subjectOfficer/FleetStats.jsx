@@ -1,5 +1,4 @@
 import {
-  FiCheckCircle,
   FiTruck,
   FiDroplet,
   FiTool,
@@ -8,16 +7,8 @@ import {
 
 const stats = [
   {
-    title: "Fleet Utilization",
-    value: "82%",
-    subtitle: "Avg. daily active deployment",
-    icon: <FiCheckCircle size={18} />,
-    bg: "from-blue-500 to-indigo-600",
-    trend: "+4.2%",
-  },
-  {
     title: "Available Now",
-    value: "14",
+    value: "28",
     subtitle: "Ready for allocation",
     icon: <FiTruck size={18} />,
     bg: "from-cyan-500 to-blue-600",
@@ -86,11 +77,10 @@ export default function FleetStats() {
             </div>
 
             <span
-              className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
-                item.trend.startsWith("+")
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-red-50 text-red-600"
-              }`}
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full ${item.trend.startsWith("+")
+                ? "bg-emerald-50 text-emerald-600"
+                : "bg-red-50 text-red-600"
+                }`}
             >
               {item.trend}
             </span>
