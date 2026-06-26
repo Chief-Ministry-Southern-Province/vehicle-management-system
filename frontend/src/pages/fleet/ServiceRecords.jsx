@@ -2,7 +2,6 @@ import { useState } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 import ServiceStats from "../../components/subjectOfficer/service/ServiceStats";
-import PriorityMaintenance from "../../components/subjectOfficer/service/PriorityMaintenance";
 import ServiceFilters from "../../components/subjectOfficer/service/ServiceFilters";
 import ServiceScheduleTable from "../../components/subjectOfficer/service/ServiceScheduleTable";
 import ScheduleServiceModal from "../../components/subjectOfficer/service/ScheduleServiceModal";
@@ -65,7 +64,7 @@ export default function ServiceRecords() {
             <ServiceStats />
           </div>
 
-          <PriorityMaintenance />
+          {/* <PriorityMaintenance /> */}
 
         </div>
 

@@ -2,8 +2,6 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 
 import ApprovalStats from "../../components/deputySecretary/pendingApprovals/ApprovalStats";
 import ApprovalTable from "../../components/deputySecretary/pendingApprovals/ApprovalTable";
-import ApprovalAdvisory from "../../components/deputySecretary/pendingApprovals/ApprovalAdvisory";
-import ApprovalHealthCard from "../../components/deputySecretary/pendingApprovals/ApprovalHealthCard";
 
 import {
   FiClipboard,
@@ -92,31 +90,6 @@ export default function PendingApprovals() {
           </div>
 
           <ApprovalTable />
-
-        </div>
-
-        {/* Insights Section */}
-        <div>
-
-          <div className="mb-4">
-
-            <h2 className="text-xl font-semibold text-slate-900">
-              Operational Insights
-            </h2>
-
-            <p className="text-sm text-slate-500">
-              Decision support recommendations and queue health metrics.
-            </p>
-
-          </div>
-
-          <div className="grid gap-5 xl:grid-cols-2">
-
-            <ApprovalAdvisory />
-
-            <ApprovalHealthCard />
-
-          </div>
 
         </div>
 

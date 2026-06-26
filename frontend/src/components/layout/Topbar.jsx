@@ -1,27 +1,18 @@
 import { FiBell, FiSearch } from "react-icons/fi";
-import { useRole } from "../../context/useRole";
+import { useAuth } from "../../context/useAuth";
 
 export default function Topbar() {
-    const { role, setRole } = useRole();
+    const { user } = useAuth();
 
     return (
         <div className="h-16 bg-white border-b flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
                 <h1 className="font-semibold text-xl">Vehicle Management System</h1>
-                <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">Employee</span>
-                
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="px-3 py-1 bg-slate-100 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        
-                    <option value="employee">Employee</option>
-                    <option value="department_head">Department Head</option>
-                    <option value="subject_officer">Subject Officer</option>
-                    <option value="assistant_secretary">Assistant Secretary</option>
-                    <option value="secretary">Secretary</option>
-                    <option value="driver">Driver</option>
-                </select>
+                <span className="px-3 py-1 bg-slate-100 rounded-full text-xs">
+                    {/* {user?.role} */}
+                    {/* {role?.replace("_", " ")} */}
+                </span>
+    
             </div>
 
             <div className="flex items-center gap-5">
@@ -36,8 +27,8 @@ export default function Topbar() {
 
                 <div className="flex items-center gap-3">
                     <div className="text-right">
-                        <p className="font-medium">John Doe</p>
-                        <p className="text-xs text-gray-500">ID: VMS-2024-001</p>
+                        <p className="font-medium">{user?.name}</p>
+                        <p className="text-xs text-gray-500"> ID: {user?.employee_id} </p>
                     </div>
                 </div>
 

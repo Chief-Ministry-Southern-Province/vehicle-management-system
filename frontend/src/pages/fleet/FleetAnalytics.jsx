@@ -1,10 +1,7 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 import AnalyticsStats from "../../components/subjectOfficer/analytics/AnalyticsStats";
-import UtilizationHeatmap from "../../components/subjectOfficer/analytics/UtilizationHeatmap";
-import DepartmentConsumption from "../../components/subjectOfficer/analytics/DepartmentConsumption";
 import ExpenditureChart from "../../components/subjectOfficer/analytics/ExpenditureChart";
-import AnalyticsInsights from "../../components/subjectOfficer/analytics/AnalyticsInsights";
 
 import {
   FiCalendar,
@@ -74,22 +71,8 @@ export default function FleetAnalytics() {
         {/* KPI Cards */}
         <AnalyticsStats />
 
-        {/* Heatmap + Department */}
-        <div className="grid gap-6 xl:grid-cols-3">
-
-          <div className="xl:col-span-2">
-            <UtilizationHeatmap />
-          </div>
-
-          <DepartmentConsumption />
-
-        </div>
-
         {/* Expenditure Chart */}
         <ExpenditureChart />
-
-        {/* AI Insights */}
-        <AnalyticsInsights />
 
       </div>
 

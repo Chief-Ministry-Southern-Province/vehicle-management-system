@@ -1,11 +1,12 @@
 import { FiDownload } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import HistoryStats from "../../components/departmentOfficer/history/HistoryStats";
 import HistoryFilters from "../../components/departmentOfficer/history/HistoryFilter";
 import HistoryTable from "../../components/departmentOfficer/history/HistoryTable";
-import AuditCard from "../../components/departmentOfficer/history/AuditCard";
+import { useNavigate } from "react-router-dom";
 
 export default function DepartmentRequestHistory() {
+    const navigate = useNavigate();
+    
     return (
 
         <DashboardLayout>
@@ -28,16 +29,16 @@ export default function DepartmentRequestHistory() {
                             <FiDownload />
                             Export Archive (.XLSX)
                         </button>
-                        <button className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700">
+                        <button 
+                            onClick={() => navigate('/pendingrecommendations')} 
+                            className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700">
                             Review Pending Requests
                         </button>
                     </div>
                 </div>
 
-                <HistoryStats />
                 <HistoryFilters />
                 <HistoryTable />
-                <AuditCard />
             </div>
         </DashboardLayout>
     )

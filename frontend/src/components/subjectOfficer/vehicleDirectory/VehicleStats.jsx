@@ -7,8 +7,8 @@ import {
 
 const stats = [
   {
-    title: "Fleet",
-    value: "42",
+    title: "Total",
+    value: "35",
     icon: <FiTruck size={18} />,
     bg: "bg-blue-50",
     text: "text-blue-600",

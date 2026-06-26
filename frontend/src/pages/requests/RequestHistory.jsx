@@ -1,13 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import {
-  FiSearch,
-  FiCalendar,
-  FiFilter,
-  FiDownload,
   FiMoreHorizontal,
   FiPlus,
 } from "react-icons/fi";
+import HistoryFilters from "../../components/employee/HistoryFilters";
 
 const requests = [
   {
@@ -111,36 +108,7 @@ export default function RequestHistory() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl border shadow-sm p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-3 text-gray-400" />
-
-              <input
-                type="text"
-                placeholder="Search by ID, destination or purpose..."
-                className="w-full pl-10 pr-4 py-3 border rounded-lg"
-              />
-            </div>
-
-            <button className="border px-4 py-3 rounded-lg flex items-center gap-2">
-              <FiCalendar />
-              Last 30 Days
-            </button>
-
-            <button className="border px-4 py-3 rounded-lg flex items-center gap-2">
-              <FiFilter />
-              Status
-            </button>
-
-            <button className="border px-4 py-3 rounded-lg flex items-center gap-2">
-              <FiDownload />
-              Export Data
-            </button>
-
-          </div>
-        </div>
+        <HistoryFilters />
 
         {/* Table */}
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
@@ -263,53 +231,6 @@ export default function RequestHistory() {
             </div>
 
           </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid md:grid-cols-3 gap-5">
-
-          <div className="bg-blue-50 rounded-xl p-6">
-            <p className="text-blue-600 text-sm font-medium">
-              Approved This Month
-            </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              12
-            </h2>
-
-            <p className="text-gray-500 text-sm mt-2">
-              +2 from previous month
-            </p>
-          </div>
-
-          <div className="bg-cyan-50 rounded-xl p-6">
-            <p className="text-cyan-600 text-sm font-medium">
-              Avg. Processing Time
-            </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              4.2 hrs
-            </h2>
-
-            <p className="text-gray-500 text-sm mt-2">
-              Faster than department average
-            </p>
-          </div>
-
-          <div className="bg-gray-50 rounded-xl p-6">
-            <p className="text-gray-600 text-sm font-medium">
-              Rejected Requests
-            </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              1
-            </h2>
-
-            <p className="text-gray-500 text-sm mt-2">
-              Due to resource unavailability
-            </p>
-          </div>
-
         </div>
 
       </div>

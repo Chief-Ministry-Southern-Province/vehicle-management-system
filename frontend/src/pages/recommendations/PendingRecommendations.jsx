@@ -1,8 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
-import RecommendationStats from "../../components/recommendations/RecommendationStats";
 import RecommendationFilters from "../../components/recommendations/RecommendationFilters";
 import RecommendationTable from "../../components/recommendations/RecommendationTable";
-import RecommendationInfoCards from "../../components/recommendations/RecommendationInfoCards";
 
 import { FiFileText, FiGrid } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -33,21 +31,17 @@ export default function PendingRecommendations() {
             </button>
 
             <button 
-              onClick={() => navigate('/departmentofficerdashboard')}
+              onClick={() => navigate('/departmentrequesthistory')}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
               <FiGrid />
-              View Dashboard
+              View All Requests
             </button>
           </div>
         </div>
 
-        <RecommendationStats />
-
         <RecommendationFilters />
 
         <RecommendationTable />
-
-        <RecommendationInfoCards />
 
       </div>
     </DashboardLayout>
