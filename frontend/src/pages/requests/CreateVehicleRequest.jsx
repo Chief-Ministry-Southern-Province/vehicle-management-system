@@ -2,8 +2,6 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import {
   FiMapPin,
   FiUsers,
-  FiTruck,
-  FiAlertCircle,
   FiPaperclip,
   FiSend,
   FiSave,
