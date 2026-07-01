@@ -30,7 +30,7 @@ export default function VehicleStats() {
     },
     {
       title: "Service",
-      value: "10 Apr 2024",
+      value: "10 Apr 2025",
       icon: <FiTool size={16} />,
       bg: "bg-orange-50",
       color: "text-orange-600",
