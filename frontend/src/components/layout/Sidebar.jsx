@@ -17,7 +17,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-
+import nationalEmblem from "../../assets/national-emblem.jpg";
 
 const menuItems = [
   {
@@ -196,46 +196,57 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="w-64 bg- border-r border-gray-200 flex flex-col">
 
-      {/* Logo */}
+      {/* Header*/}
 
-      <div className="h-16 flex items-center px-5 border-b border-gray-200">
+      <div className="relative overflow-hidden border-slate-800 from-slate-900 via-slate-800 to-slate-900">
 
-        <div className="flex items-center gap-3">
+        {/* Glow */}
+        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-blue-500/20 blur-3xl"></div>
+        <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-cyan-400/10 blur-3xl"></div>
 
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+        <div className="relative px-5 py-6">
 
-            <svg
-              width="20"
-              height="20"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="white"
-              strokeWidth="2"
-            >
-              <path d="M5 17h14M7 17V9h10v8M9 9V7h6v2" />
-            </svg>
+          <div className="flex items-center gap-4">
+
+            {/* Logo */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
+
+              <img
+                src={nationalEmblem}
+                alt="National Emblem"
+                className="h-12 w-12 object-contain"
+              />
+
+            </div>
+
+            {/* Text */}
+            <div>
+
+              <h1 className="text-xl font-bold tracking-wide text-black">
+                VMS
+              </h1>
+
+              <p className="text-sm font-medium text-black/50">
+                Government Fleet
+              </p>
+
+              <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-blue-300">
+                Sri Lanka
+              </p>
+
+            </div>
 
           </div>
 
-          <div>
-            <h1 className="text-xl font-bold text-blue-600">
-              VMS
-            </h1>
-
-            <p className="text-xs text-gray-400">
-              Government Fleet
-            </p>
-          </div>
+          {/* Bottom Divider */}
+          <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
 
         </div>
 
       </div>
 
-      
-
-      
 
       {/* Menu */}
 
@@ -267,12 +278,11 @@ export default function Sidebar() {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      location.pathname ===
-                      item.path
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${location.pathname ===
+                        item.path
                         ? "bg-blue-50 text-blue-600"
                         : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">
                       {item.icon}
@@ -325,5 +335,5 @@ export default function Sidebar() {
     </aside>
   );
 
-  
+
 }

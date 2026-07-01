@@ -5,8 +5,7 @@ export default function Topbar() {
     const { user } = useAuth();
 
     return (
-        <header className="sticky top-0 z-30 h-20 bg-white/90 backdrop-blur-xl border-b border-slate-200/70 shadow-sm">
-
+        <header className="sticky top-0 z-30 h-20 bg-white backdrop-blur-xl border-b border-slate-200/70 shadow-sm">
             <div className="h-full px-8 flex items-center justify-between">
 
                 {/* Left Side */}
@@ -14,12 +13,12 @@ export default function Topbar() {
 
                     <div>
 
-                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-                            Vehicle Management System
+                        <h1 className="text-1xl font-bold text-slate-800 tracking-tight">
+                            Government Fleet Management Platform
                         </h1>
 
                         <p className="text-sm text-slate-500 mt-1">
-                            Government Fleet Management Platform
+                            Chief Ministery Dakshinapaya, Labuduwa
                         </p>
 
                     </div>
