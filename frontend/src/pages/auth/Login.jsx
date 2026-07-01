@@ -1,5 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import {
+  FaCarSide,
+  FaUserShield,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaLock,
+} from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -60,124 +67,247 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-6 py-10 overflow-hidden">
 
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
+      {/* Background Blur */}
+      <div className="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl top-10 left-10"></div>
+      <div className="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl bottom-10 right-10"></div>
 
-        <div className="text-center mb-8">
+      <div className="relative w-full max-w-7xl grid lg:grid-cols-2 rounded-[35px] overflow-hidden shadow-2xl backdrop-blur-xl bg-white/10 border border-white/20">
 
-          <div className="w-20 h-20 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-            VMS
+        {/* LEFT PANEL */}
+
+        <div className="hidden lg:flex flex-col justify-center p-14 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 text-white">
+
+          <div className="flex items-center gap-5 mb-8">
+
+            <div className="w-20 h-20 rounded-3xl bg-white text-blue-800 flex items-center justify-center shadow-xl">
+              <FaCarSide size={38} />
+            </div>
+
+            <div>
+
+              <h2 className="text-4xl font-bold">
+                Vehicle Management
+              </h2>
+
+              <p className="text-blue-100 mt-1">
+                Government Fleet Portal
+              </p>
+
+            </div>
+
           </div>
 
-          <h1 className="text-3xl font-bold mt-4">
-            Vehicle Management System
-          </h1>
+          <div className="space-y-5">
 
-          <p className="text-slate-500 mt-2">
-            Government Fleet Management Portal
-          </p>
+            <div className="flex items-center gap-3">
+
+              <FaUserShield className="text-yellow-400 text-xl" />
+
+              <span className="text-lg">
+                Secure Government Authentication
+              </span>
+
+            </div>
+
+            <div className="flex items-center gap-3">
+
+              <FaMapMarkerAlt className="text-yellow-400 text-xl" />
+
+              <span className="text-lg">
+                Chief Ministry
+                <br />
+                Dakshinapaya, Labuduwa
+              </span>
+
+            </div>
+
+          </div>
+
+          <div className="mt-16">
+
+            <h1 className="text-5xl font-extrabold leading-tight">
+              Smart Vehicle
+              <br />
+              Management
+            </h1>
+
+            <p className="mt-6 text-blue-100 leading-8 text-lg">
+              Digital platform for managing government vehicles,
+              transport requests, approvals, drivers, and fleet
+              operations with enhanced security and efficiency.
+            </p>
+
+          </div>
 
         </div>
 
-        <form
-          onSubmit={handleLogin}
-          className="space-y-5"
-        >
+        {/* LOGIN CARD */}
 
-          <div>
-            <label className="block mb-2 text-sm font-medium">
-              Email
-            </label>
+        <div className="flex items-center justify-center bg-white/5 backdrop-blur-xl">
 
-            <input
-              type="email"
-              name="email"
-              placeholder="example@gov.lk"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <div className="w-full max-w-md p-10">
 
-          <div>
-            <label className="block mb-2 text-sm font-medium">
-              Password
-            </label>
+            <div className="text-center">
 
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+              <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-xl">
 
-          <div>
-            <label className="block mb-2 text-sm font-medium">
-              Login As
-            </label>
+                <FaUserShield
+                  className="text-white"
+                  size={42}
+                />
 
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3"
+              </div>
+
+              <h2 className="mt-6 text-3xl font-bold text-white">
+                Welcome Back
+              </h2>
+
+              <p className="text-slate-300 mt-2">
+                Sign in to continue
+              </p>
+
+            </div>
+
+            <form
+              onSubmit={handleLogin}
+              className="mt-10 space-y-6"
             >
-              <option value="employee">
-                Employee
-              </option>
 
-              <option value="department_officer">
-                Department Officer
-              </option>
+              {/* EMAIL */}
 
-              <option value="subject_officer">
-                Subject Officer
-              </option>
+              <div>
 
-              <option value="deputy_secretary">
-                Deputy Secretary
-              </option>
+                <label className="text-white text-sm mb-2 block">
+                  Email Address
+                </label>
 
-              <option value="secretary">
-                Secretary
-              </option>
+                <div className="relative">
 
-              <option value="driver">
-                Driver
-              </option>
-            </select>
+                  <FaEnvelope className="absolute left-4 top-4 text-slate-400" />
+
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="example@gov.lk"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* PASSWORD */}
+
+              <div>
+
+                <label className="text-white text-sm mb-2 block">
+                  Password
+                </label>
+
+                <div className="relative">
+
+                  <FaLock className="absolute left-4 top-4 text-slate-400" />
+
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* ROLE */}
+
+              <div>
+
+                <label className="text-white text-sm mb-2 block">
+                  Login As
+                </label>
+
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="w-full py-3 px-4 rounded-2xl bg-white/10 border border-white/20 text-white focus:outline-none"
+                >
+                  <option className="text-black" value="employee">
+                    Employee
+                  </option>
+
+                  <option className="text-black" value="department_officer">
+                    Department Officer
+                  </option>
+
+                  <option className="text-black" value="subject_officer">
+                    Subject Officer
+                  </option>
+
+                  <option className="text-black" value="deputy_secretary">
+                    Deputy Secretary
+                  </option>
+
+                  <option className="text-black" value="secretary">
+                    Secretary
+                  </option>
+
+                  <option className="text-black" value="driver">
+                    Driver
+                  </option>
+                </select>
+
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-500 text-white font-bold text-lg shadow-xl hover:scale-[1.02] transition duration-300"
+              >
+                Sign In
+              </button>
+
+            </form>
+
+            <div className="flex justify-between mt-8 text-sm">
+
+              <Link
+                to="/forgot-password"
+                className="text-cyan-300 hover:text-white"
+              >
+                Forgot Password?
+              </Link>
+
+              <Link
+                to="/register"
+                className="text-cyan-300 hover:text-white"
+              >
+                Register
+              </Link>
+
+            </div>
+
+            <div className="mt-10 border-t border-white/20 pt-6 text-center">
+
+              <p className="text-slate-400 text-sm">
+                © 2026 Vehicle Management System
+              </p>
+
+              <p className="text-slate-500 text-xs mt-2">
+                Chief Ministry • Dakshinapaya • Labuduwa
+              </p>
+
+            </div>
+
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold"
-          >
-            Sign In
-          </button>
-
-        </form>
-
-        <div className="flex justify-between mt-6 text-sm">
-
-          <Link
-            to="/forgot-password"
-            className="text-blue-600"
-          >
-            Forgot Password?
-          </Link>
-
-          <Link
-            to="/register"
-            className="text-blue-600"
-          >
-            Register
-          </Link>
 
         </div>
 

@@ -332,11 +332,15 @@ export default function RecommendationReview() {
                                     departmental duties.
                                 </div>
 
-                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium">
+                                <button 
+                                    onClick={() => alert("Recommendation submitted!")}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium">
                                     Recommend For Allocation →
                                 </button>
 
-                                <button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium">
+                                <button 
+                                    onClick={() => alert("Request declined!")}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium">
                                     Decline Request
                                 </button>
 

@@ -152,7 +152,7 @@ export default function CreateVehicleRequest() {
         </div>
 
         {/* Vehicle Preference */}
-        <div className="bg-white rounded-xl border shadow-sm mb-6">
+        {/* <div className="bg-white rounded-xl border shadow-sm mb-6">
 
           <div className="border-b p-6">
             <div className="flex items-center gap-3">
@@ -193,10 +193,10 @@ export default function CreateVehicleRequest() {
             </button>
 
           </div>
-        </div>
+        </div> */}
 
         {/* Priority */}
-        <div className="bg-white rounded-xl border shadow-sm mb-6">
+        {/* <div className="bg-white rounded-xl border shadow-sm mb-6">
 
           <div className="border-b p-6">
             <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export default function CreateVehicleRequest() {
             />
 
           </div>
-        </div>
+        </div> */}
 
         {/* Attachments */}
         <div className="bg-white rounded-xl border shadow-sm mb-6">
@@ -283,7 +283,9 @@ export default function CreateVehicleRequest() {
             Save Draft
           </button>
 
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
+          <button 
+            onClick={() => alert("Request submitted!")}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
             <FiSend />
             Submit Request
           </button>
