@@ -33,7 +33,6 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'department' => $validated['department'] ?? null,
-            'designation' => $validated['designation'] ?? null,
             'role' => 'employee', // force-default; prevents privilege escalation via public register
             'password' => Hash::make($validated['password']),
             'status' => 'active',
@@ -144,7 +143,6 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
-            'designation' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
         $user->update($validated);
