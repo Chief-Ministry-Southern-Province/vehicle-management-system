@@ -2,32 +2,32 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Mass assignable attributes.
      */
     protected $fillable = [
+        'employee_id',
         'name',
         'email',
+        'phone',
+        'department',
+        'role',
         'password',
+        'status',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Attributes hidden when the model is serialized to JSON.
+     * Password and remember_token must never reach the frontend.
      */
     protected $hidden = [
         'password',
@@ -35,15 +35,63 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Attribute casting.
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password' => 'hashed', // Laravel 10+ auto-hashes on assignment
         ];
+    }
+
+    /*
+    |--------------------------------------------------------------------
+    | Role helpers — used in controllers/policies instead of magic strings
+    |--------------------------------------------------------------------
+    */
+
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee';
+    }
+
+    public function isDepartmentOfficer(): bool
+    {
+        return $this->role === 'department_officer';
+    }
+
+    public function isSubjectOfficer(): bool
+    {
+        return $this->role === 'subject_officer';
+    }
+
+    public function isDeputySecretary(): bool
+    {
+        return $this->role === 'deputy_secretary';
+    }
+
+    public function isSecretary(): bool
+    {
+        return $this->role === 'secretary';
+    }
+
+    public function isDriver(): bool
+    {
+        return $this->role === 'driver';
+    }
+
+    public function hasRole(string|array $roles): bool
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles, true);
+        }
+
+        return $this->role === $roles;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
     }
 }
