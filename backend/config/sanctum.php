@@ -1,59 +1,60 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+return [
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('employee_id')->unique();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->string('department')->nullable();
-            $table->string('designation')->nullable();
+    /*
+    |--------------------------------------------------------------------------
+    | Sanctum Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure Sanctum for stateless, token-based authentication.
+    | This is used for SPA and mobile app authentication.
+    |
+    */
 
-            // Role drives frontend redirect + backend authorization (RoleMiddleware)
-            $table->enum('role', [
-                'employee',
-                'department_officer',
-                'subject_officer',
-                'deputy_secretary',
-                'secretary',
-                'driver',
-            ])->default('employee');
+    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
+        '%s%s',
+        'localhost,localhost:3000,localhost:8000,localhost:8080,127.0.0.1,127.0.0.1:8000,127.0.0.1:3000,127.0.0.1:8080',
+        env('APP_URL') ? ','.parse_url(env('APP_URL'), PHP_URL_HOST) : ''
+    ))),
 
-            $table->string('password');
+    /*
+    |--------------------------------------------------------------------------
+    | Sanctum Guards
+    |--------------------------------------------------------------------------
+    |
+    | This array contains the authentication guards that will be checked when
+    | Sanctum is trying to authenticate requests. If none of these guards
+    | are able to authenticate the request, the request is rejected.
+    |
+    */
 
-            // active | inactive | suspended — checked at login time
-            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
+    'guard' => ['web'],
 
-            $table->rememberToken();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamps();
-        });
+    /*
+    |--------------------------------------------------------------------------
+    | Expiration Minutes
+    |--------------------------------------------------------------------------
+    |
+    | This value controls the number of minutes until an issued token will be
+    | considered expired. If this value is null, personal access tokens do
+    | not expire. This won't tweak the lifetime of first-party sessions.
+    |
+    */
 
-        // Laravel's password reset token table (used by ForgotPassword/ResetPassword flow)
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-    }
+    'expiration' => null,
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('users');
-    }
-};
+    /*
+    |--------------------------------------------------------------------------
+    | Token Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Sanctum can prefix new tokens with a given value to help identify tokens
+    | issued by the application. This can make it easier to revoke or inspect
+    | tokens when using tools like "grep". This won't affect revocation.
+    |
+    */
+
+    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
+
+];

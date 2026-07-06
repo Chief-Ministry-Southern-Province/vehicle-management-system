@@ -30,7 +30,6 @@ class UserSeeder extends Seeder
                     'employee_id' => $account['employee_id'],
                     'name' => $account['name'],
                     'department' => $account['department'],
-                    'designation' => ucfirst(str_replace('_', ' ', $account['role'])),
                     'role' => $account['role'],
                     'password' => Hash::make('Password123'),
                     'status' => 'active',
