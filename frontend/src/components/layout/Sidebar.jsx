@@ -18,6 +18,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import nationalEmblem from "../../assets/national-emblem.jpg";
+import { useAuth } from "../../context/useAuth";
 
 const menuItems = [
   {
@@ -182,16 +183,12 @@ const menuItems = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const { user, logout } = useAuth();
 
   const role = user?.role;
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-
+    logout();
     navigate("/");
   };
 
@@ -241,7 +238,7 @@ export default function Sidebar() {
           </div>
 
           {/* Bottom Divider */}
-          <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+          <div className="mt-5 h-px w-full bg-linear-to-r from-transparent via-slate-600 to-transparent"></div>
 
         </div>
 

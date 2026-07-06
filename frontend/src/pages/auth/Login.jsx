@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   FaCarSide,
   FaUserShield,
@@ -7,15 +8,19 @@ import {
   FaEnvelope,
   FaLock,
 } from "react-icons/fa";
+import { loginUser } from "../../api/authApi";
+import { useAuth } from "../../context/useAuth";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     role: "employee",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -24,50 +29,102 @@ export default function Login() {
     });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const user = {
-      name: "John Doe",
-      email: formData.email,
-      employee_id: "VMS-2025-001",
-      role: formData.role,
-    };
+    setIsLoading(true);
 
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+      const response = await loginUser({
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
 
-    switch (formData.role) {
-      case "employee":
-        navigate("/userdashboard");
-        break;
+      const payload = response?.data ?? response;
+      const token =
+        payload?.token ??
+        payload?.access_token ??
+        payload?.accessToken ??
+        payload?.data?.token ??
+        payload?.data?.access_token ??
+        null;
 
-      case "department_officer":
-        navigate("/departmentofficerdashboard");
-        break;
+      const backendUser =
+        payload?.user ??
+        payload?.data?.user ??
+        payload?.data ??
+        payload;
 
-      case "subject_officer":
-        navigate("/subjectofficerdashboard");
-        break;
+      const nextUser = {
+        name:
+          backendUser?.name ??
+          backendUser?.full_name ??
+          backendUser?.username ??
+          formData.email.split("@")[0],
+        email: backendUser?.email ?? formData.email,
+        employee_id:
+          backendUser?.employee_id ??
+          backendUser?.employeeId ??
+          backendUser?.id ??
+          backendUser?.user_id ??
+          "",
+        role:
+          backendUser?.role ??
+          backendUser?.user_role ??
+          formData.role,
+      };
 
-      case "deputy_secretary":
-        navigate("/deputysecretarydashboard");
-        break;
+      login(
+        token ? { ...nextUser, token } : nextUser,
+        token
+      );
 
-      case "secretary":
-        navigate("/secretarydashboard");
-        break;
+      toast.success("Login successful");
 
-      case "driver":
-        navigate("/driverdashboard");
-        break;
+      switch (nextUser.role) {
+        case "employee":
+          navigate("/userdashboard");
+          break;
 
-      default:
-        navigate("/");
+        case "department_officer":
+          navigate("/departmentofficerdashboard");
+          break;
+
+        case "subject_officer":
+          navigate("/subjectofficerdashboard");
+          break;
+
+        case "deputy_secretary":
+          navigate("/deputysecretarydashboard");
+          break;
+
+        case "secretary":
+          navigate("/secretarydashboard");
+          break;
+
+        case "driver":
+          navigate("/driverdashboard");
+          break;
+
+        default:
+          navigate("/");
+      }
+    } catch (error) {
+      const message =
+        error?.message ||
+        error?.error ||
+        error?.detail ||
+        "Login failed. Please check your credentials.";
+
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-6 py-10 overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-6 py-10 overflow-hidden">
 
       {/* Background Blur */}
       <div className="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl top-10 left-10"></div>
@@ -77,7 +134,7 @@ export default function Login() {
 
         {/* LEFT PANEL */}
 
-        <div className="hidden lg:flex flex-col justify-center p-14 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 text-white">
+        <div className="hidden lg:flex flex-col justify-center p-14 bg-linear-to-br from-blue-900 via-blue-800 to-slate-900 text-white">
 
           <div className="flex items-center gap-5 mb-8">
 
@@ -151,7 +208,7 @@ export default function Login() {
 
             <div className="text-center">
 
-              <div className="mx-auto w-24 h-24 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-xl">
+              <div className="mx-auto w-24 h-24 rounded-full bg-linear-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-xl">
 
                 <FaUserShield
                   className="text-white"
@@ -270,9 +327,10 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-500 text-white font-bold text-lg shadow-xl hover:scale-[1.02] transition duration-300"
+                disabled={isLoading}
+                className="w-full py-4 rounded-2xl bg-linear-to-r from-blue-600 via-blue-700 to-cyan-500 text-white font-bold text-lg shadow-xl hover:scale-[1.02] transition duration-300"
               >
-                Sign In
+                {isLoading ? "Signing In..." : "Sign In"}
               </button>
 
             </form>
