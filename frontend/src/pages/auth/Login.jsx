@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
+
 import {
-  FaCarSide,
-  FaUserShield,
-  FaMapMarkerAlt,
-  FaEnvelope,
-  FaLock,
-} from "react-icons/fa";
+  FiMail,
+  FiLock,
+  FiShield,
+  FiArrowRight,
+} from "react-icons/fi";
+
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
 
+import nationalEmblem from "../../assets/national-emblem.png";
+
 export default function Login() {
   const navigate = useNavigate();
+
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -20,17 +24,20 @@ export default function Login() {
     password: "",
     role: "employee",
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+  const handleChange = (event) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [event.target.name]:
+        event.target.value,
     });
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (event) => {
+    event.preventDefault();
 
     setIsLoading(true);
 
@@ -40,7 +47,9 @@ export default function Login() {
         password: formData.password,
       });
 
-      const payload = response?.data ?? response;
+      const payload =
+        response?.data ?? response;
+
       const token =
         payload?.token ??
         payload?.access_token ??
@@ -61,13 +70,18 @@ export default function Login() {
           backendUser?.full_name ??
           backendUser?.username ??
           formData.email.split("@")[0],
-        email: backendUser?.email ?? formData.email,
+
+        email:
+          backendUser?.email ??
+          formData.email,
+
         employee_id:
           backendUser?.employee_id ??
           backendUser?.employeeId ??
           backendUser?.id ??
           backendUser?.user_id ??
           "",
+
         role:
           backendUser?.role ??
           backendUser?.user_role ??
@@ -75,7 +89,12 @@ export default function Login() {
       };
 
       login(
-        token ? { ...nextUser, token } : nextUser,
+        token
+          ? {
+              ...nextUser,
+              token,
+            }
+          : nextUser,
         token
       );
 
@@ -87,19 +106,27 @@ export default function Login() {
           break;
 
         case "department_officer":
-          navigate("/departmentofficerdashboard");
+          navigate(
+            "/departmentofficerdashboard"
+          );
           break;
 
         case "subject_officer":
-          navigate("/subjectofficerdashboard");
+          navigate(
+            "/subjectofficerdashboard"
+          );
           break;
 
         case "deputy_secretary":
-          navigate("/deputysecretarydashboard");
+          navigate(
+            "/deputysecretarydashboard"
+          );
           break;
 
         case "secretary":
-          navigate("/secretarydashboard");
+          navigate(
+            "/secretarydashboard"
+          );
           break;
 
         case "driver":
@@ -123,125 +150,233 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-6 py-10 overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200">
 
-      {/* Background Blur */}
-      <div className="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl top-10 left-10"></div>
-      <div className="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl bottom-10 right-10"></div>
+      {/* Background */}
 
-      <div className="relative w-full max-w-7xl grid lg:grid-cols-2 rounded-[35px] overflow-hidden shadow-2xl backdrop-blur-xl bg-white/10 border border-white/20">
+      <div className="absolute inset-0">
 
-        {/* LEFT PANEL */}
+        <div className="absolute -top-40 -left-32 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl"></div>
 
-        <div className="hidden lg:flex flex-col justify-center p-14 bg-linear-to-br from-blue-900 via-blue-800 to-slate-900 text-white">
+        <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-cyan-200/30 blur-3xl"></div>
 
-          <div className="flex items-center gap-5 mb-8">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.02)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
-            <div className="w-20 h-20 rounded-3xl bg-white text-blue-800 flex items-center justify-center shadow-xl">
-              <FaCarSide size={38} />
-            </div>
+      </div>
 
-            <div>
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
 
-              <h2 className="text-4xl font-bold">
-                Vehicle Management
-              </h2>
+        <div className="grid w-full max-w-7xl overflow-hidden rounded-[32px] bg-white shadow-2xl lg:grid-cols-2">
 
-              <p className="text-blue-100 mt-1">
-                Government Fleet Portal
-              </p>
+                    {/* ================================= */}
+          {/* LEFT GOVERNMENT PANEL */}
+          {/* ================================= */}
 
-            </div>
+          <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-10 text-white">
 
-          </div>
+            {/* Background Decorations */}
 
-          <div className="space-y-5">
+            <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl"></div>
 
-            <div className="flex items-center gap-3">
+            <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl"></div>
 
-              <FaUserShield className="text-yellow-400 text-xl" />
+            {/* Logo */}
 
-              <span className="text-lg">
-                Secure Government Authentication
-              </span>
+            <div className="relative">
 
-            </div>
+              <div className="flex items-center gap-5">
 
-            <div className="flex items-center gap-3">
+                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-2xl">
 
-              <FaMapMarkerAlt className="text-yellow-400 text-xl" />
+                  <img
+                    src={nationalEmblem}
+                    alt="National Emblem"
+                    className="h-16 w-16 object-contain"
+                  />
 
-              <span className="text-lg">
-                Chief Ministry
-                <br />
-                Dakshinapaya, Labuduwa
-              </span>
+                </div>
 
-            </div>
+                <div>
 
-          </div>
+                  <h1 className="text-3xl font-bold tracking-wide">
+                    Vehicle Management
+                  </h1>
 
-          <div className="mt-16">
+                  <h2 className="text-2xl font-semibold text-blue-200">
+                    System
+                  </h2>
 
-            <h1 className="text-5xl font-extrabold leading-tight">
-              Smart Vehicle
-              <br />
-              Management
-            </h1>
+                  <div className="mt-3 space-y-1 text-sm text-slate-300">
 
-            <p className="mt-6 text-blue-100 leading-8 text-lg">
-              Digital platform for managing government vehicles,
-              transport requests, approvals, drivers, and fleet
-              operations with enhanced security and efficiency.
-            </p>
+                    <p>Chief Ministry</p>
 
-          </div>
+                    <p>Dakshinapaya</p>
 
-        </div>
+                    <p>Labuduwa, Galle</p>
 
-        {/* LOGIN CARD */}
+                  </div>
 
-        <div className="flex items-center justify-center bg-white/5 backdrop-blur-xl">
-
-          <div className="w-full max-w-md p-10">
-
-            <div className="text-center">
-
-              <div className="mx-auto w-24 h-24 rounded-full bg-linear-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-xl">
-
-                <FaUserShield
-                  className="text-white"
-                  size={42}
-                />
+                </div>
 
               </div>
 
-              <h2 className="mt-6 text-3xl font-bold text-white">
-                Welcome Back
-              </h2>
+              {/* Heading */}
 
-              <p className="text-slate-300 mt-2">
-                Sign in to continue
-              </p>
+              <div className="mt-16">
+
+                <span className="rounded-full border border-blue-300/30 bg-blue-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-blue-200">
+
+                  Government Portal
+
+                </span>
+
+                <h2 className="mt-6 text-5xl font-bold leading-tight">
+
+                  Welcome
+                  <br />
+                  Back
+
+                </h2>
+
+                <p className="mt-6 max-w-lg text-lg leading-8 text-slate-300">
+
+                  Sign in to securely access the official
+                  Government Vehicle Management System and
+                  manage vehicle requests, approvals,
+                  fleet operations, drivers and transport
+                  services.
+
+                </p>
+
+              </div>
 
             </div>
 
-            <form
-              onSubmit={handleLogin}
-              className="mt-10 space-y-6"
-            >
+            {/* Feature Cards */}
 
-              {/* EMAIL */}
+            <div className="space-y-5">
+
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/15">
+
+                <div className="flex items-center gap-4">
+
+                  <div className="rounded-xl bg-blue-600 p-3">
+
+                    <FiShield size={22} />
+
+                  </div>
+
+                  <div>
+
+                    <h3 className="font-semibold text-lg">
+                      Secure Authentication
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-300">
+                      Protected access for authorized
+                      government officers.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/15">
+
+                <div className="flex items-center gap-4">
+
+                  <div className="rounded-xl bg-cyan-600 p-3">
+
+                    <FiMail size={22} />
+
+                  </div>
+
+                  <div>
+
+                    <h3 className="font-semibold text-lg">
+                      Digital Fleet Services
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-300">
+                      Modern vehicle request and fleet
+                      management platform for the
+                      Government of Sri Lanka.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ================================= */}
+          {/* LOGIN FORM */}
+          {/* ================================= */}
+
+          <div className="flex items-center justify-center bg-white p-8 md:p-12">
+
+            <div className="w-full max-w-md">
+
+              <div className="mb-10 text-center">
+
+                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 shadow-lg">
+
+                  <img
+                    src={nationalEmblem}
+                    alt="Government Logo"
+                    className="h-26 w-26 object-contain"
+                  />
+
+                </div>
+
+                <span className="mt-6 inline-block rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-blue-700">
+
+                  Secure Login
+
+                </span>
+
+                <h2 className="mt-5 text-4xl font-bold text-slate-800">
+
+                  Sign In
+
+                </h2>
+
+                <p className="mt-3 text-slate-500 leading-7">
+
+                  Enter your official government account
+                  credentials to continue.
+
+                </p>
+
+              </div>
+
+              <form
+                onSubmit={handleLogin}
+                className="space-y-6"
+              >
+
+                              {/* ===========================
+                    Email Address
+              =========================== */}
 
               <div>
 
-                <label className="text-white text-sm mb-2 block">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Email Address
                 </label>
 
                 <div className="relative">
 
-                  <FaEnvelope className="absolute left-4 top-4 text-slate-400" />
+                  <FiMail
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
 
                   <input
                     type="email"
@@ -250,24 +385,29 @@ export default function Login() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100"
                   />
 
                 </div>
 
               </div>
 
-              {/* PASSWORD */}
+              {/* ===========================
+                    Password
+              =========================== */}
 
               <div>
 
-                <label className="text-white text-sm mb-2 block">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Password
                 </label>
 
                 <div className="relative">
 
-                  <FaLock className="absolute left-4 top-4 text-slate-400" />
+                  <FiLock
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={18}
+                  />
 
                   <input
                     type="password"
@@ -276,18 +416,20 @@ export default function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100"
                   />
 
                 </div>
 
               </div>
 
-              {/* ROLE */}
+              {/* ===========================
+                    Login Role
+              =========================== */}
 
               <div>
 
-                <label className="text-white text-sm mb-2 block">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Login As
                 </label>
 
@@ -295,72 +437,139 @@ export default function Login() {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="w-full py-3 px-4 rounded-2xl bg-white/10 border border-white/20 text-white focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 outline-none transition-all duration-300 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 >
-                  <option className="text-black" value="employee">
+
+                  <option value="employee">
                     Employee
                   </option>
 
-                  <option className="text-black" value="department_officer">
+                  <option value="department_officer">
                     Department Officer
                   </option>
 
-                  <option className="text-black" value="subject_officer">
+                  <option value="subject_officer">
                     Subject Officer
                   </option>
 
-                  <option className="text-black" value="deputy_secretary">
+                  <option value="deputy_secretary">
                     Deputy Secretary
                   </option>
 
-                  <option className="text-black" value="secretary">
+                  <option value="secretary">
                     Secretary
                   </option>
 
-                  <option className="text-black" value="driver">
+                  <option value="driver">
                     Driver
                   </option>
+
                 </select>
 
               </div>
 
+                            {/* ===========================
+                    Sign In Button
+              =========================== */}
+
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 rounded-2xl bg-linear-to-r from-blue-600 via-blue-700 to-cyan-500 text-white font-bold text-lg shadow-xl hover:scale-[1.02] transition duration-300"
+                className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-600 px-6 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? (
+                  "Signing In..."
+                ) : (
+                  <>
+                    Sign In
+
+                    <FiArrowRight
+                      size={18}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
+                  </>
+                )}
               </button>
+
+              {/* Forgot Password & Register */}
+
+              <div className="flex items-center justify-between pt-2 text-sm">
+
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-blue-700 transition hover:text-blue-900"
+                >
+                  Forgot Password?
+                </Link>
+
+                <Link
+                  to="/register"
+                  className="font-semibold text-blue-700 transition hover:text-blue-900"
+                >
+                  Create Account
+                </Link>
+
+              </div>
 
             </form>
 
-            <div className="flex justify-between mt-8 text-sm">
+            {/* Divider */}
 
-              <Link
-                to="/forgot-password"
-                className="text-cyan-300 hover:text-white"
-              >
-                Forgot Password?
-              </Link>
+            <div className="my-8 flex items-center">
 
-              <Link
-                to="/register"
-                className="text-cyan-300 hover:text-white"
-              >
-                Register
-              </Link>
+              <div className="h-px flex-1 bg-slate-200"></div>
+
+              <span className="px-4 text-xs font-medium uppercase tracking-[0.25em] text-slate-400">
+                Government of Sri Lanka
+              </span>
+
+              <div className="h-px flex-1 bg-slate-200"></div>
 
             </div>
 
-            <div className="mt-10 border-t border-white/20 pt-6 text-center">
+            {/* Footer */}
 
-              <p className="text-slate-400 text-sm">
-                © 2026 Vehicle Management System
+            <div className="space-y-4 text-center">
+
+              <p className="text-sm leading-6 text-slate-500">
+
+                Secure access to the official Vehicle
+                Management System for government officers.
+
               </p>
 
-              <p className="text-slate-500 text-xs mt-2">
-                Chief Ministry • Dakshinapaya • Labuduwa
-              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                  Secure Login
+                </span>
+
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                  Government Portal
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                  Version 1.0
+                </span>
+
+              </div>
+
+              <div className="border-t border-slate-200 pt-5">
+
+                <h4 className="font-semibold text-slate-800">
+                  Chief Ministry
+                </h4>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Dakshinapaya, Labuduwa, Galle
+                </p>
+
+                <p className="mt-4 text-xs text-slate-400">
+                  © {new Date().getFullYear()} Government of Sri Lanka.
+                  All Rights Reserved.
+                </p>
+
+              </div>
 
             </div>
 
@@ -371,5 +580,9 @@ export default function Login() {
       </div>
 
     </div>
+
+  </div>
+
   );
+
 }
