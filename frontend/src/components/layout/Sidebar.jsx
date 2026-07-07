@@ -17,7 +17,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import nationalEmblem from "../../assets/national-emblem.jpg";
+import nationalEmblem from "../../assets/national-emblem.png";
 import { useAuth } from "../../context/useAuth";
 
 const menuItems = [
@@ -208,18 +208,18 @@ export default function Sidebar() {
           <div className="flex items-center gap-4">
 
             {/* Logo */}
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
+            <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
 
               <img
                 src={nationalEmblem}
                 alt="National Emblem"
-                className="h-12 w-12 object-contain"
+                className="h-72 w-72 object-contain"
               />
 
             </div>
 
             {/* Text */}
-            <div>
+            {/* <div>
 
               <h1 className="text-xl font-bold tracking-wide text-black">
                 VMS
@@ -233,7 +233,7 @@ export default function Sidebar() {
                 Sri Lanka
               </p>
 
-            </div>
+            </div> */}
 
           </div>
 
