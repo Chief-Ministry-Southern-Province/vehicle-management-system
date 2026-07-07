@@ -17,7 +17,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import nationalEmblem from "../../assets/national-emblem.jpg";
+import { useAuth } from "../../context/useAuth";
 
 const menuItems = [
   {
@@ -182,16 +182,12 @@ const menuItems = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const { user, logout } = useAuth();
 
   const role = user?.role;
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-
+    logout();
     navigate("/");
   };
 
@@ -211,18 +207,18 @@ export default function Sidebar() {
           <div className="flex items-center gap-4">
 
             {/* Logo */}
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
+            {/* <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
 
               <img
                 src={nationalEmblem}
                 alt="National Emblem"
-                className="h-12 w-12 object-contain"
+                className="h-72 w-72 object-contain"
               />
 
-            </div>
+            </div> */}
 
             {/* Text */}
-            <div>
+            {/* <div>
 
               <h1 className="text-xl font-bold tracking-wide text-black">
                 VMS
@@ -236,12 +232,12 @@ export default function Sidebar() {
                 Sri Lanka
               </p>
 
-            </div>
+            </div> */}
 
           </div>
 
           {/* Bottom Divider */}
-          <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+          <div className="mt-5 h-px w-full bg-linear-to-r from-transparent via-slate-600 to-transparent"></div>
 
         </div>
 

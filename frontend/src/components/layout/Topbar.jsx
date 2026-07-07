@@ -1,199 +1,270 @@
-import { FiBell, FiSearch } from "react-icons/fi";
+import {
+  FiBell,
+  FiSearch,
+} from "react-icons/fi";
+
 import { useAuth } from "../../context/useAuth";
+import nationalEmblem from "../../assets/national-emblem.png";
+
 
 export default function Topbar() {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    return (
-        <header className="sticky top-0 z-30 h-20 bg-white backdrop-blur-xl border-b border-slate-200/70 shadow-sm">
-            <div className="h-full px-8 flex items-center justify-between">
+  return (
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-lg shadow-sm">
 
-                {/* Left Side */}
-                <div className="flex items-center gap-8">
+      <div className="flex flex-col gap-5 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
 
-                    <div>
+        {/* ============================= */}
+        {/* Left Section */}
+        {/* ============================= */}
 
-                        <h1 className="text-1xl font-bold text-slate-800 tracking-tight">
-                            Government Fleet Management Platform
-                        </h1>
+        <div className="flex min-w-0 items-center gap-4">
 
-                        <p className="text-sm text-slate-500 mt-1">
-                            Chief Ministery Dakshinapaya, Labuduwa
-                        </p>
+          {/* Government Badge */}
 
-                    </div>
+          <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-white bg-gradient-to-br text-white shadow-lg">
 
-                </div>
+            <img
+                src={nationalEmblem}
+                alt="National Emblem"
+                className="h-108 w-108 object-contain"
+              />
 
-                {/* Right Side */}
-                <div className="flex items-center gap-6">
+          </div>
 
-                    {/* Search */}
+          {/* Government Title */}
 
-                    <div className="relative">
+          <div className="min-w-0">
 
-                        <FiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+            <h1 className="truncate text-lg font-bold tracking-tight text-slate-800 sm:text-xl lg:text-2xl">
 
-                        <input
-                            type="text"
-                            placeholder="Search requests, vehicles, drivers..."
-                            className="
-                            w-96
-                            pl-14
-                            pr-5
-                            py-3
-                            rounded-2xl
-                            bg-gradient-to-r
-                            from-slate-50
-                            to-slate-100
-                            border
-                            border-slate-200
-                            text-sm
-                            placeholder:text-slate-400
-                            outline-none
-                            transition-all
-                            duration-300
-                            focus:border-blue-500
-                            focus:ring-4
-                            focus:ring-blue-100
-                            hover:shadow-md
-                        "
-                        />
+              Vehicle Management System
 
-                    </div>
+            </h1>
 
-                    {/* Notification */}
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 sm:text-sm">
 
-                    <button
-                        className="
-                        relative
-                        h-12
-                        w-12
-                        rounded-2xl
-                        bg-gradient-to-br
-                        from-white
-                        to-slate-100
-                        border
-                        border-slate-200
-                        flex
-                        items-center
-                        justify-center
-                        shadow-sm
-                        hover:shadow-lg
-                        hover:-translate-y-0.5
-                        transition-all
-                        duration-300
-                    "
-                    >
+              <span className="font-medium text-blue-700">
 
-                        <FiBell className="text-xl text-slate-700" />
+                Chief Ministry
 
-                        <span
-                            className="
-                            absolute
-                            top-2
-                            right-2
-                            w-2.5
-                            h-2.5
-                            rounded-full
-                            bg-red-500
-                            ring-2
-                            ring-white
-                        "
-                        />
+              </span>
 
-                    </button>
+              <span className="hidden sm:inline">
+                •
+              </span>
 
-                    {/* Divider */}
+              <span>
+                Dakshinapaya
+              </span>
 
-                    <div className="h-10 w-px bg-slate-200"></div>
+              <span className="hidden sm:inline">
+                •
+              </span>
 
-                    {/* User Profile */}
-
-                    <div
-                        className="
-                        flex
-                        items-center
-                        gap-4
-                        px-4
-                        py-2
-                        rounded-2xl
-                        bg-gradient-to-r
-                        from-slate-50
-                        to-white
-                        border
-                        border-slate-200
-                        shadow-sm
-                        hover:shadow-lg
-                        transition-all
-                        duration-300
-                        cursor-pointer
-                    "
-                    >
-
-                        <div className="text-right">
-
-                            <p className="text-sm font-semibold text-slate-800">
-                                {user?.name}
-                            </p>
-
-                            <p className="text-xs text-slate-500">
-                                Employee ID : {user?.employee_id}
-                            </p>
-
-                        </div>
-
-                        <div className="relative">
-
-                            <div
-                                className="
-                                absolute
-                                inset-0
-                                rounded-full
-                                bg-gradient-to-r
-                                from-blue-500
-                                to-cyan-500
-                                blur-md
-                                opacity-40
-                            "
-                            ></div>
-
-                            <img
-                                src="https://i.pravatar.cc/100"
-                                alt="profile"
-                                className="
-                                relative
-                                w-12
-                                h-12
-                                rounded-full
-                                border-[3px]
-                                border-white
-                                shadow-lg
-                            "
-                            />
-
-                            <span
-                                className="
-                                absolute
-                                bottom-0
-                                right-0
-                                w-3.5
-                                h-3.5
-                                rounded-full
-                                bg-green-500
-                                border-2
-                                border-white
-                            "
-                            />
-
-                        </div>
-
-                    </div>
-
-                </div>
+              <span>
+                Labuduwa, Galle
+              </span>
 
             </div>
 
-        </header>
-    );
+          </div>
+
+        </div>
+
+        {/* ============================= */}
+        {/* Right Section */}
+        {/* ============================= */}
+
+        <div className="flex w-full flex-col gap-4 lg:w-auto lg:flex-row lg:items-center">
+
+          {/* Search */}
+
+          <div className="relative w-full lg:w-80 xl:w-96">
+
+            <FiSearch
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
+
+            <input
+              type="text"
+              placeholder="Search requests, vehicles..."
+              className="
+                w-full
+                rounded-2xl
+                border
+                border-slate-200
+                bg-slate-50
+                py-3
+                pl-12
+                pr-4
+                text-sm
+                text-slate-700
+                placeholder:text-slate-400
+                outline-none
+                transition-all
+                duration-300
+                focus:border-blue-600
+                focus:bg-white
+                focus:ring-4
+                focus:ring-blue-100
+              "
+            />
+
+          </div>
+
+                    {/* ============================= */}
+          {/* Notification + User */}
+          {/* ============================= */}
+
+          <div className="flex items-center justify-between gap-4 lg:justify-end">
+
+            {/* Notification */}
+
+            <button
+              className="
+                relative
+                flex
+                h-12
+                w-12
+                items-center
+                justify-center
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-sm
+                transition-all
+                duration-300
+                hover:-translate-y-0.5
+                hover:shadow-lg
+              "
+            >
+
+              <FiBell
+                className="text-slate-700"
+                size={20}
+              />
+
+              <span
+                className="
+                  absolute
+                  right-3
+                  top-3
+                  h-2.5
+                  w-2.5
+                  rounded-full
+                  bg-red-500
+                  ring-2
+                  ring-white
+                "
+              />
+
+            </button>
+
+            {/* Divider */}
+
+            <div className="hidden h-10 w-px bg-slate-200 lg:block"></div>
+
+            {/* User Card */}
+
+            <button
+              className="
+                flex
+                min-w-0
+                items-center
+                gap-3
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                px-3
+                py-2
+                shadow-sm
+                transition-all
+                duration-300
+                hover:-translate-y-0.5
+                hover:shadow-lg
+              "
+            >
+
+              {/* User Details */}
+
+              <div className="hidden text-right sm:block">
+
+                <p className="truncate text-sm font-semibold text-slate-800">
+
+                  {user?.name || "Government User"}
+
+                </p>
+
+                <p className="truncate text-xs text-slate-500">
+
+                  Employee ID :
+                  {" "}
+                  {user?.employee_id || "N/A"}
+
+                </p>
+
+              </div>
+
+              {/* Avatar */}
+
+              <div className="relative flex-shrink-0">
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    rounded-full
+                    bg-gradient-to-r
+                    from-blue-500
+                    to-cyan-500
+                    opacity-30
+                    blur-md
+                  "
+                />
+
+                <img
+                  src="https://i.pravatar.cc/100"
+                  alt="profile"
+                  className="
+                    relative
+                    h-11
+                    w-11
+                    rounded-full
+                    border-2
+                    border-white
+                    shadow-md
+                  "
+                />
+
+                <span
+                  className="
+                    absolute
+                    bottom-0
+                    right-0
+                    h-3
+                    w-3
+                    rounded-full
+                    border-2
+                    border-white
+                    bg-green-500
+                  "
+                />
+
+              </div>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </header>
+  );
 }

@@ -13,11 +13,30 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('employee_id')->unique();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('department')->nullable();
+            
+            // Role drives frontend redirect + backend authorization (RoleMiddleware)
+            $table->enum('role', [
+                'employee',
+                'department_officer',
+                'subject_officer',
+                'deputy_secretary',
+                'secretary',
+                'senior_deputy_secretary',
+                'driver',
+            ])->default('employee');
+            
             $table->string('password');
+            
+            // active | inactive | suspended — checked at login time
+            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
+            
             $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });
 

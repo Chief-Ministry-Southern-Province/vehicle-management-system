@@ -28,6 +28,11 @@ import PendingFinalApprovals from './pages/secretary/PendingFinalApprovals';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import ProtectedRoute from './routes/ProtectedRoute';
+
+const withAuth = (element) => (
+  <ProtectedRoute>{element}</ProtectedRoute>
+);
 
 function App() {
   
@@ -41,42 +46,42 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/forgotpassword" element={<ForgotPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
 
-            <Route path="/userdashboard" element={<UserDashboard />} />
-            <Route path="/createvehiclerequest" element={<CreateVehicleRequest />} />
-            <Route path="/requesthistory" element={<RequestHistory />} />
-            <Route path="/employee/requests/:id" element={<EmployeeRequestDetails />} />
+            <Route path="/userdashboard" element={withAuth(<UserDashboard />)} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />)} />
+            <Route path="/requesthistory" element={withAuth(<RequestHistory />)} />
+            <Route path="/employee/requests/:id" element={withAuth(<EmployeeRequestDetails />)} />
             
 
-            <Route path="/departmentofficerdashboard" element={<DepartmentOfficerDashboard />} />
-            <Route path="/pendingrecommendations" element={<PendingRecommendations />} />
-            <Route path="/employee/recommendations/:id" element={<RecommendationReview />} />
-            <Route path="/departmentrequesthistory" element={<DepartmentRequestHistory />} />
+            <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
+            <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
+            <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
+            <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
             
 
-            <Route path="/subjectofficerdashboard" element={<SubjectOfficerDashboard />} />
-            <Route path="/vehicledirectory" element={<VehicleDirectory />}/>
-            <Route path="/vehicledetails" element={<VehicleDetails />}/>
-            <Route path="/registervehicle" element={<RegisterVehicle />}/>
-            <Route path="/fuelmanagement" element={<FuelManagement />}/>
-            <Route path="/servicerecords" element={<ServiceRecords />}/>
-            <Route path="/repairrecords" element={<RepairRecords />}/>
-            <Route path="/fleetanalytics" element={<FleetAnalytics />}/>
+            <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
+            <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
+            <Route path="/vehicledetails" element={withAuth(<VehicleDetails />)}/>
+            <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
+            <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
+            <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
+            <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
+            <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
             
             
-            <Route path="/deputysecretarydashboard" element={<DeputySecretaryDashboard />} />
-            <Route path="/pendingapprovals" element={<PendingApprovals />} />
-            <Route path="/approval/:id" element={<ApprovalWorkspace />} />
+            <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
+            <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
             
 
 
-            <Route path="/secretarydashboard" element={<SecretaryDashboard />} />
-            <Route path="/pendingfinalapprovals" element={<PendingFinalApprovals />} />
+            <Route path="/secretarydashboard" element={withAuth(<SecretaryDashboard />)} />
+            <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />)} />
 
             
-            <Route path="/driverdashboard" element={<DriverDashboard />} />
+            <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />
 
 
           </Routes>
