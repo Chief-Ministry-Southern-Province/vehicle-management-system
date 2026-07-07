@@ -38,7 +38,6 @@ export default function Login() {
       const response = await loginUser({
         email: formData.email,
         password: formData.password,
-        role: formData.role,
       });
 
       const payload = response?.data ?? response;

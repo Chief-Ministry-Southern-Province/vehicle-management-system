@@ -10,13 +10,27 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
+    private function handleException(Throwable $e, string $action): JsonResponse
+    {
+        Log::error('AuthController error during ' . $action, [
+            'message' => $e->getMessage(),
+            'exception' => $e::class,
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'An unexpected error occurred while processing the request.',
+        ], 500);
+    }
+
     /**
      * POST /api/register
      * Self-registration. New accounts default to "employee" role
@@ -25,29 +39,33 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        $user = User::create([
-            'employee_id' => $validated['employee_id'],
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'department' => $validated['department'] ?? null,
-            'role' => 'employee', // force-default; prevents privilege escalation via public register
-            'password' => Hash::make($validated['password']),
-            'status' => 'active',
-        ]);
+            $user = User::create([
+                'employee_id' => $validated['employee_id'],
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'department' => $validated['department'] ?? null,
+                'role' => $validated['role'] ?? 'employee',
+                'password' => Hash::make($validated['password']),
+                'status' => 'active',
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Registration successful.',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ],
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful.',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                ],
+            ], 201);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'register');
+        }
     }
 
     /**
@@ -56,38 +74,42 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
+        try {
+            $credentials = $request->validated();
 
-        $user = User::where('email', $credentials['email'])->first();
+            $user = User::where('email', $credentials['email'])->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The provided credentials are incorrect.',
+                ], 401);
+            }
+
+            if (! $user->isActive()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account is ' . $user->status . '. Please contact the administrator.',
+                ], 403);
+            }
+
+            // Revoke previous tokens on this device-class if you want single-session login.
+            // Left commented out — uncomment for strict single-session enforcement:
+            // $user->tokens()->delete();
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'success' => false,
-                'message' => 'The provided credentials are incorrect.',
-            ], 401);
+                'success' => true,
+                'message' => 'Login successful.',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                ],
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'login');
         }
-
-        if (! $user->isActive()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your account is ' . $user->status . '. Please contact the administrator.',
-            ], 403);
-        }
-
-        // Revoke previous tokens on this device-class if you want single-session login.
-        // Left commented out — uncomment for strict single-session enforcement:
-        // $user->tokens()->delete();
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ],
-        ], 200);
     }
 
     /**
@@ -96,12 +118,16 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
+            $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully.',
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out successfully.',
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'logout');
+        }
     }
 
     /**
@@ -110,12 +136,16 @@ class AuthController extends Controller
      */
     public function logoutAll(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        try {
+            $request->user()->tokens()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out from all devices.',
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out from all devices.',
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'logoutAll');
+        }
     }
 
     /**
@@ -124,12 +154,16 @@ class AuthController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => $request->user(),
-            ],
-        ], 200);
+        try {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user' => $request->user(),
+                ],
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'profile');
+        }
     }
 
     /**
@@ -138,20 +172,26 @@ class AuthController extends Controller
      */
     public function updateProfile(Request $request): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
-        ]);
+            $validated = $request->validate([
+                'name' => ['sometimes', 'string', 'max:255'],
+                'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
+            ]);
 
-        $user->update($validated);
+            $user->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Profile updated successfully.',
-            'data' => ['user' => $user->fresh()],
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+                'data' => ['user' => $user->fresh()],
+            ], 200);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'updateProfile');
+        }
     }
 
     /**
@@ -160,29 +200,35 @@ class AuthController extends Controller
      */
     public function changePassword(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', 'min:8'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'current_password' => ['required', 'string'],
+                'password' => ['required', 'confirmed', 'min:8'],
+            ]);
 
-        $user = $request->user();
+            $user = $request->user();
 
-        if (! Hash::check($validated['current_password'], $user->password)) {
+            if (! Hash::check($validated['current_password'], $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current password is incorrect.',
+                ], 422);
+            }
+
+            $user->update(['password' => Hash::make($validated['password'])]);
+
+            // Invalidate all other sessions after a password change for security.
+            $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
+
             return response()->json([
-                'success' => false,
-                'message' => 'Current password is incorrect.',
-            ], 422);
+                'success' => true,
+                'message' => 'Password changed successfully.',
+            ], 200);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'changePassword');
         }
-
-        $user->update(['password' => Hash::make($validated['password'])]);
-
-        // Invalidate all other sessions after a password change for security.
-        $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Password changed successfully.',
-        ], 200);
     }
 
     /**
@@ -191,23 +237,27 @@ class AuthController extends Controller
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        try {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
 
-        if ($status === Password::RESET_LINK_SENT) {
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password reset link sent to your email.',
+                ], 200);
+            }
+
+            // Avoid confirming/denying whether the email exists — return success-shaped
+            // response either way to prevent user enumeration, but log internally if needed.
             return response()->json([
                 'success' => true,
-                'message' => 'Password reset link sent to your email.',
+                'message' => 'If an account exists with that email, a reset link has been sent.',
             ], 200);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'forgotPassword');
         }
-
-        // Avoid confirming/denying whether the email exists — return success-shaped
-        // response either way to prevent user enumeration, but log internally if needed.
-        return response()->json([
-            'success' => true,
-            'message' => 'If an account exists with that email, a reset link has been sent.',
-        ], 200);
     }
 
     /**
@@ -216,28 +266,32 @@ class AuthController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->save();
+        try {
+            $status = Password::reset(
+                $request->only('email', 'password', 'password_confirmation', 'token'),
+                function (User $user, string $password) {
+                    $user->forceFill([
+                        'password' => Hash::make($password),
+                    ])->save();
 
-                // Revoke all existing tokens — old sessions die once password resets.
-                $user->tokens()->delete();
+                    // Revoke all existing tokens — old sessions die once password resets.
+                    $user->tokens()->delete();
+                }
+            );
+
+            if ($status === Password::PASSWORD_RESET) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password has been reset successfully.',
+                ], 200);
             }
-        );
 
-        if ($status === Password::PASSWORD_RESET) {
             return response()->json([
-                'success' => true,
-                'message' => 'Password has been reset successfully.',
-            ], 200);
+                'success' => false,
+                'message' => 'Unable to reset password. The token may be invalid or expired.',
+            ], 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'resetPassword');
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Unable to reset password. The token may be invalid or expired.',
-        ], 422);
     }
 }
