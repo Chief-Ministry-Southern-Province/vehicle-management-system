@@ -17,7 +17,6 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import nationalEmblem from "../../assets/national-emblem.png";
 import { useAuth } from "../../context/useAuth";
 
 const menuItems = [
