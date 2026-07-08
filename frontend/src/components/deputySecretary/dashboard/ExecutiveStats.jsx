@@ -14,6 +14,7 @@ import {
   FiDollarSign,
   FiArrowUpRight,
 } from "react-icons/fi";
+import { BsFilePerson } from "react-icons/bs";
 
 /* ------------------------------------------------------------------ */
 /*  Animated counter — counts up from 0 to the numeric part of value  */
@@ -100,6 +101,8 @@ const financeStats = [
   { title: "Fuel Consumed", value: "250L", icon: <FiDroplet />, path: "/reports/fuel", tone: "cyan" },
   { title: "Fuel Cost", value: "$250", icon: <FiCreditCard />, path: "/reports/fuel-cost", tone: "teal" },
   { title: "Maintenance Cost", value: "$350", icon: <FiDollarSign />, path: "/reports/maintenance-cost", tone: "fuchsia" },
+  { title: "Drivers", value: "35", icon: <BsFilePerson />, path: "/driverdetails", tone: "fuchsia" },
+
 ];
 
 /* ------------------------------------------------------------------ */
