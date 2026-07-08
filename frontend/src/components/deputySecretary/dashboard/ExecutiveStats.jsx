@@ -1,98 +1,199 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  FiClock,
+  FiFileText,
   FiCheckCircle,
   FiXCircle,
+  FiClock,
   FiTruck,
-  FiActivity,
-  FiUsers,
-  FiMapPin,
-  FiWatch,
+  FiCheckSquare,
+  FiSlash,
+  FiTool,
+  FiDroplet,
+  FiCreditCard,
+  FiDollarSign,
+  FiArrowUpRight,
 } from "react-icons/fi";
 
-const stats = [
-  {
-    title: "Pending",
-    value: "24",
-    icon: <FiClock />,
-    badge: "+12%",
-    color: "text-blue-600",
-  },
-  {
-    title: "Approved",
-    value: "142",
-    icon: <FiCheckCircle />,
-    badge: "+5%",
-    color: "text-green-600",
-  },
-  {
-    title: "Rejected",
-    value: "18",
-    icon: <FiXCircle />,
-    badge: "-2%",
-    color: "text-red-500",
-  },
-  {
-    title: "Vehicles",
-    value: "18",
-    icon: <FiTruck />,
-    badge: "95%",
-    color: "text-blue-600",
-  },
-  {
-    title: "Allocated",
-    value: "32",
-    icon: <FiActivity />,
-    badge: "+8",
-    color: "text-blue-600",
-  },
-  {
-    title: "Drivers",
-    value: "09",
-    icon: <FiUsers />,
-    badge: "Ready",
-    color: "text-blue-600",
-  },
-  {
-    title: "Active",
-    value: "15",
-    icon: <FiMapPin />,
-    badge: "Live",
-    color: "text-blue-600",
-  },
-  {
-    title: "Avg Time",
-    value: "2.4h",
-    icon: <FiWatch />,
-    badge: "-15m",
-    color: "text-blue-600",
-  },
+/* ------------------------------------------------------------------ */
+/*  Animated counter — counts up from 0 to the numeric part of value  */
+/*  on mount, preserving any prefix/suffix ("$", "L", "h", etc.)      */
+/* ------------------------------------------------------------------ */
+function useCountUp(value, duration = 900) {
+  const [display, setDisplay] = useState("0");
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const raw = String(value ?? "");
+    const match = raw.match(/-?\d[\d,]*\.?\d*/);
+
+    if (!match) {
+      setDisplay(raw);
+      return;
+    }
+
+    const target = parseFloat(match[0].replace(/,/g, ""));
+    const prefix = raw.slice(0, match.index);
+    const suffix = raw.slice(match.index + match[0].length);
+    const decimals = (match[0].split(".")[1] || "").length;
+
+    if (Number.isNaN(target)) {
+      setDisplay(raw);
+      return;
+    }
+
+    let start = null;
+    cancelAnimationFrame(frameRef.current);
+
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = (target * eased).toFixed(decimals);
+      setDisplay(`${prefix}${current}${suffix}`);
+      if (progress < 1) frameRef.current = requestAnimationFrame(step);
+    };
+
+    frameRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [value, duration]);
+
+  return display;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Color tones — icon gradient, glow, ring, and trend badge colors   */
+/*  Keep this map in sync with any tone used below in `stats`         */
+/* ------------------------------------------------------------------ */
+const TONES = {
+  blue: { icon: "from-blue-500 to-blue-600", glow: "bg-blue-500/10", ring: "ring-blue-100", text: "text-blue-600" },
+  emerald: { icon: "from-emerald-500 to-emerald-600", glow: "bg-emerald-500/10", ring: "ring-emerald-100", text: "text-emerald-600" },
+  rose: { icon: "from-rose-500 to-rose-600", glow: "bg-rose-500/10", ring: "ring-rose-100", text: "text-rose-600" },
+  amber: { icon: "from-amber-400 to-amber-500", glow: "bg-amber-500/10", ring: "ring-amber-100", text: "text-amber-600" },
+  indigo: { icon: "from-indigo-500 to-indigo-600", glow: "bg-indigo-500/10", ring: "ring-indigo-100", text: "text-indigo-600" },
+  red: { icon: "from-red-500 to-red-600", glow: "bg-red-500/10", ring: "ring-red-100", text: "text-red-600" },
+  orange: { icon: "from-orange-500 to-orange-600", glow: "bg-orange-500/10", ring: "ring-orange-100", text: "text-orange-600" },
+  cyan: { icon: "from-cyan-500 to-cyan-600", glow: "bg-cyan-500/10", ring: "ring-cyan-100", text: "text-cyan-600" },
+  teal: { icon: "from-teal-500 to-teal-600", glow: "bg-teal-500/10", ring: "ring-teal-100", text: "text-teal-600" },
+  fuchsia: { icon: "from-fuchsia-500 to-fuchsia-600", glow: "bg-fuchsia-500/10", ring: "ring-fuchsia-100", text: "text-fuchsia-600" },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Data — grouped into 3 rows. Only `path` is wired up; the actual   */
+/*  destination pages are built separately.                           */
+/* ------------------------------------------------------------------ */
+const requestStats = [
+  { title: "Total Request", value: "100", icon: <FiFileText />, path: "/requesthistory", tone: "blue" },
+  { title: "Approved Request", value: "80", icon: <FiCheckCircle />, path: "/requesthistory?status=approved", tone: "emerald" },
+  { title: "Rejected Request", value: "12", icon: <FiXCircle />, path: "/requesthistory?status=rejected", tone: "rose" },
+  { title: "Pending Request", value: "08", icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
 ];
 
+const vehicleStats = [
+  { title: "Total Vehicles", value: "38", icon: <FiTruck />, path: "/totalvehicles", tone: "indigo" },
+  { title: "Available Vehicles", value: "20", icon: <FiCheckSquare />, path: "/vehicles?status=available", tone: "emerald" },
+  { title: "Unavailable Vehicles", value: "15", icon: <FiSlash />, path: "/vehicles?status=unavailable", tone: "red" },
+  { title: "Maintaining Vehicles", value: "03", icon: <FiTool />, path: "/vehicles?status=maintenance", tone: "orange" },
+];
+
+const financeStats = [
+  { title: "Fuel Consumed", value: "250L", icon: <FiDroplet />, path: "/reports/fuel", tone: "cyan" },
+  { title: "Fuel Cost", value: "$250", icon: <FiCreditCard />, path: "/reports/fuel-cost", tone: "teal" },
+  { title: "Maintenance Cost", value: "$350", icon: <FiDollarSign />, path: "/reports/maintenance-cost", tone: "fuchsia" },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Single card                                                       */
+/* ------------------------------------------------------------------ */
+function StatCard({ title, value, icon, path, tone }) {
+  const navigate = useNavigate();
+  const palette = TONES[tone] || TONES.blue;
+  const animatedValue = useCountUp(value);
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(path)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(path)}
+      aria-label={`View ${title} details`}
+      className={[
+        "group relative cursor-pointer overflow-hidden rounded-[18px]",
+        "border border-slate-100 bg-white/80 backdrop-blur-sm p-5",
+        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)]",
+        "transition-all duration-300 ease-out",
+        "hover:-translate-y-1 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)]",
+        "hover:border-slate-200 active:translate-y-0 active:scale-[0.99]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        palette.ring,
+      ].join(" ")}
+    >
+      {/* ambient glow */}
+      <div
+        className={[
+          "pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full blur-2xl",
+          "opacity-60 transition-opacity duration-300 group-hover:opacity-100",
+          palette.glow,
+        ].join(" ")}
+      />
+
+      <div className="relative flex items-start justify-between">
+        <div
+          className={[
+            "flex h-11 w-11 items-center justify-center rounded-xl text-white text-lg shadow-md",
+            "bg-gradient-to-br transition-transform duration-300",
+            "group-hover:scale-110 group-hover:rotate-3",
+            palette.icon,
+          ].join(" ")}
+        >
+          {icon}
+        </div>
+
+        <FiArrowUpRight
+          className={[
+            "h-4 w-4 opacity-0 -translate-x-1 translate-y-1",
+            "transition-all duration-300",
+            "group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0",
+            palette.text,
+          ].join(" ")}
+        />
+      </div>
+
+      <p className="relative mt-5 text-sm font-medium text-slate-500">{title}</p>
+      <h2 className="relative mt-1 text-[26px] leading-tight font-bold text-slate-800 tabular-nums">
+        {animatedValue}
+      </h2>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Row wrapper — label + responsive grid                             */
+/* ------------------------------------------------------------------ */
+function StatRow({ label, items }) {
+  return (
+    <div className="mb-6 last:mb-0">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+        {label}
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {items.map((item) => (
+          <StatCard key={item.title} {...item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Exported section                                                  */
+/* ------------------------------------------------------------------ */
 export default function ExecutiveStats() {
   return (
-    <div className="grid lg:grid-cols-8 md:grid-cols-4 gap-4">
-      {stats.map((item) => (
-        <div
-          key={item.title}
-          className="bg-white rounded-2xl border p-4"
-        >
-          <div className="flex justify-between">
-            <span className={item.color}>{item.icon}</span>
-
-            <span className="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600">
-              {item.badge}
-            </span>
-          </div>
-
-          <p className="text-gray-500 text-sm mt-4">
-            {item.title}
-          </p>
-
-          <h2 className="text-3xl font-bold mt-1">
-            {item.value}
-          </h2>
-        </div>
-      ))}
+    <div>
+      <StatRow label="Request Overview" items={requestStats} />
+      <StatRow label="Fleet Overview" items={vehicleStats} />
+      <StatRow label="Cost Overview" items={financeStats} />
     </div>
   );
 }

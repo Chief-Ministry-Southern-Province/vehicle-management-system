@@ -218,7 +218,7 @@ export default function Sidebar() {
             </div> */}
 
             {/* Text */}
-            {/* <div>
+             <div>
 
               <h1 className="text-xl font-bold tracking-wide text-black">
                 VMS
@@ -232,7 +232,7 @@ export default function Sidebar() {
                 Sri Lanka
               </p>
 
-            </div> */}
+            </div> 
 
           </div>
 
