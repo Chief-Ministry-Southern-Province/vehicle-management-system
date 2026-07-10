@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FiCheckCircle, FiInfo, FiTruck, FiUser } from "react-icons/fi";
+import { FiCheckCircle, FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { RAW_VEHICLES } from "./TotalVehicle";
 import { DRIVERS } from "./DriverDetails";
@@ -10,6 +10,18 @@ import ApprovalActions from "../../components/deputySecretary/approvalWorkspace/
 
 const AVAILABLE_VEHICLES = RAW_VEHICLES.filter((vehicle) => vehicle.status === "Available");
 const AVAILABLE_DRIVERS = DRIVERS.filter((driver) => driver.status === "Available");
+const PREVIOUS_JOURNEYS = {
+  "DRV-0148": [
+    { date: "09 Jul 2026", route: "Parliament Complex → Ministry of Foreign Affairs", purpose: "Diplomatic delegation transfer", distance: "38 km", status: "Completed" },
+    { date: "05 Jul 2026", route: "Ministry Central Gate → Colombo Port", purpose: "Official site inspection", distance: "26 km", status: "Completed" },
+    { date: "01 Jul 2026", route: "Colombo 07 → Bandaranaike Airport", purpose: "Protocol transfer", distance: "62 km", status: "Completed" },
+  ],
+  "DRV-0161": [
+    { date: "08 Jul 2026", route: "Colombo Secretariat → Bandaranaike Airport", purpose: "Official airport transfer", distance: "64 km", status: "Completed" },
+    { date: "03 Jul 2026", route: "Temple Trees → Ministry of Finance", purpose: "Inter-ministerial meeting", distance: "12 km", status: "Completed" },
+    { date: "29 Jun 2026", route: "Colombo 03 → Battaramulla", purpose: "Committee meeting transport", distance: "18 km", status: "Completed" },
+  ],
+};
 
 function OfficerRecommendation() {
   return (
@@ -35,8 +47,10 @@ function AllocationPanel() {
   const [driverId, setDriverId] = useState("");
   const [vehicleRegistration, setVehicleRegistration] = useState("");
   const [defaultVehicleRegistration, setDefaultVehicleRegistration] = useState("");
+  const [showPreviousJourneys, setShowPreviousJourneys] = useState(true);
   const selectedDriver = useMemo(() => AVAILABLE_DRIVERS.find((driver) => driver.id === driverId), [driverId]);
   const selectedVehicle = useMemo(() => AVAILABLE_VEHICLES.find((vehicle) => vehicle.registerNo === vehicleRegistration), [vehicleRegistration]);
+  const previousJourneys = selectedDriver ? PREVIOUS_JOURNEYS[selectedDriver.id] : [];
   const isOverride = Boolean(defaultVehicleRegistration && vehicleRegistration !== defaultVehicleRegistration);
 
   const handleDriverChange = (event) => {
@@ -44,6 +58,7 @@ function AllocationPanel() {
     setDriverId(event.target.value);
     setDefaultVehicleRegistration(nextDriver?.registration || "");
     setVehicleRegistration(nextDriver?.registration || "");
+    setShowPreviousJourneys(true);
   };
 
   return (
@@ -61,7 +76,21 @@ function AllocationPanel() {
           </select>
         </div>
 
-        {selectedDriver && <div className="rounded-xl bg-slate-50 p-4 text-sm"><div className="flex justify-between gap-3"><div><p className="font-semibold text-slate-800">{selectedDriver.fullName}</p><p className="mt-1 text-slate-500">{selectedDriver.experience} experience · Rating {selectedDriver.rating}</p></div><span className="h-fit rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{selectedDriver.status}</span></div></div>}
+        {selectedDriver && <>
+          <div className="rounded-xl bg-slate-50 p-4 text-sm"><div className="flex justify-between gap-3"><div><p className="font-semibold text-slate-800">{selectedDriver.fullName}</p><p className="mt-1 text-slate-500">{selectedDriver.experience} experience · Rating {selectedDriver.rating}</p></div><span className="h-fit rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{selectedDriver.status}</span></div></div>
+          {previousJourneys.length > 0 && <div className="rounded-xl border border-slate-200 p-4 text-sm">
+            <button type="button" onClick={() => setShowPreviousJourneys((visible) => !visible)} className="flex w-full items-center justify-between gap-3 text-left font-semibold text-slate-800">
+              <span>Previous journeys ({previousJourneys.length})</span>
+              <FiChevronDown className={`shrink-0 text-slate-500 transition-transform ${showPreviousJourneys ? "rotate-180" : ""}`} />
+            </button>
+            {showPreviousJourneys && <div className="mt-3 max-h-52 divide-y divide-slate-100 overflow-y-auto pr-2">
+              {previousJourneys.map((journey) => <div key={`${journey.date}-${journey.route}`} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-start justify-between gap-3"><div><p className="font-medium text-slate-800">{journey.route}</p><p className="mt-1 text-slate-500">{journey.purpose}</p></div><span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{journey.status}</span></div>
+                <div className="mt-2 flex gap-5 text-xs text-slate-500"><span>{journey.date}</span><span>{journey.distance}</span></div>
+              </div>)}
+            </div>}
+          </div>}
+        </>}
 
         <div>
           <label htmlFor="allocation-vehicle" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><FiTruck className="text-blue-600" /> Allocated vehicle</label>
