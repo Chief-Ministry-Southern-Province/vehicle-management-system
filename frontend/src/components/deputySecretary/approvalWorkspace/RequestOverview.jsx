@@ -48,11 +48,11 @@ export default function RequestOverview() {
 
         <div>
           <p className="text-xs text-gray-400 uppercase">
-            Urgency
+            Distance
           </p>
 
-          <span className="text-red-500 font-medium">
-            ● High
+          <span className="text-gray-600 font-medium">
+            Galle distric office
           </span>
         </div>
 

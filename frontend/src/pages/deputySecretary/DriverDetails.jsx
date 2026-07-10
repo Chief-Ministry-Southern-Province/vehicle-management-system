@@ -18,7 +18,7 @@ import {
   FiX,
 } from "react-icons/fi";
 
-const DRIVERS = [
+export const DRIVERS = [
   {
     id: "DRV-0148",
     fullName: "Robert Wilson",
@@ -345,40 +345,8 @@ export default function DriverDetails() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
-        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-900 shadow-sm">
-          <div className="relative px-6 py-8 text-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.45),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(20,184,166,0.28),transparent_30%)]" />
-            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-blue-100 ring-1 ring-white/15">
-                  <FiUsers />
-                  Government Fleet Driver Directory
-                </div>
-                <h1 className="text-3xl font-bold tracking-tight">
-                  All Drivers Details
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                  Complete driver records with identity details, contact
-                  information, licence status, duty readiness, assigned vehicle,
-                  and clearance summary.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15">
-                  <FiDownload />
-                  Export List
-                </button>
-                <button className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-blue-50">
-                  <FiUser />
-                  Add Driver
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             icon={<FiUsers />}
             label="Total Drivers"
@@ -395,14 +363,14 @@ export default function DriverDetails() {
           />
           <SummaryCard
             icon={<FiShield />}
-            label="Verified"
+            label="On Trip"
             value={summary.verified}
             sub="Security clearance complete"
             tone="amber"
           />
           <SummaryCard
             icon={<FiCalendar />}
-            label="Renewal Watch"
+            label="Unavailable"
             value={summary.expiring}
             sub="Licences expiring within 180 days"
             tone="rose"

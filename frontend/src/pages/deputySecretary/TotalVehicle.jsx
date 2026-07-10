@@ -33,7 +33,7 @@ import {
 /*  here on purpose; when your API returns a URL it will render       */
 /*  automatically, otherwise a clean placeholder icon is shown.       */
 /* ------------------------------------------------------------------ */
-const RAW_VEHICLES = [
+export const RAW_VEHICLES = [
   { id: "VEH-001", image: null, model: "Toyota Hiace", registerNo: "WP-CAB-4521", chassisNo: "JT2BF22K1W0123456", type: "Van", fuel: "Diesel", year: 2022, seats: 15, licenseExpiry: "2026-08-14", status: "Available" },
   { id: "VEH-002", image: null, model: "Nissan Navara", registerNo: "WP-CAD-7788", chassisNo: "5N1AR2MM8FC612233", type: "Pickup Truck", fuel: "Diesel", year: 2021, seats: 5, licenseExpiry: "2026-07-22", status: "Unavailable" },
   { id: "VEH-003", image: null, model: "Toyota Prius", registerNo: "WP-CAA-1190", chassisNo: "JTDKB20U493456789", type: "Sedan", fuel: "Hybrid", year: 2023, seats: 5, licenseExpiry: "2027-01-30", status: "Available" },
