@@ -6,11 +6,54 @@ import {
   FiSend,
   FiSave,
 } from "react-icons/fi";
+import { useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { createVehicleRequest } from "../../api/authApi";
 
 export default function CreateVehicleRequest() {
+  const [form, setForm] = useState({
+    purpose: "",
+    destination: "",
+    departure_at: "",
+    expected_return_at: "",
+    passenger_count: 1,
+    passenger_names: "",
+  });
+  const [attachment, setAttachment] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const submitRequest = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const payload = new FormData();
+      Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+      if (attachment) payload.append("attachment", attachment);
+
+      await createVehicleRequest(payload);
+      toast.success("Vehicle request submitted successfully.");
+      setForm({ purpose: "", destination: "", departure_at: "", expected_return_at: "", passenger_count: 1, passenger_names: "" });
+      setAttachment(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (error) {
+      const errors = error?.errors;
+      const message = errors ? Object.values(errors).flat()[0] : error?.message;
+      toast.error(message || "Unable to submit the request. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto">
+      <form className="max-w-6xl mx-auto" onSubmit={submitRequest}>
 
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
@@ -55,6 +98,10 @@ export default function CreateVehicleRequest() {
 
               <input
                 type="text"
+                name="purpose"
+                value={form.purpose}
+                onChange={updateField}
+                required
                 placeholder="Regional Site Inspection"
                 className="w-full border rounded-lg p-3"
               />
@@ -67,6 +114,10 @@ export default function CreateVehicleRequest() {
 
               <input
                 type="text"
+                name="destination"
+                value={form.destination}
+                onChange={updateField}
+                required
                 placeholder="Administrative Office"
                 className="w-full border rounded-lg p-3"
               />
@@ -79,6 +130,10 @@ export default function CreateVehicleRequest() {
 
               <input
                 type="datetime-local"
+                name="departure_at"
+                value={form.departure_at}
+                onChange={updateField}
+                required
                 className="w-full border rounded-lg p-3"
               />
             </div>
@@ -90,6 +145,10 @@ export default function CreateVehicleRequest() {
 
               <input
                 type="datetime-local"
+                name="expected_return_at"
+                value={form.expected_return_at}
+                onChange={updateField}
+                required
                 className="w-full border rounded-lg p-3"
               />
             </div>
@@ -127,7 +186,12 @@ export default function CreateVehicleRequest() {
 
                 <input
                   type="number"
-                  defaultValue={1}
+                  name="passenger_count"
+                  min="1"
+                  max="100"
+                  value={form.passenger_count}
+                  onChange={updateField}
+                  required
                   className="w-full border rounded-lg p-3"
                 />
               </div>
@@ -139,6 +203,9 @@ export default function CreateVehicleRequest() {
 
                 <input
                   type="text"
+                  name="passenger_names"
+                  value={form.passenger_names}
+                  onChange={updateField}
                   placeholder="Enter names"
                   className="w-full border rounded-lg p-3"
                 />
@@ -258,7 +325,11 @@ export default function CreateVehicleRequest() {
 
           <div className="p-6">
 
-            <div className="border-2 border-dashed rounded-xl p-16 text-center">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed rounded-xl p-16 text-center hover:border-blue-500"
+            >
               <FiPaperclip className="mx-auto text-4xl text-gray-400" />
 
               <p className="mt-4">
@@ -268,7 +339,15 @@ export default function CreateVehicleRequest() {
               <p className="text-gray-500 text-sm">
                 PDF, JPG, PNG (Max 5MB)
               </p>
-            </div>
+              {attachment && <p className="mt-3 text-sm font-medium text-blue-600">Selected: {attachment.name}</p>}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={(event) => setAttachment(event.target.files?.[0] || null)}
+              className="hidden"
+            />
 
           </div>
         </div>
@@ -276,21 +355,22 @@ export default function CreateVehicleRequest() {
         {/* Footer */}
         <div className="bg-white border rounded-xl p-6 flex justify-end gap-4">
 
-          <button className="flex items-center gap-2 border px-6 py-3 rounded-lg">
+          <button type="button" className="flex items-center gap-2 border px-6 py-3 rounded-lg" disabled>
             <FiSave />
             Save Draft
           </button>
 
-          <button 
-            onClick={() => alert("Request submitted!")}
+          <button
+            type="submit"
+            disabled={submitting}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg">
             <FiSend />
-            Submit Request
+            {submitting ? "Submitting..." : "Submit Request"}
           </button>
 
         </div>
 
-      </div>
+      </form>
     </DashboardLayout>
   );
 }

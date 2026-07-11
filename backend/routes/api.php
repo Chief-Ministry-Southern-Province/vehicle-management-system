@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\VehicleRequestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +24,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::put('/profile/password', [AuthController::class, 'changePassword']);
+
+    Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
+
+    Route::middleware('role:department_officer')->prefix('department')->group(function () {
+        Route::get('/vehicle-requests', [VehicleRequestController::class, 'departmentIndex']);
+        Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'departmentShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'recommend']);
+    });
 
     /*
     |----------------------------------------------------------------
