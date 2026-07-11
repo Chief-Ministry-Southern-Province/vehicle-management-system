@@ -53,12 +53,6 @@ const menuItems = [
         roles: ["department_officer"],
       },
       {
-        name: "Pending Recommendations",
-        path: "/pendingrecommendations",
-        icon: <FiFileText />,
-        roles: ["department_officer"],
-      },
-      {
         name: "Request History",
         path: "/departmentrequesthistory",
         icon: <FiClipboard />,

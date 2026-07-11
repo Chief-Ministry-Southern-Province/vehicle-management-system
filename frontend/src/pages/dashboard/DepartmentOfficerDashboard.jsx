@@ -1,8 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import StatsCards from "../../components/departmentOfficer/StatsCards";
 import PendingRequestsTable from "../../components/departmentOfficer/PendingRequestsTable";
-import DepartmentChart from "../../components/departmentOfficer/DepartmentChart";
-import ActivityTimeline from "../../components/departmentOfficer/ActivityTimeline";
 
 import { FiCalendar, FiClock } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -29,37 +27,13 @@ export default function DepartmentOfficerDashboard() {
             </p>
           </div>
 
-          <div className="flex gap-3">
-
-            <button className="border px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiCalendar />
-              May 2024
-            </button>
-
-            <button 
-              onClick={() => navigate('/pendingrecommendations')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiClock />
-              View Pending (8)
-            </button>
-
-          </div>
-
         </div>
 
         <StatsCards />
 
-        <div className="grid lg:grid-cols-3 gap-6">
-
-          <div className="lg:col-span-2">
+        <div className="space-y-6">
             <PendingRequestsTable />
-          </div>
-
-          <DepartmentChart />
-
         </div>
-
-        <ActivityTimeline />
 
       </div>
     </DashboardLayout>
