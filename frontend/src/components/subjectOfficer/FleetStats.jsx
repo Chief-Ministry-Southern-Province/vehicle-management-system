@@ -7,6 +7,14 @@ import {
 
 const stats = [
   {
+    title: "Total Vehicle",
+    value: "35",
+    subtitle: "Total vehicles in fleet",
+    icon: <FiTruck size={18} />,
+    bg: "from-cyan-500 to-blue-600",
+    trend: "+2.8%",
+  },
+  {
     title: "Available Now",
     value: "28",
     subtitle: "Ready for allocation",
@@ -15,7 +23,23 @@ const stats = [
     trend: "+2.8%",
   },
   {
-    title: "Monthly Fuel",
+    title: "Unavailable Now",
+    value: "05",
+    subtitle: "Currently in use",
+    icon: <FiTruck size={18} />,
+    bg: "from-cyan-500 to-blue-600",
+    trend: "+2.8%",
+  },
+  {
+    title: "Maintenance Due",
+    value: "02",
+    subtitle: "Scheduled maintenance",
+    icon: <FiTruck size={18} />,
+    bg: "from-cyan-500 to-blue-600",
+    trend: "+2.8%",
+  },
+  {
+    title: "Fuel Cost",
     value: "$12.4k",
     subtitle: "Fuel expenses",
     icon: <FiDroplet size={18} />,
@@ -42,7 +66,7 @@ const stats = [
 
 export default function FleetStats() {
   return (
-    <div className="grid xl:grid-cols-5 lg:grid-cols-3 md:grid-cols-2 gap-4">
+    <div className="grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4">
       {stats.map((item) => (
         <div
           key={item.title}

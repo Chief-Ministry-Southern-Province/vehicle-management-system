@@ -11,9 +11,16 @@ import {
 } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { deleteFleetVehicle, getFleetVehicles } from "../../data/fleetVehicles";
 
 export default function VehicleDirectory() {
   const navigate = useNavigate();
+  const [vehicles, setVehicles] = useState(getFleetVehicles);
+
+  const handleDelete = (registration) => {
+    setVehicles(deleteFleetVehicle(registration));
+  };
 
   return (
     <DashboardLayout>
@@ -66,14 +73,14 @@ export default function VehicleDirectory() {
         </div>
 
         {/* Statistics */}
-        <VehicleStats />
+        <VehicleStats vehicles={vehicles} />
 
         {/* Directory Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
           <VehicleFilters />
 
-          <VehicleTable />
+          <VehicleTable vehicles={vehicles} onDelete={handleDelete} />
 
         </div>
 

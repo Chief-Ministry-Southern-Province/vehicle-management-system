@@ -65,7 +65,7 @@ function App() {
 
             <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
-            <Route path="/vehicledetails" element={withAuth(<VehicleDetails />)}/>
+            <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
