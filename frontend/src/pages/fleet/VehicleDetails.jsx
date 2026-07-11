@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { FiCheckCircle, FiDroplet, FiImage, FiSave, FiTool, FiTruck } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import UtilizationChart from "../../components/subjectOfficer/vehicleDetails/UtilizationChart";
-import TechnicalInfo from "../../components/subjectOfficer/vehicleDetails/TechnicalInfo";
 import { getFleetVehicle, saveFleetVehicle } from "../../data/fleetVehicles";
 
 const SERVICE_CATEGORIES = ["Public Works", "Secretary Works", "Ministerial Assignments", "Administrative Transport", "Protocol & VIP Movement", "General Fleet Pool"];
@@ -49,7 +47,6 @@ export default function VehicleDetails() {
         </div>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2 border-b border-slate-100 pb-4"><FiTool className="text-blue-600" /><div><h2 className="font-bold text-slate-900">Maintenance cost and repair details</h2><p className="mt-1 text-sm text-slate-500">Record the most recent repair or maintenance activity.</p></div></div><div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4"><label className="text-sm font-semibold text-slate-700">Repair type<select value={vehicle.repairType} onChange={(event) => updateVehicle("repairType", event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50">{REPAIR_TYPES.map((type) => <option key={type}>{type}</option>)}</select></label><label className="text-sm font-semibold text-slate-700">Repair date<input type="date" value={vehicle.repairDate} onChange={(event) => updateVehicle("repairDate", event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50" /></label><label className="text-sm font-semibold text-slate-700">Repair station<input value={vehicle.repairStation} onChange={(event) => updateVehicle("repairStation", event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50" /></label><label className="text-sm font-semibold text-slate-700">Maintenance cost (LKR)<input type="number" min="0" value={vehicle.maintenanceCost} onChange={(event) => updateVehicle("maintenanceCost", Number(event.target.value))} className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50" /></label></div></section>
-        <div className="grid gap-6 xl:grid-cols-12"><div className="xl:col-span-8"><UtilizationChart /></div><div className="space-y-5 xl:col-span-4"><TechnicalInfo /><div className="rounded-2xl border border-blue-100 bg-blue-50 p-5"><p className="flex items-center gap-2 font-semibold text-blue-800"><FiTruck /> Current assignment</p><p className="mt-2 text-lg font-bold text-slate-900">{vehicle.serviceCategory}</p><p className="mt-1 text-sm text-slate-600">Last serviced: {vehicle.lastServiceDate || "Not recorded"}</p></div></div></div>
       </div>
     </DashboardLayout>
   );
