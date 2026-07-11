@@ -11,16 +11,33 @@ import {
 } from "react-icons/fi";
 
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { deleteFleetVehicle, getFleetVehicles } from "../../data/fleetVehicles";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { getVehicles } from "../../api/authApi";
 
 export default function VehicleDirectory() {
   const navigate = useNavigate();
-  const [vehicles, setVehicles] = useState(getFleetVehicles);
+  const [vehicles, setVehicles] = useState([]);
 
-  const handleDelete = (registration) => {
-    setVehicles(deleteFleetVehicle(registration));
-  };
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        const response = await getVehicles();
+        setVehicles((response?.data?.vehicles || []).map((vehicle) => ({
+          reg: vehicle.registration_number,
+          name: `${vehicle.make} ${vehicle.model}`,
+          year: vehicle.manufacturing_year || "—",
+          type: vehicle.vehicle_type,
+          status: vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1),
+          lastServiceDate: vehicle.last_service_date,
+          fuelLevel: vehicle.fuel_level,
+        })));
+      } catch (error) {
+        toast.error(error?.message || "Unable to load vehicles.");
+      }
+    };
+    loadVehicles();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -80,7 +97,7 @@ export default function VehicleDirectory() {
 
           <VehicleFilters />
 
-          <VehicleTable vehicles={vehicles} onDelete={handleDelete} />
+          <VehicleTable vehicles={vehicles} onDelete={() => toast.error("Vehicle deletion is not available yet.")} />
 
         </div>
 

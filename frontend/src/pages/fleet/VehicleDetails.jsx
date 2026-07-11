@@ -3,11 +3,14 @@ import { FiCheckCircle, FiDroplet, FiImage, FiSave, FiTool, FiTruck } from "reac
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getFleetVehicle, saveFleetVehicle } from "../../data/fleetVehicles";
+import VehicleDatabaseDetails from "./VehicleDatabaseDetails";
 
 const SERVICE_CATEGORIES = ["Public Works", "Secretary Works", "Ministerial Assignments", "Administrative Transport", "Protocol & VIP Movement", "General Fleet Pool"];
 const REPAIR_TYPES = ["Routine service", "Oil and filter change", "Brake inspection", "Tyre replacement", "Engine repair", "Body repair", "Electrical repair"];
 
-export default function VehicleDetails() {
+// Retained temporarily for reference while the route uses VehicleDatabaseDetails.
+// eslint-disable-next-line no-unused-vars
+function LegacyVehicleDetails() {
   const { registration } = useParams();
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(() => getFleetVehicle(registration));
@@ -51,3 +54,5 @@ export default function VehicleDetails() {
     </DashboardLayout>
   );
 }
+
+export default VehicleDatabaseDetails;

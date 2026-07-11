@@ -202,3 +202,31 @@ export const submitRecommendation = async (requestId, recommendation) => {
     throw error.response?.data || error.message;
   }
 };
+
+export const getVehicles = async () => {
+  try {
+    const response = await API.get("/vehicles", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getVehicle = async (registrationNumber) => {
+  try {
+    const response = await API.get(`/vehicles/${encodeURIComponent(registrationNumber)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createVehicle = async (formData) => {
+  try {
+    const response = await API.post("/vehicles", formData, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "multipart/form-data" } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateVehicle = async (registrationNumber, formData) => {
+  try {
+    const response = await API.post(`/vehicles/${encodeURIComponent(registrationNumber)}`, formData, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "multipart/form-data" } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};

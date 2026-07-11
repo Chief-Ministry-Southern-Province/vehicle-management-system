@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\VehicleRequestController;
+use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,6 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'departmentIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'departmentShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'recommend']);
+    });
+
+    Route::middleware('role:subject_officer')->group(function () {
+        Route::get('/vehicles', [VehicleController::class, 'index']);
+        Route::post('/vehicles', [VehicleController::class, 'store']);
+        Route::get('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'show']);
+        // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
+        Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);
     });
 
     /*
