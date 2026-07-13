@@ -1,14 +1,13 @@
-import { useMemo, useState } from "react";
-import { FiCheckCircle, FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
+import { useEffect, useMemo, useState } from "react";
+import { FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { RAW_VEHICLES } from "./TotalVehicle";
 import { DRIVERS } from "./DriverDetails";
+import { getVehicles } from "../../api/authApi";
 
 import RequestHeader from "../../components/deputySecretary/approvalWorkspace/RequestHeader";
 import RequestOverview from "../../components/deputySecretary/approvalWorkspace/RequestOverview";
 import ApprovalActions from "../../components/deputySecretary/approvalWorkspace/ApprovalActions";
 
-const AVAILABLE_VEHICLES = RAW_VEHICLES.filter((vehicle) => vehicle.status === "Available");
 const AVAILABLE_DRIVERS = DRIVERS.filter((driver) => driver.status === "Available");
 const PREVIOUS_JOURNEYS = {
   "DRV-0148": [
@@ -48,8 +47,31 @@ function AllocationPanel() {
   const [vehicleRegistration, setVehicleRegistration] = useState("");
   const [defaultVehicleRegistration, setDefaultVehicleRegistration] = useState("");
   const [showPreviousJourneys, setShowPreviousJourneys] = useState(true);
+  const [availableVehicles, setAvailableVehicles] = useState([]);
+  const [vehiclesError, setVehiclesError] = useState("");
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        const response = await getVehicles();
+        setAvailableVehicles((response?.data?.vehicles || [])
+          .filter((vehicle) => vehicle.status === "available")
+          .map((vehicle) => ({
+            id: vehicle.id,
+            registerNo: vehicle.registration_number,
+            model: `${vehicle.make} ${vehicle.model}`,
+            type: vehicle.vehicle_type,
+            fuel: vehicle.fuel_type || "—",
+            fuelCapacity: vehicle.fuel_capacity ?? "—",
+            status: "Available",
+          })));
+      } catch (error) {
+        setVehiclesError(error?.message || "Unable to load available vehicles.");
+      }
+    };
+    loadVehicles();
+  }, []);
   const selectedDriver = useMemo(() => AVAILABLE_DRIVERS.find((driver) => driver.id === driverId), [driverId]);
-  const selectedVehicle = useMemo(() => AVAILABLE_VEHICLES.find((vehicle) => vehicle.registerNo === vehicleRegistration), [vehicleRegistration]);
+  const selectedVehicle = useMemo(() => availableVehicles.find((vehicle) => vehicle.registerNo === vehicleRegistration), [availableVehicles, vehicleRegistration]);
   const previousJourneys = selectedDriver ? PREVIOUS_JOURNEYS[selectedDriver.id] : [];
   const isOverride = Boolean(defaultVehicleRegistration && vehicleRegistration !== defaultVehicleRegistration);
 
@@ -96,12 +118,13 @@ function AllocationPanel() {
           <label htmlFor="allocation-vehicle" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"><FiTruck className="text-blue-600" /> Allocated vehicle</label>
           <select id="allocation-vehicle" value={vehicleRegistration} onChange={(event) => setVehicleRegistration(event.target.value)} disabled={!driverId} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-100 focus:border-blue-400 focus:ring-4 focus:ring-blue-50">
             <option value="">Select a vehicle</option>
-            {AVAILABLE_VEHICLES.map((vehicle) => <option key={vehicle.id} value={vehicle.registerNo}>{vehicle.model} — {vehicle.registerNo}</option>)}
+            {availableVehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.registerNo}>{vehicle.model} — {vehicle.registerNo}</option>)}
           </select>
+          {vehiclesError && <p className="mt-2 text-xs text-red-600">{vehiclesError}</p>}
           {driverId && <p className="mt-2 flex items-start gap-2 text-xs text-slate-500"><FiInfo className="mt-0.5 shrink-0" /> {isOverride ? "A different available vehicle has been selected for this driver." : "The driver’s registered vehicle is selected by default. Select another vehicle above if needed."}</p>}
         </div>
 
-        {selectedVehicle && <div className="grid grid-cols-2 gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm"><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Vehicle</p><p className="mt-1 font-semibold text-slate-800">{selectedVehicle.model}</p><p className="text-slate-500">{selectedVehicle.registerNo}</p></div><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Fleet details</p><p className="mt-1 font-semibold text-slate-800">{selectedVehicle.type} · {selectedVehicle.seats} seats</p><p className="text-slate-500">{selectedVehicle.fuel} · {selectedVehicle.status}</p></div></div>}
+        {selectedVehicle && <div className="grid grid-cols-2 gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm"><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Vehicle</p><p className="mt-1 font-semibold text-slate-800">{selectedVehicle.model}</p><p className="text-slate-500">{selectedVehicle.registerNo}</p></div><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Fleet details</p><p className="mt-1 font-semibold text-slate-800">{selectedVehicle.type} · {selectedVehicle.fuelCapacity} L</p><p className="text-slate-500">{selectedVehicle.fuel} · {selectedVehicle.status}</p></div></div>}
       </div>
     </section>
   );

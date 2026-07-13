@@ -10,13 +10,14 @@ import {
   FiTruck,
 } from "react-icons/fi";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { getVehicles } from "../../api/authApi";
 
 export default function VehicleDirectory() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [vehicles, setVehicles] = useState([]);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function VehicleDirectory() {
       }
     };
     loadVehicles();
-  }, []);
+  }, [location.key]);
 
   return (
     <DashboardLayout>

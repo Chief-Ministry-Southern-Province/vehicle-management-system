@@ -1,7 +1,8 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getVehicles } from "../../api/authApi";
 import {
   FiFilter,
   FiChevronRight,
@@ -14,7 +15,6 @@ import {
   FiCheckSquare,
   FiSlash,
   FiTool,
-  FiUsers,
   FiDroplet,
   FiCalendar,
   FiHash,
@@ -33,23 +33,6 @@ import {
 /*  here on purpose; when your API returns a URL it will render       */
 /*  automatically, otherwise a clean placeholder icon is shown.       */
 /* ------------------------------------------------------------------ */
-export const RAW_VEHICLES = [
-  { id: "VEH-001", image: null, model: "Toyota Hiace", registerNo: "WP-CAB-4521", chassisNo: "JT2BF22K1W0123456", type: "Van", fuel: "Diesel", year: 2022, seats: 15, licenseExpiry: "2026-08-14", status: "Available" },
-  { id: "VEH-002", image: null, model: "Nissan Navara", registerNo: "WP-CAD-7788", chassisNo: "5N1AR2MM8FC612233", type: "Pickup Truck", fuel: "Diesel", year: 2021, seats: 5, licenseExpiry: "2026-07-22", status: "Unavailable" },
-  { id: "VEH-003", image: null, model: "Toyota Prius", registerNo: "WP-CAA-1190", chassisNo: "JTDKB20U493456789", type: "Sedan", fuel: "Hybrid", year: 2023, seats: 5, licenseExpiry: "2027-01-30", status: "Available" },
-  { id: "VEH-004", image: null, model: "Mitsubishi Rosa", registerNo: "WP-NB-3345", chassisNo: "JMYLR811AKC009812", type: "Minibus", fuel: "Diesel", year: 2019, seats: 28, licenseExpiry: "2026-07-15", status: "Maintenance" },
-  { id: "VEH-005", image: null, model: "Toyota Land Cruiser", registerNo: "WP-CAB-9021", chassisNo: "JTMHV05J104123998", type: "SUV", fuel: "Diesel", year: 2020, seats: 7, licenseExpiry: "2026-09-05", status: "Available" },
-  { id: "VEH-006", image: null, model: "Bajaj RE", registerNo: "WP-THR-5567", chassisNo: "MD2A15AZ7JCB45210", type: "Three Wheeler", fuel: "Petrol", year: 2022, seats: 3, licenseExpiry: "2026-07-10", status: "Available" },
-  { id: "VEH-007", image: null, model: "Isuzu Elf", registerNo: "WP-LC-6634", chassisNo: "JAANPR85E00987654", type: "Dump Truck", fuel: "Diesel", year: 2018, seats: 3, licenseExpiry: "2026-12-01", status: "Maintenance" },
-  { id: "VEH-008", image: null, model: "Honda Vezel", registerNo: "WP-CAC-2298", chassisNo: "RU3ZZ6DAWL0033445", type: "SUV", fuel: "Hybrid", year: 2023, seats: 5, licenseExpiry: "2027-03-18", status: "Available" },
-  { id: "VEH-009", image: null, model: "Tata Ace", registerNo: "WP-GA-8843", chassisNo: "MAT445021D2C11223", type: "Pickup Truck", fuel: "Diesel", year: 2020, seats: 3, licenseExpiry: "2026-07-09", status: "Unavailable" },
-  { id: "VEH-010", image: null, model: "Toyota Axio", registerNo: "WP-CAA-4471", chassisNo: "NZE141G3009887665", type: "Sedan", fuel: "Petrol", year: 2021, seats: 5, licenseExpiry: "2026-11-27", status: "Available" },
-  { id: "VEH-011", image: null, model: "Ashok Leyland Dost", registerNo: "WP-LC-9902", chassisNo: "MB1TDA2P4NW332211", type: "Pickup Truck", fuel: "Diesel", year: 2019, seats: 3, licenseExpiry: "2026-08-02", status: "Maintenance" },
-  { id: "VEH-012", image: null, model: "Suzuki Every", registerNo: "WP-CAB-1123", chassisNo: "DA17V0100987766554", type: "Van", fuel: "Petrol", year: 2022, seats: 8, licenseExpiry: "2027-02-14", status: "Available" },
-];
-
-const TYPES = [...new Set(RAW_VEHICLES.map((v) => v.type))];
-const FUELS = [...new Set(RAW_VEHICLES.map((v) => v.fuel))];
 const STATUSES = ["Available", "Unavailable", "Maintenance"];
 const PAGE_SIZE = 6;
 
@@ -71,6 +54,7 @@ function daysUntil(dateStr) {
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -192,6 +176,8 @@ export default function TotalVehicles() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const [vehicles, setVehicles] = useState([]);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [fuelFilter, setFuelFilter] = useState("All");
@@ -201,15 +187,40 @@ export default function TotalVehicles() {
   const [sortConfig, setSortConfig] = useState({ field: "model", dir: "asc" });
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(t);
+  const loadVehicles = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const response = await getVehicles();
+      setVehicles((response?.data?.vehicles || []).map((vehicle) => ({
+        id: vehicle.id,
+        image: vehicle.image_url,
+        model: `${vehicle.make} ${vehicle.model}`,
+        registerNo: vehicle.registration_number,
+        chassisNo: vehicle.vin || "—",
+        type: vehicle.vehicle_type,
+        fuel: vehicle.fuel_type || "—",
+        year: vehicle.manufacturing_year || "—",
+        fuelCapacity: vehicle.fuel_capacity ?? "—",
+        licenseExpiry: vehicle.revenue_license_expiry || vehicle.registration_expiry,
+        status: `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`,
+      })));
+    } catch (error) {
+      setVehicles([]);
+      setLoadError(error?.message || "Unable to load vehicles from the database.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 700);
-  };
+  useEffect(() => {
+    loadVehicles();
+  }, [loadVehicles]);
+
+  const handleRefresh = () => loadVehicles();
+
+  const types = useMemo(() => [...new Set(vehicles.map((vehicle) => vehicle.type).filter(Boolean))], [vehicles]);
+  const fuels = useMemo(() => [...new Set(vehicles.map((vehicle) => vehicle.fuel).filter((fuel) => fuel && fuel !== "—"))], [vehicles]);
 
   const handleSort = (field) => {
     setSortConfig((prev) =>
@@ -226,7 +237,7 @@ export default function TotalVehicles() {
   };
 
   const filtered = useMemo(() => {
-    let rows = RAW_VEHICLES.filter((v) => {
+    let rows = vehicles.filter((v) => {
       const q = query.trim().toLowerCase();
       const matchesQuery =
         !q ||
@@ -247,7 +258,7 @@ export default function TotalVehicles() {
     });
 
     return rows;
-  }, [query, typeFilter, fuelFilter, statusFilter, sortConfig]);
+  }, [vehicles, query, typeFilter, fuelFilter, statusFilter, sortConfig]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -255,11 +266,11 @@ export default function TotalVehicles() {
   useEffect(() => setPage(1), [query, typeFilter, fuelFilter, statusFilter]);
 
   const summary = useMemo(() => {
-    const available = RAW_VEHICLES.filter((v) => v.status === "Available").length;
-    const unavailable = RAW_VEHICLES.filter((v) => v.status === "Unavailable").length;
-    const maintenance = RAW_VEHICLES.filter((v) => v.status === "Maintenance").length;
-    return { total: RAW_VEHICLES.length, available, unavailable, maintenance };
-  }, []);
+    const available = vehicles.filter((v) => v.status === "Available").length;
+    const unavailable = vehicles.filter((v) => v.status === "Unavailable").length;
+    const maintenance = vehicles.filter((v) => v.status === "Maintenance").length;
+    return { total: vehicles.length, available, unavailable, maintenance };
+  }, [vehicles]);
 
   return (
     <DashboardLayout>
@@ -315,6 +326,7 @@ export default function TotalVehicles() {
 
       {/* Table card */}
       <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+        {loadError && <div className="m-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</div>}
         {/* Toolbar */}
         <div className="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center gap-3 lg:justify-between">
           <div>
@@ -360,7 +372,7 @@ export default function TotalVehicles() {
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
-                      {TYPES.map((t) => (
+                      {types.map((t) => (
                         <option key={t}>{t}</option>
                       ))}
                     </select>
@@ -374,7 +386,7 @@ export default function TotalVehicles() {
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
-                      {FUELS.map((f) => (
+                      {fuels.map((f) => (
                         <option key={f}>{f}</option>
                       ))}
                     </select>
@@ -416,7 +428,7 @@ export default function TotalVehicles() {
                 <SortHeader label="Type" field="type" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Fuel" field="fuel" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Year" field="year" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="Seats" field="seats" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Fuel Capacity" field="fuelCapacity" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="License Expiry" field="licenseExpiry" sortConfig={sortConfig} onSort={handleSort} />
                 <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">Status</th>
               </tr>
@@ -429,13 +441,13 @@ export default function TotalVehicles() {
                 <EmptyState onClear={clearFilters} />
               ) : (
                 pageRows.map((v) => {
-                  const daysLeft = daysUntil(v.licenseExpiry);
+                  const daysLeft = v.licenseExpiry ? daysUntil(v.licenseExpiry) : null;
                   const expiringSoon = daysLeft <= 30 && daysLeft >= 0;
                   const expired = daysLeft < 0;
                   return (
                     <tr
                       key={v.id}
-                      onClick={() => navigate(`/vehicles/${v.id}`)}
+                      onClick={() => navigate(`/vehicledetails/${encodeURIComponent(v.registerNo)}`)}
                       className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
                       <td className="p-4">
@@ -458,7 +470,7 @@ export default function TotalVehicles() {
                       <td className="p-4 text-slate-600 whitespace-nowrap">{v.year}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center gap-1 text-slate-600 whitespace-nowrap">
-                          <FiUsers className="h-3.5 w-3.5 text-slate-400" /> {v.seats}
+                          <FiDroplet className="h-3.5 w-3.5 text-slate-400" /> {v.fuelCapacity} L
                         </span>
                       </td>
                       <td className="p-4 whitespace-nowrap">
