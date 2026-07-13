@@ -34,10 +34,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'recommend']);
     });
 
-    Route::middleware('role:subject_officer')->group(function () {
+    // Fleet visibility is required by the Subject Officer and Deputy Secretary dashboards.
+    Route::middleware('role:subject_officer,deputy_secretary')->group(function () {
         Route::get('/vehicles', [VehicleController::class, 'index']);
-        Route::post('/vehicles', [VehicleController::class, 'store']);
         Route::get('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'show']);
+    });
+
+    // Fleet registration and edits remain restricted to the Subject Officer.
+    Route::middleware('role:subject_officer')->group(function () {
+        Route::post('/vehicles', [VehicleController::class, 'store']);
         // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);
     });
