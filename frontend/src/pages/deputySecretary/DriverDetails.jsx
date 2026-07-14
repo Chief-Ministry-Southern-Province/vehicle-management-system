@@ -6,7 +6,6 @@ import {
   FiCheckCircle,
   FiDroplet,
   FiFilter,
-  FiHeart,
   FiPhone,
   FiSearch,
   FiShield,

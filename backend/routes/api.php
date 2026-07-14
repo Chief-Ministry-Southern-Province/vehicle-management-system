@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\VehicleRequestController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\DashboardStatsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'approve']);
     });
+
+    Route::middleware('role:deputy_secretary')->get('/dashboard/executive-stats', [DashboardStatsController::class, 'deputySecretary']);
 
     // Fleet visibility is required by the Subject Officer and Deputy Secretary dashboards.
     Route::middleware('role:subject_officer,deputy_secretary')->group(function () {
