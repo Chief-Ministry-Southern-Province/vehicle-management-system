@@ -444,7 +444,7 @@ export default function TotalVehicles() {
                   return (
                     <tr
                       key={v.id}
-                      onClick={() => navigate(`/vehicledetails/${encodeURIComponent(v.registerNo)}`)}
+                      onClick={() => navigate(`/deputy/vehicles/${encodeURIComponent(v.id)}`)}
                       className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
                       <td className="p-4">
