@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\VehicleRequestController;
 use App\Http\Controllers\Api\VehicleController;
+use App\Http\Controllers\Api\DriverController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:subject_officer,deputy_secretary')->group(function () {
         Route::get('/vehicles', [VehicleController::class, 'index']);
         Route::get('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'show']);
+        Route::get('/drivers', [DriverController::class, 'index']);
+        Route::get('/drivers/{driver:driver_id}', [DriverController::class, 'show']);
     });
 
     // Fleet registration and edits remain restricted to the Subject Officer.
@@ -45,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/vehicles', [VehicleController::class, 'store']);
         // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);
+        Route::post('/drivers', [DriverController::class, 'store']);
+        Route::put('/drivers/{driver:driver_id}', [DriverController::class, 'update']);
     });
 
     /*
