@@ -1,10 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 
-import {
-  FiClipboard,
-  FiActivity,
-} from "react-icons/fi";
 import ApprovalQueue from "../../components/deputySecretary/dashboard/ApprovalQueue";
 
 export default function PendingApprovals() {

@@ -47,6 +47,24 @@ const STATUS_ICON = {
   Maintenance: <FiTool className="h-3 w-3" />,
 };
 
+function normalizeVehicle(vehicle) {
+  return {
+    id: vehicle.id,
+    image: vehicle.image_url,
+    model: `${vehicle.make} ${vehicle.model}`,
+    registerNo: vehicle.registration_number,
+    type: vehicle.vehicle_type,
+    fuel: vehicle.fuel_type || "—",
+    fuelCapacity: vehicle.fuel_capacity ?? "—",
+    fuelLevel: vehicle.fuel_level ?? "—",
+    seatCapacity: vehicle.seat_capacity ?? vehicle.seating_capacity ?? "—",
+    licenseExpiry: vehicle.revenue_license_expiry || vehicle.registration_expiry,
+    status: vehicle.status
+      ? `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`
+      : "Unavailable",
+  };
+}
+
 function daysUntil(dateStr) {
   const diff = new Date(dateStr) - new Date();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
@@ -191,21 +209,7 @@ export default function TotalVehicles() {
     setLoadError("");
     try {
       const response = await getVehicles();
-      setVehicles((response?.data?.vehicles || []).map((vehicle) => ({
-        id: vehicle.id,
-        image: vehicle.image_url,
-        model: `${vehicle.make} ${vehicle.model}`,
-        registerNo: vehicle.registration_number,
-        type: vehicle.vehicle_type,
-        fuel: vehicle.fuel_type || "—",
-        fuelCapacity: vehicle.fuel_capacity ?? "—",
-        fuelLevel: vehicle.fuel_level ?? "—",
-        seatCapacity: vehicle.seat_capacity ?? vehicle.seating_capacity ?? "—",
-        licenseExpiry: vehicle.revenue_license_expiry || vehicle.registration_expiry,
-        status: vehicle.status
-          ? `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`
-          : "Unavailable",
-      })));
+      setVehicles((response?.data?.vehicles || []).map(normalizeVehicle));
     } catch (error) {
       setVehicles([]);
       setLoadError(error?.message || "Unable to load vehicles from the database.");
@@ -215,8 +219,21 @@ export default function TotalVehicles() {
   }, []);
 
   useEffect(() => {
-    loadVehicles();
-  }, [loadVehicles]);
+    let active = true;
+    getVehicles()
+      .then((response) => {
+        if (active) setVehicles((response?.data?.vehicles || []).map(normalizeVehicle));
+      })
+      .catch((error) => {
+        if (!active) return;
+        setVehicles([]);
+        setLoadError(error?.message || "Unable to load vehicles from the database.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const handleRefresh = () => loadVehicles();
 
@@ -262,8 +279,6 @@ export default function TotalVehicles() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  useEffect(() => setPage(1), [query, typeFilter, fuelFilter, statusFilter]);
 
   const summary = useMemo(() => {
     const available = vehicles.filter((v) => v.status === "Available").length;
@@ -339,7 +354,7 @@ export default function TotalVehicles() {
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
               <input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
                 placeholder="Search vehicle or register number..."
                 className="pl-9 pr-8 py-2 w-full sm:w-72 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
               />
@@ -368,7 +383,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Vehicle Type</label>
                     <select
                       value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value)}
+                      onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
@@ -382,7 +397,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Fuel Type</label>
                     <select
                       value={fuelFilter}
-                      onChange={(e) => setFuelFilter(e.target.value)}
+                      onChange={(e) => { setFuelFilter(e.target.value); setPage(1); }}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
@@ -396,7 +411,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</label>
                     <select
                       value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
+                      onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>

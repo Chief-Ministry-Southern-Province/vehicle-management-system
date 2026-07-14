@@ -21,27 +21,22 @@ import { BsFilePerson } from "react-icons/bs";
 /*  on mount, preserving any prefix/suffix ("$", "L", "h", etc.)      */
 /* ------------------------------------------------------------------ */
 function useCountUp(value, duration = 900) {
-  const [display, setDisplay] = useState("0");
+  const raw = String(value ?? "");
+  const hasNumericValue = /-?\d[\d,]*\.?\d*/.test(raw);
+  const [display, setDisplay] = useState(() => (hasNumericValue ? "0" : raw));
   const frameRef = useRef(null);
 
   useEffect(() => {
     const raw = String(value ?? "");
     const match = raw.match(/-?\d[\d,]*\.?\d*/);
-
-    if (!match) {
-      setDisplay(raw);
-      return;
-    }
+    if (!match) return;
 
     const target = parseFloat(match[0].replace(/,/g, ""));
     const prefix = raw.slice(0, match.index);
     const suffix = raw.slice(match.index + match[0].length);
     const decimals = (match[0].split(".")[1] || "").length;
 
-    if (Number.isNaN(target)) {
-      setDisplay(raw);
-      return;
-    }
+    if (Number.isNaN(target)) return;
 
     let start = null;
     cancelAnimationFrame(frameRef.current);
@@ -59,7 +54,7 @@ function useCountUp(value, duration = 900) {
     return () => cancelAnimationFrame(frameRef.current);
   }, [value, duration]);
 
-  return display;
+  return hasNumericValue ? display : raw;
 }
 
 /* ------------------------------------------------------------------ */

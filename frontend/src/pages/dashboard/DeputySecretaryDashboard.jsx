@@ -1,7 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 import ExecutiveStats from "../../components/deputySecretary/dashboard/ExecutiveStats";
-import ApprovalQueue from "../../components/deputySecretary/dashboard/ApprovalQueue";
 
 export default function DeputySecretaryDashboard() {
   return (

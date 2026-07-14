@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { FiCheckCircle, FiDroplet, FiImage, FiSave, FiTool, FiTruck } from "react-icons/fi";
+import { useState } from "react";
+import { FiCheckCircle, FiDroplet, FiImage, FiSave, FiTool } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getFleetVehicle, saveFleetVehicle } from "../../data/fleetVehicles";
@@ -15,11 +15,6 @@ function LegacyVehicleDetails() {
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(() => getFleetVehicle(registration));
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    setVehicle(getFleetVehicle(registration));
-    setSaved(false);
-  }, [registration]);
 
   if (!vehicle) {
     return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><div className="rounded-2xl border border-slate-200 bg-white p-6"><h1 className="text-xl font-bold text-slate-900">Vehicle not found</h1><button onClick={() => navigate("/vehicledirectory")} className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white">Back to directory</button></div></div></DashboardLayout>;

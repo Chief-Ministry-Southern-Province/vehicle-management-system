@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   FiCalendar,
   FiCheckCircle,
-  FiDownload,
   FiDroplet,
   FiFilter,
   FiHeart,
@@ -13,11 +12,12 @@ import {
   FiShield,
   FiStar,
   FiTruck,
-  FiUser,
   FiUsers,
   FiX,
 } from "react-icons/fi";
 
+// Shared with ApprovalWorkspace; this non-component export is intentional.
+// eslint-disable-next-line react-refresh/only-export-components
 export const DRIVERS = [
   {
     id: "DRV-0148",

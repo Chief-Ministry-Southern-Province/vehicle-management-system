@@ -3,12 +3,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import FleetStats from "../../components/subjectOfficer/FleetStats";
 import FleetStatusGrid from "../../components/subjectOfficer/FleetStatusGrid";
 
-import {FiBarChart2,FiPlus} from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-
 export default function SubjectOfficerDashboard() {
-  const navigate = useNavigate();
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
