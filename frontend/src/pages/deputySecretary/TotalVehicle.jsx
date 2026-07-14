@@ -17,7 +17,6 @@ import {
   FiTool,
   FiDroplet,
   FiCalendar,
-  FiHash,
   FiAlertTriangle,
   FiArrowUp,
   FiArrowDown,
@@ -197,13 +196,15 @@ export default function TotalVehicles() {
         image: vehicle.image_url,
         model: `${vehicle.make} ${vehicle.model}`,
         registerNo: vehicle.registration_number,
-        chassisNo: vehicle.vin || "—",
         type: vehicle.vehicle_type,
         fuel: vehicle.fuel_type || "—",
-        year: vehicle.manufacturing_year || "—",
         fuelCapacity: vehicle.fuel_capacity ?? "—",
+        fuelLevel: vehicle.fuel_level ?? "—",
+        seatCapacity: vehicle.seat_capacity ?? vehicle.seating_capacity ?? "—",
         licenseExpiry: vehicle.revenue_license_expiry || vehicle.registration_expiry,
-        status: `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`,
+        status: vehicle.status
+          ? `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`
+          : "Unavailable",
       })));
     } catch (error) {
       setVehicles([]);
@@ -242,8 +243,7 @@ export default function TotalVehicles() {
       const matchesQuery =
         !q ||
         v.model.toLowerCase().includes(q) ||
-        v.registerNo.toLowerCase().includes(q) ||
-        v.chassisNo.toLowerCase().includes(q);
+        v.registerNo.toLowerCase().includes(q);
       const matchesType = typeFilter === "All" || v.type === typeFilter;
       const matchesFuel = fuelFilter === "All" || v.fuel === fuelFilter;
       const matchesStatus = statusFilter === "All" || v.status === statusFilter;
@@ -340,7 +340,7 @@ export default function TotalVehicles() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search model, register or chassis no..."
+                placeholder="Search vehicle or register number..."
                 className="pl-9 pr-8 py-2 w-full sm:w-72 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
               />
               {query && (
@@ -417,19 +417,16 @@ export default function TotalVehicles() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1180px]">
+          <table className="w-full min-w-[1120px]">
             <thead className="bg-slate-50/70">
               <tr>
-                <SortHeader label="Vehicle" field="model" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="Register No." field="registerNo" sortConfig={sortConfig} onSort={handleSort} />
-                <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1"><FiHash className="h-3 w-3" /> Chassis No.</span>
-                </th>
-                <SortHeader label="Type" field="type" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="Fuel" field="fuel" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="Year" field="year" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Vehicle Name" field="model" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Register Number" field="registerNo" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Fuel Type" field="fuel" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Fuel Capacity" field="fuelCapacity" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="License Expiry" field="licenseExpiry" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Fuel Level" field="fuelLevel" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Seat Capacity" field="seatCapacity" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label="Licence Expire Date" field="licenseExpiry" sortConfig={sortConfig} onSort={handleSort} />
                 <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">Status</th>
               </tr>
             </thead>
@@ -460,18 +457,33 @@ export default function TotalVehicles() {
                         </div>
                       </td>
                       <td className="p-4 text-blue-600 font-medium whitespace-nowrap">{v.registerNo}</td>
-                      <td className="p-4 text-slate-500 whitespace-nowrap font-mono text-xs">{v.chassisNo}</td>
-                      <td className="p-4 text-slate-600 whitespace-nowrap">{v.type}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center gap-1 text-slate-600 whitespace-nowrap">
                           <FiDroplet className="h-3.5 w-3.5 text-cyan-500" /> {v.fuel}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-600 whitespace-nowrap">{v.year}</td>
                       <td className="p-4">
                         <span className="inline-flex items-center gap-1 text-slate-600 whitespace-nowrap">
-                          <FiDroplet className="h-3.5 w-3.5 text-slate-400" /> {v.fuelCapacity} L
+                          <FiDroplet className="h-3.5 w-3.5 text-slate-400" /> {v.fuelCapacity === "—" ? v.fuelCapacity : `${v.fuelCapacity} L`}
                         </span>
+                      </td>
+                      <td className="p-4">
+                        {v.fuelLevel === "—" ? (
+                          <span className="text-slate-400">—</span>
+                        ) : (
+                          <div className="flex min-w-32 items-center gap-2">
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
+                              <div
+                                className={`h-full rounded-full ${v.fuelLevel < 20 ? "bg-red-500" : v.fuelLevel < 50 ? "bg-amber-500" : "bg-emerald-500"}`}
+                                style={{ width: `${Math.min(100, Math.max(0, Number(v.fuelLevel)))}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-medium text-slate-600">{v.fuelLevel}%</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4 text-slate-600 whitespace-nowrap">
+                        {v.seatCapacity === "—" ? v.seatCapacity : `${v.seatCapacity} seats`}
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
