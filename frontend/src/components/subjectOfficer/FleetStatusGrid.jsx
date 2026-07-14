@@ -4,27 +4,39 @@ import {
   FiTool,
   FiAlertTriangle,
 } from "react-icons/fi";
+import { useEffect, useMemo, useState } from "react";
+import { getVehicles } from "../../api/authApi";
 
-const vehicles = [
-  "KAA123A",
-  "KAB456B",
-  "KAC789C",
-  "KAD012D",
-  "KAE345E",
-  "KAF678F",
-  "KAG901G",
-  "KAH234H",
-  "KAI567I",
-  "KAJ890J",
-  "KAK123K",
-  "KAL456L",
-  "KAM789M",
-  "KAN012N",
-  "KAO345O",
-  "KAP678P",
-];
+const statusStyles = {
+  available: { icon: FiCheckCircle, card: "bg-green-100 text-green-600", dot: "bg-green-500", badge: "bg-green-50 text-green-700", label: "Available" },
+  maintenance: { icon: FiTool, card: "bg-amber-100 text-amber-600", dot: "bg-amber-500", badge: "bg-amber-50 text-amber-700", label: "Maintenance" },
+  unavailable: { icon: FiAlertTriangle, card: "bg-red-100 text-red-600", dot: "bg-red-500", badge: "bg-red-50 text-red-700", label: "Unavailable" },
+};
 
 export default function FleetStatusGrid() {
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        const response = await getVehicles();
+        setVehicles(response?.data?.vehicles || []);
+      } catch (loadError) {
+        setError(loadError?.message || "Unable to load fleet status.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVehicles();
+  }, []);
+
+  const summary = useMemo(() => vehicles.reduce((totals, vehicle) => {
+    if (Object.hasOwn(totals, vehicle.status)) totals[vehicle.status] += 1;
+    return totals;
+  }, { available: 0, maintenance: 0, unavailable: 0 }), [vehicles]);
+
   return (
     <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
       
@@ -45,17 +57,17 @@ export default function FleetStatusGrid() {
           <div className="hidden md:flex gap-6 text-sm">
             <div>
               <p className="text-slate-500">Available</p>
-              <p className="font-bold text-green-600">12</p>
+              <p className="font-bold text-green-600">{summary.available}</p>
             </div>
 
             <div>
               <p className="text-slate-500">Maintenance</p>
-              <p className="font-bold text-amber-600">2</p>
+              <p className="font-bold text-amber-600">{summary.maintenance}</p>
             </div>
 
             <div>
               <p className="text-slate-500">Unavailable</p>
-              <p className="font-bold text-red-600">2</p>
+              <p className="font-bold text-red-600">{summary.unavailable}</p>
             </div>
           </div>
 
@@ -67,69 +79,45 @@ export default function FleetStatusGrid() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
 
-          {vehicles.map((vehicle, index) => {
-            const status =
-              index % 7 === 0
-                ? "maintenance"
-                : index % 5 === 0
-                ? "unavailable"
-                : "available";
+          {loading && Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-slate-50" />
+          ))}
+
+          {!loading && error && <p className="col-span-full rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+
+          {!loading && !error && vehicles.length === 0 && <p className="col-span-full rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No vehicles are registered in the fleet.</p>}
+
+          {!loading && !error && vehicles.map((vehicle) => {
+            const style = statusStyles[vehicle.status] || statusStyles.unavailable;
+            const StatusIcon = style.icon;
 
             return (
               <div
-                key={vehicle}
+                key={vehicle.id}
                 className="group bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
               >
                 <div className="flex justify-between items-start">
 
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      status === "available"
-                        ? "bg-green-100 text-green-600"
-                        : status === "maintenance"
-                        ? "bg-amber-100 text-amber-600"
-                        : "bg-red-100 text-red-600"
-                    }`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${style.card}`}
                   >
                     <FiTruck size={18} />
                   </div>
 
                   <span
-                    className={`w-3 h-3 rounded-full ${
-                      status === "available"
-                        ? "bg-green-500"
-                        : status === "maintenance"
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                    }`}
+                    className={`w-3 h-3 rounded-full ${style.dot}`}
                   />
                 </div>
 
                 <h3 className="font-semibold text-slate-800 mt-4">
-                  {vehicle}
+                  {vehicle.registration_number}
                 </h3>
 
                 <div className="mt-3">
-                  {status === "available" && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                      <FiCheckCircle size={12} />
-                      Available
-                    </span>
-                  )}
-
-                  {status === "maintenance" && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-                      <FiTool size={12} />
-                      Maintenance
-                    </span>
-                  )}
-
-                  {status === "unavailable" && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
-                      <FiAlertTriangle size={12} />
-                      Unavailable
-                    </span>
-                  )}
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.badge}`}>
+                    <StatusIcon size={12} />
+                    {style.label}
+                  </span>
                 </div>
               </div>
             );
