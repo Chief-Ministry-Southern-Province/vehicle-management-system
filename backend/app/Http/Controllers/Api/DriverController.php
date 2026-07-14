@@ -56,6 +56,13 @@ class DriverController extends Controller
             'licence_renewal_date' => ['required', 'date'],
             'allocated_vehicle' => ['nullable', 'string', 'max:50', 'exists:vehicles,registration_number'],
             'status' => ['required', Rule::in(['available', 'on_trip', 'unavailable'])],
+            'previous_journeys' => ['nullable', 'array', 'max:100'],
+            'previous_journeys.*.date' => ['required', 'date'],
+            'previous_journeys.*.origin' => ['required', 'string', 'max:255'],
+            'previous_journeys.*.destination' => ['required', 'string', 'max:255'],
+            'previous_journeys.*.purpose' => ['required', 'string', 'max:255'],
+            'previous_journeys.*.vehicle_registration' => ['nullable', 'string', 'max:50'],
+            'previous_journeys.*.status' => ['required', 'string', 'max:50'],
         ]);
     }
 }

@@ -31,7 +31,25 @@ class DriverSeeder extends Seeder
             ['driver_id' => 'DRV-0219', 'full_name' => 'Arun Prakash', 'date_of_birth' => '1989-01-12', 'nic' => '890121194V', 'address' => 'No. 37, Central Road, Trincomalee', 'contact_number' => '+94 77 310 2219', 'blood_group' => 'O+', 'licence_number' => 'B2500219', 'licence_type' => 'B, B1, D', 'licence_renewal_date' => '2029-01-12', 'allocated_vehicle' => 'GV-1024', 'status' => 'unavailable'],
         ];
 
-        foreach ($drivers as $driver) {
+        foreach ($drivers as $index => $driver) {
+            $driver['previous_journeys'] = [
+                [
+                    'date' => '2026-06-' . str_pad((string) (10 + ($index % 15)), 2, '0', STR_PAD_LEFT),
+                    'origin' => $driver['address'],
+                    'destination' => ['District Secretariat', 'Ministry Headquarters', 'Bandaranaike International Airport'][$index % 3],
+                    'purpose' => ['Official coordination meeting', 'Government field inspection', 'Official passenger transfer'][$index % 3],
+                    'vehicle_registration' => $driver['allocated_vehicle'],
+                    'status' => 'completed',
+                ],
+                [
+                    'date' => '2026-05-' . str_pad((string) (5 + ($index % 20)), 2, '0', STR_PAD_LEFT),
+                    'origin' => 'Government Administrative Complex, Colombo',
+                    'destination' => ['Provincial Council Office', 'Public Works Project Site', 'Central Secretariat'][$index % 3],
+                    'purpose' => ['Departmental official visit', 'Project monitoring visit', 'Inter-ministerial transport'][$index % 3],
+                    'vehicle_registration' => $driver['allocated_vehicle'],
+                    'status' => 'completed',
+                ],
+            ];
             Driver::updateOrCreate(['driver_id' => $driver['driver_id']], $driver);
         }
     }
