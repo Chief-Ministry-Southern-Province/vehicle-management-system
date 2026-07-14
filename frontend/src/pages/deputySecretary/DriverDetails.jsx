@@ -30,7 +30,7 @@ export const DRIVERS = [
     bloodGroup: "O+",
     licenceNumber: "B2145789",
     licenceType: "B, B1, D",
-    licenceExpiry: "2027-08-11",
+    licenceRenewalDate: "2027-08-11",
     designation: "Senior Executive Driver",
     department: "Executive Transport Unit",
     experience: "12 years",
@@ -52,7 +52,7 @@ export const DRIVERS = [
     bloodGroup: "A+",
     licenceNumber: "B2097741",
     licenceType: "B, C1",
-    licenceExpiry: "2026-12-22",
+    licenceRenewalDate: "2026-12-22",
     designation: "Protocol Driver",
     department: "VIP Movement Desk",
     experience: "8 years",
@@ -74,7 +74,7 @@ export const DRIVERS = [
     bloodGroup: "B+",
     licenceNumber: "B1985442",
     licenceType: "B, B1, D",
-    licenceExpiry: "2028-03-05",
+    licenceRenewalDate: "2028-03-05",
     designation: "Executive Driver",
     department: "Ministerial Assignments",
     experience: "10 years",
@@ -96,11 +96,11 @@ export const DRIVERS = [
     bloodGroup: "AB+",
     licenceNumber: "B2339021",
     licenceType: "B, C",
-    licenceExpiry: "2027-01-18",
-    designation: "Standby Driver",
+    licenceRenewalDate: "2027-01-18",
+    designation: "Fleet Driver",
     department: "General Fleet Pool",
     experience: "6 years",
-    status: "Standby",
+    status: "Unavailable",
     clearance: "Pending Review",
     rating: 4.5,
     trips: 512,
@@ -118,7 +118,7 @@ export const DRIVERS = [
     bloodGroup: "O-",
     licenceNumber: "B1763550",
     licenceType: "B, B1, C, D",
-    licenceExpiry: "2026-09-14",
+    licenceRenewalDate: "2026-09-14",
     designation: "Heavy Vehicle Driver",
     department: "Logistics and Supplies",
     experience: "15 years",
@@ -140,7 +140,7 @@ export const DRIVERS = [
     bloodGroup: "A-",
     licenceNumber: "B2459108",
     licenceType: "B, B1",
-    licenceExpiry: "2029-04-20",
+    licenceRenewalDate: "2029-04-20",
     designation: "Pool Driver",
     department: "Administrative Transport",
     experience: "5 years",
@@ -156,9 +156,17 @@ export const DRIVERS = [
 const STATUS_STYLES = {
   Available: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   "On Trip": "bg-blue-50 text-blue-700 ring-blue-100",
-  Standby: "bg-amber-50 text-amber-700 ring-amber-100",
   Unavailable: "bg-rose-50 text-rose-700 ring-rose-100",
 };
+
+function loadDirectoryDrivers() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("vms-driver-directory"));
+    return Array.isArray(saved) ? saved : DRIVERS;
+  } catch {
+    return DRIVERS;
+  }
+}
 
 function getInitials(name) {
   return name
@@ -223,7 +231,7 @@ function SummaryCard({ icon, label, value, sub, tone }) {
 }
 
 function DriverCard({ driver }) {
-  const expiryDays = daysUntil(driver.licenceExpiry);
+  const expiryDays = daysUntil(driver.licenceRenewalDate);
   const expiringSoon = expiryDays <= 180;
 
   return (
@@ -235,7 +243,7 @@ function DriverCard({ driver }) {
           </div>
           <div>
             <h3 className="font-bold text-slate-900">{driver.fullName}</h3>
-            <p className="mt-1 text-sm text-slate-500">{driver.designation}</p>
+            <p className="mt-1 text-sm text-slate-500">{driver.designation || "Government Driver"}</p>
             <p className="mt-1 text-xs font-semibold text-blue-600">
               {driver.id}
             </p>
@@ -271,7 +279,7 @@ function DriverCard({ driver }) {
                 : "bg-emerald-100 text-emerald-700"
             }`}
           >
-            {formatDate(driver.licenceExpiry)}
+            {formatDate(driver.licenceRenewalDate)}
           </span>
         </div>
       </div>
@@ -281,10 +289,12 @@ function DriverCard({ driver }) {
           <FiTruck className="text-blue-500" />
           {driver.vehicle}
         </span>
-        <span className="inline-flex items-center gap-2">
-          <FiStar className="text-amber-500" />
-          {driver.rating}
-        </span>
+        {driver.rating != null && (
+          <span className="inline-flex items-center gap-2">
+            <FiStar className="text-amber-500" />
+            {driver.rating}
+          </span>
+        )}
       </div>
     </article>
   );
@@ -305,13 +315,14 @@ function DetailLine({ icon, label, value }) {
 }
 
 export default function DriverDetails() {
+  const [drivers] = useState(loadDirectoryDrivers);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredDrivers = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    return DRIVERS.filter((driver) => {
+    return drivers.filter((driver) => {
       const matchesQuery =
         !q ||
         driver.id.toLowerCase().includes(q) ||
@@ -325,27 +336,32 @@ export default function DriverDetails() {
 
       return matchesQuery && matchesStatus;
     });
-  }, [query, statusFilter]);
+  }, [drivers, query, statusFilter]);
 
   const summary = useMemo(
     () => ({
-      total: DRIVERS.length,
-      available: DRIVERS.filter((driver) => driver.status === "Available")
+      total: drivers.length,
+      available: drivers.filter((driver) => driver.status === "Available")
         .length,
-      verified: DRIVERS.filter((driver) => driver.clearance === "Verified")
-        .length,
-      expiring: DRIVERS.filter((driver) => daysUntil(driver.licenceExpiry) <= 180)
-        .length,
+      onTrip: drivers.filter((driver) => driver.status === "On Trip").length,
+      unavailable: drivers.filter((driver) => driver.status === "Unavailable").length,
     }),
-    []
+    [drivers]
   );
 
-  const statuses = ["All", ...new Set(DRIVERS.map((driver) => driver.status))];
+  const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
 
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
-    
+        <header className="mb-6">
+          <p className="text-sm font-semibold text-blue-600">Fleet Management</p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900">Driver Details</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            View driver identity, licence, contact, vehicle allocation, and availability information.
+          </p>
+        </header>
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             icon={<FiUsers />}
@@ -364,15 +380,15 @@ export default function DriverDetails() {
           <SummaryCard
             icon={<FiShield />}
             label="On Trip"
-            value={summary.verified}
-            sub="Security clearance complete"
+            value={summary.onTrip}
+            sub="Currently assigned to trips"
             tone="amber"
           />
           <SummaryCard
             icon={<FiCalendar />}
             label="Unavailable"
-            value={summary.expiring}
-            sub="Licences expiring within 180 days"
+            value={summary.unavailable}
+            sub="Not available for assignment"
             tone="rose"
           />
         </div>
@@ -384,7 +400,7 @@ export default function DriverDetails() {
                 Driver Directory
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Showing {filteredDrivers.length} of {DRIVERS.length} drivers
+                Showing {filteredDrivers.length} of {drivers.length} drivers
               </p>
             </div>
 
@@ -444,16 +460,17 @@ export default function DriverDetails() {
             <table className="w-full min-w-[1500px]">
               <thead className="bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <th className="px-5 py-4">Driver</th>
+                  <th className="px-5 py-4">Driver ID</th>
+                  <th className="px-5 py-4">Full Name</th>
                   <th className="px-5 py-4">Date of Birth</th>
                   <th className="px-5 py-4">NIC</th>
                   <th className="px-5 py-4">Address</th>
-                  <th className="px-5 py-4">Contact</th>
-                  <th className="px-5 py-4">Blood</th>
-                  <th className="px-5 py-4">Licence</th>
+                  <th className="px-5 py-4">Contact Number</th>
+                  <th className="px-5 py-4">Blood Group</th>
+                  <th className="px-5 py-4">Licence Number</th>
                   <th className="px-5 py-4">Licence Type</th>
-                  <th className="px-5 py-4">Expiry</th>
-                  <th className="px-5 py-4">Vehicle</th>
+                  <th className="px-5 py-4">Licence Renewal Date</th>
+                  <th className="px-5 py-4">Allocated Vehicle</th>
                   <th className="px-5 py-4">Status</th>
                 </tr>
               </thead>
@@ -464,6 +481,9 @@ export default function DriverDetails() {
                     className="border-t border-slate-100 transition hover:bg-blue-50/40"
                   >
                     <td className="px-5 py-4">
+                      <span className="text-sm font-semibold text-blue-600">{driver.id}</span>
+                    </td>
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-black text-white">
                           {getInitials(driver.fullName)}
@@ -472,7 +492,6 @@ export default function DriverDetails() {
                           <p className="font-semibold text-slate-900">
                             {driver.fullName}
                           </p>
-                          <p className="text-xs text-blue-600">{driver.id}</p>
                         </div>
                       </div>
                     </td>
@@ -504,7 +523,7 @@ export default function DriverDetails() {
                       {driver.licenceType}
                     </td>
                     <td className="px-5 py-4 text-sm text-slate-600">
-                      {formatDate(driver.licenceExpiry)}
+                      {formatDate(driver.licenceRenewalDate)}
                     </td>
                     <td className="px-5 py-4">
                       <p className="text-sm font-semibold text-slate-800">
