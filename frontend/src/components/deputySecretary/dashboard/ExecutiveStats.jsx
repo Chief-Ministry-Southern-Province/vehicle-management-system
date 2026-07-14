@@ -79,10 +79,10 @@ const TONES = {
 /*  destination pages are built separately.                           */
 /* ------------------------------------------------------------------ */
 const requestStats = [
-  { title: "Total Request", value: "100", icon: <FiFileText />, path: "/requesthistory", tone: "blue" },
-  { title: "Approved Request", value: "80", icon: <FiCheckCircle />, path: "/requesthistory?status=approved", tone: "emerald" },
-  { title: "Rejected Request", value: "12", icon: <FiXCircle />, path: "/requesthistory?status=rejected", tone: "rose" },
-  { title: "Pending Request", value: "08", icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
+  { title: "Total Approvals", value: "100", icon: <FiFileText />, path: "/totalapprovals", tone: "blue" },
+  { title: "Assign Approvals", value: "80", icon: <FiCheckCircle />, path: "/requesthistory?status=approved", tone: "emerald" },
+  { title: "Rejected Approvals", value: "12", icon: <FiXCircle />, path: "/requesthistory?status=rejected", tone: "rose" },
+  { title: "Pending Approvals", value: "08", icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
 ];
 
 const vehicleStats = [

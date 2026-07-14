@@ -34,6 +34,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import TotalVehicles from './pages/deputySecretary/TotalVehicle';
 import DriverDetails from './pages/deputySecretary/DriverDetails';
 import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
+import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 
 const withAuth = (element) => (
   <ProtectedRoute>{element}</ProtectedRoute>
@@ -80,6 +81,7 @@ function App() {
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
