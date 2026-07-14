@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\VehicleRequestController;
+use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +25,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::put('/profile/password', [AuthController::class, 'changePassword']);
+
+    Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
+
+    Route::middleware('role:department_officer')->prefix('department')->group(function () {
+        Route::get('/vehicle-requests', [VehicleRequestController::class, 'departmentIndex']);
+        Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'departmentShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'recommend']);
+    });
+
+    // Fleet visibility is required by the Subject Officer and Deputy Secretary dashboards.
+    Route::middleware('role:subject_officer,deputy_secretary')->group(function () {
+        Route::get('/vehicles', [VehicleController::class, 'index']);
+        Route::get('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'show']);
+    });
+
+    // Fleet registration and edits remain restricted to the Subject Officer.
+    Route::middleware('role:subject_officer')->group(function () {
+        Route::post('/vehicles', [VehicleController::class, 'store']);
+        // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
+        Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);
+    });
 
     /*
     |----------------------------------------------------------------

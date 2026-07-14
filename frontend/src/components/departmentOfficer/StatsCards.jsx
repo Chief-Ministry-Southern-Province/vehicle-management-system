@@ -5,10 +5,10 @@ import {
   FiClock,
 } from "react-icons/fi";
 
-const stats = [
+const createStats = (stats) => [
   {
     title: "TOTAL RECORDS",
-    value: "1,248",
+    value: stats.total_records,
     icon: <FiDatabase size={18} />,
     accent: "from-blue-500 to-indigo-600",
     bg: "bg-blue-50",
@@ -16,7 +16,7 @@ const stats = [
   },
   {
     title: "APPROVED",
-    value: "942",
+    value: stats.approved,
     icon: <FiCheckCircle size={18} />,
     accent: "from-emerald-500 to-green-600",
     bg: "bg-emerald-50",
@@ -24,7 +24,7 @@ const stats = [
   },
   {
     title: "REJECTED",
-    value: "148",
+    value: stats.rejected,
     icon: <FiXCircle size={18} />,
     accent: "from-red-500 to-rose-600",
     bg: "bg-red-50",
@@ -32,7 +32,7 @@ const stats = [
   },
   {
     title: "PENDING",
-    value: "08",
+    value: stats.pending,
     icon: <FiClock size={18} />,
     accent: "from-amber-500 to-orange-500",
     bg: "bg-amber-50",
@@ -40,11 +40,12 @@ const stats = [
   },
 ];
 
-export default function StatsCards() {
+export default function StatsCards({ stats = {} }) {
+  const items = createStats({ total_records: 0, approved: 0, rejected: 0, pending: 0, ...stats });
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-      {stats.map((item) => (
+      {items.map((item) => (
         <div
           key={item.title}
           className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"

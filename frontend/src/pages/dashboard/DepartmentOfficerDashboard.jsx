@@ -1,14 +1,32 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import StatsCards from "../../components/departmentOfficer/StatsCards";
 import PendingRequestsTable from "../../components/departmentOfficer/PendingRequestsTable";
-import DepartmentChart from "../../components/departmentOfficer/DepartmentChart";
-import ActivityTimeline from "../../components/departmentOfficer/ActivityTimeline";
 
-import { FiCalendar, FiClock } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { getDepartmentVehicleRequests } from "../../api/authApi";
+import { useAuth } from "../../context/useAuth";
 
 export default function DepartmentOfficerDashboard() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({ total_records: 0, approved: 0, rejected: 0, pending: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await getDepartmentVehicleRequests();
+        setRequests(response?.data?.requests || []);
+        setStats(response?.data?.stats || {});
+      } catch (error) {
+        toast.error(error?.message || "Unable to load department requests.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboard();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -23,43 +41,17 @@ export default function DepartmentOfficerDashboard() {
             </h1>
 
             <p className="text-gray-500 mt-1">
-              Welcome back, Officer David Miller.
-              Here is what's happening in Operations &
-              Logistics today.
+              Welcome back, {user?.name || "Department Officer"}. Here are your department's vehicle requests.
             </p>
           </div>
 
-          <div className="flex gap-3">
-
-            <button className="border px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiCalendar />
-              May 2024
-            </button>
-
-            <button 
-              onClick={() => navigate('/pendingrecommendations')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiClock />
-              View Pending (8)
-            </button>
-
-          </div>
-
         </div>
 
-        <StatsCards />
+        <StatsCards stats={stats} />
 
-        <div className="grid lg:grid-cols-3 gap-6">
-
-          <div className="lg:col-span-2">
-            <PendingRequestsTable />
-          </div>
-
-          <DepartmentChart />
-
+        <div className="space-y-6">
+            <PendingRequestsTable requests={requests} loading={loading} />
         </div>
-
-        <ActivityTimeline />
 
       </div>
     </DashboardLayout>

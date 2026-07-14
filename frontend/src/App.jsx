@@ -11,9 +11,9 @@ import UserDashboard from './pages/dashboard/UserDashboard';
 import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
-import PendingRecommendations from './pages/recommendations/PendingRecommendations';
 import RecommendationReview from './pages/recommendations/RecommendationReview';
 import DepartmentRequestHistory from './pages/recommendations/DepartmentRequestHistory';
+import PendingRecommendations from './pages/recommendations/PendingRecommendations';
 import VehicleDirectory from './pages/fleet/VehicleDirectory';
 import VehicleDetails from './pages/fleet/VehicleDetails';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
@@ -29,6 +29,9 @@ import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ProtectedRoute from './routes/ProtectedRoute';
+import TotalVehicles from './pages/deputySecretary/TotalVehicle';
+import DriverDetails from './pages/deputySecretary/DriverDetails';
+import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
 
 const withAuth = (element) => (
   <ProtectedRoute>{element}</ProtectedRoute>
@@ -63,7 +66,7 @@ function App() {
 
             <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
-            <Route path="/vehicledetails" element={withAuth(<VehicleDetails />)}/>
+            <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
@@ -74,6 +77,9 @@ function App() {
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
+            <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
+            <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
+            <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             
 
 

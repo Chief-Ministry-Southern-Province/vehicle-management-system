@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         // Call seeders in order
         $this->call([
             UserSeeder::class,
+            VehicleSeeder::class,
         ]);
     }
 }

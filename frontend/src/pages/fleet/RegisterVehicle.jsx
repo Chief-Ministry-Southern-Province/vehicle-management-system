@@ -1,143 +1,33 @@
-import DashboardLayout from "../../layouts/DashboardLayout";
-
-import BasicInformation from "../../components/subjectOfficer/registerVehicle/BasicInformation";
-import VehicleImageUpload from "../../components/subjectOfficer/registerVehicle/VehicleImageUpload";
-import TechnicalSpecifications from "../../components/subjectOfficer/registerVehicle/TechnicalSpecifications";
-import ComplianceRegulatory from "../../components/subjectOfficer/registerVehicle/ComplianceRegulatory";
-import DeploymentStatus from "../../components/subjectOfficer/registerVehicle/DeploymentStatus";
-
-import {
-  FiSave,
-  FiTruck,
-  FiArrowLeft,
-} from "react-icons/fi";
-
+import { useRef, useState } from "react";
+import { FiArrowLeft, FiImage, FiSave, FiTruck } from "react-icons/fi";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import DashboardLayout from "../../layouts/DashboardLayout";
+import { createVehicle } from "../../api/authApi";
+
+const initialForm = { registration_number: "", vehicle_type: "SUV", make: "", model: "", manufacturing_year: "", color: "", vin: "", engine_number: "", fuel_type: "Diesel", fuel_capacity: "", seat_capacity: "", technical_notes: "", registration_expiry: "", revenue_license_expiry: "", insurance_policy: "", insurance_provider: "", assignment: "General Fleet Pool", status: "unavailable", last_service_date: "", fuel_level: 0, service_category: "Public Works" };
+const categories = ["Public Works", "Secretary Works", "Ministerial Assignments", "Administrative Transport", "Protocol & VIP Movement", "General Fleet Pool"];
 
 export default function RegisterVehicle() {
   const navigate = useNavigate();
+  const inputRef = useRef(null);
+  const [form, setForm] = useState(initialForm);
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const change = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const chooseImage = (event) => { const file = event.target.files?.[0]; setImage(file || null); setPreview(file ? URL.createObjectURL(file) : null); };
+  const submit = async (event) => {
+    event.preventDefault(); setSaving(true);
+    try { const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); if (image) data.append("image", image); const response = await createVehicle(data); toast.success(response?.message || "Vehicle registered."); navigate(`/vehicledetails/${encodeURIComponent(response.data.vehicle.registration_number)}`); }
+    catch (error) { const errors = error?.errors; toast.error(errors ? Object.values(errors).flat()[0] : error?.message || "Unable to register vehicle."); }
+    finally { setSaving(false); }
+  };
+  const fieldClass = "mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50";
 
-  return (
-    <DashboardLayout>
-      <div className="mx-auto max-w-7xl space-y-4">
-
-        {/* Compact Header */}
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-
-          <div>
-            <div className="flex items-center gap-2">
-              <FiTruck className="text-blue-600" />
-
-              <span className="text-xs font-medium uppercase tracking-wider text-blue-600">
-                Vehicle Registration
-              </span>
-            </div>
-
-            <h1 className="mt-2 text-2xl font-bold text-slate-900">
-              Register New Vehicle
-            </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Add a new vehicle to the government fleet registry.
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-
-            <span className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600">
-              VMS-NEW-042
-            </span>
-
-            <span className="rounded-xl bg-green-50 px-3 py-2 text-sm font-medium text-green-600">
-              Draft
-            </span>
-
-          </div>
-
-        </div>
-
-        {/* Content */}
-        <div className="grid gap-4 xl:grid-cols-12">
-
-          {/* Left Section */}
-          <div className="space-y-4 xl:col-span-8">
-
-            <BasicInformation />
-
-            <TechnicalSpecifications />
-
-            <ComplianceRegulatory />
-
-          </div>
-
-          {/* Right Section */}
-          <div className="xl:col-span-4">
-
-            <div className="sticky top-4 space-y-4">
-
-              <VehicleImageUpload />
-
-              <DeploymentStatus />
-
-              {/* Registration Progress */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-
-                <h3 className="mb-3 text-sm font-semibold text-slate-900">
-                  Registration Progress
-                </h3>
-
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-500">
-                    Completion
-                  </span>
-
-                  <span className="font-medium">
-                    65%
-                  </span>
-                </div>
-
-                <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                  <div
-                    className="h-full rounded-full bg-blue-600"
-                    style={{ width: "65%" }}
-                  />
-                </div>
-
-              </div>
-
-              {/* Action Buttons */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-
-                <h3 className="mb-4 text-sm font-semibold text-slate-900">
-                  Actions
-                </h3>
-
-                <div className="space-y-2">
-
-                  <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-medium text-white transition hover:bg-blue-700">
-                    <FiSave />
-                    Save Vehicle
-                  </button>
-
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    <FiArrowLeft />
-                    Cancel
-                  </button>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    </DashboardLayout>
-  );
+  return <DashboardLayout><form onSubmit={submit} className="mx-auto max-w-7xl space-y-5"><header className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div><div className="flex items-center gap-2 text-blue-600"><FiTruck /><span className="text-xs font-medium uppercase tracking-wider">Vehicle Registration</span></div><h1 className="mt-2 text-2xl font-bold text-slate-900">Register New Vehicle</h1><p className="mt-1 text-sm text-slate-500">Add a vehicle and its operational details to the fleet registry.</p></div><button type="button" onClick={() => navigate(-1)} className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold text-slate-700"><FiArrowLeft />Cancel</button></header>
+    <div className="grid gap-5 xl:grid-cols-3"><div className="space-y-5 xl:col-span-2"><section className="rounded-2xl border bg-white p-5 shadow-sm"><h2 className="text-lg font-bold">Basic identification</h2><div className="mt-5 grid gap-4 md:grid-cols-2"><label>Registration number<input required name="registration_number" value={form.registration_number} onChange={change} placeholder="GV-1234" className={fieldClass} /></label><label>Vehicle type<select name="vehicle_type" value={form.vehicle_type} onChange={change} className={fieldClass}><option>SUV</option><option>Sedan</option><option>Van</option><option>Pickup</option><option>Bus</option></select></label><label>Manufacturer / make<input required name="make" value={form.make} onChange={change} className={fieldClass} /></label><label>Model<input required name="model" value={form.model} onChange={change} className={fieldClass} /></label><label>Manufacturing year<input type="number" name="manufacturing_year" value={form.manufacturing_year} onChange={change} className={fieldClass} /></label><label>Colour<input name="color" value={form.color} onChange={change} className={fieldClass} /></label></div></section>
+      <section className="rounded-2xl border bg-white p-5 shadow-sm"><h2 className="text-lg font-bold">Technical and compliance</h2><div className="mt-5 grid gap-4 md:grid-cols-2"><label>VIN<input name="vin" value={form.vin} onChange={change} className={fieldClass} /></label><label>Engine number<input name="engine_number" value={form.engine_number} onChange={change} className={fieldClass} /></label><label>Fuel type<select name="fuel_type" value={form.fuel_type} onChange={change} className={fieldClass}><option>Diesel</option><option>Petrol</option><option>Hybrid</option><option>Electric</option></select></label><label>Fuel capacity (litres)<input type="number" min="0" max="1000" name="fuel_capacity" value={form.fuel_capacity} onChange={change} className={fieldClass} /></label><label>Seat capacity<input type="number" min="1" max="100" name="seat_capacity" value={form.seat_capacity} onChange={change} className={fieldClass} /></label><label>Registration expiry<input type="date" name="registration_expiry" value={form.registration_expiry} onChange={change} className={fieldClass} /></label><label>Revenue licence expiry<input type="date" name="revenue_license_expiry" value={form.revenue_license_expiry} onChange={change} className={fieldClass} /></label><label>Insurance policy<input name="insurance_policy" value={form.insurance_policy} onChange={change} className={fieldClass} /></label><label>Insurance provider<input name="insurance_provider" value={form.insurance_provider} onChange={change} className={fieldClass} /></label><label className="md:col-span-2">Technical notes<textarea name="technical_notes" value={form.technical_notes} onChange={change} rows="3" className={fieldClass} /></label></div></section></div>
+      <aside className="space-y-5"><section className="rounded-2xl border bg-white p-5 shadow-sm"><h2 className="text-lg font-bold">Vehicle image</h2><button type="button" onClick={() => inputRef.current?.click()} className="mt-4 flex w-full flex-col items-center rounded-xl border-2 border-dashed border-blue-200 bg-blue-50 p-6 text-blue-700">{preview ? <img src={preview} alt="Vehicle preview" className="h-40 w-full rounded-lg object-cover" /> : <><FiImage size={30} /><span className="mt-2 text-sm font-medium">Upload vehicle image</span></>}</button><input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} className="hidden" /><p className="mt-2 text-xs text-slate-500">JPG, PNG, or WebP; maximum 10 MB.</p></section>
+      <section className="rounded-2xl border bg-white p-5 shadow-sm"><h2 className="text-lg font-bold">Operational details</h2><div className="mt-4 space-y-4"><label className="block">Status<select name="status" value={form.status} onChange={change} className={fieldClass}><option value="available">Available</option><option value="unavailable">Unavailable</option><option value="maintenance">Maintenance</option></select></label><label className="block">Last service date<input type="date" name="last_service_date" value={form.last_service_date} onChange={change} className={fieldClass} /></label><label className="block">Fuel level: {form.fuel_level}%<input type="range" name="fuel_level" min="0" max="100" value={form.fuel_level} onChange={change} className="mt-3 w-full accent-blue-600" /></label><label className="block">Service category<select name="service_category" value={form.service_category} onChange={change} className={fieldClass}>{categories.map((category) => <option key={category}>{category}</option>)}</select></label><label className="block">Assignment<input name="assignment" value={form.assignment} onChange={change} className={fieldClass} /></label></div></section><button disabled={saving} className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-60"><FiSave />{saving ? "Saving..." : "Save Vehicle"}</button></aside></div></form></DashboardLayout>;
 }
