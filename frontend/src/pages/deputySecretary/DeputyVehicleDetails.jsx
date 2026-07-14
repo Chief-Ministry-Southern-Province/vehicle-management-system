@@ -10,7 +10,7 @@ import {
   FiTruck,
 } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { getVehicles } from "../../api/authApi";
+import { getVehicleById } from "../../api/authApi";
 
 const STATUS_STYLES = {
   available: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -51,9 +51,8 @@ export default function DeputyVehicleDetails() {
     let active = true;
     const loadVehicle = async () => {
       try {
-        const response = await getVehicles();
-        const vehicles = response?.data?.vehicles || [];
-        const selected = vehicles.find((item) => String(item.id) === String(id));
+        const response = await getVehicleById(id);
+        const selected = response?.data?.vehicle;
         if (!selected) throw new Error("Vehicle not found.");
         if (active) setVehicle(selected);
       } catch (loadError) {
@@ -87,7 +86,8 @@ export default function DeputyVehicleDetails() {
   const fuelLevel = valueOrDash(vehicle.fuel_level);
   const seatCapacity = vehicle.seat_capacity ?? vehicle.seating_capacity;
   const licenceExpiry = vehicle.revenue_license_expiry || vehicle.registration_expiry;
-  const serviceCost = vehicle.service_cost ?? vehicle.maintenance_cost ?? vehicle.last_service_cost;
+  const serviceDetails = Array.isArray(vehicle.service_details) ? vehicle.service_details : [];
+  const serviceTotal = vehicle.service_total_cost ?? serviceDetails.reduce((total, service) => total + (Number(service.cost) || 0), 0);
 
   return (
     <DashboardLayout>
@@ -140,12 +140,8 @@ export default function DeputyVehicleDetails() {
           </section>
 
           <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm xl:col-span-2">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-4"><FiTool className="text-amber-600" /><h2 className="font-bold text-slate-900">Service Information</h2></div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Detail label="Last Service Date" value={formatDate(vehicle.last_service_date)} icon={<FiCalendar />} />
-              <Detail label="Service Category" value={vehicle.service_category} icon={<FiTool />} />
-              <Detail label="Service Cost" value={serviceCost == null ? null : `LKR ${Number(serviceCost).toLocaleString()}`} icon={<FiTool />} />
-            </div>
+            <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-2"><FiTool className="text-amber-600" /><div><h2 className="font-bold text-slate-900">Service Details</h2><p className="mt-1 text-sm text-slate-500">Complete service history recorded by the Subject Officer.</p></div></div><div className="rounded-xl bg-blue-50 px-4 py-2 text-right"><p className="text-xs font-semibold uppercase text-blue-500">Total Service Cost</p><p className="font-bold text-blue-700">LKR {Number(serviceTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></div></div>
+            {serviceDetails.length === 0 ? <div className="mt-5 rounded-xl bg-slate-50 p-8 text-center text-sm text-slate-500">No service records have been added for this vehicle.</div> : <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[650px]"><thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"><tr><th className="rounded-l-xl px-4 py-3">#</th><th className="px-4 py-3">Service Date</th><th className="px-4 py-3">Service Type</th><th className="rounded-r-xl px-4 py-3 text-right">Cost (LKR)</th></tr></thead><tbody>{serviceDetails.map((service, index) => <tr key={`${service.service_date}-${service.service_type}-${index}`} className="border-b border-slate-100"><td className="px-4 py-4 text-sm text-slate-400">{index + 1}</td><td className="px-4 py-4 text-sm font-medium text-slate-700">{formatDate(service.service_date)}</td><td className="px-4 py-4 text-sm text-slate-700">{valueOrDash(service.service_type)}</td><td className="px-4 py-4 text-right text-sm font-semibold text-slate-800">{Number(service.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>)}</tbody></table></div>}
           </section>
         </div>
 

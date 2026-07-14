@@ -262,6 +262,13 @@ export const getVehicle = async (registrationNumber) => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getVehicleById = async (vehicleId) => {
+  try {
+    const response = await API.get(`/vehicles/id/${encodeURIComponent(vehicleId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const createVehicle = async (formData) => {
   try {
     const response = await API.post("/vehicles", formData, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "multipart/form-data" } });
