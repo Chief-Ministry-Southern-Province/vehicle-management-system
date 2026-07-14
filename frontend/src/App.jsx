@@ -17,6 +17,7 @@ import PendingRecommendations from './pages/recommendations/PendingRecommendatio
 import VehicleDirectory from './pages/fleet/VehicleDirectory';
 import VehicleDetails from './pages/fleet/VehicleDetails';
 import DriverDirectory from './pages/fleet/DriverDirectory';
+import DriverDatabaseDetails from './pages/fleet/DriverDatabaseDetails';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
 import FuelManagement from './pages/fleet/FuelManagement';
 import ServiceRecords from './pages/fleet/ServiceRecords';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
             <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
             <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
+            <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>

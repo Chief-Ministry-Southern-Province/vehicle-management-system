@@ -258,3 +258,10 @@ export const updateDriver = async (driverId, driver) => {
     return response.data;
   } catch (error) { throw error.response?.data || error.message; }
 };
+
+export const deleteDriver = async (driverId) => {
+  try {
+    const response = await API.delete(`/drivers/${encodeURIComponent(driverId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};

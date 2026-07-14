@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiEdit2, FiPlus, FiSave, FiSearch, FiX } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiSave, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { createDriver, getDrivers, updateDriver } from "../../api/authApi";
+import { createDriver, deleteDriver, getDrivers } from "../../api/authApi";
 import { normalizeDriver, toDriverPayload } from "../../utils/driverMapper";
 
 const STATUSES = ["Available", "On Trip", "Unavailable"];
@@ -94,11 +95,13 @@ function DriverForm({ driver, existingIds, onCancel, onSave }) {
 }
 
 export default function DriverDirectory() {
+  const navigate = useNavigate();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [editingDriver, setEditingDriver] = useState(null);
+  const [deletingId, setDeletingId] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -123,20 +126,29 @@ export default function DriverDirectory() {
   }, [drivers, query]);
 
   const saveDriver = async (driver) => {
-    const exists = drivers.some((item) => item.id === driver.id);
     setLoadError("");
     try {
-      const response = exists
-        ? await updateDriver(driver.id, toDriverPayload(driver))
-        : await createDriver(toDriverPayload(driver));
+      const response = await createDriver(toDriverPayload(driver));
       const saved = normalizeDriver(response?.data?.driver);
-      setDrivers((current) => exists
-        ? current.map((item) => item.id === driver.id ? saved : item)
-        : [saved, ...current]);
+      setDrivers((current) => [saved, ...current]);
       setEditingDriver(null);
     } catch (error) {
       const validationMessage = error?.errors ? Object.values(error.errors).flat()[0] : null;
       setLoadError(validationMessage || error?.message || "Unable to save driver details.");
+    }
+  };
+
+  const removeDriver = async (driver) => {
+    if (!window.confirm(`Delete ${driver.fullName} (${driver.id})? This action cannot be undone.`)) return;
+    setDeletingId(driver.id);
+    setLoadError("");
+    try {
+      await deleteDriver(driver.id);
+      setDrivers((current) => current.filter((item) => item.id !== driver.id));
+    } catch (error) {
+      setLoadError(error?.message || "Unable to delete the driver.");
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -158,12 +170,23 @@ export default function DriverDirectory() {
             <div className="relative"><FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search drivers..." className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-blue-400 sm:w-72" /></div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1550px]">
+            <table className="w-full min-w-[1250px]">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"><tr>
-                {["Driver ID", "Full Name", "Date of Birth", "NIC", "Address", "Contact Number", "Blood Group", "Licence Number", "Licence Type", "Licence Renewal Date", "Allocated Vehicle", "Status", "Actions"].map((heading) => <th key={heading} className="px-4 py-4">{heading}</th>)}
+                {["Driver ID", "Driver Name", "NIC", "Contact Number", "Licence Type", "Licence Expire Date", "Allocated Vehicle", "Status", "Actions"].map((heading) => <th key={heading} className="px-4 py-4">{heading}</th>)}
               </tr></thead>
               <tbody>{!loading && filteredDrivers.map((driver) => <tr key={driver.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-4 font-semibold text-blue-600">{driver.id}</td><td className="px-4 py-4 font-semibold text-slate-900">{driver.fullName}</td><td className="px-4 py-4 text-slate-600">{driver.dateOfBirth}</td><td className="px-4 py-4 text-slate-600">{driver.nic}</td><td className="max-w-60 px-4 py-4 text-slate-600">{driver.address}</td><td className="px-4 py-4 text-slate-600">{driver.contactNumber}</td><td className="px-4 py-4 text-slate-600">{driver.bloodGroup}</td><td className="px-4 py-4 text-slate-600">{driver.licenceNumber}</td><td className="px-4 py-4 text-slate-600">{driver.licenceType}</td><td className="px-4 py-4 text-slate-600">{driver.licenceRenewalDate}</td><td className="px-4 py-4 font-medium text-slate-800">{driver.vehicle}</td><td className="px-4 py-4"><StatusPill status={driver.status} /></td><td className="px-4 py-4"><button onClick={() => setEditingDriver({ ...driver })} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:border-blue-200 hover:text-blue-600"><FiEdit2 /> Edit</button></td>
+                <td className="px-4 py-4 font-semibold text-blue-600">{driver.id}</td>
+                <td className="px-4 py-4 font-semibold text-slate-900">{driver.fullName}</td>
+                <td className="px-4 py-4 text-slate-600">{driver.nic}</td>
+                <td className="px-4 py-4 text-slate-600">{driver.contactNumber}</td>
+                <td className="px-4 py-4 text-slate-600">{driver.licenceType}</td>
+                <td className="px-4 py-4 text-slate-600">{driver.licenceRenewalDate}</td>
+                <td className="px-4 py-4 font-medium text-slate-800">{driver.vehicle}</td>
+                <td className="px-4 py-4"><StatusPill status={driver.status} /></td>
+                <td className="px-4 py-4"><div className="flex items-center gap-2">
+                  <button onClick={() => navigate(`/driverdirectory/${encodeURIComponent(driver.id)}`)} className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"><FiEdit2 /> Update</button>
+                  <button disabled={deletingId === driver.id} onClick={() => removeDriver(driver)} className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"><FiTrash2 /> {deletingId === driver.id ? "Deleting…" : "Delete"}</button>
+                </div></td>
               </tr>)}</tbody>
             </table>
           </div>
