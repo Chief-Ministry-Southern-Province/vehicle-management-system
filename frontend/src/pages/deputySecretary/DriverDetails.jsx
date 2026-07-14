@@ -1,6 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FiCalendar,
   FiCheckCircle,
@@ -15,6 +15,8 @@ import {
   FiUsers,
   FiX,
 } from "react-icons/fi";
+import { getDrivers } from "../../api/authApi";
+import { normalizeDriver } from "../../utils/driverMapper";
 
 // Shared with ApprovalWorkspace; this non-component export is intentional.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -158,15 +160,6 @@ const STATUS_STYLES = {
   "On Trip": "bg-blue-50 text-blue-700 ring-blue-100",
   Unavailable: "bg-rose-50 text-rose-700 ring-rose-100",
 };
-
-function loadDirectoryDrivers() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("vms-driver-directory"));
-    return Array.isArray(saved) ? saved : DRIVERS;
-  } catch {
-    return DRIVERS;
-  }
-}
 
 function getInitials(name) {
   return name
@@ -315,9 +308,26 @@ function DetailLine({ icon, label, value }) {
 }
 
 export default function DriverDetails() {
-  const [drivers] = useState(loadDirectoryDrivers);
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  useEffect(() => {
+    let active = true;
+    getDrivers()
+      .then((response) => {
+        if (active) setDrivers((response?.data?.drivers || []).map(normalizeDriver));
+      })
+      .catch((error) => {
+        if (active) setLoadError(error?.message || "Unable to load drivers from the database.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const filteredDrivers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -361,6 +371,8 @@ export default function DriverDetails() {
             View driver identity, licence, contact, vehicle allocation, and availability information.
           </p>
         </header>
+
+        {loadError && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{loadError}</div>}
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
@@ -439,6 +451,7 @@ export default function DriverDetails() {
             </div>
           </div>
 
+          {loading && <p className="py-12 text-center text-sm text-slate-500">Loading drivers from the database…</p>}
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {filteredDrivers.map((driver) => (
               <DriverCard key={driver.id} driver={driver} />
@@ -542,7 +555,7 @@ export default function DriverDetails() {
             </table>
           </div>
 
-          {filteredDrivers.length === 0 && (
+          {!loading && filteredDrivers.length === 0 && (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-300">
                 <FiUsers className="h-7 w-7" />

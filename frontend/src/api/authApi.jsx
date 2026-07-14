@@ -230,3 +230,31 @@ export const updateVehicle = async (registrationNumber, formData) => {
     return response.data;
   } catch (error) { throw error.response?.data || error.message; }
 };
+
+export const getDrivers = async () => {
+  try {
+    const response = await API.get("/drivers", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriver = async (driverId) => {
+  try {
+    const response = await API.get(`/drivers/${encodeURIComponent(driverId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createDriver = async (driver) => {
+  try {
+    const response = await API.post("/drivers", driver, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateDriver = async (driverId, driver) => {
+  try {
+    const response = await API.put(`/drivers/${encodeURIComponent(driverId)}`, driver, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
