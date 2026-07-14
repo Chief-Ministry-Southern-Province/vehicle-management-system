@@ -12,20 +12,91 @@ use Throwable;
 
 class VehicleRequestController extends Controller
 {
-    /** All vehicle requests visible to the Deputy Secretary approval queue. */
-    public function approvalIndex(): JsonResponse
+    /** Vehicle-request history belonging to the authenticated requester. */
+    public function personalIndex(Request $request): JsonResponse
     {
         $requests = VehicleRequest::query()
-            ->with('user:id,name,employee_id,department', 'recommender:id,name')
+            ->where('user_id', $request->user()->id)
             ->latest()
             ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['requests' => $requests, 'total' => $requests->count()],
+        ]);
+    }
+
+    /** All vehicle requests visible to the Deputy Secretary approval queue. */
+    public function approvalIndex(Request $request): JsonResponse
+    {
+        $status = $request->query('status', 'pending');
+        if (! in_array($status, ['pending', 'approved', 'all'], true)) {
+            return response()->json(['success' => false, 'message' => 'Invalid request status filter.'], 422);
+        }
+
+        $baseQuery = VehicleRequest::query();
+        $query = (clone $baseQuery)
+            ->with('user:id,name,employee_id,department', 'recommender:id,name')
+            ->latest();
+
+        if ($status === 'pending') {
+            $query->whereNotIn('status', ['approved', 'rejected']);
+        } elseif ($status === 'approved') {
+            $query->where('status', 'approved');
+        }
+
+        $requests = $query->get();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'requests' => $requests,
                 'total' => $requests->count(),
+                'stats' => [
+                    'pending' => (clone $baseQuery)->whereNotIn('status', ['approved', 'rejected'])->count(),
+                    'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
+                    'rejected' => (clone $baseQuery)->where('status', 'rejected')->count(),
+                    'all' => (clone $baseQuery)->count(),
+                ],
             ],
+        ]);
+    }
+
+    /** A complete request record for the Deputy Secretary workspace. */
+    public function approvalShow(VehicleRequest $vehicleRequest): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'vehicle_request' => $vehicleRequest->load(
+                    'user:id,name,employee_id,department',
+                    'recommender:id,name,employee_id,department',
+                ),
+            ],
+        ]);
+    }
+
+    /** Approve a vehicle request at Deputy Secretary level. */
+    public function approve(VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if ($vehicleRequest->status === 'approved') {
+            return response()->json([
+                'success' => true,
+                'message' => 'This request is already approved.',
+                'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department')],
+            ]);
+        }
+
+        if ($vehicleRequest->status === 'rejected') {
+            return response()->json(['success' => false, 'message' => 'A rejected request cannot be approved.'], 422);
+        }
+
+        $vehicleRequest->update(['status' => 'approved']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request approved successfully.',
+            'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department')],
         ]);
     }
 
