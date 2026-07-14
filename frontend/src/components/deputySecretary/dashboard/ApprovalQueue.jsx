@@ -5,7 +5,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
-export default function ApprovalQueue({ requests = [], loading = false, error = "" }) {
+export default function ApprovalQueue({ requests = [], loading = false, error = "", view = "pending" }) {
   const navigate = useNavigate();
 
   const getPriorityStyle = (priority) => {
@@ -33,11 +33,11 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
 
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
-            Approval Queue
+            {view === "approved" ? "Approved Requests" : "Pending Approval Queue"}
           </h2>
 
           <p className="text-sm text-slate-500 mt-1">
-            Review pending transport requests and allocate vehicles.
+            {view === "approved" ? "Review requests approved by the Deputy Secretary." : "Review pending transport requests and allocate vehicles."}
           </p>
         </div>
 
@@ -72,6 +72,8 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
               <th className="px-6 py-4 font-semibold">
                 Department
               </th>
+
+              <th className="px-6 py-4 font-semibold">Status</th>
 
               <th className="px-6 py-4 font-semibold">
                 Priority
@@ -123,6 +125,8 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
                   {item.user?.department || "Not specified"}
                 </td>
 
+                <td className="px-6 py-5"><span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${item.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{item.status?.replaceAll("_", " ")}</span></td>
+
                 <td className="px-6 py-5">
 
                   <span
@@ -142,7 +146,7 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
                     <button
                       className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow transition-all duration-300 hover:shadow-lg hover:scale-105"
                     >
-                      Review
+                      {view === "approved" ? "View" : "Review"}
 
                       <FiChevronRight className="transition-transform group-hover:translate-x-1" />
 
