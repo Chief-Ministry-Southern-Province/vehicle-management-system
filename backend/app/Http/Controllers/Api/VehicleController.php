@@ -52,6 +52,7 @@ class VehicleController extends Controller
             'engine_number' => ['nullable', 'string', 'max:100', Rule::unique('vehicles', 'engine_number')->ignore($vehicle)],
             'fuel_type' => ['nullable', 'string', 'max:100'],
             'fuel_capacity' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'seat_capacity' => ['nullable', 'integer', 'min:1', 'max:100'],
             'technical_notes' => ['nullable', 'string', 'max:5000'],
             'registration_expiry' => ['nullable', 'date'],
             'revenue_license_expiry' => ['nullable', 'date'],

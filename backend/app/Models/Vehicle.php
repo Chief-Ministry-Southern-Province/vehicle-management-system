@@ -9,7 +9,7 @@ class Vehicle extends Model
 {
     protected $fillable = [
         'registration_number', 'vehicle_type', 'make', 'model', 'manufacturing_year', 'color', 'vin', 'engine_number',
-        'fuel_type', 'fuel_capacity', 'technical_notes', 'registration_expiry', 'revenue_license_expiry',
+        'fuel_type', 'fuel_capacity', 'seat_capacity', 'technical_notes', 'registration_expiry', 'revenue_license_expiry',
         'insurance_policy', 'insurance_provider', 'assignment', 'status', 'last_service_date', 'fuel_level',
         'service_category', 'image_path',
     ];

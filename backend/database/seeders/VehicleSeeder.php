@@ -11,11 +11,26 @@ class VehicleSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->vehicles() as $vehicle) {
+            $vehicle['seat_capacity'] = $this->seatCapacities()[$vehicle['registration_number']];
+
             Vehicle::updateOrCreate(
                 ['registration_number' => $vehicle['registration_number']],
                 $vehicle,
             );
         }
+    }
+
+    /** @return array<string, int> */
+    private function seatCapacities(): array
+    {
+        return [
+            'GV-1001' => 7, 'GV-1002' => 5, 'GV-1003' => 5, 'GV-1004' => 14, 'GV-1005' => 7,
+            'GV-1006' => 35, 'GV-1007' => 5, 'GV-1008' => 5, 'GV-1009' => 5, 'GV-1010' => 12,
+            'GV-1011' => 5, 'GV-1012' => 5, 'GV-1013' => 5, 'GV-1014' => 28, 'GV-1015' => 8,
+            'GV-1016' => 5, 'GV-1017' => 5, 'GV-1018' => 5, 'GV-1019' => 8, 'GV-1020' => 5,
+            'GV-1021' => 7, 'GV-1022' => 40, 'GV-1023' => 5, 'GV-1024' => 14, 'GV-1025' => 5,
+            'GV-1026' => 5, 'GV-1027' => 5, 'GV-1028' => 30, 'GV-1029' => 12, 'GV-1030' => 7,
+        ];
     }
 
     /** @return array<int, array<string, mixed>> */
