@@ -1,6 +1,6 @@
 import { FiFileText, FiClock } from "react-icons/fi";
 
-export default function RequestHeader() {
+export default function RequestHeader({ request }) {
   return (
     <div className="bg-white border rounded-2xl p-5">
 
@@ -14,11 +14,11 @@ export default function RequestHeader() {
 
           <div>
             <h1 className="text-3xl font-bold">
-              REQ-7721
+              REQ-{String(request.id).padStart(4, "0")}
             </h1>
 
             <p className="text-gray-500">
-              Diplomatic Delegation Escort - State Guest Visit
+              {request.purpose}
             </p>
           </div>
 
@@ -27,12 +27,12 @@ export default function RequestHeader() {
         <div className="text-right">
 
           <span className="px-4 py-2 rounded-full bg-yellow-50 text-yellow-700 text-sm font-medium">
-            Pending Deputy Approval
+            {request.status?.replaceAll("_", " ") || "Pending Deputy Approval"}
           </span>
 
           <p className="text-gray-500 text-sm mt-2 flex items-center gap-2 justify-end">
             <FiClock />
-            Submitted 2h ago
+            Submitted {new Date(request.created_at).toLocaleString()}
           </p>
 
         </div>

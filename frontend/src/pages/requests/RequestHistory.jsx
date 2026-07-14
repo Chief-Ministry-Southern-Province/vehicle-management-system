@@ -1,239 +1,32 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useEffect, useMemo, useState } from "react";
+import { FiMoreHorizontal, FiPlus } from "react-icons/fi";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import {
-  FiMoreHorizontal,
-  FiPlus,
-} from "react-icons/fi";
 import HistoryFilters from "../../components/employee/HistoryFilters";
+import { getMyVehicleRequests } from "../../api/authApi";
 
-const requests = [
-  {
-    id: "REQ-8842",
-    date: "2024-05-12",
-    destination: "Central Secretariat",
-    purpose: "Inter-departmental Meeting",
-    pax: 3,
-    priority: "HIGH",
-    status: "Approved",
-  },
-  {
-    id: "REQ-8840",
-    date: "2024-05-10",
-    destination: "State Guest House",
-    purpose: "VIP Transport",
-    pax: 1,
-    priority: "MEDIUM",
-    status: "Completed",
-  },
-  {
-    id: "REQ-8835",
-    date: "2024-05-08",
-    destination: "Industrial Zone A",
-    purpose: "Field Inspection",
-    pax: 4,
-    priority: "LOW",
-    status: "Completed",
-  },
-  {
-    id: "REQ-8831",
-    date: "2024-05-05",
-    destination: "Civil Hospital",
-    purpose: "Health Audit",
-    pax: 2,
-    priority: "HIGH",
-    status: "Pending",
-  },
-  {
-    id: "REQ-8828",
-    date: "2024-05-01",
-    destination: "Digital Hub North",
-    purpose: "IT Support Visit",
-    pax: 2,
-    priority: "MEDIUM",
-    status: "Rejected",
-  },
-  {
-    id: "REQ-8822",
-    date: "2024-04-28",
-    destination: "Ministry of Finance",
-    purpose: "Budget Presentation",
-    pax: 3,
-    priority: "HIGH",
-    status: "Completed",
-  },
-  {
-    id: "REQ-8815",
-    date: "2024-04-25",
-    destination: "District Admin Office",
-    purpose: "Public Hearing",
-    pax: 5,
-    priority: "LOW",
-    status: "Cancelled",
-  },
-];
-
-const statusColor = {
-  Approved: "bg-green-100 text-green-700",
-  Completed: "bg-blue-100 text-blue-700",
-  Pending: "bg-yellow-100 text-yellow-700",
-  Rejected: "bg-red-100 text-red-700",
-  Cancelled: "bg-gray-100 text-gray-700",
-};
+const statusColor = { approved: "bg-green-100 text-green-700", completed: "bg-blue-100 text-blue-700", submitted: "bg-yellow-100 text-yellow-700", recommended: "bg-amber-100 text-amber-700", rejected: "bg-red-100 text-red-700", cancelled: "bg-gray-100 text-gray-700" };
 
 export default function RequestHistory() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [requests, setRequests] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const status = searchParams.get("status") === "approved" ? "approved" : "all";
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
+  useEffect(() => { const load = async () => { try { const response = await getMyVehicleRequests(); setRequests(response?.data?.requests || []); } catch (loadError) { setError(loadError?.message || "Unable to load request history."); } finally { setLoading(false); } }; load(); }, []);
 
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Request History
-            </h1>
+  const counts = useMemo(() => ({ all: requests.length, approved: requests.filter((request) => request.status === "approved").length }), [requests]);
+  const visibleRequests = useMemo(() => { const search = query.trim().toLowerCase(); return requests.filter((request) => (status === "all" || request.status === "approved") && (!search || String(request.id).includes(search) || request.destination?.toLowerCase().includes(search) || request.purpose?.toLowerCase().includes(search))); }, [query, requests, status]);
+  const changeStatus = (nextStatus) => setSearchParams(nextStatus === "approved" ? { status: "approved" } : {});
 
-            <p className="text-gray-500 mt-1">
-              Monitor and manage your vehicle allocation requests.
-            </p>
-          </div>
-
-          <button 
-            onClick={() => navigate('/createvehiclerequest')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg flex items-center gap-2">
-            <FiPlus />
-            Create New Request
-          </button>
-        </div>
-
-        {/* Filters */}
-        <HistoryFilters />
-
-        {/* Table */}
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-
-          <div className="overflow-x-auto">
-
-            <table className="w-full">
-
-              <thead className="bg-gray-50 border-b">
-                <tr className="text-left text-sm text-gray-600">
-                  <th className="p-4">Request ID</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Destination</th>
-                  <th className="p-4">Purpose</th>
-                  <th className="p-4">Pax</th>
-                  <th className="p-4">Priority</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {requests.map((request) => (
-                  <tr
-                    key={request.id}
-                     //onClick={() => navigate(`/requests/${request.id}`)}
-                     onClick={() => navigate(`/employee/requests/${request.id}`)}
-                    className="border-b hover:bg-gray-50"
-                  >
-                    <td className="p-4">
-                      <span className="text-blue-600 font-medium">
-                        {request.id}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-gray-600">
-                      {request.date}
-                    </td>
-
-                    <td className="p-4">
-                      {request.destination}
-                    </td>
-
-                    <td className="p-4 text-gray-600">
-                      {request.purpose}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {request.pax}
-                    </td>
-
-                    <td className="p-4">
-                      <span
-                        className={`font-semibold text-xs ${
-                          request.priority === "HIGH"
-                            ? "text-red-600"
-                            : request.priority === "MEDIUM"
-                            ? "text-gray-700"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        ● {request.priority}
-                      </span>
-                    </td>
-
-                    <td className="p-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          statusColor[request.status]
-                        }`}
-                      >
-                        {request.status}
-                      </span>
-                    </td>
-
-                    <td className="p-4">
-                      <button>
-                        <FiMoreHorizontal />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-between items-center p-4 border-t">
-
-            <p className="text-sm text-gray-500">
-              Page 1 of 4
-            </p>
-
-            <div className="flex gap-2">
-
-              <button className="border px-3 py-2 rounded">
-                Previous
-              </button>
-
-              <button className="bg-blue-600 text-white px-3 py-2 rounded">
-                1
-              </button>
-
-              <button className="border px-3 py-2 rounded">
-                2
-              </button>
-
-              <button className="border px-3 py-2 rounded">
-                3
-              </button>
-
-              <button className="border px-3 py-2 rounded">
-                Next
-              </button>
-
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </DashboardLayout>
-  );
+  return <DashboardLayout><div className="space-y-6"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-3xl font-bold">Request History</h1><p className="mt-1 text-gray-500">View all your vehicle requests, including approved requests.</p></div><button onClick={() => navigate("/createvehiclerequest")} className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"><FiPlus />Create New Request</button></div>
+    <HistoryFilters query={query} onQueryChange={setQuery} status={status} onStatusChange={changeStatus} counts={counts} />
+    <div className="overflow-hidden rounded-xl border bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full"><thead className="border-b bg-gray-50"><tr className="text-left text-sm text-gray-600"><th className="p-4">Request ID</th><th className="p-4">Date</th><th className="p-4">Destination</th><th className="p-4">Purpose</th><th className="p-4">Pax</th><th className="p-4">Priority</th><th className="p-4">Status</th><th className="p-4">Actions</th></tr></thead><tbody>
+      {visibleRequests.map((request) => <tr key={request.id} onClick={() => navigate(`/employee/requests/${request.id}`)} className="cursor-pointer border-b hover:bg-gray-50"><td className="p-4 font-medium text-blue-600">REQ-{String(request.id).padStart(4, "0")}</td><td className="p-4 text-gray-600">{new Date(request.created_at).toLocaleDateString()}</td><td className="p-4">{request.destination}</td><td className="p-4 text-gray-600">{request.purpose}</td><td className="p-4 text-center">{request.passenger_count}</td><td className="p-4 text-xs font-semibold uppercase text-gray-600">â— {request.department_priority || "Not set"}</td><td className="p-4"><span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColor[request.status] || "bg-gray-100 text-gray-700"}`}>{request.status?.replaceAll("_", " ")}</span></td><td className="p-4"><button type="button" aria-label="View request"><FiMoreHorizontal /></button></td></tr>)}
+      {loading && <tr><td colSpan={8} className="p-10 text-center text-sm text-gray-500">Loading request history...</td></tr>}{!loading && error && <tr><td colSpan={8} className="bg-red-50 p-5 text-center text-sm text-red-700">{error}</td></tr>}{!loading && !error && visibleRequests.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-sm text-gray-500">{status === "approved" ? "No approved requests found." : "You have not submitted any vehicle requests."}</td></tr>}
+    </tbody></table></div><div className="border-t p-4 text-sm text-gray-500">Showing {visibleRequests.length} of {requests.length} requests</div></div>
+  </div></DashboardLayout>;
 }

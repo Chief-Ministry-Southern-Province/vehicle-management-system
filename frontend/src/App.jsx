@@ -17,6 +17,7 @@ import PendingRecommendations from './pages/recommendations/PendingRecommendatio
 import VehicleDirectory from './pages/fleet/VehicleDirectory';
 import VehicleDetails from './pages/fleet/VehicleDetails';
 import DriverDirectory from './pages/fleet/DriverDirectory';
+import DriverDatabaseDetails from './pages/fleet/DriverDatabaseDetails';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
 import FuelManagement from './pages/fleet/FuelManagement';
 import ServiceRecords from './pages/fleet/ServiceRecords';
@@ -33,6 +34,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import TotalVehicles from './pages/deputySecretary/TotalVehicle';
 import DriverDetails from './pages/deputySecretary/DriverDetails';
 import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
+import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 
 const withAuth = (element) => (
   <ProtectedRoute>{element}</ProtectedRoute>
@@ -69,6 +71,7 @@ function App() {
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
             <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
             <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
+            <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
@@ -78,6 +81,7 @@ function App() {
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />

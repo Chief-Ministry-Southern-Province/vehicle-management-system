@@ -170,6 +170,17 @@ export const createVehicleRequest = async (requestData) => {
   }
 };
 
+export const getMyVehicleRequests = async () => {
+  try {
+    const response = await API.get("/vehicle-requests", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getDepartmentVehicleRequests = async () => {
   try {
     const response = await API.get("/department/vehicle-requests", {
@@ -203,6 +214,51 @@ export const submitRecommendation = async (requestId, recommendation) => {
   }
 };
 
+export const getApprovalVehicleRequests = async (status = "pending") => {
+  try {
+    const response = await API.get("/approvals/vehicle-requests", {
+      params: { status },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getExecutiveStats = async () => {
+  try {
+    const response = await API.get("/dashboard/executive-stats", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getApprovalVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.get(`/approvals/vehicle-requests/${requestId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const approveVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.patch(`/approvals/vehicle-requests/${requestId}/approve`, {}, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getVehicles = async () => {
   try {
     const response = await API.get("/vehicles", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
@@ -217,6 +273,13 @@ export const getVehicle = async (registrationNumber) => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getVehicleById = async (vehicleId) => {
+  try {
+    const response = await API.get(`/vehicles/id/${encodeURIComponent(vehicleId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const createVehicle = async (formData) => {
   try {
     const response = await API.post("/vehicles", formData, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "multipart/form-data" } });
@@ -227,6 +290,41 @@ export const createVehicle = async (formData) => {
 export const updateVehicle = async (registrationNumber, formData) => {
   try {
     const response = await API.post(`/vehicles/${encodeURIComponent(registrationNumber)}`, formData, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}`, "Content-Type": "multipart/form-data" } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDrivers = async () => {
+  try {
+    const response = await API.get("/drivers", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriver = async (driverId) => {
+  try {
+    const response = await API.get(`/drivers/${encodeURIComponent(driverId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createDriver = async (driver) => {
+  try {
+    const response = await API.post("/drivers", driver, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateDriver = async (driverId, driver) => {
+  try {
+    const response = await API.put(`/drivers/${encodeURIComponent(driverId)}`, driver, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const deleteDriver = async (driverId) => {
+  try {
+    const response = await API.delete(`/drivers/${encodeURIComponent(driverId)}`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
     return response.data;
   } catch (error) { throw error.response?.data || error.message; }
 };

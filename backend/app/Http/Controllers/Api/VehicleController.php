@@ -41,6 +41,10 @@ class VehicleController extends Controller
 
     private function payload(Request $request, ?Vehicle $vehicle = null): array
     {
+        if (is_string($request->input('service_details'))) {
+            $request->merge(['service_details' => json_decode($request->input('service_details'), true)]);
+        }
+
         $validated = $request->validate([
             'registration_number' => ['required', 'string', 'max:50', Rule::unique('vehicles', 'registration_number')->ignore($vehicle)],
             'vehicle_type' => ['required', 'string', 'max:100'],
@@ -63,6 +67,10 @@ class VehicleController extends Controller
             'last_service_date' => ['nullable', 'date'],
             'fuel_level' => ['required', 'integer', 'min:0', 'max:100'],
             'service_category' => ['nullable', 'string', 'max:100'],
+            'service_details' => ['nullable', 'array', 'max:100'],
+            'service_details.*.service_date' => ['required', 'date'],
+            'service_details.*.service_type' => ['required', 'string', 'max:255'],
+            'service_details.*.cost' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 

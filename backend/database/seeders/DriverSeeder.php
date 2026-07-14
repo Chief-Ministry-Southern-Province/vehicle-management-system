@@ -1,0 +1,56 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Driver;
+use Illuminate\Database\Seeder;
+
+class DriverSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $drivers = [
+            ['driver_id' => 'DRV-0201', 'full_name' => 'Kasun Perera', 'date_of_birth' => '1987-02-16', 'nic' => '870471836V', 'address' => 'No. 15, Galle Road, Moratuwa', 'contact_number' => '+94 77 310 2201', 'blood_group' => 'B+', 'licence_number' => 'B2500201', 'licence_type' => 'B, B1', 'licence_renewal_date' => '2028-02-16', 'allocated_vehicle' => 'GV-1002', 'status' => 'available'],
+            ['driver_id' => 'DRV-0202', 'full_name' => 'Nimal Fernando', 'date_of_birth' => '1981-06-24', 'nic' => '811761927V', 'address' => 'No. 28, Sea Street, Negombo', 'contact_number' => '+94 76 310 2202', 'blood_group' => 'O+', 'licence_number' => 'B2500202', 'licence_type' => 'B, C1', 'licence_renewal_date' => '2027-06-24', 'allocated_vehicle' => 'GV-1003', 'status' => 'on_trip'],
+            ['driver_id' => 'DRV-0203', 'full_name' => 'Saman Jayasinghe', 'date_of_birth' => '1984-09-08', 'nic' => '842521438V', 'address' => 'No. 31, Kandy Road, Kadawatha', 'contact_number' => '+94 71 310 2203', 'blood_group' => 'A+', 'licence_number' => 'B2500203', 'licence_type' => 'B, B1, D', 'licence_renewal_date' => '2028-09-08', 'allocated_vehicle' => 'GV-1007', 'status' => 'available'],
+            ['driver_id' => 'DRV-0204', 'full_name' => 'Tharindu Silva', 'date_of_birth' => '1991-03-19', 'nic' => '910791549V', 'address' => 'No. 44, Station Road, Panadura', 'contact_number' => '+94 75 310 2204', 'blood_group' => 'AB+', 'licence_number' => 'B2500204', 'licence_type' => 'B, C', 'licence_renewal_date' => '2027-03-19', 'allocated_vehicle' => 'GV-1008', 'status' => 'unavailable'],
+            ['driver_id' => 'DRV-0205', 'full_name' => 'Ruwan Bandara', 'date_of_birth' => '1978-12-05', 'nic' => '783401650V', 'address' => 'No. 9, Lake Road, Kandy', 'contact_number' => '+94 78 310 2205', 'blood_group' => 'O-', 'licence_number' => 'B2500205', 'licence_type' => 'B, B1, C, D', 'licence_renewal_date' => '2026-12-05', 'allocated_vehicle' => 'GV-1009', 'status' => 'available'],
+            ['driver_id' => 'DRV-0206', 'full_name' => 'Chaminda Kumara', 'date_of_birth' => '1986-07-11', 'nic' => '861931761V', 'address' => 'No. 73, Main Street, Kurunegala', 'contact_number' => '+94 70 310 2206', 'blood_group' => 'A-', 'licence_number' => 'B2500206', 'licence_type' => 'B, B1', 'licence_renewal_date' => '2029-07-11', 'allocated_vehicle' => 'GV-1010', 'status' => 'on_trip'],
+            ['driver_id' => 'DRV-0207', 'full_name' => 'Dinesh Weerasinghe', 'date_of_birth' => '1989-10-27', 'nic' => '893011872V', 'address' => 'No. 20, New Town, Anuradhapura', 'contact_number' => '+94 77 310 2207', 'blood_group' => 'B-', 'licence_number' => 'B2500207', 'licence_type' => 'B, C1', 'licence_renewal_date' => '2028-10-27', 'allocated_vehicle' => 'GV-1012', 'status' => 'available'],
+            ['driver_id' => 'DRV-0208', 'full_name' => 'Pradeep Gunawardena', 'date_of_birth' => '1982-01-30', 'nic' => '820301983V', 'address' => 'No. 56, Matara Road, Galle', 'contact_number' => '+94 76 310 2208', 'blood_group' => 'O+', 'licence_number' => 'B2500208', 'licence_type' => 'B, B1, D', 'licence_renewal_date' => '2027-01-30', 'allocated_vehicle' => 'GV-1013', 'status' => 'available'],
+            ['driver_id' => 'DRV-0209', 'full_name' => 'Lakmal Wijesuriya', 'date_of_birth' => '1993-05-14', 'nic' => '931352094V', 'address' => 'No. 11, Hospital Road, Badulla', 'contact_number' => '+94 71 310 2209', 'blood_group' => 'A+', 'licence_number' => 'B2500209', 'licence_type' => 'B, C', 'licence_renewal_date' => '2029-05-14', 'allocated_vehicle' => 'GV-1014', 'status' => 'unavailable'],
+            ['driver_id' => 'DRV-0210', 'full_name' => 'Asanka Rathnayake', 'date_of_birth' => '1985-08-22', 'nic' => '852351205V', 'address' => 'No. 38, Temple Lane, Ratnapura', 'contact_number' => '+94 75 310 2210', 'blood_group' => 'AB-', 'licence_number' => 'B2500210', 'licence_type' => 'B, B1', 'licence_renewal_date' => '2028-08-22', 'allocated_vehicle' => 'GV-1015', 'status' => 'available'],
+            ['driver_id' => 'DRV-0211', 'full_name' => 'Mahesh Ekanayake', 'date_of_birth' => '1980-11-17', 'nic' => '803221316V', 'address' => 'No. 62, Hill Street, Nuwara Eliya', 'contact_number' => '+94 78 310 2211', 'blood_group' => 'B+', 'licence_number' => 'B2500211', 'licence_type' => 'B, B1, C, D', 'licence_renewal_date' => '2026-11-17', 'allocated_vehicle' => 'GV-1016', 'status' => 'on_trip'],
+            ['driver_id' => 'DRV-0212', 'full_name' => 'Supun Maduranga', 'date_of_birth' => '1990-04-03', 'nic' => '900941427V', 'address' => 'No. 17, Beach Road, Kalutara', 'contact_number' => '+94 70 310 2212', 'blood_group' => 'O+', 'licence_number' => 'B2500212', 'licence_type' => 'B, C1', 'licence_renewal_date' => '2027-04-03', 'allocated_vehicle' => 'GV-1017', 'status' => 'available'],
+            ['driver_id' => 'DRV-0213', 'full_name' => 'Ishara Dissanayake', 'date_of_birth' => '1988-06-29', 'nic' => '881811538V', 'address' => 'No. 25, Clock Tower Road, Matara', 'contact_number' => '+94 77 310 2213', 'blood_group' => 'A-', 'licence_number' => 'B2500213', 'licence_type' => 'B, B1, D', 'licence_renewal_date' => '2028-06-29', 'allocated_vehicle' => 'GV-1018', 'status' => 'available'],
+            ['driver_id' => 'DRV-0214', 'full_name' => 'Gayan Abeysekara', 'date_of_birth' => '1983-02-09', 'nic' => '830401649V', 'address' => 'No. 48, Trinco Road, Batticaloa', 'contact_number' => '+94 76 310 2214', 'blood_group' => 'B-', 'licence_number' => 'B2500214', 'licence_type' => 'B, C', 'licence_renewal_date' => '2027-02-09', 'allocated_vehicle' => 'GV-1019', 'status' => 'unavailable'],
+            ['driver_id' => 'DRV-0215', 'full_name' => 'Janaka Herath', 'date_of_birth' => '1977-09-13', 'nic' => '772561750V', 'address' => 'No. 34, Jaffna Road, Vavuniya', 'contact_number' => '+94 71 310 2215', 'blood_group' => 'O-', 'licence_number' => 'B2500215', 'licence_type' => 'B, B1, C, D', 'licence_renewal_date' => '2026-09-13', 'allocated_vehicle' => 'GV-1020', 'status' => 'available'],
+            ['driver_id' => 'DRV-0216', 'full_name' => 'Roshan Senanayake', 'date_of_birth' => '1992-12-21', 'nic' => '923561861V', 'address' => 'No. 19, Park Road, Colombo 05', 'contact_number' => '+94 75 310 2216', 'blood_group' => 'A+', 'licence_number' => 'B2500216', 'licence_type' => 'B, B1', 'licence_renewal_date' => '2029-12-21', 'allocated_vehicle' => 'GV-1021', 'status' => 'on_trip'],
+            ['driver_id' => 'DRV-0217', 'full_name' => 'Kavinda Pathirana', 'date_of_birth' => '1986-03-07', 'nic' => '860671972V', 'address' => 'No. 81, Old Road, Ambalangoda', 'contact_number' => '+94 78 310 2217', 'blood_group' => 'AB+', 'licence_number' => 'B2500217', 'licence_type' => 'B, C1, D', 'licence_renewal_date' => '2028-03-07', 'allocated_vehicle' => 'GV-1022', 'status' => 'available'],
+            ['driver_id' => 'DRV-0218', 'full_name' => 'Mohan Rajendran', 'date_of_birth' => '1984-07-25', 'nic' => '842071083V', 'address' => 'No. 13, KKS Road, Jaffna', 'contact_number' => '+94 70 310 2218', 'blood_group' => 'B+', 'licence_number' => 'B2500218', 'licence_type' => 'B, B1, C', 'licence_renewal_date' => '2027-07-25', 'allocated_vehicle' => 'GV-1023', 'status' => 'available'],
+            ['driver_id' => 'DRV-0219', 'full_name' => 'Arun Prakash', 'date_of_birth' => '1989-01-12', 'nic' => '890121194V', 'address' => 'No. 37, Central Road, Trincomalee', 'contact_number' => '+94 77 310 2219', 'blood_group' => 'O+', 'licence_number' => 'B2500219', 'licence_type' => 'B, B1, D', 'licence_renewal_date' => '2029-01-12', 'allocated_vehicle' => 'GV-1024', 'status' => 'unavailable'],
+        ];
+
+        foreach ($drivers as $index => $driver) {
+            $driver['previous_journeys'] = [
+                [
+                    'date' => '2026-06-' . str_pad((string) (10 + ($index % 15)), 2, '0', STR_PAD_LEFT),
+                    'origin' => $driver['address'],
+                    'destination' => ['District Secretariat', 'Ministry Headquarters', 'Bandaranaike International Airport'][$index % 3],
+                    'purpose' => ['Official coordination meeting', 'Government field inspection', 'Official passenger transfer'][$index % 3],
+                    'vehicle_registration' => $driver['allocated_vehicle'],
+                    'status' => 'completed',
+                ],
+                [
+                    'date' => '2026-05-' . str_pad((string) (5 + ($index % 20)), 2, '0', STR_PAD_LEFT),
+                    'origin' => 'Government Administrative Complex, Colombo',
+                    'destination' => ['Provincial Council Office', 'Public Works Project Site', 'Central Secretariat'][$index % 3],
+                    'purpose' => ['Departmental official visit', 'Project monitoring visit', 'Inter-ministerial transport'][$index % 3],
+                    'vehicle_registration' => $driver['allocated_vehicle'],
+                    'status' => 'completed',
+                ],
+            ];
+            Driver::updateOrCreate(['driver_id' => $driver['driver_id']], $driver);
+        }
+    }
+}

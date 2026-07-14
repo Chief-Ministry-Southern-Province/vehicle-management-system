@@ -77,6 +77,12 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
+        name: "Total Approvals",
+        path: "/totalapprovals",
+        icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Pending Approvals",
         path: "/pendingapprovals",
         icon: <FiCheckCircle />,
@@ -148,6 +154,47 @@ const menuItems = [
       },
     ],
   },
+
+  // ==========================================
+  // DEPUTY SECRETARY SECTION
+  // ==========================================
+
+  {
+    title: "Details",
+    items: [
+      {
+        name: "Vehicle Details",
+        path: "/totalvehicles",
+        icon: <FiTruck />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Driver Details",
+        path: "/driverdetails",
+        icon: <FiTruck />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Fuel Management",
+        path: "/fuelmanagement",
+        icon: <FiDroplet />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Service Records",
+        path: "/servicerecords",
+        icon: <FiTool />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Repair Records",
+        path: "/repairrecords",
+        icon: <FiTool />,
+        roles: ["deputy_secretary"],
+      },
+    ],
+  },
+
 
   // ==========================================
   // REPORTS

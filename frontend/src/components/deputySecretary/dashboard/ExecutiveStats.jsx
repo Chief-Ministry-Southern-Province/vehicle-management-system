@@ -1,20 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiFileText,
-  FiCheckCircle,
-  FiXCircle,
   FiClock,
-  FiTruck,
   FiCheckSquare,
-  FiSlash,
-  FiTool,
-  FiDroplet,
   FiCreditCard,
   FiDollarSign,
   FiArrowUpRight,
 } from "react-icons/fi";
-import { BsFilePerson } from "react-icons/bs";
+import { getExecutiveStats } from "../../../api/authApi";
 
 /* ------------------------------------------------------------------ */
 /*  Animated counter — counts up from 0 to the numeric part of value  */
@@ -78,27 +71,13 @@ const TONES = {
 /*  Data — grouped into 3 rows. Only `path` is wired up; the actual   */
 /*  destination pages are built separately.                           */
 /* ------------------------------------------------------------------ */
-const requestStats = [
-  { title: "Total Request", value: "100", icon: <FiFileText />, path: "/requesthistory", tone: "blue" },
-  { title: "Approved Request", value: "80", icon: <FiCheckCircle />, path: "/requesthistory?status=approved", tone: "emerald" },
-  { title: "Rejected Request", value: "12", icon: <FiXCircle />, path: "/requesthistory?status=rejected", tone: "rose" },
-  { title: "Pending Request", value: "08", icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
+const createStats = (data) => [
+  { title: "Pending Approvals", value: data.pending_approvals ?? 0, icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
+  { title: "Available Vehicles", value: data.available_vehicles ?? 0, icon: <FiCheckSquare />, path: "/totalvehicles?status=available", tone: "emerald" },
+  { title: "Fuel Cost", value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`, icon: <FiCreditCard />, path: "/fuelmanagement", tone: "teal" },
+  { title: "Maintenance Cost", value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`, icon: <FiDollarSign />, path: "/servicerecords", tone: "fuchsia" },
 ];
 
-const vehicleStats = [
-  { title: "Total Vehicles", value: "38", icon: <FiTruck />, path: "/totalvehicles", tone: "indigo" },
-  { title: "Available Vehicles", value: "20", icon: <FiCheckSquare />, path: "/vehicles?status=available", tone: "emerald" },
-  { title: "Unavailable Vehicles", value: "15", icon: <FiSlash />, path: "/vehicles?status=unavailable", tone: "red" },
-  { title: "Maintaining Vehicles", value: "03", icon: <FiTool />, path: "/vehicles?status=maintenance", tone: "orange" },
-];
-
-const financeStats = [
-  { title: "Fuel Consumed", value: "250L", icon: <FiDroplet />, path: "/reports/fuel", tone: "cyan" },
-  { title: "Fuel Cost", value: "$250", icon: <FiCreditCard />, path: "/reports/fuel-cost", tone: "teal" },
-  { title: "Maintenance Cost", value: "$350", icon: <FiDollarSign />, path: "/reports/maintenance-cost", tone: "fuchsia" },
-  { title: "Drivers", value: "35", icon: <BsFilePerson />, path: "/driverdetails", tone: "fuchsia" },
-
-];
 
 /* ------------------------------------------------------------------ */
 /*  Single card                                                       */
@@ -187,11 +166,25 @@ function StatRow({ label, items }) {
 /*  Exported section                                                  */
 /* ------------------------------------------------------------------ */
 export default function ExecutiveStats() {
+  const [data, setData] = useState({ pending_approvals: 0, available_vehicles: 0, fuel_cost: 0, maintenance_cost: 0 });
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const response = await getExecutiveStats();
+        setData(response?.data || {});
+      } catch (loadError) {
+        setError(loadError?.message || "Unable to load dashboard statistics.");
+      }
+    };
+    loadStats();
+  }, []);
+
   return (
     <div>
-      <StatRow label="Request Overview" items={requestStats} />
-      <StatRow label="Fleet Overview" items={vehicleStats} />
-      <StatRow label="Cost Overview" items={financeStats} />
+      <StatRow label="Executive Overview" items={createStats(data)} />
+      {error && <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
     </div>
   );
 }
