@@ -16,6 +16,7 @@ import DepartmentRequestHistory from './pages/recommendations/DepartmentRequestH
 import PendingRecommendations from './pages/recommendations/PendingRecommendations';
 import VehicleDirectory from './pages/fleet/VehicleDirectory';
 import VehicleDetails from './pages/fleet/VehicleDetails';
+import DriverDirectory from './pages/fleet/DriverDirectory';
 import RegisterVehicle from './pages/fleet/RegisterVehicle';
 import FuelManagement from './pages/fleet/FuelManagement';
 import ServiceRecords from './pages/fleet/ServiceRecords';
@@ -67,11 +68,13 @@ function App() {
             <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
             <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
+            <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
+
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
@@ -80,6 +83,7 @@ function App() {
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
+            <Route path="/drivers" element={withAuth(<DriverDetails />)} />
             
 
 

@@ -123,6 +123,12 @@ const menuItems = [
         roles: ["subject_officer"],
       },
       {
+        name: "Driver Directory",
+        path: "/driverdirectory",
+        icon: <FiTruck />,
+        roles: ["subject_officer"],
+      },
+      {
         name: "Fuel Management",
         path: "/fuelmanagement",
         icon: <FiDroplet />,
