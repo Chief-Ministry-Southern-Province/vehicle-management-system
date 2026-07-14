@@ -226,6 +226,17 @@ export const getApprovalVehicleRequests = async (status = "pending") => {
   }
 };
 
+export const getExecutiveStats = async () => {
+  try {
+    const response = await API.get("/dashboard/executive-stats", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getApprovalVehicleRequest = async (requestId) => {
   try {
     const response = await API.get(`/approvals/vehicle-requests/${requestId}`, {
