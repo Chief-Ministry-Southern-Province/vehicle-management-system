@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fleet visibility is required by the Subject Officer and Deputy Secretary dashboards.
     Route::middleware('role:subject_officer,deputy_secretary')->group(function () {
         Route::get('/vehicles', [VehicleController::class, 'index']);
+        Route::get('/vehicles/id/{vehicle}', [VehicleController::class, 'show']);
         Route::get('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'show']);
         Route::get('/drivers', [DriverController::class, 'index']);
         Route::get('/drivers/{driver:driver_id}', [DriverController::class, 'show']);
