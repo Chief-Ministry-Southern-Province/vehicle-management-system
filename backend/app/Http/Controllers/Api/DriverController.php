@@ -34,6 +34,13 @@ class DriverController extends Controller
         return response()->json(['success' => true, 'message' => 'Driver updated successfully.', 'data' => ['driver' => $driver->fresh()]]);
     }
 
+    public function destroy(Driver $driver): JsonResponse
+    {
+        $driver->delete();
+
+        return response()->json(['success' => true, 'message' => 'Driver deleted successfully.']);
+    }
+
     private function payload(Request $request, ?Driver $driver = null): array
     {
         return $request->validate([

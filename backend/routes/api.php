@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);
         Route::post('/drivers', [DriverController::class, 'store']);
         Route::put('/drivers/{driver:driver_id}', [DriverController::class, 'update']);
+        Route::delete('/drivers/{driver:driver_id}', [DriverController::class, 'destroy']);
     });
 
     /*
