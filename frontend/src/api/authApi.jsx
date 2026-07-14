@@ -203,6 +203,17 @@ export const submitRecommendation = async (requestId, recommendation) => {
   }
 };
 
+export const getApprovalVehicleRequests = async () => {
+  try {
+    const response = await API.get("/approvals/vehicle-requests", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getVehicles = async () => {
   try {
     const response = await API.get("/vehicles", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });

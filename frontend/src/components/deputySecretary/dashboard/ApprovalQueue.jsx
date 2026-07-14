@@ -5,49 +5,19 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
-const requests = [
-  {
-    id: "REQ-9012",
-    name: "Dr. Sarah Ahmed",
-    dept: "Ministry of Health",
-    priority: "Urgent",
-  },
-  {
-    id: "REQ-9015",
-    name: "James Wilson",
-    dept: "Dept. Public Works",
-    priority: "High",
-  },
-  {
-    id: "REQ-9018",
-    name: "Amara Kante",
-    dept: "Finance Ministry",
-    priority: "Normal",
-  },
-  {
-    id: "REQ-9021",
-    name: "Robert Chen",
-    dept: "Education",
-    priority: "High",
-  },
-  {
-    id: "REQ-9025",
-    name: "Elena Rodriguez",
-    dept: "Social Welfare",
-    priority: "Normal",
-  },
-];
-
-export default function ApprovalQueue() {
+export default function ApprovalQueue({ requests = [], loading = false, error = "" }) {
   const navigate = useNavigate();
 
   const getPriorityStyle = (priority) => {
     switch (priority) {
-      case "Urgent":
+      case "critical":
         return "bg-red-100 text-red-700 border border-red-200";
 
-      case "High":
+      case "high":
         return "bg-orange-100 text-orange-700 border border-orange-200";
+
+      case "medium":
+        return "bg-amber-100 text-amber-700 border border-amber-200";
 
       default:
         return "bg-emerald-100 text-emerald-700 border border-emerald-200";
@@ -121,14 +91,14 @@ export default function ApprovalQueue() {
 
               <tr
                 key={item.id}
-                onClick={() => navigate("/approval/:id")}
+                onClick={() => navigate(`/approval/${item.id}`)}
                 className="cursor-pointer border-t border-slate-100 transition-all duration-200 hover:bg-blue-50/40"
               >
 
                 <td className="px-6 py-5">
 
                   <span className="font-semibold text-blue-600">
-                    {item.id}
+                    REQ-{String(item.id).padStart(4, "0")}
                   </span>
 
                 </td>
@@ -138,11 +108,11 @@ export default function ApprovalQueue() {
                   <div>
 
                     <p className="font-semibold text-slate-800">
-                      {item.name}
+                      {item.requester_name || item.user?.name || "Unknown requester"}
                     </p>
 
                     <p className="text-xs text-slate-500">
-                      Government Employee
+                      {item.user?.employee_id || "Government Employee"}
                     </p>
 
                   </div>
@@ -150,17 +120,17 @@ export default function ApprovalQueue() {
                 </td>
 
                 <td className="px-6 py-5 text-slate-600">
-                  {item.dept}
+                  {item.user?.department || "Not specified"}
                 </td>
 
                 <td className="px-6 py-5">
 
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getPriorityStyle(
-                      item.priority
+                      item.department_priority
                     )}`}
                   >
-                    {item.priority}
+                    {item.department_priority ? item.department_priority.replace("_", " ") : "Not set"}
                   </span>
 
                 </td>
@@ -192,13 +162,16 @@ export default function ApprovalQueue() {
 
       </div>
 
+      {loading && <div className="border-t border-slate-100 px-6 py-10 text-center text-sm text-slate-500">Loading requests...</div>}
+      {!loading && error && <div className="border-t border-red-100 bg-red-50 px-6 py-4 text-sm text-red-700">{error}</div>}
+      {!loading && !error && requests.length === 0 && <div className="border-t border-slate-100 px-6 py-10 text-center text-sm text-slate-500">No vehicle requests found.</div>}
+
       {/* Footer */}
 
       <div className="flex items-center justify-between border-t bg-slate-50 px-6 py-4">
 
         <p className="text-sm text-slate-500">
-          Showing <span className="font-semibold">5</span> of{" "}
-          <span className="font-semibold">156</span> requests
+          Showing <span className="font-semibold">{requests.length}</span> request{requests.length === 1 ? "" : "s"}
         </p>
 
         <button

@@ -12,6 +12,23 @@ use Throwable;
 
 class VehicleRequestController extends Controller
 {
+    /** All vehicle requests visible to the Deputy Secretary approval queue. */
+    public function approvalIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with('user:id,name,employee_id,department', 'recommender:id,name')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests,
+                'total' => $requests->count(),
+            ],
+        ]);
+    }
+
     /** Requests and summary visible to the authenticated department officer. */
     public function departmentIndex(Request $request): JsonResponse
     {
