@@ -89,6 +89,15 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
 
+      // ================= SENIOR DEPUTY SECRETARY =================
+
+      {
+        name: "Dashboard",
+        path: "/seniordeputysecretarydashboard",
+        icon: <FiGrid />,
+        roles: ["senior_deputy_secretary"],
+      },
+
       // ================= SECRETARY =================
 
       {
@@ -352,7 +361,7 @@ export default function Sidebar() {
         </h4>
 
         <p className="text-xs text-gray-500">
-          {role?.replace("_", " ")}
+          {role?.replaceAll("_", " ")}
         </p>
 
       </div>

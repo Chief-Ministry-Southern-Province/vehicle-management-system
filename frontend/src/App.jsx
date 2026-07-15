@@ -24,6 +24,7 @@ import ServiceRecords from './pages/fleet/ServiceRecords';
 import RepairRecords from './pages/fleet/RepairRecords';
 import FleetAnalytics from './pages/fleet/FleetAnalytics';
 import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
+import SeniorDeputySecretaryDashboard from './pages/dashboard/SeniorDeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
 import PendingFinalApprovals from './pages/secretary/PendingFinalApprovals';
@@ -81,6 +82,7 @@ function App() {
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
@@ -88,8 +90,12 @@ function App() {
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             <Route path="/drivers" element={withAuth(<DriverDetails />)} />
-            
 
+
+
+            <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
+
+            
 
             <Route path="/secretarydashboard" element={withAuth(<SecretaryDashboard />)} />
             <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />)} />
