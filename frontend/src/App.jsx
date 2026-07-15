@@ -37,9 +37,10 @@ import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
 import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
 import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
+import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
 
-const withAuth = (element) => (
-  <ProtectedRoute>{element}</ProtectedRoute>
+const withAuth = (element, allowedRoles) => (
+  <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
 );
 
 function App() {
@@ -94,9 +95,9 @@ function App() {
 
 
 
-            <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
-            <Route path="/finalapprovals" element={withAuth(<FinalApprovals />)} />
-            <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />)} />
+            <Route path="/finalapprovals" element={withAuth(<FinalApprovals />, ["secretary", "senior_deputy_secretary"])} />
+            <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />, ["secretary", "senior_deputy_secretary"])} />
+            <Route path="/final-approvals/:id" element={withAuth(<FinalApprovalDetails />, ["secretary", "senior_deputy_secretary"])} />
 
 
 

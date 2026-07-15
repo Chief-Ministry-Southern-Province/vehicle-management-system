@@ -248,9 +248,43 @@ export const getApprovalVehicleRequest = async (requestId) => {
   }
 };
 
-export const approveVehicleRequest = async (requestId) => {
+export const approveVehicleRequest = async (requestId, allocation) => {
   try {
-    const response = await API.patch(`/approvals/vehicle-requests/${requestId}/approve`, {}, {
+    const response = await API.patch(`/approvals/vehicle-requests/${requestId}/approve`, allocation, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getFinalApprovalVehicleRequests = async (status = "pending") => {
+  try {
+    const response = await API.get("/final-approvals/vehicle-requests", {
+      params: { status },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const finalApproveVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.patch(`/final-approvals/vehicle-requests/${requestId}/approve`, {}, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getFinalApprovalVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.get(`/final-approvals/vehicle-requests/${requestId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

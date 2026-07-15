@@ -98,14 +98,14 @@ const menuItems = [
         roles: ["senior_deputy_secretary"],
       },
       {
-        name: "Total Approvals",
-        path: "/finalapprovals",
+        name: "Pending Approvals",
+        path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["senior_deputy_secretary"],
       },
       {
-        name: "Pending Approvals",
-        path: "/pendingfinalapprovals",
+        name: "Total Approvals",
+        path: "/finalapprovals",
         icon: <FiCheckCircle />,
         roles: ["senior_deputy_secretary"],
       },
@@ -119,14 +119,14 @@ const menuItems = [
         roles: ["secretary"],
       },
       {
-        name: "Total Approvals",
-        path: "/finalapprovals",
+        name: "Pending Approvals",
+        path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["secretary"],
       },
-      {
-        name: "Final Approvals",
-        path: "/pendingfinalapprovals",
+       {
+        name: "Total Approvals",
+        path: "/finalapprovals",
         icon: <FiCheckCircle />,
         roles: ["secretary"],
       },
