@@ -16,7 +16,7 @@ class DashboardStatsController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'pending_approvals' => VehicleRequest::whereNotIn('status', ['approved', 'rejected'])->count(),
+                'pending_approvals' => VehicleRequest::whereNotIn('status', ['pending_final_approval', 'approved', 'rejected'])->count(),
                 'available_vehicles' => $vehicles->where('status', 'available')->count(),
                 // Fuel expense records are not yet stored; return an authoritative zero instead of mock data.
                 'fuel_cost' => 0,
