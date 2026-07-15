@@ -32,12 +32,6 @@ const menuItems = [
         roles: ["employee"],
       },
       {
-        name: "Vehicle Requests",
-        path: "/createvehiclerequest",
-        icon: <FiFileText />,
-        roles: ["employee"],
-      },
-      {
         name: "Request History",
         path: "/requesthistory",
         icon: <FiClipboard />,

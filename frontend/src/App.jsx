@@ -8,7 +8,6 @@ import DepartmentOfficerDashboard from './pages/dashboard/DepartmentOfficerDashb
 import SecretaryDashboard from './pages/dashboard/SecretaryDashboard';
 import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
-import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
 import RecommendationReview from './pages/recommendations/RecommendationReview';
@@ -59,7 +58,6 @@ function App() {
 
 
             <Route path="/userdashboard" element={withAuth(<UserDashboard />)} />
-            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />)} />
             <Route path="/requesthistory" element={withAuth(<RequestHistory />)} />
             <Route path="/employee/requests/:id" element={withAuth(<EmployeeRequestDetails />)} />
             
