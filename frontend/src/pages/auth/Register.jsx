@@ -40,6 +40,10 @@ const roleOptions = [
     label: "Deputy Secretary",
   },
   {
+    value: "senior_deputy_secretary",
+    label: "Senior Deputy Secretary",
+  },
+  {
     value: "secretary",
     label: "Secretary",
   },

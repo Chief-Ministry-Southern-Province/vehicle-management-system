@@ -11,6 +11,7 @@ class Driver extends Model
         'blood_group', 'licence_number', 'licence_type', 'licence_renewal_date',
         'allocated_vehicle', 'status',
         'previous_journeys',
+        'current_assignment',
     ];
 
     protected function casts(): array
@@ -19,6 +20,7 @@ class Driver extends Model
             'date_of_birth' => 'date:Y-m-d',
             'licence_renewal_date' => 'date:Y-m-d',
             'previous_journeys' => 'array',
+            'current_assignment' => 'array',
         ];
     }
 }

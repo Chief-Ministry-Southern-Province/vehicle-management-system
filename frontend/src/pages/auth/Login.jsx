@@ -123,6 +123,12 @@ export default function Login() {
           );
           break;
 
+        case "senior_deputy_secretary":
+          navigate(
+            "/seniordeputysecretarydashboard"
+          );
+          break;
+
         case "secretary":
           navigate(
             "/secretarydashboard"
@@ -454,6 +460,10 @@ export default function Login() {
 
                   <option value="deputy_secretary">
                     Deputy Secretary
+                  </option>
+
+                  <option value="senior_deputy_secretary">
+                    Senior Deputy Secretary
                   </option>
 
                   <option value="secretary">

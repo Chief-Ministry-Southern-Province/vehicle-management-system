@@ -40,10 +40,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
-        Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'approve']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
     });
 
     Route::middleware('role:deputy_secretary')->get('/dashboard/executive-stats', [DashboardStatsController::class, 'deputySecretary']);
+
+    Route::middleware('role:secretary,senior_deputy_secretary')->prefix('final-approvals')->group(function () {
+        Route::get('/vehicle-requests', [VehicleRequestController::class, 'finalApprovalIndex']);
+        Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'finalApprovalShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'finalApprove']);
+    });
 
     // Fleet visibility is required by the Subject Officer and Deputy Secretary dashboards.
     Route::middleware('role:subject_officer,deputy_secretary')->group(function () {

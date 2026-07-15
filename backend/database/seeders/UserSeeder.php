@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
             ['employee_id' => 'DEP-001', 'name' => 'Sunil Jayasuriya', 'email' => 'department.officer@vms.gov', 'role' => 'department_officer', 'department' => 'Administration'],
             ['employee_id' => 'SUB-001', 'name' => 'Kamal Fernando', 'email' => 'subject.officer@vms.gov', 'role' => 'subject_officer', 'department' => 'Transport'],
             ['employee_id' => 'DEP-SEC-001', 'name' => 'Anoma Wickramasinghe', 'email' => 'deputy.secretary@vms.gov', 'role' => 'deputy_secretary', 'department' => 'Secretariat'],
+            ['employee_id' => 'SR-DEP-SEC-001', 'name' => 'Senior Deputy Secretary', 'email' => 'senior.deputy.secretary@vms.gov', 'role' => 'senior_deputy_secretary', 'department' => 'Secretariat'],
             ['employee_id' => 'SEC-001', 'name' => 'Ranjith Bandara', 'email' => 'secretary@vms.gov', 'role' => 'secretary', 'department' => 'Secretariat'],
             ['employee_id' => 'DRV-001', 'name' => 'Saman Kumara', 'email' => 'driver@vms.gov', 'role' => 'driver', 'department' => 'Transport'],
         ];

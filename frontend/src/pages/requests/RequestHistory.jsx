@@ -5,7 +5,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import HistoryFilters from "../../components/employee/HistoryFilters";
 import { getMyVehicleRequests } from "../../api/authApi";
 
-const statusColor = { approved: "bg-green-100 text-green-700", completed: "bg-blue-100 text-blue-700", submitted: "bg-yellow-100 text-yellow-700", recommended: "bg-amber-100 text-amber-700", rejected: "bg-red-100 text-red-700", cancelled: "bg-gray-100 text-gray-700" };
+const statusColor = { approved: "bg-green-100 text-green-700", vehicle_allocated: "bg-indigo-100 text-indigo-700", completed: "bg-blue-100 text-blue-700", submitted: "bg-yellow-100 text-yellow-700", recommended: "bg-amber-100 text-amber-700", rejected: "bg-red-100 text-red-700", cancelled: "bg-gray-100 text-gray-700" };
 
 export default function RequestHistory() {
   const navigate = useNavigate();

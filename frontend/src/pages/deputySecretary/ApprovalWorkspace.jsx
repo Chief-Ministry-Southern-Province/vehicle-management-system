@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
-import { approveVehicleRequest, getApprovalVehicleRequest, getDrivers, getVehicles } from "../../api/authApi";
+import { allocateVehicleRequest, getApprovalVehicleRequest, getDrivers, getVehicles } from "../../api/authApi";
 import { useParams } from "react-router-dom";
 
 import RequestHeader from "../../components/deputySecretary/approvalWorkspace/RequestHeader";
@@ -151,7 +151,7 @@ function DatabaseRecommendation({ request }) {
   return <section className="overflow-hidden rounded-2xl border bg-white"><div className="border-b p-5"><h3 className="text-xl font-bold text-slate-900">Department Officer Recommendation</h3><p className="mt-1 text-sm text-slate-500">{request.recommender ? `Submitted by ${request.recommender.name}` : "Not yet reviewed"}</p></div><div className="grid gap-5 p-6 sm:grid-cols-2"><div><p className="text-xs font-semibold uppercase text-slate-400">Decision</p><p className="mt-2 font-semibold capitalize">{request.recommendation_status || "pending"}</p></div><div><p className="text-xs font-semibold uppercase text-slate-400">Priority</p><p className="mt-2 font-semibold capitalize">{request.department_priority || "Not set"}</p></div><div><p className="text-xs font-semibold uppercase text-slate-400">Recommended at</p><p className="mt-2 text-sm">{request.recommended_at ? new Date(request.recommended_at).toLocaleString() : "—"}</p></div><div><p className="text-xs font-semibold uppercase text-slate-400">Officer department</p><p className="mt-2 text-sm">{request.recommender?.department || "—"}</p></div><div className="rounded-xl border border-blue-100 bg-blue-50 p-4 sm:col-span-2"><p className="text-xs font-semibold uppercase text-blue-600">Recommendation notes</p><p className="mt-2 whitespace-pre-wrap text-sm leading-6">{request.recommendation_notes || "No notes provided."}</p></div></div></section>;
 }
 
-function DatabaseAllocationPanel() {
+function DatabaseAllocationPanel({ onAllocationChange }) {
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [driverId, setDriverId] = useState("");
@@ -163,6 +163,12 @@ function DatabaseAllocationPanel() {
   const driver = useMemo(() => drivers.find((item) => item.driver_id === driverId), [driverId, drivers]);
   const vehicle = useMemo(() => vehicles.find((item) => item.registration_number === vehicleRegistration), [vehicleRegistration, vehicles]);
   const selectableVehicles = useMemo(() => vehicles.filter((item) => item.status === "available" || item.registration_number === registeredVehicle), [registeredVehicle, vehicles]);
+  useEffect(() => {
+    onAllocationChange({
+      driver_id: driver?.id || null,
+      vehicle_id: vehicle?.id || null,
+    });
+  }, [driver, onAllocationChange, vehicle]);
   const changeDriver = (event) => { const id = event.target.value; const nextDriver = drivers.find((item) => item.driver_id === id); const allocation = nextDriver?.allocated_vehicle || ""; setDriverId(id); setRegisteredVehicle(allocation); setVehicleRegistration(allocation); };
   const previousJourneysPanel = driver ? <section className="overflow-hidden rounded-xl border border-slate-200"><div className="border-b bg-slate-50 px-4 py-3"><h4 className="font-semibold text-slate-800">Previous Journeys</h4><p className="mt-1 text-xs text-slate-500">Journey history for {driver.full_name}</p></div>{Array.isArray(driver.previous_journeys) && driver.previous_journeys.length > 0 ? <div className="divide-y divide-slate-100">{driver.previous_journeys.map((journey, index) => <article key={`${journey.date}-${journey.destination}-${index}`} className="p-4 text-sm"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold text-slate-800">{journey.origin} → {journey.destination}</p><p className="mt-1 text-slate-500">{journey.purpose}</p></div><span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold capitalize text-emerald-700">{journey.status}</span></div><div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500"><span>{new Date(journey.date).toLocaleDateString()}</span><span>Vehicle: {journey.vehicle_registration || "Not recorded"}</span></div></article>)}</div> : <p className="p-5 text-center text-sm text-slate-500">No previous journeys recorded for this driver.</p>}</section> : null;
 
@@ -181,11 +187,13 @@ export default function ApprovalWorkspace() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
-  const [approving, setApproving] = useState(false);
-  const [approvalMessage, setApprovalMessage] = useState("");
+  const [allocating, setAllocating] = useState(false);
+  const [allocationMessage, setAllocationMessage] = useState("");
+  const [allocation, setAllocation] = useState({ driver_id: null, vehicle_id: null });
   useEffect(() => { const load = async () => { try { const response = await getApprovalVehicleRequest(id); setRequest(response?.data?.vehicle_request || false); } catch (loadError) { setError(loadError?.message || "Unable to load request details."); setRequest(false); } }; load(); }, [id]);
-  const approve = async () => { setApproving(true); setApprovalMessage(""); try { const response = await approveVehicleRequest(id); const updatedRequest = response?.data?.vehicle_request; if (updatedRequest) setRequest(updatedRequest); setApprovalMessage(response?.message || "Request approved successfully."); } catch (approvalError) { setApprovalMessage(approvalError?.message || "Unable to approve the request."); } finally { setApproving(false); } };
+  const allocate = async () => { if (!allocation.driver_id || !allocation.vehicle_id) { setAllocationMessage("Select both a driver and a vehicle before allocating this request."); return; } setAllocating(true); setAllocationMessage(""); try { const response = await allocateVehicleRequest(id, allocation); const updatedRequest = response?.data?.vehicle_request; if (updatedRequest) setRequest(updatedRequest); setAllocationMessage(response?.message || "Vehicle allocated successfully."); } catch (allocationError) { setAllocationMessage(allocationError?.message || "Unable to allocate the vehicle."); } finally { setAllocating(false); } };
   if (request === null) return <DashboardLayout><div className="p-6 text-slate-500">Loading request details...</div></DashboardLayout>;
   if (request === false) return <DashboardLayout><div className="m-6 rounded-xl border border-red-100 bg-red-50 p-5 text-red-700">{error}</div></DashboardLayout>;
-  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{approvalMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${request.status === "approved" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{approvalMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5"><DatabaseAllocationPanel /><ApprovalActions onApprove={approve} approving={approving} approved={request.status === "approved"} /></div></div></div></DashboardLayout>;
+  const allocated = ["vehicle_allocated", "approved"].includes(request.status);
+  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{allocationMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{allocationMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5"><DatabaseAllocationPanel onAllocationChange={setAllocation} /><ApprovalActions onAllocate={allocate} allocating={allocating} allocated={allocated} allocationReady={Boolean(allocation.driver_id && allocation.vehicle_id)} /></div></div></div></DashboardLayout>;
 }

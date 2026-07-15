@@ -27,6 +27,11 @@ class VehicleRequest extends Model
         'recommendation_notes',
         'recommended_by',
         'recommended_at',
+        'allocated_vehicle_id',
+        'allocated_driver_id',
+        'allocated_by',
+        'allocated_at',
+        'driver_notified_at',
     ];
 
     protected function casts(): array
@@ -35,6 +40,8 @@ class VehicleRequest extends Model
             'departure_at' => 'datetime',
             'expected_return_at' => 'datetime',
             'recommended_at' => 'datetime',
+            'allocated_at' => 'datetime',
+            'driver_notified_at' => 'datetime',
         ];
     }
 
@@ -46,5 +53,20 @@ class VehicleRequest extends Model
     public function recommender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recommended_by');
+    }
+
+    public function allocatedVehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'allocated_vehicle_id');
+    }
+
+    public function allocatedDriver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class, 'allocated_driver_id');
+    }
+
+    public function allocator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'allocated_by');
     }
 }
