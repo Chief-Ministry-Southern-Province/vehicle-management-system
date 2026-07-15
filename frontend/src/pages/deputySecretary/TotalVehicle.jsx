@@ -20,8 +20,6 @@ import {
   FiAlertTriangle,
   FiArrowUp,
   FiArrowDown,
-  FiChevronsLeft,
-  FiChevronsRight,
   FiX,
   FiInbox,
   FiImage,
@@ -33,7 +31,6 @@ import {
 /*  automatically, otherwise a clean placeholder icon is shown.       */
 /* ------------------------------------------------------------------ */
 const STATUSES = ["Available", "Unavailable", "Maintenance"];
-const PAGE_SIZE = 6;
 
 const STATUS_STYLES = {
   Available: "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
@@ -202,7 +199,6 @@ export default function TotalVehicles() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState({ field: "model", dir: "asc" });
-  const [page, setPage] = useState(1);
 
   const loadVehicles = useCallback(async () => {
     setLoading(true);
@@ -251,7 +247,6 @@ export default function TotalVehicles() {
     setTypeFilter("All");
     setFuelFilter("All");
     setStatusFilter("All");
-    setPage(1);
   };
 
   const filtered = useMemo(() => {
@@ -276,9 +271,6 @@ export default function TotalVehicles() {
 
     return rows;
   }, [vehicles, query, typeFilter, fuelFilter, statusFilter, sortConfig]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const summary = useMemo(() => {
     const available = vehicles.filter((v) => v.status === "Available").length;
@@ -354,7 +346,7 @@ export default function TotalVehicles() {
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
               <input
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search vehicle or register number..."
                 className="pl-9 pr-8 py-2 w-full sm:w-72 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
               />
@@ -383,7 +375,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Vehicle Type</label>
                     <select
                       value={typeFilter}
-                      onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+                      onChange={(e) => setTypeFilter(e.target.value)}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
@@ -397,7 +389,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Fuel Type</label>
                     <select
                       value={fuelFilter}
-                      onChange={(e) => { setFuelFilter(e.target.value); setPage(1); }}
+                      onChange={(e) => setFuelFilter(e.target.value)}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
@@ -411,7 +403,7 @@ export default function TotalVehicles() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</label>
                     <select
                       value={statusFilter}
-                      onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                      onChange={(e) => setStatusFilter(e.target.value)}
                       className="mt-1.5 w-full rounded-lg border border-slate-200 text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100"
                     >
                       <option>All</option>
@@ -431,9 +423,9 @@ export default function TotalVehicles() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="max-h-[65vh] overflow-auto">
           <table className="w-full min-w-[1120px]">
-            <thead className="bg-slate-50/70">
+            <thead className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_rgba(226,232,240,1)]">
               <tr>
                 <SortHeader label="Vehicle Name" field="model" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Register Number" field="registerNo" sortConfig={sortConfig} onSort={handleSort} />
@@ -448,11 +440,11 @@ export default function TotalVehicles() {
 
             <tbody>
               {loading ? (
-                Array.from({ length: PAGE_SIZE }).map((_, i) => <RowSkeleton key={i} />)
-              ) : pageRows.length === 0 ? (
+                Array.from({ length: 6 }).map((_, i) => <RowSkeleton key={i} />)
+              ) : filtered.length === 0 ? (
                 <EmptyState onClear={clearFilters} />
               ) : (
-                pageRows.map((v) => {
+                filtered.map((v) => {
                   const daysLeft = v.licenseExpiry ? daysUntil(v.licenseExpiry) : null;
                   const expiringSoon = daysLeft <= 30 && daysLeft >= 0;
                   const expired = daysLeft < 0;
@@ -523,40 +515,11 @@ export default function TotalVehicles() {
           </table>
         </div>
 
-        {/* Pagination */}
         {!loading && filtered.length > 0 && (
-          <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="border-t border-slate-100 p-4">
             <p className="text-sm text-slate-400">
-              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+              Showing all {filtered.length} matching vehicle{filtered.length === 1 ? "" : "s"}. Scroll the inventory to view the complete list.
             </p>
-
-            <div className="flex items-center gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(1)}
-                className="p-2 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-              >
-                <FiChevronsLeft className="h-4 w-4" />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`h-8 w-8 rounded-lg text-sm font-medium transition-colors ${
-                    p === page ? "bg-blue-600 text-white" : "text-slate-500 hover:bg-slate-50 border border-slate-200"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(totalPages)}
-                className="p-2 rounded-lg border border-slate-200 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-              >
-                <FiChevronsRight className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         )}
       </div>
