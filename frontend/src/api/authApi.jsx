@@ -248,9 +248,9 @@ export const getApprovalVehicleRequest = async (requestId) => {
   }
 };
 
-export const approveVehicleRequest = async (requestId, allocation) => {
+export const allocateVehicleRequest = async (requestId, allocation) => {
   try {
-    const response = await API.patch(`/approvals/vehicle-requests/${requestId}/approve`, allocation, {
+    const response = await API.patch(`/approvals/vehicle-requests/${requestId}/allocate`, allocation, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

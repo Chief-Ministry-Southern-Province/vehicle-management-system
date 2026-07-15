@@ -27,7 +27,7 @@ export default function RequestHeader({ request }) {
         <div className="text-right">
 
           <span className="px-4 py-2 rounded-full bg-yellow-50 text-yellow-700 text-sm font-medium">
-            {request.status?.replaceAll("_", " ") || "Pending Deputy Approval"}
+            {request.status?.replaceAll("_", " ") || "Pending Vehicle Allocation"}
           </span>
 
           <p className="text-gray-500 text-sm mt-2 flex items-center gap-2 justify-end">

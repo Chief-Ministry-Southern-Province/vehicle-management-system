@@ -33,11 +33,11 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
 
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
-            {view === "approved" ? "Approved Requests" : "Pending Approval Queue"}
+            {view === "allocated" ? "Allocated Requests" : "Pending Allocation Queue"}
           </h2>
 
           <p className="text-sm text-slate-500 mt-1">
-            {view === "approved" ? "Review requests approved by the Deputy Secretary." : "Review pending transport requests and allocate vehicles."}
+            {view === "allocated" ? "Review requests with vehicles allocated by the Deputy Secretary." : "Review recommended transport requests and allocate vehicles."}
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export default function ApprovalQueue({ requests = [], loading = false, error = 
                     <button
                       className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow transition-all duration-300 hover:shadow-lg hover:scale-105"
                     >
-                      {view === "approved" ? "View" : "Review"}
+                      {view === "allocated" ? "View" : "Allocate"}
 
                       <FiChevronRight className="transition-transform group-hover:translate-x-1" />
 

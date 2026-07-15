@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
-import { approveVehicleRequest, getApprovalVehicleRequest, getDrivers, getVehicles } from "../../api/authApi";
+import { allocateVehicleRequest, getApprovalVehicleRequest, getDrivers, getVehicles } from "../../api/authApi";
 import { useParams } from "react-router-dom";
 
 import RequestHeader from "../../components/deputySecretary/approvalWorkspace/RequestHeader";
@@ -187,13 +187,13 @@ export default function ApprovalWorkspace() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
-  const [approving, setApproving] = useState(false);
-  const [approvalMessage, setApprovalMessage] = useState("");
+  const [allocating, setAllocating] = useState(false);
+  const [allocationMessage, setAllocationMessage] = useState("");
   const [allocation, setAllocation] = useState({ driver_id: null, vehicle_id: null });
   useEffect(() => { const load = async () => { try { const response = await getApprovalVehicleRequest(id); setRequest(response?.data?.vehicle_request || false); } catch (loadError) { setError(loadError?.message || "Unable to load request details."); setRequest(false); } }; load(); }, [id]);
-  const approve = async () => { if (!allocation.driver_id || !allocation.vehicle_id) { setApprovalMessage("Select both a driver and a vehicle before allocating this request."); return; } setApproving(true); setApprovalMessage(""); try { const response = await approveVehicleRequest(id, allocation); const updatedRequest = response?.data?.vehicle_request; if (updatedRequest) setRequest(updatedRequest); setApprovalMessage(response?.message || "Request approved successfully."); } catch (approvalError) { setApprovalMessage(approvalError?.message || "Unable to approve the request."); } finally { setApproving(false); } };
+  const allocate = async () => { if (!allocation.driver_id || !allocation.vehicle_id) { setAllocationMessage("Select both a driver and a vehicle before allocating this request."); return; } setAllocating(true); setAllocationMessage(""); try { const response = await allocateVehicleRequest(id, allocation); const updatedRequest = response?.data?.vehicle_request; if (updatedRequest) setRequest(updatedRequest); setAllocationMessage(response?.message || "Vehicle allocated successfully."); } catch (allocationError) { setAllocationMessage(allocationError?.message || "Unable to allocate the vehicle."); } finally { setAllocating(false); } };
   if (request === null) return <DashboardLayout><div className="p-6 text-slate-500">Loading request details...</div></DashboardLayout>;
   if (request === false) return <DashboardLayout><div className="m-6 rounded-xl border border-red-100 bg-red-50 p-5 text-red-700">{error}</div></DashboardLayout>;
-  const allocated = ["pending_final_approval", "approved"].includes(request.status);
-  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{approvalMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{approvalMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5"><DatabaseAllocationPanel onAllocationChange={setAllocation} /><ApprovalActions onApprove={approve} approving={approving} approved={allocated} /></div></div></div></DashboardLayout>;
+  const allocated = ["vehicle_allocated", "approved"].includes(request.status);
+  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{allocationMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{allocationMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5"><DatabaseAllocationPanel onAllocationChange={setAllocation} /><ApprovalActions onAllocate={allocate} allocating={allocating} allocated={allocated} allocationReady={Boolean(allocation.driver_id && allocation.vehicle_id)} /></div></div></div></DashboardLayout>;
 }
