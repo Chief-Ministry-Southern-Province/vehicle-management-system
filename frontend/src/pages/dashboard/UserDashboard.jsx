@@ -4,50 +4,77 @@ import {
   FiClock,
   FiCheckCircle,
   FiXCircle,
-  FiCalendar,
-  FiPlus,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import VehicleRequest from "../../components/employee/VehicleRequest";
+import { getMyVehicleRequests } from "../../api/authApi";
 
-import {
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  BarChart,
-  Bar,
-} from "recharts";
-import RecentActivity from "../../components/employee/RecentActivity";
+function StatCard({ title, value, icon, tone }) {
+  const tones = {
+    amber: { icon: "bg-amber-50 text-amber-600 ring-amber-100", glow: "bg-amber-400/10", accent: "from-amber-400 to-orange-500" },
+    emerald: { icon: "bg-emerald-50 text-emerald-600 ring-emerald-100", glow: "bg-emerald-400/10", accent: "from-emerald-400 to-teal-500" },
+    rose: { icon: "bg-rose-50 text-rose-600 ring-rose-100", glow: "bg-rose-400/10", accent: "from-rose-400 to-red-500" },
+  };
+  const palette = tones[tone];
 
-const weeklyUsageData = [
-  { day: "Mon", hours: 4.2 },
-  { day: "Tue", hours: 6.1 },
-  { day: "Wed", hours: 2.0 },
-  { day: "Thu", hours: 8.2 },
-  { day: "Fri", hours: 4.8 },
-  { day: "Sat", hours: 1.1 },
-  { day: "Sun", hours: 0.4 },
-];
-
-function StatCard({ title, value, icon, color }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center justify-between">
-        <span className="text-gray-500 text-sm">{title}</span>
-
-        <div className={`text-xl ${color}`}>
+    <article className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(15,23,42,0.3)]">
+      <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl ${palette.glow}`} />
+      <div className="relative flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <p className="mt-3 text-3xl font-black tracking-tight text-slate-900">{value}</p>
+        </div>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110 ${palette.icon}`}>
           {icon}
         </div>
       </div>
-
-      <h2 className="text-3xl font-bold mt-4">{value}</h2>
-    </div>
+      <div className={`absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r ${palette.accent}`} />
+    </article>
   );
 }
 
 export default function UserDashboard() {
-  const navigate = useNavigate();
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadStats = async () => {
+      try {
+        const response = await getMyVehicleRequests();
+        const requests = response?.data?.requests || [];
+
+        if (isMounted) {
+          setStats({
+            pending: requests.filter(
+              (request) => !["approved", "rejected"].includes(request.status),
+            ).length,
+            approved: requests.filter((request) => request.status === "approved").length,
+            rejected: requests.filter((request) => request.status === "rejected").length,
+          });
+        }
+      } catch (error) {
+        if (isMounted) {
+          setStatsError(error?.message || "Unable to load request statistics.");
+        }
+      } finally {
+        if (isMounted) {
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    loadStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const statValue = (value) => (statsLoading ? "\u2014" : value);
 
   return (
     <DashboardLayout>
@@ -65,108 +92,39 @@ export default function UserDashboard() {
             </p>
           </div>
 
-          <button 
-            onClick={() => navigate('/createvehiclerequest')}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
-          >
-            <FiPlus />
-            Create New Request
-          </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <StatCard
             title="Pending Requests"
-            value="3"
+            value={statValue(stats.pending)}
             icon={<FiClock />}
-            color="text-orange-500"
+            tone="amber"
           />
 
           <StatCard
             title="Approved"
-            value="12"
+            value={statValue(stats.approved)}
             icon={<FiCheckCircle />}
-            color="text-green-500"
+            tone="emerald"
           />
 
           <StatCard
             title="Rejected"
-            value="1"
+            value={statValue(stats.rejected)}
             icon={<FiXCircle />}
-            color="text-red-500"
+            tone="rose"
           />
 
-          <StatCard
-            title="Upcoming Allocations"
-            value="2"
-            icon={<FiCalendar />}
-            color="text-blue-500"
-          />
         </div>
-
-        {/* Activity Section */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-          {/* Recent Activity */}
-          <div className="xl:col-span-2 bg-white rounded-xl border border-gray-100 ">
-            <RecentActivity />
-          </div>
-          
-
-          {/* Right Side Cards */}
-          <div className="space-y-6">
-
-            {/* Weekly Usage */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-              <h2 className="font-semibold text-lg">
-                Weekly Usage
-              </h2>
-
-              <p className="text-sm text-gray-500 mb-4">
-                Hours utilized this week
-              </p>
-
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={weeklyUsageData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                  />
-
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-
-                  <Bar
-                    dataKey="hours"
-                    fill="#22D3EE"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-
-              <div className="flex justify-between mt-4">
-                <div>
-                  <p className="font-bold">28.9 hrs</p>
-                  <p className="text-xs text-gray-500">
-                    Total Weekly
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="font-bold text-green-600">
-                    +12%
-                  </p>
-
-                  <p className="text-xs text-gray-500">
-                    vs Last Week
-                  </p>
-                </div>
-              </div>
-            </div>
-
-          </div>
+        {statsError && (
+          <p role="alert" className="text-sm text-rose-600">
+            {statsError}
+          </p>
+        )}
+        <div>
+          <VehicleRequest />
         </div>
       </div>
     </DashboardLayout>
