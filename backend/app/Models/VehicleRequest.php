@@ -31,6 +31,7 @@ class VehicleRequest extends Model
         'allocated_driver_id',
         'allocated_by',
         'allocated_at',
+        'driver_notified_at',
     ];
 
     protected function casts(): array
@@ -40,6 +41,7 @@ class VehicleRequest extends Model
             'expected_return_at' => 'datetime',
             'recommended_at' => 'datetime',
             'allocated_at' => 'datetime',
+            'driver_notified_at' => 'datetime',
         ];
     }
 

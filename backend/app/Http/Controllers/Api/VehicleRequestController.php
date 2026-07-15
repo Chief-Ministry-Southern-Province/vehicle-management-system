@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\VehicleRequest;
+use App\Models\Driver;
+use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
@@ -26,11 +29,11 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** All vehicle requests visible to the Deputy Secretary approval queue. */
+    /** Recommended vehicle requests visible to the Deputy Secretary allocation queue. */
     public function approvalIndex(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
-        if (! in_array($status, ['pending', 'approved', 'all'], true)) {
+        if (! in_array($status, ['pending', 'allocated', 'all'], true)) {
             return response()->json(['success' => false, 'message' => 'Invalid request status filter.'], 422);
         }
 
@@ -40,9 +43,9 @@ class VehicleRequestController extends Controller
             ->latest();
 
         if ($status === 'pending') {
-            $query->whereNotIn('status', ['pending_final_approval', 'approved', 'rejected']);
-        } elseif ($status === 'approved') {
-            $query->whereIn('status', ['pending_final_approval', 'approved']);
+            $query->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected']);
+        } elseif ($status === 'allocated') {
+            $query->where('status', 'vehicle_allocated');
         }
 
         $requests = $query->get();
@@ -53,8 +56,9 @@ class VehicleRequestController extends Controller
                 'requests' => $requests,
                 'total' => $requests->count(),
                 'stats' => [
-                    'pending' => (clone $baseQuery)->whereNotIn('status', ['pending_final_approval', 'approved', 'rejected'])->count(),
-                    'approved' => (clone $baseQuery)->whereIn('status', ['pending_final_approval', 'approved'])->count(),
+                    'pending' => (clone $baseQuery)->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected'])->count(),
+                    'allocated' => (clone $baseQuery)->where('status', 'vehicle_allocated')->count(),
+                    'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
                     'rejected' => (clone $baseQuery)->where('status', 'rejected')->count(),
                     'all' => (clone $baseQuery)->count(),
                 ],
@@ -76,10 +80,10 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Approve a vehicle request at Deputy Secretary level. */
-    public function approve(VehicleRequest $vehicleRequest): JsonResponse
+    /** Allocate a driver and vehicle; this is not a request approval. */
+    public function allocate(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (in_array($vehicleRequest->status, ['pending_final_approval', 'approved'], true)) {
+        if (in_array($vehicleRequest->status, ['vehicle_allocated', 'approved'], true)) {
             return response()->json([
                 'success' => true,
                 'message' => 'This request has already been allocated and sent for final approval.',
@@ -88,21 +92,44 @@ class VehicleRequestController extends Controller
         }
 
         if ($vehicleRequest->status === 'rejected') {
-            return response()->json(['success' => false, 'message' => 'A rejected request cannot be approved.'], 422);
+            return response()->json(['success' => false, 'message' => 'A rejected request cannot receive a vehicle allocation.'], 422);
         }
 
-        $validated = request()->validate([
+        if ($vehicleRequest->status !== 'recommended') {
+            return response()->json(['success' => false, 'message' => 'Only requests recommended by a Department Officer can receive a vehicle allocation.'], 422);
+        }
+
+        $validated = $request->validate([
             'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
             'driver_id' => ['required', 'integer', 'exists:drivers,id'],
         ]);
 
-        $vehicleRequest->update([
-            'status' => 'pending_final_approval',
-            'allocated_vehicle_id' => $validated['vehicle_id'],
-            'allocated_driver_id' => $validated['driver_id'],
-            'allocated_by' => request()->user()->id,
-            'allocated_at' => now(),
-        ]);
+        DB::transaction(function () use ($request, $validated, $vehicleRequest): void {
+            $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($validated['vehicle_id']);
+            $driver = Driver::query()->lockForUpdate()->findOrFail($validated['driver_id']);
+
+            if ($vehicle->status !== 'available') {
+                abort(422, 'The selected vehicle is no longer available.');
+            }
+
+            if ($driver->status !== 'available') {
+                abort(422, 'The selected driver is no longer available.');
+            }
+
+            $vehicleRequest->update([
+                'status' => 'vehicle_allocated',
+                'allocated_vehicle_id' => $vehicle->id,
+                'allocated_driver_id' => $driver->id,
+                'allocated_by' => $request->user()->id,
+                'allocated_at' => now(),
+            ]);
+
+            $vehicle->update(['status' => 'unavailable']);
+            $driver->update([
+                'allocated_vehicle' => $vehicle->registration_number,
+                'status' => 'unavailable',
+            ]);
+        });
 
         return response()->json([
             'success' => true,
@@ -125,11 +152,11 @@ class VehicleRequestController extends Controller
             ->latest();
 
         if ($status === 'pending') {
-            $query->where('status', 'pending_final_approval');
+            $query->where('status', 'vehicle_allocated');
         } elseif ($status === 'approved') {
             $query->where('status', 'approved');
         } else {
-            $query->whereIn('status', ['pending_final_approval', 'approved']);
+            $query->whereIn('status', ['vehicle_allocated', 'approved']);
         }
 
         $requests = $query->get();
@@ -140,7 +167,7 @@ class VehicleRequestController extends Controller
                 'requests' => $requests,
                 'total' => $requests->count(),
                 'stats' => [
-                    'pending' => VehicleRequest::where('status', 'pending_final_approval')->count(),
+                    'pending' => VehicleRequest::where('status', 'vehicle_allocated')->count(),
                     'approved' => VehicleRequest::where('status', 'approved')->count(),
                 ],
             ],
@@ -150,7 +177,7 @@ class VehicleRequestController extends Controller
     /** Complete allocated request details for final review. */
     public function finalApprovalShow(VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! in_array($vehicleRequest->status, ['pending_final_approval', 'approved'], true)) {
+        if (! in_array($vehicleRequest->status, ['vehicle_allocated', 'approved'], true)) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
@@ -179,14 +206,37 @@ class VehicleRequestController extends Controller
             ]);
         }
 
-        if ($vehicleRequest->status !== 'pending_final_approval') {
+        if ($vehicleRequest->status !== 'vehicle_allocated') {
             return response()->json([
                 'success' => false,
                 'message' => 'Only requests allocated by the Deputy Secretary can receive final approval.',
             ], 422);
         }
 
-        $vehicleRequest->update(['status' => 'approved']);
+        if (! $vehicleRequest->allocated_vehicle_id || ! $vehicleRequest->allocated_driver_id) {
+            return response()->json(['success' => false, 'message' => 'A saved driver and vehicle allocation is required before approval.'], 422);
+        }
+
+        DB::transaction(function () use ($vehicleRequest): void {
+            $vehicleRequest->loadMissing('allocatedVehicle', 'allocatedDriver');
+
+            $vehicleRequest->update([
+                'status' => 'approved',
+                'driver_notified_at' => now(),
+            ]);
+
+            $vehicleRequest->allocatedDriver?->update([
+                'current_assignment' => [
+                    'request_id' => $vehicleRequest->id,
+                    'destination' => $vehicleRequest->destination,
+                    'purpose' => $vehicleRequest->purpose,
+                    'departure_at' => $vehicleRequest->departure_at?->toISOString(),
+                    'expected_return_at' => $vehicleRequest->expected_return_at?->toISOString(),
+                    'vehicle_registration' => $vehicleRequest->allocatedVehicle?->registration_number,
+                    'notified_at' => now()->toISOString(),
+                ],
+            ]);
+        });
 
         return response()->json([
             'success' => true,

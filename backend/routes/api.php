@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
-        Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'approve']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
     });
 
     Route::middleware('role:deputy_secretary')->get('/dashboard/executive-stats', [DashboardStatsController::class, 'deputySecretary']);
