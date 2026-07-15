@@ -27,7 +27,6 @@ import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard
 import SeniorDeputySecretaryDashboard from './pages/dashboard/SeniorDeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
-import PendingFinalApprovals from './pages/secretary/PendingFinalApprovals';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -36,6 +35,8 @@ import TotalVehicles from './pages/deputySecretary/TotalVehicle';
 import DriverDetails from './pages/deputySecretary/DriverDetails';
 import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
 import TotalApprovals from './pages/deputySecretary/TotalApprovals';
+import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
+import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
 
 const withAuth = (element) => (
   <ProtectedRoute>{element}</ProtectedRoute>
@@ -94,11 +95,13 @@ function App() {
 
 
             <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
+            <Route path="/finalapprovals" element={withAuth(<FinalApprovals />)} />
+            <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />)} />
 
-            
+
+
 
             <Route path="/secretarydashboard" element={withAuth(<SecretaryDashboard />)} />
-            <Route path="/pendingfinalapprovals" element={withAuth(<PendingFinalApprovals />)} />
 
             
             <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />

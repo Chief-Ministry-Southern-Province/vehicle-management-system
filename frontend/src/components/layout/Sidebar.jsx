@@ -97,6 +97,18 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["senior_deputy_secretary"],
       },
+      {
+        name: "Total Approvals",
+        path: "/finalapprovals",
+        icon: <FiCheckCircle />,
+        roles: ["senior_deputy_secretary"],
+      },
+      {
+        name: "Pending Approvals",
+        path: "/pendingfinalapprovals",
+        icon: <FiCheckCircle />,
+        roles: ["senior_deputy_secretary"],
+      },
 
       // ================= SECRETARY =================
 
@@ -104,6 +116,12 @@ const menuItems = [
         name: "Dashboard",
         path: "/secretarydashboard",
         icon: <FiGrid />,
+        roles: ["secretary"],
+      },
+      {
+        name: "Total Approvals",
+        path: "/finalapprovals",
+        icon: <FiCheckCircle />,
         roles: ["secretary"],
       },
       {
@@ -175,31 +193,31 @@ const menuItems = [
         name: "Vehicle Details",
         path: "/totalvehicles",
         icon: <FiTruck />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary"],
       },
       {
         name: "Driver Details",
         path: "/driverdetails",
         icon: <FiTruck />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary"],
       },
       {
         name: "Fuel Management",
         path: "/fuelmanagement",
         icon: <FiDroplet />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary"],
       },
       {
         name: "Service Records",
         path: "/servicerecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary"],
       },
       {
         name: "Repair Records",
         path: "/repairrecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary"],
       },
     ],
   },
