@@ -108,7 +108,28 @@ export default function ApprovedJourny() {
     }
   }, []);
 
-  useEffect(() => { loadJourneys(); }, [loadJourneys]);
+  useEffect(() => {
+    let active = true;
+
+    getApprovedJourneys()
+      .then((response) => {
+        if (!active) return;
+        setJourneys(response?.data?.requests || []);
+        setError("");
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setJourneys([]);
+        setError(requestError?.message || "Unable to load approved journeys.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredJourneys = useMemo(() => {
     const search = query.trim().toLowerCase();
