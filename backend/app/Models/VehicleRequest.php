@@ -32,6 +32,8 @@ class VehicleRequest extends Model
         'allocated_by',
         'allocated_at',
         'driver_notified_at',
+        'approved_by',
+        'approved_at',
     ];
 
     protected function casts(): array
@@ -42,6 +44,7 @@ class VehicleRequest extends Model
             'recommended_at' => 'datetime',
             'allocated_at' => 'datetime',
             'driver_notified_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -68,5 +71,10 @@ class VehicleRequest extends Model
     public function allocator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'allocated_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

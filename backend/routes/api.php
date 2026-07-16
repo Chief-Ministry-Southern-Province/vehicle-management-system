@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::get('/vehicle-requests', [VehicleRequestController::class, 'personalIndex']);
+    Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'personalShow']);
 
     Route::middleware('role:department_officer')->prefix('department')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'departmentIndex']);
@@ -62,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fleet registration and edits remain restricted to the Subject Officer.
     Route::middleware('role:subject_officer')->group(function () {
+        Route::get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
         Route::post('/vehicles', [VehicleController::class, 'store']);
         // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);

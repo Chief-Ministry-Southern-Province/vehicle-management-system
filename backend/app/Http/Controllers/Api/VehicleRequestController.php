@@ -15,6 +15,28 @@ use Throwable;
 
 class VehicleRequestController extends Controller
 {
+    /** Finally approved journeys visible to the Subject Officer. */
+    public function approvedJourneysIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->where('status', 'approved')
+            ->with(
+                'user:id,name,employee_id,department',
+                'recommender:id,name,employee_id,department',
+                'allocatedVehicle',
+                'allocatedDriver',
+                'allocator:id,name,employee_id',
+                'approver:id,name,employee_id',
+            )
+            ->latest('approved_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['requests' => $requests, 'total' => $requests->count()],
+        ]);
+    }
+
     /** Vehicle-request history belonging to the authenticated requester. */
     public function personalIndex(Request $request): JsonResponse
     {
@@ -27,6 +49,22 @@ class VehicleRequestController extends Controller
             'success' => true,
             'data' => ['requests' => $requests, 'total' => $requests->count()],
         ]);
+    }
+
+    /** A requester may only view their own request; allocation details remain private until final approval. */
+    public function personalShow(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if ($vehicleRequest->user_id !== $request->user()->id) {
+            return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
+        }
+
+        $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'approver:id,name');
+
+        if ($vehicleRequest->status === 'approved') {
+            $vehicleRequest->load('allocatedVehicle', 'allocatedDriver');
+        }
+
+        return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest]]);
     }
 
     /** Recommended vehicle requests visible to the Deputy Secretary allocation queue. */
@@ -75,6 +113,10 @@ class VehicleRequestController extends Controller
                 'vehicle_request' => $vehicleRequest->load(
                     'user:id,name,employee_id,department',
                     'recommender:id,name,employee_id,department',
+                    'allocatedVehicle',
+                    'allocatedDriver',
+                    'allocator:id,name,employee_id',
+                    'approver:id,name,employee_id',
                 ),
             ],
         ]);
@@ -223,6 +265,8 @@ class VehicleRequestController extends Controller
             $vehicleRequest->update([
                 'status' => 'approved',
                 'driver_notified_at' => now(),
+                'approved_by' => request()->user()->id,
+                'approved_at' => now(),
             ]);
 
             $vehicleRequest->allocatedDriver?->update([
