@@ -18,6 +18,7 @@ import {
 } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import nationalEmblem from "../../assets/national-emblem.png";
+import { BsPerson } from "react-icons/bs";
 
 
 const menuItems = [
@@ -194,31 +195,31 @@ const menuItems = [
         name: "Vehicle Details",
         path: "/totalvehicles",
         icon: <FiTruck />,
-        roles: ["deputy_secretary","senior_deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
       },
       {
         name: "Driver Details",
         path: "/driverdetails",
-        icon: <FiTruck />,
-        roles: ["deputy_secretary","senior_deputy_secretary"],
+        icon: <BsPerson />,
+        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
       },
       {
-        name: "Fuel Management",
+        name: "Fuel Records",
         path: "/fuelmanagement",
         icon: <FiDroplet />,
-        roles: ["deputy_secretary","senior_deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
       },
       {
         name: "Service Records",
         path: "/servicerecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary","senior_deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
       },
       {
         name: "Repair Records",
         path: "/repairrecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary","senior_deputy_secretary"],
+        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
       },
     ],
   },
