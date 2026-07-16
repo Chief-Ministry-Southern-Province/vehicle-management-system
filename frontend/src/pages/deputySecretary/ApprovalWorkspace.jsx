@@ -183,6 +183,19 @@ function DatabaseAllocationPanel({ onAllocationChange }) {
   </div></section>;
 }
 
+function AllocatedVehicleDetails({ request }) {
+  const vehicle = request.allocated_vehicle;
+  const driver = request.allocated_driver;
+
+  if (!vehicle || !driver) return <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">The saved vehicle or driver record is unavailable.</section>;
+
+  return <section className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm"><div className="border-b border-emerald-100 bg-emerald-50 p-5"><h3 className="text-xl font-bold">Allocated Vehicle and Driver</h3><p className="mt-1 text-sm text-slate-600">Saved database details for this request.</p></div><div className="space-y-5 p-5">
+    <div className="grid gap-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-400">Vehicle</p><p className="mt-1 font-bold">{vehicle.make} {vehicle.model}</p><p>{vehicle.registration_number}</p></div><div><p className="text-xs uppercase text-slate-400">Vehicle details</p><p className="mt-1">{vehicle.vehicle_type} · {vehicle.seat_capacity || "—"} seats</p><p className="capitalize">{vehicle.fuel_type || "—"} · {vehicle.status}</p></div></div>
+    <div className="grid gap-4 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-400">Driver</p><p className="mt-1 font-bold">{driver.full_name}</p><p>{driver.driver_id}</p></div><div><p className="text-xs uppercase text-slate-400">Contact and identity</p><p className="mt-1">{driver.contact_number}</p><p>NIC: {driver.nic}</p></div><div><p className="text-xs uppercase text-slate-400">Licence</p><p className="mt-1">{driver.licence_number} · {driver.licence_type}</p></div><div><p className="text-xs uppercase text-slate-400">Status</p><p className="mt-1 capitalize">{request.status?.replaceAll("_", " ")}</p></div></div>
+    <div className="grid gap-4 border-t pt-4 text-sm sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-400">Allocated by</p><p className="mt-1">{request.allocator?.name || "—"}</p></div><div><p className="text-xs uppercase text-slate-400">Allocated at</p><p className="mt-1">{request.allocated_at ? new Date(request.allocated_at).toLocaleString() : "—"}</p></div>{request.status === "approved" && <><div><p className="text-xs uppercase text-slate-400">Finally approved by</p><p className="mt-1">{request.approver?.name || "—"}</p></div><div><p className="text-xs uppercase text-slate-400">Approved at</p><p className="mt-1">{request.approved_at ? new Date(request.approved_at).toLocaleString() : "—"}</p></div></>}</div>
+  </div></section>;
+}
+
 export default function ApprovalWorkspace() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
@@ -195,5 +208,5 @@ export default function ApprovalWorkspace() {
   if (request === null) return <DashboardLayout><div className="p-6 text-slate-500">Loading request details...</div></DashboardLayout>;
   if (request === false) return <DashboardLayout><div className="m-6 rounded-xl border border-red-100 bg-red-50 p-5 text-red-700">{error}</div></DashboardLayout>;
   const allocated = ["vehicle_allocated", "approved"].includes(request.status);
-  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{allocationMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{allocationMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5"><DatabaseAllocationPanel onAllocationChange={setAllocation} /><ApprovalActions onAllocate={allocate} allocating={allocating} allocated={allocated} allocationReady={Boolean(allocation.driver_id && allocation.vehicle_id)} /></div></div></div></DashboardLayout>;
+  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><RequestHeader request={request} />{allocationMessage && <div className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{allocationMessage}</div>}<div className="mt-6 grid gap-6 lg:grid-cols-12"><div className="space-y-6 lg:col-span-7"><RequestOverview request={request} /><DatabaseRecommendation request={request} /></div><div className="space-y-6 lg:col-span-5">{allocated ? <AllocatedVehicleDetails request={request} /> : <><DatabaseAllocationPanel onAllocationChange={setAllocation} /><ApprovalActions onAllocate={allocate} allocating={allocating} allocated={false} allocationReady={Boolean(allocation.driver_id && allocation.vehicle_id)} /></>}</div></div></div></DashboardLayout>;
 }

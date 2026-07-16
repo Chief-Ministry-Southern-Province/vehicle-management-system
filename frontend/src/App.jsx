@@ -8,7 +8,6 @@ import DepartmentOfficerDashboard from './pages/dashboard/DepartmentOfficerDashb
 import SecretaryDashboard from './pages/dashboard/SecretaryDashboard';
 import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
-import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
 import RecommendationReview from './pages/recommendations/RecommendationReview';
@@ -38,6 +37,7 @@ import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
 import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
 import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
+import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -59,7 +59,6 @@ function App() {
 
 
             <Route path="/userdashboard" element={withAuth(<UserDashboard />)} />
-            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />)} />
             <Route path="/requesthistory" element={withAuth(<RequestHistory />)} />
             <Route path="/employee/requests/:id" element={withAuth(<EmployeeRequestDetails />)} />
             
@@ -80,6 +79,7 @@ function App() {
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
+            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />)}/>
 
             
             
