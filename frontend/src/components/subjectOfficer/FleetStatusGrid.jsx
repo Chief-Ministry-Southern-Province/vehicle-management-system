@@ -4,8 +4,7 @@ import {
   FiTool,
   FiAlertTriangle,
 } from "react-icons/fi";
-import { useEffect, useMemo, useState } from "react";
-import { getVehicles } from "../../api/authApi";
+import { useMemo } from "react";
 
 const statusStyles = {
   available: { icon: FiCheckCircle, card: "bg-green-100 text-green-600", dot: "bg-green-500", badge: "bg-green-50 text-green-700", label: "Available" },
@@ -13,24 +12,7 @@ const statusStyles = {
   unavailable: { icon: FiAlertTriangle, card: "bg-red-100 text-red-600", dot: "bg-red-500", badge: "bg-red-50 text-red-700", label: "Unavailable" },
 };
 
-export default function FleetStatusGrid() {
-  const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const loadVehicles = async () => {
-      try {
-        const response = await getVehicles();
-        setVehicles(response?.data?.vehicles || []);
-      } catch (loadError) {
-        setError(loadError?.message || "Unable to load fleet status.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadVehicles();
-  }, []);
+export default function FleetStatusGrid({ vehicles = [], loading, error, onRetry }) {
 
   const summary = useMemo(() => vehicles.reduce((totals, vehicle) => {
     if (Object.hasOwn(totals, vehicle.status)) totals[vehicle.status] += 1;
@@ -83,7 +65,7 @@ export default function FleetStatusGrid() {
             <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-slate-50" />
           ))}
 
-          {!loading && error && <p className="col-span-full rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+          {!loading && error && <div className="col-span-full flex items-center justify-between gap-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><p>{error}</p><button type="button" onClick={onRetry} className="rounded-lg bg-red-100 px-3 py-2 font-semibold hover:bg-red-200">Retry</button></div>}
 
           {!loading && !error && vehicles.length === 0 && <p className="col-span-full rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No vehicles are registered in the fleet.</p>}
 

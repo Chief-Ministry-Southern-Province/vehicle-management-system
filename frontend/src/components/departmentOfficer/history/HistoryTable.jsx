@@ -1,249 +1,60 @@
-import { FiMoreHorizontal } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 
-const requests = [
-  {
-    id: "REQ-9012",
-    employee: "Sarah Jenkins",
-    vehicle: "Sedan",
-    requestDate: "Oct 12, 2023",
-    officer: "Michael Chen",
-    status: "Approved",
-    decisionDate: "Oct 14, 2023",
-  },
-  {
-    id: "REQ-8945",
-    employee: "David Okoro",
-    vehicle: "SUV (4x4)",
-    requestDate: "Oct 10, 2023",
-    officer: "Michael Chen",
-    status: "Rejected",
-    decisionDate: "Oct 11, 2023",
-  },
-  {
-    id: "REQ-8830",
-    employee: "Elena Rodriguez",
-    vehicle: "Electric Sedan",
-    requestDate: "Oct 05, 2023",
-    officer: "Sarah Jenkins",
-    status: "Approved",
-    decisionDate: "Oct 08, 2023",
-  },
-  {
-    id: "REQ-9012",
-    employee: "Sarah Jenkins",
-    vehicle: "Sedan",
-    requestDate: "Oct 12, 2023",
-    officer: "Michael Chen",
-    status: "Approved",
-    decisionDate: "Oct 14, 2023",
-  },
-  {
-    id: "REQ-8945",
-    employee: "David Okoro",
-    vehicle: "SUV (4x4)",
-    requestDate: "Oct 10, 2023",
-    officer: "Michael Chen",
-    status: "Rejected",
-    decisionDate: "Oct 11, 2023",
-  },
-  {
-    id: "REQ-8830",
-    employee: "Elena Rodriguez",
-    vehicle: "Electric Sedan",
-    requestDate: "Oct 05, 2023",
-    officer: "Sarah Jenkins",
-    status: "Approved",
-    decisionDate: "Oct 08, 2023",
-  },
-  {
-    id: "REQ-9012",
-    employee: "Sarah Jenkins",
-    vehicle: "Sedan",
-    requestDate: "Oct 12, 2023",
-    officer: "Michael Chen",
-    status: "Approved",
-    decisionDate: "Oct 14, 2023",
-  },
-  {
-    id: "REQ-8945",
-    employee: "David Okoro",
-    vehicle: "SUV (4x4)",
-    requestDate: "Oct 10, 2023",
-    officer: "Michael Chen",
-    status: "Rejected",
-    decisionDate: "Oct 11, 2023",
-  },
-  {
-    id: "REQ-8830",
-    employee: "Elena Rodriguez",
-    vehicle: "Electric Sedan",
-    requestDate: "Oct 05, 2023",
-    officer: "Sarah Jenkins",
-    status: "Approved",
-    decisionDate: "Oct 08, 2023",
-  },
-  {
-    id: "REQ-9012",
-    employee: "Sarah Jenkins",
-    vehicle: "Sedan",
-    requestDate: "Oct 12, 2023",
-    officer: "Michael Chen",
-    status: "Approved",
-    decisionDate: "Oct 14, 2023",
-  },
-  {
-    id: "REQ-8945",
-    employee: "David Okoro",
-    vehicle: "SUV (4x4)",
-    requestDate: "Oct 10, 2023",
-    officer: "Michael Chen",
-    status: "Rejected",
-    decisionDate: "Oct 11, 2023",
-  },
-  {
-    id: "REQ-8830",
-    employee: "Elena Rodriguez",
-    vehicle: "Electric Sedan",
-    requestDate: "Oct 05, 2023",
-    officer: "Sarah Jenkins",
-    status: "Approved",
-    decisionDate: "Oct 08, 2023",
-  },
-  {
-    id: "REQ-9012",
-    employee: "Sarah Jenkins",
-    vehicle: "Sedan",
-    requestDate: "Oct 12, 2023",
-    officer: "Michael Chen",
-    status: "Approved",
-    decisionDate: "Oct 14, 2023",
-  },
-  {
-    id: "REQ-8945",
-    employee: "David Okoro",
-    vehicle: "SUV (4x4)",
-    requestDate: "Oct 10, 2023",
-    officer: "Michael Chen",
-    status: "Rejected",
-    decisionDate: "Oct 11, 2023",
-  },
-  {
-    id: "REQ-8830",
-    employee: "Elena Rodriguez",
-    vehicle: "Electric Sedan",
-    requestDate: "Oct 05, 2023",
-    officer: "Sarah Jenkins",
-    status: "Approved",
-    decisionDate: "Oct 08, 2023",
-  },
-];
+const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
+const formatDate = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value)) : "—";
 
-export default function HistoryTable() {
+const statusClasses = {
+  recommended: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-red-100 text-red-700",
+};
+
+export default function HistoryTable({ requests, loading, error, onView }) {
   return (
-    <div className="bg-white border rounded-xl overflow-hidden">
-
-      <div className="p-5 border-b">
-        <h2 className="font-semibold text-xl">
-          Request Archive
-        </h2>
-
-        <p className="text-sm text-gray-500">
-          Departmental records scoped to active and past financial years.
-        </p>
+    <div className="overflow-hidden rounded-xl border bg-white">
+      <div className="border-b p-5">
+        <h2 className="text-xl font-semibold">Request Archive</h2>
+        <p className="text-sm text-gray-500">Reviewed vehicle requests from your department.</p>
       </div>
-
-      <table className="w-full">
-
-        <thead className="bg-gray-50">
-          <tr className="text-left text-sm text-gray-500">
-            <th className="p-4">REQUEST ID</th>
-            <th>EMPLOYEE NAME</th>
-            <th>VEHICLE TYPE</th>
-            <th>REQUEST DATE</th>
-            <th>RECOMMENDED BY</th>
-            <th>STATUS</th>
-            <th>DECISION DATE</th>
-            <th>ACTIONS</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          {requests.map((item) => (
-            <tr
-              key={item.id}
-              className="border-t hover:bg-gray-50"
-            >
-              <td className="p-4 font-medium">
-                {item.id}
-              </td>
-
-              <td>{item.employee}</td>
-
-              <td>{item.vehicle}</td>
-
-              <td>{item.requestDate}</td>
-
-              <td>{item.officer}</td>
-
-              <td>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs ${
-                    item.status === "Approved"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {item.status}
-                </span>
-              </td>
-
-              <td>{item.decisionDate}</td>
-
-              <td>
-                <button>
-                  <FiMoreHorizontal />
-                </button>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1050px]">
+          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th className="p-4">Request ID</th>
+              <th className="p-4">Employee Name</th>
+              <th className="p-4">Destination</th>
+              <th className="p-4">Request Date</th>
+              <th className="p-4">Recommended By</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Decision Date</th>
+              <th className="p-4 text-center">Action</th>
             </tr>
-          ))}
-
-        </tbody>
-
-      </table>
-
-      <div className="flex justify-between items-center p-4 border-t">
-
-        <p className="text-sm text-gray-500">
-          Showing 1 to 6 of 124 historical records
-        </p>
-
-        <div className="flex gap-2">
-
-          <button className="border px-3 py-1 rounded">
-            ‹
-          </button>
-
-          <button className="bg-blue-600 text-white px-3 py-1 rounded">
-            1
-          </button>
-
-          <button className="border px-3 py-1 rounded">
-            2
-          </button>
-
-          <button className="border px-3 py-1 rounded">
-            3
-          </button>
-
-          <button className="border px-3 py-1 rounded">
-            ›
-          </button>
-
-        </div>
-
+          </thead>
+          <tbody>
+            {requests.map((request) => (
+              <tr key={request.id} className="border-t hover:bg-gray-50">
+                <td className="p-4 font-semibold text-blue-600">{requestNumber(request.id)}</td>
+                <td className="p-4">
+                  <p className="font-medium text-slate-800">{request.requester_name || request.user?.name || "—"}</p>
+                  <p className="text-xs text-slate-500">{request.user?.employee_id || "—"}</p>
+                </td>
+                <td className="p-4">
+                  <p className="font-medium text-slate-700">{request.destination || "—"}</p>
+                  <p className="max-w-xs truncate text-xs text-slate-500">{request.purpose || "—"}</p>
+                </td>
+                <td className="p-4 text-slate-600">{formatDate(request.created_at)}</td>
+                <td className="p-4 text-slate-600">{request.recommender?.name || "—"}</td>
+                <td className="p-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusClasses[request.recommendation_status] || "bg-slate-100 text-slate-700"}`}>{request.recommendation_status || "—"}</span></td>
+                <td className="p-4 text-slate-600">{formatDate(request.recommended_at)}</td>
+                <td className="p-4 text-center"><button type="button" onClick={() => onView(request.id)} className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"><FiEye /> View</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
+      {loading && <div className="border-t p-10 text-center text-sm text-slate-500">Loading request history...</div>}
+      {!loading && error && <div className="border-t border-red-100 bg-red-50 p-5 text-sm text-red-700">{error}</div>}
+      {!loading && !error && requests.length === 0 && <div className="border-t p-10 text-center text-sm text-slate-500">No reviewed requests found.</div>}
+      {!loading && !error && requests.length > 0 && <div className="border-t bg-slate-50 p-4 text-sm text-slate-500">Showing {requests.length} historical record{requests.length === 1 ? "" : "s"}</div>}
     </div>
   );
 }
