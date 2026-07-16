@@ -17,6 +17,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import nationalEmblem from "../../assets/national-emblem.png";
+
 
 const menuItems = [
   {
@@ -264,145 +266,151 @@ export default function Sidebar() {
     navigate("/");
   };
 
+  // Small helpers for the profile footer — purely cosmetic, no logic change
+  const displayName = user?.name || user?.username || "User";
+  const initials = displayName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const roleLabel = role ? role.replace(/_/g, " ") : "Guest";
+
   return (
-    <aside className="w-64 bg- border-r border-gray-200 flex flex-col">
-
-      {/* Header*/}
-
-      <div className="relative overflow-hidden border-slate-800 from-slate-900 via-slate-800 to-slate-900">
-
-        {/* Glow */}
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-blue-500/20 blur-3xl"></div>
-        <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-cyan-400/10 blur-3xl"></div>
+    <aside className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative">
+      {/* ---------------------------------------------------------- */}
+      {/*  Header / Brand                                             */}
+      {/* ---------------------------------------------------------- */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 border-b border-slate-100">
+        {/* soft glow accents */}
+        <div className="absolute -top-12 -right-10 h-36 w-36 rounded-full bg-blue-400/10 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-cyan-400/10 blur-3xl" />
 
         <div className="relative px-5 py-6">
-
-          <div className="flex items-center gap-4">
-
-            {/* Logo */}
-            {/* <div className="flex h-48 w-48 items-center justify-center rounded-2xl bg-white shadow-xl ring-4 ring-white/10">
-
-              <img
-                src={nationalEmblem}
-                alt="National Emblem"
-                className="h-72 w-72 object-contain"
-              />
-
-            </div> */}
+          <div className="flex items-center gap-3.5">
+            {/* Logo badge */}
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-200 ring-4 ring-white">
+                        <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 p-1.5 shadow-sm sm:flex"><img src={nationalEmblem} alt="National Emblem" className="h-full w-full object-contain" /></div>
+              
+            </div>
 
             {/* Text */}
-             <div>
-
-              <h1 className="text-xl font-bold tracking-wide text-black">
+            <div className="min-w-0">
+              <h1 className="text-[17px] font-bold tracking-wide text-slate-800 truncate">
                 VMS
               </h1>
-
-              <p className="text-sm font-medium text-black/50">
+              <p className="text-[13px] font-medium text-slate-500 truncate">
                 Government Fleet
               </p>
-
-              <p className="mt-1 text-[11px] uppercase tracking-[0.25em] text-blue-300">
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600">
                 Sri Lanka
               </p>
-
-            </div> 
-
+            </div>
           </div>
-
-          {/* Bottom Divider */}
-          <div className="mt-5 h-px w-full bg-linear-to-r from-transparent via-slate-600 to-transparent"></div>
-
         </div>
 
+        {/* bottom fade divider */}
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
       </div>
 
-
-      {/* Menu */}
-
-      <div className="flex-1 overflow-y-auto py-6">
-
-        {menuItems.map((section) => {
-
+      {/* ---------------------------------------------------------- */}
+      {/*  Menu                                                       */}
+      {/* ---------------------------------------------------------- */}
+      <div className="relative flex-1 overflow-y-auto py-5 px-1 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent]">
+        {menuItems.map((section, sIdx) => {
           const visibleItems = section.items.filter(
-            (item) =>
-              !item.roles ||
-              item.roles.includes(role)
+            (item) => !item.roles || item.roles.includes(role)
           );
 
-          if (visibleItems.length === 0)
-            return null;
+          if (visibleItems.length === 0) return null;
 
           return (
-            <div
-              key={section.title}
-              className="mb-8"
-            >
-              <h3 className="px-6 mb-3 text-xs font-bold tracking-wide text-gray-500 uppercase">
+            <div key={section.title} className="mb-6 last:mb-2">
+              <h3 className="px-5 mb-2.5 text-[10.5px] font-bold tracking-[0.18em] text-slate-400 uppercase">
                 {section.title}
               </h3>
 
               <div className="space-y-1 px-3">
+                {visibleItems.map((item) => {
+                  const isActive = location.pathname === item.path;
 
-                {visibleItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${location.pathname ===
-                        item.path
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-600 hover:bg-gray-100"
-                      }`}
-                  >
-                    <span className="text-lg">
-                      {item.icon}
-                    </span>
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      className={[
+                        "group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium",
+                        "transition-all duration-200 ease-out",
+                        isActive
+                          ? "text-blue-700"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
+                      ].join(" ")}
+                    >
+                      {/* active pill background */}
+                      {isActive && (
+                        <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 ring-1 ring-inset ring-blue-100 shadow-[0_2px_10px_-4px_rgba(37,99,235,0.25)]" />
+                      )}
 
-                    <span>
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+                      {/* active left accent bar */}
+                      <span
+                        className={[
+                          "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-blue-600",
+                          "transition-all duration-200",
+                          isActive ? "opacity-100" : "opacity-0 group-hover:opacity-30",
+                        ].join(" ")}
+                      />
 
+                      <span
+                        className={[
+                          "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                          "transition-transform duration-200 group-hover:scale-105",
+                          isActive
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700",
+                        ].join(" ")}
+                      >
+                        {item.icon}
+                      </span>
+
+                      <span className="relative truncate">{item.name}</span>
+                    </Link>
+                  );
+                })}
               </div>
+
+              {/* soft section separator, skip after the last visible section */}
+              {sIdx < menuItems.length - 1 && (
+                <div className="mt-5 mx-5 h-px bg-slate-100" />
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* User Info */}
-
-      <div className="px-4 py-3 border-t bg-slate-50">
-
-        <h4 className="font-semibold text-sm">
-          {user?.name || "User"}
-        </h4>
-
-        <p className="text-xs text-gray-500">
-          {role?.replaceAll("_", " ")}
-        </p>
-
-      </div>
-
-      {/* Logout */}
-
-      <div className="p-4 border-t">
+      {/* ---------------------------------------------------------- */}
+      {/*  Profile + Logout                                            */}
+      {/* ---------------------------------------------------------- */}
+      <div className="relative border-t border-slate-100 p-3 space-y-2 bg-slate-50/60">
+        <div className="flex items-center gap-3 rounded-xl px-2.5 py-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-xs font-bold text-white shadow-sm ring-2 ring-white">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
+            <p className="text-[11px] text-slate-400 capitalize truncate">{roleLabel}</p>
+          </div>
+        </div>
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-red-500 rounded-xl hover:bg-red-50 transition"
+          className="group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"
         >
-          <FiLogOut className="text-lg" />
-
-          <span className="font-medium">
-            Logout
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 group-hover:bg-rose-100 transition-colors">
+            <FiLogOut className="text-base" />
           </span>
-
+          <span>Logout</span>
         </button>
-
       </div>
-
     </aside>
   );
-
-
 }
