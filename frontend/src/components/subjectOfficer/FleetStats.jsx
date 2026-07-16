@@ -1,141 +1,28 @@
-import {
-  FiTruck,
-  FiDroplet,
-  FiTool,
-  FiAlertTriangle,
-} from "react-icons/fi";
+import { FiAlertTriangle, FiDroplet, FiTool, FiTruck } from "react-icons/fi";
 
-const stats = [
-  {
-    title: "Total Vehicle",
-    value: "35",
-    subtitle: "Total vehicles in fleet",
-    icon: <FiTruck size={18} />,
-    bg: "from-cyan-500 to-blue-600",
-    trend: "+2.8%",
-  },
-  {
-    title: "Available Now",
-    value: "28",
-    subtitle: "Ready for allocation",
-    icon: <FiTruck size={18} />,
-    bg: "from-cyan-500 to-blue-600",
-    trend: "+2.8%",
-  },
-  {
-    title: "Unavailable Now",
-    value: "05",
-    subtitle: "Currently in use",
-    icon: <FiTruck size={18} />,
-    bg: "from-cyan-500 to-blue-600",
-    trend: "+2.8%",
-  },
-  {
-    title: "Maintenance Due",
-    value: "02",
-    subtitle: "Scheduled maintenance",
-    icon: <FiTruck size={18} />,
-    bg: "from-cyan-500 to-blue-600",
-    trend: "+2.8%",
-  },
-  {
-    title: "Fuel Cost",
-    value: "$12.4k",
-    subtitle: "Fuel expenses",
-    icon: <FiDroplet size={18} />,
-    bg: "from-sky-500 to-cyan-600",
-    trend: "-1.4%",
-  },
-  {
-    title: "Service Costs",
-    value: "$8.2k",
-    subtitle: "Maintenance spending",
-    icon: <FiTool size={18} />,
-    bg: "from-indigo-500 to-violet-600",
-    trend: "+3.1%",
-  },
-  {
-    title: "Repair Expense",
-    value: "$4.1k",
-    subtitle: "Damage repairs",
-    icon: <FiAlertTriangle size={18} />,
-    bg: "from-red-500 to-rose-600",
-    trend: "+6.5%",
-  },
-];
+const money = (value) => `LKR ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export default function FleetStats() {
+export default function FleetStats({ vehicles = [], loading, error }) {
+  const serviceRecords = vehicles.flatMap((vehicle) => Array.isArray(vehicle.service_details) ? vehicle.service_details : []);
+  const repairCost = serviceRecords.reduce((total, service) => /repair/i.test(service.service_type || "") ? total + (Number(service.cost) || 0) : total, 0);
+  const serviceCost = serviceRecords.reduce((total, service) => !/repair/i.test(service.service_type || "") ? total + (Number(service.cost) || 0) : total, 0);
+
+  const stats = [
+    { title: "Total Vehicles", value: vehicles.length, subtitle: "Registered fleet", icon: <FiTruck />, bg: "from-blue-500 to-blue-700" },
+    { title: "Available Now", value: vehicles.filter((vehicle) => vehicle.status === "available").length, subtitle: "Ready for allocation", icon: <FiTruck />, bg: "from-emerald-500 to-teal-600" },
+    { title: "Unavailable Now", value: vehicles.filter((vehicle) => vehicle.status === "unavailable").length, subtitle: "Currently unavailable", icon: <FiTruck />, bg: "from-slate-500 to-slate-700" },
+    { title: "Maintenance", value: vehicles.filter((vehicle) => vehicle.status === "maintenance").length, subtitle: "In maintenance", icon: <FiTool />, bg: "from-amber-500 to-orange-600" },
+    { title: "Fuel Cost", value: money(0), subtitle: "No stored fuel transactions", icon: <FiDroplet />, bg: "from-cyan-500 to-sky-600" },
+    { title: "Service Costs", value: money(serviceCost), subtitle: "Recorded service spending", icon: <FiTool />, bg: "from-indigo-500 to-violet-600" },
+    { title: "Repair Expense", value: money(repairCost), subtitle: "Recorded repair spending", icon: <FiAlertTriangle />, bg: "from-red-500 to-rose-600" },
+  ];
+
+  if (loading) return <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 7 }).map((_, index) => <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white" />)}</div>;
+  if (error) return <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}</div>;
+
   return (
-    <div className="grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 gap-4">
-      {stats.map((item) => (
-        <div
-          key={item.title}
-          className="
-            relative
-            overflow-hidden
-            rounded-2xl
-            border border-slate-200
-            bg-white
-            p-4
-            shadow-sm
-            hover:shadow-lg
-            hover:-translate-y-1
-            transition-all
-            duration-300
-          "
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div
-              className={`
-                w-10 h-10
-                rounded-xl
-                bg-linear-to-r
-                ${item.bg}
-                text-white
-                flex items-center justify-center
-                shadow-md
-              `}
-            >
-              {item.icon}
-            </div>
-
-            <span
-              className={`text-[10px] font-semibold px-2 py-1 rounded-full ${item.trend.startsWith("+")
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-red-50 text-red-600"
-                }`}
-            >
-              {item.trend}
-            </span>
-          </div>
-
-          {/* Content */}
-          <div className="mt-3">
-            <p className="text-xs font-medium text-slate-500">
-              {item.title}
-            </p>
-
-            <h2 className="text-2xl font-bold text-slate-900 mt-1">
-              {item.value}
-            </h2>
-
-            <p className="text-xs text-slate-400 mt-1">
-              {item.subtitle}
-            </p>
-          </div>
-
-          {/* Bottom Accent */}
-          <div
-            className={`
-              absolute bottom-0 left-0
-              w-full h-1
-              bg-linear-to-r
-              ${item.bg}
-            `}
-          />
-        </div>
-      ))}
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {stats.map((item) => <div key={item.title} className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"><div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r text-white shadow-md ${item.bg}`}>{item.icon}</div><p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">{item.title}</p><h2 className="mt-1 text-2xl font-bold text-slate-900">{item.value}</h2><p className="mt-1 text-xs text-slate-400">{item.subtitle}</p><div className={`absolute inset-x-0 bottom-0 h-1 bg-linear-to-r ${item.bg}`} /></div>)}
     </div>
   );
 }
