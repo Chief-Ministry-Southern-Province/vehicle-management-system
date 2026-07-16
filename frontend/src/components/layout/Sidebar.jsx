@@ -1,6 +1,5 @@
 import {
   FiGrid,
-  FiFileText,
   FiTruck,
   FiDroplet,
   FiTool,
@@ -59,6 +58,12 @@ const menuItems = [
         name: "Dashboard",
         path: "/subjectofficerdashboard",
         icon: <FiGrid />,
+        roles: ["subject_officer"],
+      },
+      {
+        name: "Approved Journeys",
+        path: "/approvedjourny",
+        icon: <FiCheckCircle />,
         roles: ["subject_officer"],
       },
 

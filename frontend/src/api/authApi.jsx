@@ -259,6 +259,17 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const getMyVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.get(`/vehicle-requests/${requestId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getFinalApprovalVehicleRequests = async (status = "pending") => {
   try {
     const response = await API.get("/final-approvals/vehicle-requests", {
@@ -285,6 +296,17 @@ export const finalApproveVehicleRequest = async (requestId) => {
 export const getFinalApprovalVehicleRequest = async (requestId) => {
   try {
     const response = await API.get(`/final-approvals/vehicle-requests/${requestId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getApprovedJourneys = async () => {
+  try {
+    const response = await API.get("/approved-journeys", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

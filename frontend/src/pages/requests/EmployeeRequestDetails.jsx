@@ -1,342 +1,71 @@
-import {
-  FiDownload,
-  FiEdit,
-  FiFileText,
-  FiMapPin,
-} from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiArrowLeft, FiCheck, FiClock, FiDownload, FiFileText, FiMapPin, FiTruck, FiUser } from "react-icons/fi";
+import { useNavigate, useParams } from "react-router-dom";
+import DashboardLayout from "../../layouts/DashboardLayout";
+import { getMyVehicleRequest } from "../../api/authApi";
+
+const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
+const formatDateTime = (value) => value ? new Date(value).toLocaleString() : "Not completed";
+
+const statusStyles = {
+  submitted: "bg-amber-100 text-amber-700",
+  recommended: "bg-blue-100 text-blue-700",
+  vehicle_allocated: "bg-indigo-100 text-indigo-700",
+  approved: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-rose-100 text-rose-700",
+};
+
+function Detail({ label, children }) {
+  return <div><dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</dt><dd className="mt-1 text-sm font-medium text-slate-800">{children ?? "—"}</dd></div>;
+}
+
+function Timeline({ request }) {
+  const steps = [
+    { title: "Submitted Request", description: "Submitted by the employee", completed: true, date: request.created_at },
+    { title: "Department Officer Recommendation", description: request.recommender ? `Recommended by ${request.recommender.name}` : "Awaiting Department Officer recommendation", completed: Boolean(request.recommended_at), date: request.recommended_at },
+    { title: "Deputy Secretary Allocated Vehicle and Driver", description: request.allocated_at ? "Vehicle and driver allocation completed" : "Awaiting vehicle and driver allocation", completed: Boolean(request.allocated_at), date: request.allocated_at },
+    { title: "Senior Deputy Secretary or Secretary Approval", description: request.approver ? `Approved by ${request.approver.name}` : "Awaiting final approval", completed: request.status === "approved", date: request.approved_at },
+  ];
+
+  return <ol className="space-y-0">{steps.map((step, index) => <li key={step.title} className="relative flex gap-4 pb-7 last:pb-0">{index < steps.length - 1 && <span className={`absolute left-[15px] top-8 h-[calc(100%-2rem)] w-0.5 ${step.completed ? "bg-blue-300" : "bg-slate-200"}`} />}<span className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${step.completed ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"}`}>{step.completed ? <FiCheck /> : <FiClock />}</span><div><p className={`font-semibold ${step.completed ? "text-slate-900" : "text-slate-500"}`}>Step {index + 1} — {step.title}</p><p className="mt-1 text-sm text-slate-500">{step.description}</p><p className="mt-1 text-xs font-medium text-slate-400">{formatDateTime(step.date)}</p></div></li>)}</ol>;
+}
 
 export default function EmployeeRequestDetails() {
-  return (
-    <div className="bg-gray-50 min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <p className="text-sm text-gray-500">
-              Request #VMS-REQ-2024-089
-            </p>
-
-            <h1 className="text-3xl font-bold">
-              Official Visit: Regional Data Center
-            </h1>
-
-            <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-              Approved
-            </span>
-          </div>
-
-          <div className="flex gap-3">
-            <button className="border px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiDownload />
-              Export PDF
-            </button>
-
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <FiEdit />
-              Modify Request
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-12 gap-6">
-
-          {/* LEFT SIDE */}
-          <div className="col-span-8 space-y-6">
-
-            {/* Request Details */}
-            <div className="bg-white rounded-xl border shadow-sm">
-
-              <div className="p-5 border-b">
-                <h2 className="font-semibold text-lg">
-                  Request Dossier
-                </h2>
-              </div>
-
-              <div className="p-6 grid md:grid-cols-2 gap-6">
-
-                <div>
-                  <label className="text-xs text-gray-500">
-                    REQUEST ID
-                  </label>
-
-                  <p className="font-semibold">
-                    #VMS-REQ-2024-089
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-500">
-                    SUBMISSION DATE
-                  </label>
-
-                  <p>Oct 24, 2024 - 09:30 AM</p>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-500">
-                    DEPARTMENT
-                  </label>
-
-                  <p>Infrastructure & IT Services</p>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-500">
-                    PASSENGERS
-                  </label>
-
-                  <p>3 Members</p>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="text-xs text-gray-500">
-                    TRAVEL PURPOSE
-                  </label>
-
-                  <p>
-                    Urgent onsite hardware maintenance
-                    and security audit.
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="border-t p-6 grid md:grid-cols-2 gap-6">
-
-                <div className="flex gap-3">
-                  <FiMapPin className="text-blue-600 mt-1" />
-
-                  <div>
-                    <p className="text-xs text-gray-500">
-                      PICKUP LOCATION
-                    </p>
-
-                    <p className="font-medium">
-                      Main Secretariat Gate 2
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <FiMapPin className="text-red-600 mt-1" />
-
-                  <div>
-                    <p className="text-xs text-gray-500">
-                      DESTINATION
-                    </p>
-
-                    <p className="font-medium">
-                      Regional Data Center
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Assigned Resources */}
-
-            <div className="bg-blue-50 rounded-xl border p-6">
-
-              <h2 className="font-semibold mb-4">
-                Assigned Resources
-              </h2>
-
-              <div className="grid md:grid-cols-2 gap-4">
-
-                {/* Vehicle */}
-
-                <div className="bg-white border rounded-xl p-4">
-
-                  <img
-                    src="https://via.placeholder.com/300x150"
-                    alt=""
-                    className="rounded-lg mb-3"
-                  />
-
-                  <p className="font-semibold">
-                    Toyota Land Cruiser
-                  </p>
-
-                  <p className="text-gray-600">
-                    REG-99-A-1024
-                  </p>
-                </div>
-
-                {/* Driver */}
-
-                <div className="bg-white border rounded-xl p-4">
-
-                  <div className="flex items-center gap-4">
-                    <img
-                      src="https://i.pravatar.cc/100"
-                      alt=""
-                      className="w-16 h-16 rounded-full"
-                    />
-
-                    <div>
-                      <h3 className="font-semibold">
-                        Robert Jenkins
-                      </h3>
-
-                      <p className="text-gray-500">
-                        Designated Driver
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Attachments */}
-
-            <div className="bg-white rounded-xl border p-6">
-
-              <h2 className="font-semibold mb-4">
-                Request Attachments
-              </h2>
-
-              <div className="grid md:grid-cols-4 gap-4">
-
-                {[
-                  "Travel_Manifest.pdf",
-                  "Route_Map.pdf",
-                  "Gate_Pass.doc",
-                  "Inventory_List.xls",
-                ].map((file) => (
-                  <div
-                    key={file}
-                    className="border rounded-lg p-4 flex items-center gap-3"
-                  >
-                    <FiFileText size={22} />
-
-                    <div>
-                      <p className="text-sm font-medium">
-                        {file}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* RIGHT SIDE */}
-
-          <div className="col-span-4 space-y-6">
-
-            {/* Timeline */}
-
-            <div className="bg-white rounded-xl border p-6">
-
-              <h2 className="font-semibold mb-6">
-                Approval Timeline
-              </h2>
-
-              <div className="space-y-6">
-
-                {[
-                  "Request Submitted",
-                  "Department Recommendation",
-                  "Administrative Approval",
-                  "Executive Finalization",
-                ].map((step, index) => (
-                  <div
-                    key={index}
-                    className="flex gap-3"
-                  >
-                    <div className="w-4 h-4 rounded-full bg-blue-600 mt-1"></div>
-
-                    <div>
-                      <p className="font-medium">
-                        {step}
-                      </p>
-
-                      <p className="text-sm text-gray-500">
-                        Oct 24, 2024
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-
-            </div>
-
-            {/* Audit Log */}
-
-            <div className="bg-white rounded-xl border p-6">
-
-              <h2 className="font-semibold mb-4">
-                Audit Activity Log
-              </h2>
-
-              <div className="space-y-4">
-
-                <div>
-                  <p className="font-medium">
-                    Vehicle Allocated
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    1 hour ago
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-medium">
-                    Route Verified
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    3 hours ago
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-medium">
-                    Status Changed
-                  </p>
-
-                  <p className="text-sm text-gray-500">
-                    Yesterday
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Help Card */}
-
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-
-              <h3 className="font-semibold mb-2">
-                Need Assistance?
-              </h3>
-
-              <p className="text-sm text-gray-600 mb-4">
-                Contact the transport office if changes are needed.
-              </p>
-
-              <button className="w-full bg-white border rounded-lg py-2">
-                Contact Support
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [request, setRequest] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadRequest = async () => {
+      try {
+        const response = await getMyVehicleRequest(id);
+        setRequest(response?.data?.vehicle_request || false);
+      } catch (loadError) {
+        setError(loadError?.message || "Unable to load request details.");
+        setRequest(false);
+      }
+    };
+    loadRequest();
+  }, [id]);
+
+  if (request === null) return <DashboardLayout><div className="p-8 text-slate-500">Loading request details...</div></DashboardLayout>;
+  if (request === false) return <DashboardLayout><div className="m-6 rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-700">{error}</div></DashboardLayout>;
+
+  const approved = request.status === "approved";
+  const vehicle = approved ? request.allocated_vehicle : null;
+  const driver = approved ? request.allocated_driver : null;
+  const attachmentUrl = request.attachment_path ? `${import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "http://127.0.0.1:8000"}/storage/${request.attachment_path}` : null;
+
+  return <DashboardLayout><div className="min-h-screen bg-slate-50 p-6"><div className="mx-auto max-w-7xl space-y-6">
+    <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><button type="button" onClick={() => navigate("/requesthistory")} className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600"><FiArrowLeft />Back to request history</button><p className="text-sm text-slate-500">{requestNumber(request.id)}</p><h1 className="mt-1 text-3xl font-bold text-slate-900">{request.purpose}</h1><span className={`mt-3 inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${statusStyles[request.status] || "bg-slate-100 text-slate-700"}`}>{request.status?.replaceAll("_", " ")}</span></div></header>
+
+    <div className="grid gap-6 lg:grid-cols-12"><main className="space-y-6 lg:col-span-8">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="border-b p-5"><h2 className="text-lg font-bold text-slate-900">Request Details</h2></div><dl className="grid gap-6 p-6 sm:grid-cols-2"><Detail label="Request ID">{requestNumber(request.id)}</Detail><Detail label="Submission date">{formatDateTime(request.created_at)}</Detail><Detail label="Requester">{request.user?.name || request.requester_name}</Detail><Detail label="Department">{request.user?.department}</Detail><Detail label="Passengers">{request.passenger_count}</Detail><Detail label="Purpose">{request.purpose}</Detail><Detail label="Departure time">{formatDateTime(request.departure_at)}</Detail><Detail label="Expected return">{formatDateTime(request.expected_return_at)}</Detail><div className="sm:col-span-2"><Detail label="Destination"><span className="inline-flex items-center gap-2"><FiMapPin className="text-red-500" />{request.destination}</span></Detail></div></dl></section>
+
+      {approved ? <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6"><div className="mb-5 flex items-center gap-3"><span className="rounded-xl bg-emerald-100 p-3 text-emerald-700"><FiTruck /></span><div><h2 className="font-bold text-slate-900">Approved Vehicle and Driver</h2><p className="text-sm text-slate-500">Visible after final approval</p></div></div><dl className="grid gap-5 rounded-xl bg-white p-5 sm:grid-cols-2"><Detail label="Vehicle">{vehicle ? `${vehicle.make} ${vehicle.model}` : "—"}</Detail><Detail label="Registration number">{vehicle?.registration_number}</Detail><Detail label="Vehicle type">{vehicle?.vehicle_type}</Detail><Detail label="Driver">{driver?.full_name}</Detail><Detail label="Driver ID">{driver?.driver_id}</Detail><Detail label="Contact number">{driver?.contact_number}</Detail></dl></section> : <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6"><div className="flex gap-3"><FiClock className="mt-0.5 shrink-0 text-amber-600" /><div><h2 className="font-semibold text-amber-900">Vehicle details are pending final approval</h2><p className="mt-1 text-sm text-amber-800">The allocated vehicle and driver will be displayed only after the Senior Deputy Secretary or Secretary approves this request.</p></div></div></section>}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6"><h2 className="mb-4 flex items-center gap-2 font-bold text-slate-900"><FiFileText />Request Attachment</h2>{attachmentUrl ? <a href={attachmentUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 font-semibold text-blue-700"><FiDownload />{request.attachment_original_name || "Open attachment"}</a> : <p className="text-sm text-slate-500">No attachment uploaded.</p>}</section>
+    </main><aside className="space-y-6 lg:col-span-4"><section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="mb-6 font-bold text-slate-900">Request Timeline</h2><Timeline request={request} /></section><section className="rounded-2xl border border-blue-200 bg-blue-50 p-6"><h3 className="flex items-center gap-2 font-semibold text-slate-900"><FiUser />Need assistance?</h3><p className="mt-2 text-sm text-slate-600">Contact the transport office if changes are required.</p><p>Contact: 0768240143</p></section></aside></div>
+  </div></div></DashboardLayout>;
 }

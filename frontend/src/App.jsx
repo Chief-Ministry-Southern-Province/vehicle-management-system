@@ -37,6 +37,7 @@ import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
 import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
 import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
+import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -78,6 +79,7 @@ function App() {
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
+            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />)}/>
 
             
             
