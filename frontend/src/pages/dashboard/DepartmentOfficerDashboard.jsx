@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { getDepartmentVehicleRequests } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
+import { useLanguage } from "../../context/useLanguage";
 
 export default function DepartmentOfficerDashboard() {
   const { user } = useAuth();
+  const { translate } = useLanguage();
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({ total_records: 0, approved: 0, rejected: 0, pending: 0 });
   const [loading, setLoading] = useState(true);
@@ -37,11 +39,11 @@ export default function DepartmentOfficerDashboard() {
 
           <div>
             <h1 className="text-3xl font-bold">
-              Department Overview
+              {translate("Department Overview")}
             </h1>
 
             <p className="text-gray-500 mt-1">
-              Welcome back, {user?.name || "Department Officer"}. Here are your department's vehicle requests.
+              {translate("Welcome back")}, <span data-no-translate>{user?.name || "Department Officer"}</span>. {translate("Here are your department's vehicle requests")}.
             </p>
           </div>
 

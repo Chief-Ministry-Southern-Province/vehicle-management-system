@@ -4,8 +4,10 @@ import FleetStats from "../../components/subjectOfficer/FleetStats";
 import FleetStatusGrid from "../../components/subjectOfficer/FleetStatusGrid";
 import { useCallback, useEffect, useState } from "react";
 import { getVehicles } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 
 export default function SubjectOfficerDashboard() {
+  const { translate } = useLanguage();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -56,11 +58,11 @@ export default function SubjectOfficerDashboard() {
 
           <div>
             <h1 className="text-3xl font-bold">
-              Fleet Operations Overview
+              {translate("Fleet Operations Overview")}
             </h1>
 
             <p className="text-gray-500 mt-2">
-              Monitoring vehicles across government departments.
+              {translate("Monitoring vehicles across government departments.")}
             </p>
           </div>
 

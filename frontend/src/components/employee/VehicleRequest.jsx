@@ -8,8 +8,10 @@ import {
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { createVehicleRequest } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 
 export default function VehicleRequest() {
+  const { translate } = useLanguage();
   const [form, setForm] = useState({
     purpose: "",
     destination: "",
@@ -37,14 +39,14 @@ export default function VehicleRequest() {
       if (attachment) payload.append("attachment", attachment);
 
       await createVehicleRequest(payload);
-      toast.success("Vehicle request submitted successfully.");
+      toast.success(translate("Vehicle request submitted successfully."));
       setForm({ purpose: "", destination: "", departure_at: "", expected_return_at: "", passenger_count: 1, passenger_names: "" });
       setAttachment(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       const errors = error?.errors;
       const message = errors ? Object.values(errors).flat()[0] : error?.message;
-      toast.error(message || "Unable to submit the request. Please try again.");
+      toast.error(message || translate("Unable to submit the request. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -59,18 +61,18 @@ export default function VehicleRequest() {
           <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-blue-400/20 blur-3xl" />
           <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Official Transport</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">{translate("Official Transport")}</p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-              Create New Vehicle Request
+              {translate("Create New Vehicle Request")}
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
-              Please fill in the details below to request a vehicle for official business.
+              {translate("Please fill in the details below to request a vehicle for official business.")}
             </p>
           </div>
 
           <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
-            Draft ID: VMS-REQ-PENDING
+            {translate("Draft ID")}: VMS-REQ-PENDING
           </span>
           </div>
         </div>
@@ -82,11 +84,11 @@ export default function VehicleRequest() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl text-white shadow-md"><FiMapPin /></div>
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  Trip Information
+                  {translate("Trip Information")}
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Where and when are you travelling?
+                  {translate("Where and when are you travelling?")}
                 </p>
               </div>
             </div>
@@ -96,7 +98,7 @@ export default function VehicleRequest() {
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Purpose of Trip
+                {translate("Purpose of Trip")}
               </label>
 
               <input
@@ -105,14 +107,14 @@ export default function VehicleRequest() {
                 value={form.purpose}
                 onChange={updateField}
                 required
-                placeholder="Regional Site Inspection"
+                placeholder={translate("Regional Site Inspection")}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Destination
+                {translate("Destination")}
               </label>
 
               <input
@@ -121,14 +123,14 @@ export default function VehicleRequest() {
                 value={form.destination}
                 onChange={updateField}
                 required
-                placeholder="Administrative Office"
+                placeholder={translate("Administrative Office")}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Departure Date & Time
+                {translate("Departure Date & Time")}
               </label>
 
               <input
@@ -143,7 +145,7 @@ export default function VehicleRequest() {
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Expected Return
+                {translate("Expected Return")}
               </label>
 
               <input
@@ -168,11 +170,11 @@ export default function VehicleRequest() {
 
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  Passenger Details
+                  {translate("Passenger Details")}
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Who else is travelling with you?
+                  {translate("Who else is travelling with you?")}
                 </p>
               </div>
             </div>
@@ -184,7 +186,7 @@ export default function VehicleRequest() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Total Count
+                  {translate("Total Count")}
                 </label>
 
                 <input
@@ -201,7 +203,7 @@ export default function VehicleRequest() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Passenger Names
+                  {translate("Passenger Names")}
                 </label>
 
                 <input
@@ -209,7 +211,7 @@ export default function VehicleRequest() {
                   name="passenger_names"
                   value={form.passenger_names}
                   onChange={updateField}
-                  placeholder="Enter names"
+                  placeholder={translate("Enter names")}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                 />
               </div>
@@ -228,11 +230,11 @@ export default function VehicleRequest() {
 
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  Attachments
+                  {translate("Attachments")}
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Upload supporting documents.
+                  {translate("Upload supporting documents.")}
                 </p>
               </div>
             </div>
@@ -248,13 +250,13 @@ export default function VehicleRequest() {
               <FiPaperclip className="mx-auto text-4xl text-slate-300 transition group-hover:text-blue-500" />
 
               <p className="mt-4 font-semibold text-slate-700">
-                Click to upload or drag & drop
+                {translate("Click to upload or drag & drop")}
               </p>
 
               <p className="mt-1 text-sm text-slate-500">
                 PDF, JPG, PNG (Max 5MB)
               </p>
-              {attachment && <p className="mt-3 text-sm font-medium text-blue-600">Selected: {attachment.name}</p>}
+              {attachment && <p className="mt-3 text-sm font-medium text-blue-600">{translate("Selected")}: <span data-no-translate>{attachment.name}</span></p>}
             </button>
             <input
               ref={fileInputRef}
@@ -272,7 +274,7 @@ export default function VehicleRequest() {
 
           <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50" disabled>
             <FiSave />
-            Save Draft
+            {translate("Save Draft")}
           </button>
 
           <button
@@ -280,7 +282,7 @@ export default function VehicleRequest() {
             disabled={submitting}
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
             <FiSend />
-            {submitting ? "Submitting..." : "Submit Request"}
+            {submitting ? translate("Submitting...") : translate("Submit Request")}
           </button>
 
         </div>

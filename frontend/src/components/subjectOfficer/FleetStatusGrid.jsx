@@ -5,6 +5,7 @@ import {
   FiAlertTriangle,
 } from "react-icons/fi";
 import { useMemo } from "react";
+import { useLanguage } from "../../context/useLanguage";
 
 const statusStyles = {
   available: { icon: FiCheckCircle, card: "bg-green-100 text-green-600", dot: "bg-green-500", badge: "bg-green-50 text-green-700", label: "Available" },
@@ -13,6 +14,7 @@ const statusStyles = {
 };
 
 export default function FleetStatusGrid({ vehicles = [], loading, error, onRetry }) {
+  const { translate } = useLanguage();
 
   const summary = useMemo(() => vehicles.reduce((totals, vehicle) => {
     if (Object.hasOwn(totals, vehicle.status)) totals[vehicle.status] += 1;
@@ -28,27 +30,27 @@ export default function FleetStatusGrid({ vehicles = [], loading, error, onRetry
           
           <div>
             <h2 className="text-xl font-bold text-slate-800">
-              Fleet Status Overview
+              {translate("Fleet Status Overview")}
             </h2>
 
             <p className="text-sm text-slate-500 mt-1">
-              Real-time availability of government vehicles
+              {translate("Real-time availability of government vehicles")}
             </p>
           </div>
 
           <div className="hidden md:flex gap-6 text-sm">
             <div>
-              <p className="text-slate-500">Available</p>
+              <p className="text-slate-500">{translate("Available")}</p>
               <p className="font-bold text-green-600">{summary.available}</p>
             </div>
 
             <div>
-              <p className="text-slate-500">Maintenance</p>
+              <p className="text-slate-500">{translate("Maintenance")}</p>
               <p className="font-bold text-amber-600">{summary.maintenance}</p>
             </div>
 
             <div>
-              <p className="text-slate-500">Unavailable</p>
+              <p className="text-slate-500">{translate("Unavailable")}</p>
               <p className="font-bold text-red-600">{summary.unavailable}</p>
             </div>
           </div>
@@ -65,9 +67,9 @@ export default function FleetStatusGrid({ vehicles = [], loading, error, onRetry
             <div key={index} className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-slate-50" />
           ))}
 
-          {!loading && error && <div className="col-span-full flex items-center justify-between gap-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><p>{error}</p><button type="button" onClick={onRetry} className="rounded-lg bg-red-100 px-3 py-2 font-semibold hover:bg-red-200">Retry</button></div>}
+          {!loading && error && <div className="col-span-full flex items-center justify-between gap-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"><p>{error}</p><button type="button" onClick={onRetry} className="rounded-lg bg-red-100 px-3 py-2 font-semibold hover:bg-red-200">{translate("Retry")}</button></div>}
 
-          {!loading && !error && vehicles.length === 0 && <p className="col-span-full rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No vehicles are registered in the fleet.</p>}
+          {!loading && !error && vehicles.length === 0 && <p className="col-span-full rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">{translate("No vehicles are registered in the fleet.")}</p>}
 
           {!loading && !error && vehicles.map((vehicle) => {
             const style = statusStyles[vehicle.status] || statusStyles.unavailable;
@@ -98,7 +100,7 @@ export default function FleetStatusGrid({ vehicles = [], loading, error, onRetry
                 <div className="mt-3">
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.badge}`}>
                     <StatusIcon size={12} />
-                    {style.label}
+                    {translate(style.label)}
                   </span>
                 </div>
               </div>

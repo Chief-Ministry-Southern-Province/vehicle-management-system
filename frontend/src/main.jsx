@@ -5,13 +5,16 @@ import App from "./App";
 
 import RoleProvider from "./context/RoleProvider";
 import { AuthProvider } from "./context/AuthProvider";
+import LanguageProvider from "./context/LanguageProvider";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RoleProvider>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </RoleProvider>
+    <LanguageProvider>
+      <RoleProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </RoleProvider>
+    </LanguageProvider>
   </React.StrictMode>
 );

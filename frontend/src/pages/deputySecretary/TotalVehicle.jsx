@@ -3,6 +3,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getVehicles } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 import {
   FiFilter,
   FiChevronRight,
@@ -187,6 +188,7 @@ function EmptyState({ onClear }) {
 /*  Page                                                              */
 /* ------------------------------------------------------------------ */
 export default function TotalVehicles() {
+  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -433,7 +435,7 @@ export default function TotalVehicles() {
                 <SortHeader label="Fuel Capacity" field="fuelCapacity" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Fuel Level" field="fuelLevel" sortConfig={sortConfig} onSort={handleSort} />
                 <SortHeader label="Seat Capacity" field="seatCapacity" sortConfig={sortConfig} onSort={handleSort} />
-                <SortHeader label="Licence Expire Date" field="licenseExpiry" sortConfig={sortConfig} onSort={handleSort} />
+                <SortHeader label={language === "si" ? "ආදායම් බලපත්‍රයේ වලංගු කාලය අවසන් වන දිනය" : "Licence Expire Date"} field="licenseExpiry" sortConfig={sortConfig} onSort={handleSort} />
                 <th className="p-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">Status</th>
               </tr>
             </thead>

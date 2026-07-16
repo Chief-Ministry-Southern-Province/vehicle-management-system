@@ -19,6 +19,7 @@ import {
 import { useAuth } from "../../context/useAuth";
 import nationalEmblem from "../../assets/national-emblem.png";
 import { BsPerson } from "react-icons/bs";
+import { useLanguage } from "../../context/useLanguage";
 
 
 const menuItems = [
@@ -259,6 +260,7 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
 
   const role = user?.role;
 
@@ -269,7 +271,7 @@ export default function Sidebar() {
 
   // Small helpers for the profile footer — purely cosmetic, no logic change
   return (
-    <aside className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative">
+    <aside data-no-translate className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative">
       {/* ---------------------------------------------------------- */}
       {/*  Header / Brand                                             */}
       {/* ---------------------------------------------------------- */}
@@ -291,10 +293,10 @@ export default function Sidebar() {
                 VMS
               </h1>
               <p className="text-[13px] font-medium text-slate-500 truncate">
-                Government Fleet
+                {t("app.fleet")}
               </p>
               <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600">
-                Sri Lanka
+                {t("app.country")}
               </p>
             </div>
           </div>
@@ -318,7 +320,7 @@ export default function Sidebar() {
           return (
             <div key={section.title} className="mb-6 last:mb-2">
               <h3 className="px-5 mb-2.5 text-[10.5px] font-bold tracking-[0.18em] text-slate-400 uppercase">
-                {section.title}
+                {t(`nav.${section.title.toLowerCase().replaceAll(" ", "_")}`, section.title)}
               </h3>
 
               <div className="space-y-1 px-3">
@@ -363,7 +365,7 @@ export default function Sidebar() {
                         {item.icon}
                       </span>
 
-                      <span className="relative truncate">{item.name}</span>
+                      <span className="relative truncate">{t(`nav.${item.name.toLowerCase().replaceAll(" ", "_")}`, item.name)}</span>
                     </Link>
                   );
                 })}
@@ -389,7 +391,7 @@ export default function Sidebar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 group-hover:bg-rose-100 transition-colors">
             <FiLogOut className="text-base" />
           </span>
-          <span>Logout</span>
+          <span>{t("nav.logout")}</span>
         </button>
       </div>
     </aside>
