@@ -293,6 +293,11 @@ class VehicleRequestController extends Controller
     public function departmentIndex(Request $request): JsonResponse
     {
         $department = $request->user()->department;
+        $status = $request->query('status', 'pending');
+
+        if (! in_array($status, ['pending', 'history', 'all'], true)) {
+            return response()->json(['success' => false, 'message' => 'Invalid request status filter.'], 422);
+        }
 
         if (! $department) {
             return response()->json(['success' => true, 'data' => ['requests' => [], 'stats' => $this->emptyStats()]]);
@@ -306,10 +311,17 @@ class VehicleRequestController extends Controller
             'pending' => (clone $query)->where('recommendation_status', 'pending')->count(),
         ];
 
+        $requestsQuery = clone $query;
+        if ($status === 'pending') {
+            $requestsQuery->where('recommendation_status', 'pending');
+        } elseif ($status === 'history') {
+            $requestsQuery->whereIn('recommendation_status', ['recommended', 'rejected']);
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
-                'requests' => $query->where('recommendation_status', 'pending')->latest()->get(),
+                'requests' => $requestsQuery->latest()->get(),
                 'stats' => $stats,
             ],
         ]);
@@ -412,7 +424,11 @@ class VehicleRequestController extends Controller
     private function departmentRequests(string $department): Builder
     {
         return VehicleRequest::query()
-            ->with('user:id,name,employee_id,department')
+            ->with(
+                'user:id,name,employee_id,department',
+                'recommender:id,name,employee_id',
+                'allocatedVehicle',
+            )
             ->whereHas('user', fn (Builder $query) => $query->where('department', $department));
     }
 
