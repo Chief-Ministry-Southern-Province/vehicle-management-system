@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleRequest extends Model
 {
     use HasFactory;
+
+    protected $appends = ['attachment_url'];
 
     protected $fillable = [
         'user_id',
@@ -76,5 +79,10 @@ class VehicleRequest extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->attachment_path ? url(Storage::disk('public')->url($this->attachment_path)) : null;
     }
 }

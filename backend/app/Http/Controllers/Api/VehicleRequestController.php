@@ -334,7 +334,14 @@ class VehicleRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
-        return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name')]]);
+        return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest->load(
+            'user:id,name,employee_id,department',
+            'recommender:id,name,employee_id',
+            'allocatedVehicle',
+            'allocatedDriver',
+            'allocator:id,name,employee_id',
+            'approver:id,name,employee_id',
+        )]]);
     }
 
     /** Save the department officer's recommendation or rejection. */
