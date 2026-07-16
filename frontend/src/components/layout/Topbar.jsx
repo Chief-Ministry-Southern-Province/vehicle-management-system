@@ -1,6 +1,5 @@
 import { FiUser } from "react-icons/fi";
 import { useAuth } from "../../context/useAuth";
-import nationalEmblem from "../../assets/national-emblem.png";
 
 const formatRole = (role) => role ? role.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ") : "Government User";
 const initials = (name) => String(name || "User").split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
@@ -12,7 +11,6 @@ export default function Topbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl">
       <div className="flex min-h-20 items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-          {/* <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 p-1.5 shadow-sm sm:flex"><img src={nationalEmblem} alt="National Emblem" className="h-full w-full object-contain" /></div> */}
           <div className="min-w-0">
             <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl">Vehicle Management System</h1>
             <p className="mt-0.5 hidden truncate text-xs text-slate-500 sm:block"><span className="font-semibold text-blue-700">Chief Ministry</span><span className="mx-2 text-slate-300">•</span>Dakshinapaya, Labuduwa, Galle</p>

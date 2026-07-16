@@ -267,15 +267,6 @@ export default function Sidebar() {
   };
 
   // Small helpers for the profile footer — purely cosmetic, no logic change
-  const displayName = user?.name || user?.username || "User";
-  const initials = displayName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const roleLabel = role ? role.replace(/_/g, " ") : "Guest";
-
   return (
     <aside className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative">
       {/* ---------------------------------------------------------- */}
@@ -286,12 +277,11 @@ export default function Sidebar() {
         <div className="absolute -top-12 -right-10 h-36 w-36 rounded-full bg-blue-400/10 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-cyan-400/10 blur-3xl" />
 
-        <div className="relative px-5 py-6">
+        <div className="relative px-8 py-6">
           <div className="flex items-center gap-3.5">
             {/* Logo badge */}
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-200 ring-4 ring-white">
-                        <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 p-1.5 shadow-sm sm:flex"><img src={nationalEmblem} alt="National Emblem" className="h-full w-full object-contain" /></div>
-              
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl from-blue-600 to-cyan-500 shadow-lg shadow-blue-200 ring-4 ring-white">
+                <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-100 p-1.5 shadow-sm sm:flex"><img src={nationalEmblem} alt="National Emblem" className="h-full w-full object-contain" /></div> 
             </div>
 
             {/* Text */}
@@ -391,16 +381,6 @@ export default function Sidebar() {
       {/*  Profile + Logout                                            */}
       {/* ---------------------------------------------------------- */}
       <div className="relative border-t border-slate-100 p-3 space-y-2 bg-slate-50/60">
-        <div className="flex items-center gap-3 rounded-xl px-2.5 py-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-xs font-bold text-white shadow-sm ring-2 ring-white">
-            {initials}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
-            <p className="text-[11px] text-slate-400 capitalize truncate">{roleLabel}</p>
-          </div>
-        </div>
-
         <button
           onClick={handleLogout}
           className="group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"

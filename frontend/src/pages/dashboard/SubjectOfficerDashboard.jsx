@@ -24,7 +24,28 @@ export default function SubjectOfficerDashboard() {
     }
   }, []);
 
-  useEffect(() => { loadFleet(); }, [loadFleet]);
+  useEffect(() => {
+    let active = true;
+
+    getVehicles()
+      .then((response) => {
+        if (!active) return;
+        setVehicles(response?.data?.vehicles || []);
+        setError("");
+      })
+      .catch((loadError) => {
+        if (!active) return;
+        setVehicles([]);
+        setError(loadError?.message || "Unable to load the fleet overview.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <DashboardLayout>
