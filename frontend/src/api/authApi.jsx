@@ -181,9 +181,10 @@ export const getMyVehicleRequests = async () => {
   }
 };
 
-export const getDepartmentVehicleRequests = async () => {
+export const getDepartmentVehicleRequests = async (status = "pending") => {
   try {
     const response = await API.get("/department/vehicle-requests", {
+      params: { status },
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;
