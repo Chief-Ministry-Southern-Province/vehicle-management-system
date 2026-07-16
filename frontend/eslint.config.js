@@ -18,4 +18,11 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['src/i18n/pageTranslations.js'],
+    rules: {
+      // Phrase entries intentionally override shared word-level fallbacks.
+      'no-dupe-keys': 'off',
+    },
+  },
 ])

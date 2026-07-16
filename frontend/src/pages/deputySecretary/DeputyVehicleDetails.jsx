@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getVehicleById } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 
 const STATUS_STYLES = {
   available: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -42,6 +43,7 @@ function Detail({ label, value, icon }) {
 }
 
 export default function DeputyVehicleDetails() {
+  const { language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(null);
@@ -135,7 +137,7 @@ export default function DeputyVehicleDetails() {
               <Detail label="Fuel Type" value={vehicle.fuel_type} icon={<FiDroplet />} />
               <Detail label="Fuel Capacity" value={vehicle.fuel_capacity == null ? null : `${vehicle.fuel_capacity} L`} icon={<FiDroplet />} />
               <Detail label="Fuel Level" value={fuelLevel === "—" ? fuelLevel : `${fuelLevel}%`} icon={<FiDroplet />} />
-              <Detail label="Licence Expire Date" value={formatDate(licenceExpiry)} icon={<FiCalendar />} />
+              <Detail label={language === "si" ? "ආදායම් බලපත්‍රයේ වලංගු කාලය අවසන් වන දිනය" : "Licence Expire Date"} value={formatDate(licenceExpiry)} icon={<FiCalendar />} />
             </div>
           </section>
 

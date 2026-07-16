@@ -8,6 +8,8 @@ import {
 import { useEffect, useState } from "react";
 import VehicleRequest from "../../components/employee/VehicleRequest";
 import { getMyVehicleRequests } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
+import { useAuth } from "../../context/useAuth";
 
 function StatCard({ title, value, icon, tone }) {
   const tones = {
@@ -35,6 +37,8 @@ function StatCard({ title, value, icon, tone }) {
 }
 
 export default function UserDashboard() {
+  const { translate } = useLanguage();
+  const { user } = useAuth();
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
@@ -84,11 +88,11 @@ export default function UserDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, Jane!
+              {translate("Welcome back, {name}!").replace("{name}", user?.name || "User")}
             </h1>
 
             <p className="text-gray-500 mt-1">
-              Here is what's happening with your transport requests today.
+              {translate("Here is what's happening with your transport requests today.")}
             </p>
           </div>
 
@@ -97,21 +101,21 @@ export default function UserDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <StatCard
-            title="Pending Requests"
+            title={translate("Pending Requests")}
             value={statValue(stats.pending)}
             icon={<FiClock />}
             tone="amber"
           />
 
           <StatCard
-            title="Approved"
+            title={translate("Approved")}
             value={statValue(stats.approved)}
             icon={<FiCheckCircle />}
             tone="emerald"
           />
 
           <StatCard
-            title="Rejected"
+            title={translate("Rejected")}
             value={statValue(stats.rejected)}
             icon={<FiXCircle />}
             tone="rose"
