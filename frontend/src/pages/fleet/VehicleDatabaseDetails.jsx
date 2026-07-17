@@ -4,6 +4,12 @@ import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getVehicle, updateVehicle as persistVehicle } from "../../api/authApi";
+const SERVICE_TYPES = [
+  "Change engine oil",
+  "Replace diesel/petrol filter",
+  "Replace oil filter",
+  "Replace air filter",
+];
 const blank = {
   registration_number: "",
   vehicle_type: "",
@@ -27,6 +33,8 @@ const blank = {
   fuel_level: 0,
   service_category: "",
   service_details: [],
+  repair_details: [],
+  fuel_details: [],
 };
 export default function VehicleDatabaseDetails() {
   const { registration } = useParams();
@@ -47,6 +55,12 @@ export default function VehicleDatabaseDetails() {
           ...record,
           service_details: Array.isArray(record.service_details)
             ? record.service_details
+            : [],
+          repair_details: Array.isArray(record.repair_details)
+            ? record.repair_details
+            : [],
+          fuel_details: Array.isArray(record.fuel_details)
+            ? record.fuel_details
             : [],
         });
       } catch (error) {
@@ -90,7 +104,9 @@ export default function VehicleDatabaseDetails() {
         )
           data.append(
             key,
-            key === "service_details" ? JSON.stringify(value) : value,
+            ["service_details", "repair_details", "fuel_details"].includes(key)
+              ? JSON.stringify(value)
+              : value,
           );
       });
       if (image) data.append("image", image);
@@ -104,6 +120,8 @@ export default function VehicleDatabaseDetails() {
         ...blank,
         ...updatedVehicle,
         service_details: updatedVehicle.service_details || [],
+        repair_details: updatedVehicle.repair_details || [],
+        fuel_details: updatedVehicle.fuel_details || [],
       });
       setImage(null);
       setPreview(null);
@@ -133,6 +151,7 @@ export default function VehicleDatabaseDetails() {
         {
           service_date: "",
           service_type: "",
+          custom: false,
           cost: "",
         },
       ],
@@ -155,6 +174,20 @@ export default function VehicleDatabaseDetails() {
       service_details: current.service_details.filter(
         (_, serviceIndex) => serviceIndex !== index,
       ),
+    }));
+  const addDetail = (key, detail) =>
+    setVehicle((current) => ({ ...current, [key]: [...current[key], detail] }));
+  const updateDetail = (key, index, fieldName, value) =>
+    setVehicle((current) => ({
+      ...current,
+      [key]: current[key].map((detail, detailIndex) =>
+        detailIndex === index ? { ...detail, [fieldName]: value } : detail,
+      ),
+    }));
+  const removeDetail = (key, index) =>
+    setVehicle((current) => ({
+      ...current,
+      [key]: current[key].filter((_, detailIndex) => detailIndex !== index),
     }));
   const field =
     "mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50";
@@ -350,7 +383,7 @@ export default function VehicleDatabaseDetails() {
             </button>
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-5 max-h-[360px] space-y-3 overflow-y-auto pr-2">
             {vehicle.service_details.length === 0 && (
               <p className="rounded-xl bg-slate-50 p-5 text-center text-sm text-slate-500">
                 No service records added.
@@ -375,15 +408,39 @@ export default function VehicleDatabaseDetails() {
                 </label>
                 <label>
                   Service Type
-                  <input
+                  <select
                     required
-                    value={service.service_type || ""}
-                    onChange={(event) =>
-                      updateService(index, "service_type", event.target.value)
+                    value={
+                      SERVICE_TYPES.includes(service.service_type)
+                        ? service.service_type
+                        : service.custom || service.service_type
+                          ? "custom"
+                          : ""
                     }
-                    placeholder="e.g. Oil and filter change"
+                    onChange={(event) => {
+                      const isCustom = event.target.value === "custom";
+                      updateService(index, "service_type", isCustom ? "" : event.target.value);
+                      updateService(index, "custom", isCustom);
+                    }}
                     className={field}
-                  />
+                  >
+                    <option value="" disabled>Select a service type</option>
+                    {SERVICE_TYPES.map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                    <option value="custom">Other (custom)</option>
+                  </select>
+                  {(service.custom || Boolean(service.service_type && !SERVICE_TYPES.includes(service.service_type))) && (
+                    <input
+                      required
+                      value={service.service_type || ""}
+                      onChange={(event) =>
+                        updateService(index, "service_type", event.target.value)
+                      }
+                      placeholder="Enter custom service type"
+                      className={field}
+                    />
+                  )}
                 </label>
                 <label>
                   Cost (LKR)
@@ -429,6 +486,43 @@ export default function VehicleDatabaseDetails() {
             </p>
           </div>
         </section>
+
+        <DetailSection
+          title="Repair Details"
+          description="Record repairs and their costs."
+          buttonLabel="Add repair"
+          items={vehicle.repair_details}
+          totalLabel="Total Repair Cost"
+          rowClassName="md:grid-cols-[1fr_2fr_1fr_auto]"
+          onAdd={() => addDetail("repair_details", { repair_date: "", repair_type: "", cost: "" })}
+          onRemove={(index) => removeDetail("repair_details", index)}
+          renderFields={(repair, index) => (
+            <>
+              <Input label="Repair Date" type="date" value={repair.repair_date} field={field} onChange={(value) => updateDetail("repair_details", index, "repair_date", value)} />
+              <Input label="Repair Type" value={repair.repair_type} field={field} onChange={(value) => updateDetail("repair_details", index, "repair_type", value)} />
+              <Input label="Cost (LKR)" type="number" min="0" step="0.01" value={repair.cost} field={field} onChange={(value) => updateDetail("repair_details", index, "cost", value)} />
+            </>
+          )}
+        />
+
+        <DetailSection
+          title="Fuel Details"
+          description="Record fuel purchases and costs."
+          buttonLabel="Add fuel record"
+          items={vehicle.fuel_details}
+          totalLabel="Total Fuel Cost"
+          rowClassName="md:grid-cols-[1fr_1fr_1fr_1fr_auto]"
+          onAdd={() => addDetail("fuel_details", { date: "", fuel_type: "", capacity: "", cost: "" })}
+          onRemove={(index) => removeDetail("fuel_details", index)}
+          renderFields={(fuel, index) => (
+            <>
+              <Input label="Date" type="date" value={fuel.date} field={field} onChange={(value) => updateDetail("fuel_details", index, "date", value)} />
+              <label>Fuel Type<select required value={fuel.fuel_type || ""} onChange={(event) => updateDetail("fuel_details", index, "fuel_type", event.target.value)} className={field}><option value="" disabled>Select fuel type</option><option value="diesel">Diesel</option><option value="petrol">Petrol</option></select></label>
+              <Input label="Capacity (liters)" type="number" min="0" step="0.01" value={fuel.capacity} field={field} onChange={(value) => updateDetail("fuel_details", index, "capacity", value)} />
+              <Input label="Cost (LKR)" type="number" min="0" step="0.01" value={fuel.cost} field={field} onChange={(value) => updateDetail("fuel_details", index, "cost", value)} />
+            </>
+          )}
+        />
 
         <section className="rounded-2xl border bg-white p-5 shadow-sm">
           <h2 className="text-lg font-bold">
@@ -545,5 +639,50 @@ export default function VehicleDatabaseDetails() {
         </section>
       </form>
     </DashboardLayout>
+  );
+}
+
+function Input({ label, field, onChange, value = "", ...props }) {
+  return (
+    <label>
+      {label}
+      <input required value={value ?? ""} onChange={(event) => onChange(event.target.value)} className={field} {...props} />
+    </label>
+  );
+}
+
+function DetailSection({ title, description, buttonLabel, items, totalLabel, rowClassName, onAdd, onRemove, renderFields }) {
+  const totalCost = items.reduce(
+    (total, item) => total + (Number(item.cost) || 0),
+    0,
+  );
+
+  return (
+    <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-4">
+        <div><h2 className="text-lg font-bold">{title}</h2><p className="mt-1 text-sm text-slate-500">{description}</p></div>
+        <button type="button" onClick={onAdd} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"><FiPlus /> {buttonLabel}</button>
+      </div>
+      <div className="mt-5 max-h-[360px] space-y-3 overflow-y-auto pr-2">
+        {items.length === 0 && <p className="rounded-xl bg-slate-50 p-5 text-center text-sm text-slate-500">No records added.</p>}
+        {items.map((item, index) => (
+          <div key={index} className={`grid gap-3 rounded-xl border border-slate-200 p-4 ${rowClassName}`}>
+            {renderFields(item, index)}
+            <button type="button" onClick={() => onRemove(index)} aria-label={`Remove ${title.toLowerCase()} row ${index + 1}`} className="mt-7 flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><FiTrash2 /></button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 flex justify-end border-t pt-4">
+        <p className="text-lg font-bold text-slate-900">
+          {totalLabel}: {" "}
+          <span className="text-blue-600">
+            LKR {totalCost.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </p>
+      </div>
+    </section>
   );
 }
