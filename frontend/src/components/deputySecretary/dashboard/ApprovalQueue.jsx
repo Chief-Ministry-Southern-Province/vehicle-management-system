@@ -57,15 +57,10 @@ export default function ApprovalQueue({
           <thead className="bg-slate-50">
             <tr className="text-left text-xs uppercase tracking-wider text-slate-500">
               <th className="px-6 py-4 font-semibold">Request ID</th>
-
               <th className="px-6 py-4 font-semibold">Requester</th>
-
               <th className="px-6 py-4 font-semibold">Department</th>
-
               <th className="px-6 py-4 font-semibold">Status</th>
-
               <th className="px-6 py-4 font-semibold">Priority</th>
-
               <th className="px-6 py-4 text-center font-semibold">Action</th>
             </tr>
           </thead>

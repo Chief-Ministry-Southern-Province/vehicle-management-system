@@ -43,13 +43,13 @@ export default function QuickActions() {
         >
           {/* Background Accent */}
           <div
-            className={`absolute top-0 left-0 h-1.5 w-full bg-gradient-to-r ${item.color}`}
+            className={`absolute top-0 left-0 h-1.5 w-full bg-linear-to-r ${item.color}`}
           />
 
           {/* Header */}
           <div className="flex items-start justify-between">
             <div
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} text-white shadow-md`}
+              className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br ${item.color} text-white shadow-md`}
             >
               {item.icon}
             </div>
