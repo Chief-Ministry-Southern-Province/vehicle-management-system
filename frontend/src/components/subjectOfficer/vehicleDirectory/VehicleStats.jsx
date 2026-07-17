@@ -7,10 +7,39 @@ import {
 
 export default function VehicleStats({ vehicles = [] }) {
   const stats = [
-    { title: "Total", value: vehicles.length, icon: <FiTruck size={18} />, bg: "bg-blue-50", text: "text-blue-600" },
-    { title: "Available", value: vehicles.filter((vehicle) => vehicle.status === "Available").length, icon: <FiCheckCircle size={18} />, bg: "bg-green-50", text: "text-green-600" },
-    { title: "Maintenance", value: vehicles.filter((vehicle) => vehicle.status === "Maintenance").length, icon: <FiClock size={18} />, bg: "bg-amber-50", text: "text-amber-600" },
-    { title: "Repairs", value: vehicles.filter((vehicle) => vehicle.repairType && vehicle.repairType !== "Routine service").length, icon: <FiAlertTriangle size={18} />, bg: "bg-red-50", text: "text-red-600" },
+    {
+      title: "Total",
+      value: vehicles.length,
+      icon: <FiTruck size={18} />,
+      bg: "bg-blue-50",
+      text: "text-blue-600",
+    },
+    {
+      title: "Available",
+      value: vehicles.filter((vehicle) => vehicle.status === "Available")
+        .length,
+      icon: <FiCheckCircle size={18} />,
+      bg: "bg-green-50",
+      text: "text-green-600",
+    },
+    {
+      title: "Maintenance",
+      value: vehicles.filter((vehicle) => vehicle.status === "Maintenance")
+        .length,
+      icon: <FiClock size={18} />,
+      bg: "bg-amber-50",
+      text: "text-amber-600",
+    },
+    {
+      title: "Repairs",
+      value: vehicles.filter(
+        (vehicle) =>
+          vehicle.repairType && vehicle.repairType !== "Routine service",
+      ).length,
+      icon: <FiAlertTriangle size={18} />,
+      bg: "bg-red-50",
+      text: "text-red-600",
+    },
   ];
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

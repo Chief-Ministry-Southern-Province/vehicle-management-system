@@ -1,10 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
-export default function ProtectedRoute({
-  children,
-  allowedRoles,
-}) {
+export default function ProtectedRoute({ children, allowedRoles }) {
   const { user, token } = useAuth();
 
   if (!user && !token) {

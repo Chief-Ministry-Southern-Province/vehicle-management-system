@@ -48,18 +48,15 @@ const stats = [
 export default function AnalyticsStats() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
       {stats.map((item) => (
         <div
           key={item.title}
           className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-
           {/* Decorative Glow */}
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-slate-100 opacity-50 blur-2xl" />
 
           <div className="relative flex items-start justify-between">
-
             <div
               className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} ${item.color}`}
             >
@@ -85,11 +82,9 @@ export default function AnalyticsStats() {
                 {item.trend}
               </span>
             )}
-
           </div>
 
           <div className="relative mt-5">
-
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               {item.title}
             </p>
@@ -97,7 +92,6 @@ export default function AnalyticsStats() {
             <h2 className="mt-2 text-3xl font-bold text-slate-900">
               {item.value}
             </h2>
-
           </div>
 
           {/* Bottom Accent */}
@@ -106,16 +100,14 @@ export default function AnalyticsStats() {
               item.color === "text-blue-600"
                 ? "bg-blue-500"
                 : item.color === "text-cyan-600"
-                ? "bg-cyan-500"
-                : item.color === "text-orange-600"
-                ? "bg-orange-500"
-                : "bg-green-500"
+                  ? "bg-cyan-500"
+                  : item.color === "text-orange-600"
+                    ? "bg-orange-500"
+                    : "bg-green-500"
             }`}
           />
-
         </div>
       ))}
-
     </div>
   );
 }

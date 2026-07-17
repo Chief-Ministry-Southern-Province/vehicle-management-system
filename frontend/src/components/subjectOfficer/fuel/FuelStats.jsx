@@ -44,7 +44,6 @@ const stats = [
 export default function FuelStats() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
       {stats.map((item) => (
         <div
           key={item.title}
@@ -54,10 +53,8 @@ export default function FuelStats() {
           <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-slate-100 opacity-50 blur-2xl" />
 
           <div className="relative flex items-start justify-between">
-
             {/* Content */}
             <div>
-
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {item.title}
               </p>
@@ -67,7 +64,6 @@ export default function FuelStats() {
               </h2>
 
               <div className="mt-4 flex items-center gap-2">
-
                 <span
                   className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
                     item.change.startsWith("-")
@@ -77,21 +73,13 @@ export default function FuelStats() {
                 >
                   <FiArrowUp
                     size={11}
-                    className={
-                      item.change.startsWith("-")
-                        ? "rotate-180"
-                        : ""
-                    }
+                    className={item.change.startsWith("-") ? "rotate-180" : ""}
                   />
                   {item.change}
                 </span>
 
-                <span className="text-xs text-slate-400">
-                  vs last month
-                </span>
-
+                <span className="text-xs text-slate-400">vs last month</span>
               </div>
-
             </div>
 
             {/* Icon */}
@@ -100,7 +88,6 @@ export default function FuelStats() {
             >
               {item.icon}
             </div>
-
           </div>
 
           {/* Bottom Accent */}
@@ -109,16 +96,14 @@ export default function FuelStats() {
               item.color === "text-blue-600"
                 ? "bg-blue-500"
                 : item.color === "text-green-600"
-                ? "bg-green-500"
-                : item.color === "text-purple-600"
-                ? "bg-purple-500"
-                : "bg-orange-500"
+                  ? "bg-green-500"
+                  : item.color === "text-purple-600"
+                    ? "bg-purple-500"
+                    : "bg-orange-500"
             }`}
           />
-
         </div>
       ))}
-
     </div>
   );
 }

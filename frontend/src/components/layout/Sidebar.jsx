@@ -9,18 +9,14 @@ import {
   FiLogOut,
   FiCheckCircle,
   FiClipboard,
+  FiClock,
 } from "react-icons/fi";
 
-import {
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import nationalEmblem from "../../assets/national-emblem.png";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
-
 
 const menuItems = [
   {
@@ -127,7 +123,7 @@ const menuItems = [
         icon: <FiCheckCircle />,
         roles: ["secretary"],
       },
-       {
+      {
         name: "Total Approvals",
         path: "/finalapprovals",
         icon: <FiCheckCircle />,
@@ -140,6 +136,18 @@ const menuItems = [
         name: "Dashboard",
         path: "/driverdashboard",
         icon: <FiGrid />,
+        roles: ["driver"],
+      },
+      {
+        name: "Trip History",
+        path: "/tripshistory",
+        icon: <FiClock />,
+        roles: ["driver"],
+      },
+      {
+        name: "Report Vehicle",
+        path: "/reportvehicle",
+        icon: <FiClock />,
         roles: ["driver"],
       },
     ],
@@ -196,35 +204,34 @@ const menuItems = [
         name: "Vehicle Details",
         path: "/totalvehicles",
         icon: <FiTruck />,
-        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
+        roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
       },
       {
         name: "Driver Details",
         path: "/driverdetails",
         icon: <BsPerson />,
-        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
+        roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
       },
       {
         name: "Fuel Records",
         path: "/fuelmanagement",
         icon: <FiDroplet />,
-        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
+        roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
       },
       {
         name: "Service Records",
         path: "/servicerecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
+        roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
       },
       {
         name: "Repair Records",
         path: "/repairrecords",
         icon: <FiTool />,
-        roles: ["deputy_secretary","senior_deputy_secretary","secretary"],
+        roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
       },
     ],
   },
-
 
   // ==========================================
   // REPORTS
@@ -271,7 +278,10 @@ export default function Sidebar() {
 
   // Small helpers for the profile footer — purely cosmetic, no logic change
   return (
-    <aside data-no-translate className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative">
+    <aside
+      data-no-translate
+      className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative"
+    >
       {/* ---------------------------------------------------------- */}
       {/*  Header / Brand                                             */}
       {/* ---------------------------------------------------------- */}
@@ -284,7 +294,13 @@ export default function Sidebar() {
           <div className="flex items-center gap-3.5">
             {/* Logo badge */}
             <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl from-blue-600 to-cyan-500 shadow-lg shadow-blue-200 ring-4 ring-white">
-                <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-100 p-1.5 shadow-sm sm:flex"><img src={nationalEmblem} alt="National Emblem" className="h-full w-full object-contain" /></div> 
+              <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-100 p-1.5 shadow-sm sm:flex">
+                <img
+                  src={nationalEmblem}
+                  alt="National Emblem"
+                  className="h-full w-full object-contain"
+                />
+              </div>
             </div>
 
             {/* Text */}
@@ -312,7 +328,7 @@ export default function Sidebar() {
       <div className="relative flex-1 overflow-y-auto py-5 px-1 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent]">
         {menuItems.map((section, sIdx) => {
           const visibleItems = section.items.filter(
-            (item) => !item.roles || item.roles.includes(role)
+            (item) => !item.roles || item.roles.includes(role),
           );
 
           if (visibleItems.length === 0) return null;
@@ -320,7 +336,10 @@ export default function Sidebar() {
           return (
             <div key={section.title} className="mb-6 last:mb-2">
               <h3 className="px-5 mb-2.5 text-[10.5px] font-bold tracking-[0.18em] text-slate-400 uppercase">
-                {t(`nav.${section.title.toLowerCase().replaceAll(" ", "_")}`, section.title)}
+                {t(
+                  `nav.${section.title.toLowerCase().replaceAll(" ", "_")}`,
+                  section.title,
+                )}
               </h3>
 
               <div className="space-y-1 px-3">
@@ -349,7 +368,9 @@ export default function Sidebar() {
                         className={[
                           "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-blue-600",
                           "transition-all duration-200",
-                          isActive ? "opacity-100" : "opacity-0 group-hover:opacity-30",
+                          isActive
+                            ? "opacity-100"
+                            : "opacity-0 group-hover:opacity-30",
                         ].join(" ")}
                       />
 
@@ -365,7 +386,12 @@ export default function Sidebar() {
                         {item.icon}
                       </span>
 
-                      <span className="relative truncate">{t(`nav.${item.name.toLowerCase().replaceAll(" ", "_")}`, item.name)}</span>
+                      <span className="relative truncate">
+                        {t(
+                          `nav.${item.name.toLowerCase().replaceAll(" ", "_")}`,
+                          item.name,
+                        )}
+                      </span>
                     </Link>
                   );
                 })}

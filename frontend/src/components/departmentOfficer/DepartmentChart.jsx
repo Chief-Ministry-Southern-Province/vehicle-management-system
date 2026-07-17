@@ -17,10 +17,7 @@ const data = [
 export default function DepartmentChart() {
   return (
     <div className="bg-white border rounded-xl p-5">
-
-      <h2 className="font-semibold text-lg">
-        Sub-team Volume
-      </h2>
+      <h2 className="font-semibold text-lg">Sub-team Volume</h2>
 
       <p className="text-gray-500 text-sm mb-4">
         Request distribution by department units
@@ -36,23 +33,16 @@ export default function DepartmentChart() {
       </ResponsiveContainer>
 
       <div className="border-t mt-4 pt-4 text-sm">
-
         <div className="flex justify-between">
           <span>Total Department Staff</span>
-          <span className="font-semibold">
-            142 Members
-          </span>
+          <span className="font-semibold">142 Members</span>
         </div>
 
         <div className="flex justify-between mt-2">
           <span>Approval Efficiency</span>
-          <span className="font-semibold">
-            92%
-          </span>
+          <span className="font-semibold">92%</span>
         </div>
-
       </div>
-
     </div>
   );
 }

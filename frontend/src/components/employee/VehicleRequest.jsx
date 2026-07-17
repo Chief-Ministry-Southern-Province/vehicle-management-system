@@ -1,10 +1,4 @@
-import {
-  FiMapPin,
-  FiUsers,
-  FiPaperclip,
-  FiSend,
-  FiSave,
-} from "react-icons/fi";
+import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave } from "react-icons/fi";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { createVehicleRequest } from "../../api/authApi";
@@ -35,18 +29,29 @@ export default function VehicleRequest() {
 
     try {
       const payload = new FormData();
-      Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+      Object.entries(form).forEach(([key, value]) =>
+        payload.append(key, value),
+      );
       if (attachment) payload.append("attachment", attachment);
 
       await createVehicleRequest(payload);
       toast.success(translate("Vehicle request submitted successfully."));
-      setForm({ purpose: "", destination: "", departure_at: "", expected_return_at: "", passenger_count: 1, passenger_names: "" });
+      setForm({
+        purpose: "",
+        destination: "",
+        departure_at: "",
+        expected_return_at: "",
+        passenger_count: 1,
+        passenger_names: "",
+      });
       setAttachment(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       const errors = error?.errors;
       const message = errors ? Object.values(errors).flat()[0] : error?.message;
-      toast.error(message || translate("Unable to submit the request. Please try again."));
+      toast.error(
+        message || translate("Unable to submit the request. Please try again."),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -55,25 +60,28 @@ export default function VehicleRequest() {
   return (
     <section className="rounded-3xl border border-slate-100 bg-slate-50/70 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)] sm:p-6">
       <form className="mx-auto max-w-6xl" onSubmit={submitRequest}>
-
         {/* Header */}
         <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-blue-800 p-6 text-white shadow-xl sm:p-8">
           <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-blue-400/20 blur-3xl" />
           <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">{translate("Official Transport")}</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-              {translate("Create New Vehicle Request")}
-            </h1>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
+                {translate("Official Transport")}
+              </p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+                {translate("Create New Vehicle Request")}
+              </h1>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
-              {translate("Please fill in the details below to request a vehicle for official business.")}
-            </p>
-          </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+                {translate(
+                  "Please fill in the details below to request a vehicle for official business.",
+                )}
+              </p>
+            </div>
 
-          <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
-            {translate("Draft ID")}: VMS-REQ-PENDING
-          </span>
+            <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
+              {translate("Draft ID")}: VMS-REQ-PENDING
+            </span>
           </div>
         </div>
 
@@ -81,7 +89,9 @@ export default function VehicleRequest() {
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
           <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl text-white shadow-md"><FiMapPin /></div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl text-white shadow-md">
+                <FiMapPin />
+              </div>
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
                   {translate("Trip Information")}
@@ -95,7 +105,6 @@ export default function VehicleRequest() {
           </div>
 
           <div className="grid gap-5 p-5 sm:p-6 md:grid-cols-2">
-
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
                 {translate("Purpose of Trip")}
@@ -157,16 +166,16 @@ export default function VehicleRequest() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
             </div>
-
           </div>
         </div>
 
         {/* Passenger Details */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-
           <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-md"><FiUsers /></div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-md">
+                <FiUsers />
+              </div>
 
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -181,9 +190,7 @@ export default function VehicleRequest() {
           </div>
 
           <div className="p-5 sm:p-6">
-
             <div className="grid md:grid-cols-2 gap-5">
-
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   {translate("Total Count")}
@@ -215,18 +222,17 @@ export default function VehicleRequest() {
                   className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                 />
               </div>
-
             </div>
-
           </div>
         </div>
 
         {/* Attachments */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-
           <div className="border-b border-slate-100 bg-gradient-to-r from-cyan-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-600 text-xl text-white shadow-md"><FiPaperclip /></div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-600 text-xl text-white shadow-md">
+                <FiPaperclip />
+              </div>
 
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -241,7 +247,6 @@ export default function VehicleRequest() {
           </div>
 
           <div className="p-5 sm:p-6">
-
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -256,23 +261,32 @@ export default function VehicleRequest() {
               <p className="mt-1 text-sm text-slate-500">
                 PDF, JPG, PNG (Max 5MB)
               </p>
-              {attachment && <p className="mt-3 text-sm font-medium text-blue-600">{translate("Selected")}: <span data-no-translate>{attachment.name}</span></p>}
+              {attachment && (
+                <p className="mt-3 text-sm font-medium text-blue-600">
+                  {translate("Selected")}:{" "}
+                  <span data-no-translate>{attachment.name}</span>
+                </p>
+              )}
             </button>
             <input
               ref={fileInputRef}
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(event) => setAttachment(event.target.files?.[0] || null)}
+              onChange={(event) =>
+                setAttachment(event.target.files?.[0] || null)
+              }
               className="hidden"
             />
-
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex flex-col-reverse justify-end gap-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row">
-
-          <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50" disabled>
+          <button
+            type="button"
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50"
+            disabled
+          >
             <FiSave />
             {translate("Save Draft")}
           </button>
@@ -280,13 +294,14 @@ export default function VehicleRequest() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
             <FiSend />
-            {submitting ? translate("Submitting...") : translate("Submit Request")}
+            {submitting
+              ? translate("Submitting...")
+              : translate("Submit Request")}
           </button>
-
         </div>
-
       </form>
     </section>
   );

@@ -16,5 +16,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </AuthProvider>
       </RoleProvider>
     </LanguageProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

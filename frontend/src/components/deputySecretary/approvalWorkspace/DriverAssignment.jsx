@@ -22,24 +22,18 @@ const drivers = [
 export default function DriverAssignment() {
   return (
     <div className="bg-white border rounded-2xl">
-
       <div className="p-5 border-b">
-        <h3 className="font-bold text-xl">
-          Assign Driver
-        </h3>
+        <h3 className="font-bold text-xl">Assign Driver</h3>
       </div>
 
       <div className="p-4 space-y-3">
-
         {drivers.map((driver) => (
           <div
             key={driver.name}
             className="border rounded-xl p-4 flex justify-between"
           >
             <div>
-              <h4 className="font-semibold">
-                {driver.name}
-              </h4>
+              <h4 className="font-semibold">{driver.name}</h4>
 
               <p className="text-sm text-gray-500">
                 {driver.exp} Experience • ⭐ {driver.rating}
@@ -51,7 +45,6 @@ export default function DriverAssignment() {
             </span>
           </div>
         ))}
-
       </div>
 
       <div className="p-4">
@@ -59,7 +52,6 @@ export default function DriverAssignment() {
           Approval will notify Driver and Ground Security Team immediately.
         </div>
       </div>
-
     </div>
   );
 }

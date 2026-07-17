@@ -1,9 +1,4 @@
-import {
-  FiDatabase,
-  FiCheckCircle,
-  FiXCircle,
-  FiClock,
-} from "react-icons/fi";
+import { FiDatabase, FiCheckCircle, FiXCircle, FiClock } from "react-icons/fi";
 
 const createStats = (stats) => [
   {
@@ -41,16 +36,20 @@ const createStats = (stats) => [
 ];
 
 export default function StatsCards({ stats = {} }) {
-  const items = createStats({ total_records: 0, approved: 0, rejected: 0, pending: 0, ...stats });
+  const items = createStats({
+    total_records: 0,
+    approved: 0,
+    rejected: 0,
+    pending: 0,
+    ...stats,
+  });
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-
       {items.map((item) => (
         <div
           key={item.title}
           className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-
           {/* Top Gradient */}
           <div
             className={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r ${item.accent}`}
@@ -62,11 +61,8 @@ export default function StatsCards({ stats = {} }) {
           />
 
           <div className="relative">
-
             <div className="flex items-start justify-between">
-
               <div>
-
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
                   {item.title}
                 </p>
@@ -74,7 +70,6 @@ export default function StatsCards({ stats = {} }) {
                 <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
                   {item.value}
                 </h2>
-
               </div>
 
               <div
@@ -82,14 +77,10 @@ export default function StatsCards({ stats = {} }) {
               >
                 {item.icon}
               </div>
-
             </div>
-
           </div>
-
         </div>
       ))}
-
     </div>
   );
 }

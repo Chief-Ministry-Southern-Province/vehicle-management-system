@@ -42,14 +42,10 @@ const services = [
 export default function ServiceScheduleTable() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-
         <div>
-          <h3 className="font-semibold text-slate-900">
-            Maintenance Schedule
-          </h3>
+          <h3 className="font-semibold text-slate-900">Maintenance Schedule</h3>
 
           <p className="mt-1 text-sm text-slate-500">
             Upcoming and active vehicle service records
@@ -59,90 +55,55 @@ export default function ServiceScheduleTable() {
         <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-600">
           {services.length} Records
         </span>
-
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-
         <table className="w-full">
-
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-6 py-4 text-left">ID</th>
 
-              <th className="px-6 py-4 text-left">
-                ID
-              </th>
+              <th className="px-6 py-4 text-left">Vehicle</th>
 
-              <th className="px-6 py-4 text-left">
-                Vehicle
-              </th>
+              <th className="px-6 py-4 text-left">Service Type</th>
 
-              <th className="px-6 py-4 text-left">
-                Service Type
-              </th>
+              <th className="px-6 py-4 text-left">Vendor</th>
 
-              <th className="px-6 py-4 text-left">
-                Vendor
-              </th>
+              <th className="px-6 py-4 text-left">Cost</th>
 
-              <th className="px-6 py-4 text-left">
-                Cost
-              </th>
+              <th className="px-6 py-4 text-left">Due Date</th>
 
-              <th className="px-6 py-4 text-left">
-                Due Date
-              </th>
+              <th className="px-6 py-4 text-left">Status</th>
 
-              <th className="px-6 py-4 text-left">
-                Status
-              </th>
-
-              <th className="px-6 py-4 text-center">
-                Actions
-              </th>
-
+              <th className="px-6 py-4 text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-
             {services.map((item) => (
               <tr
                 key={item.id}
                 className="border-b border-slate-100 transition hover:bg-slate-50"
               >
-
                 <td className="px-6 py-4">
-
-                  <span className="font-medium text-slate-700">
-                    {item.id}
-                  </span>
-
+                  <span className="font-medium text-slate-700">{item.id}</span>
                 </td>
 
                 <td className="px-6 py-4">
-
                   <div className="flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                       <FiTool size={18} />
                     </div>
 
                     <div>
-
                       <h4 className="font-medium text-slate-900">
                         {item.vehicle}
                       </h4>
 
-                      <p className="text-xs text-slate-500">
-                        {item.model}
-                      </p>
-
+                      <p className="text-xs text-slate-500">{item.model}</p>
                     </div>
-
                   </div>
-
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-600">
@@ -157,12 +118,9 @@ export default function ServiceScheduleTable() {
                   {item.cost}
                 </td>
 
-                <td className="px-6 py-4 text-sm text-slate-600">
-                  {item.due}
-                </td>
+                <td className="px-6 py-4 text-sm text-slate-600">{item.due}</td>
 
                 <td className="px-6 py-4">
-
                   {item.status === "Overdue" && (
                     <span className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
                       <FiAlertTriangle size={12} />
@@ -183,35 +141,26 @@ export default function ServiceScheduleTable() {
                       Scheduled
                     </span>
                   )}
-
                 </td>
 
                 <td className="px-6 py-4 text-center">
-
                   <button className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100">
                     <FiMoreHorizontal />
                   </button>
-
                 </td>
-
               </tr>
             ))}
-
           </tbody>
-
         </table>
-
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
-
         <p className="text-sm text-slate-500">
           Showing 3 maintenance schedules
         </p>
 
         <div className="flex gap-2">
-
           <button className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">
             Previous
           </button>
@@ -223,11 +172,8 @@ export default function ServiceScheduleTable() {
           <button className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">
             Next
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

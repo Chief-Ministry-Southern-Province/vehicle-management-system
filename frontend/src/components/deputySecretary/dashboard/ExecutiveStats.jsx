@@ -55,16 +55,66 @@ function useCountUp(value, duration = 900) {
 /*  Keep this map in sync with any tone used below in `stats`         */
 /* ------------------------------------------------------------------ */
 const TONES = {
-  blue: { icon: "from-blue-500 to-blue-600", glow: "bg-blue-500/10", ring: "ring-blue-100", text: "text-blue-600" },
-  emerald: { icon: "from-emerald-500 to-emerald-600", glow: "bg-emerald-500/10", ring: "ring-emerald-100", text: "text-emerald-600" },
-  rose: { icon: "from-rose-500 to-rose-600", glow: "bg-rose-500/10", ring: "ring-rose-100", text: "text-rose-600" },
-  amber: { icon: "from-amber-400 to-amber-500", glow: "bg-amber-500/10", ring: "ring-amber-100", text: "text-amber-600" },
-  indigo: { icon: "from-indigo-500 to-indigo-600", glow: "bg-indigo-500/10", ring: "ring-indigo-100", text: "text-indigo-600" },
-  red: { icon: "from-red-500 to-red-600", glow: "bg-red-500/10", ring: "ring-red-100", text: "text-red-600" },
-  orange: { icon: "from-orange-500 to-orange-600", glow: "bg-orange-500/10", ring: "ring-orange-100", text: "text-orange-600" },
-  cyan: { icon: "from-cyan-500 to-cyan-600", glow: "bg-cyan-500/10", ring: "ring-cyan-100", text: "text-cyan-600" },
-  teal: { icon: "from-teal-500 to-teal-600", glow: "bg-teal-500/10", ring: "ring-teal-100", text: "text-teal-600" },
-  fuchsia: { icon: "from-fuchsia-500 to-fuchsia-600", glow: "bg-fuchsia-500/10", ring: "ring-fuchsia-100", text: "text-fuchsia-600" },
+  blue: {
+    icon: "from-blue-500 to-blue-600",
+    glow: "bg-blue-500/10",
+    ring: "ring-blue-100",
+    text: "text-blue-600",
+  },
+  emerald: {
+    icon: "from-emerald-500 to-emerald-600",
+    glow: "bg-emerald-500/10",
+    ring: "ring-emerald-100",
+    text: "text-emerald-600",
+  },
+  rose: {
+    icon: "from-rose-500 to-rose-600",
+    glow: "bg-rose-500/10",
+    ring: "ring-rose-100",
+    text: "text-rose-600",
+  },
+  amber: {
+    icon: "from-amber-400 to-amber-500",
+    glow: "bg-amber-500/10",
+    ring: "ring-amber-100",
+    text: "text-amber-600",
+  },
+  indigo: {
+    icon: "from-indigo-500 to-indigo-600",
+    glow: "bg-indigo-500/10",
+    ring: "ring-indigo-100",
+    text: "text-indigo-600",
+  },
+  red: {
+    icon: "from-red-500 to-red-600",
+    glow: "bg-red-500/10",
+    ring: "ring-red-100",
+    text: "text-red-600",
+  },
+  orange: {
+    icon: "from-orange-500 to-orange-600",
+    glow: "bg-orange-500/10",
+    ring: "ring-orange-100",
+    text: "text-orange-600",
+  },
+  cyan: {
+    icon: "from-cyan-500 to-cyan-600",
+    glow: "bg-cyan-500/10",
+    ring: "ring-cyan-100",
+    text: "text-cyan-600",
+  },
+  teal: {
+    icon: "from-teal-500 to-teal-600",
+    glow: "bg-teal-500/10",
+    ring: "ring-teal-100",
+    text: "text-teal-600",
+  },
+  fuchsia: {
+    icon: "from-fuchsia-500 to-fuchsia-600",
+    glow: "bg-fuchsia-500/10",
+    ring: "ring-fuchsia-100",
+    text: "text-fuchsia-600",
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -72,12 +122,35 @@ const TONES = {
 /*  destination pages are built separately.                           */
 /* ------------------------------------------------------------------ */
 const createStats = (data) => [
-  { title: "Pending Approvals", value: data.pending_approvals ?? 0, icon: <FiClock />, path: "/pendingapprovals", tone: "amber" },
-  { title: "Available Vehicles", value: data.available_vehicles ?? 0, icon: <FiCheckSquare />, path: "/totalvehicles?status=available", tone: "emerald" },
-  { title: "Fuel Cost", value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`, icon: <FiCreditCard />, path: "/fuelmanagement", tone: "teal" },
-  { title: "Maintenance Cost", value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`, icon: <FiDollarSign />, path: "/servicerecords", tone: "fuchsia" },
+  {
+    title: "Pending Approvals",
+    value: data.pending_approvals ?? 0,
+    icon: <FiClock />,
+    path: "/pendingapprovals",
+    tone: "amber",
+  },
+  {
+    title: "Available Vehicles",
+    value: data.available_vehicles ?? 0,
+    icon: <FiCheckSquare />,
+    path: "/totalvehicles?status=available",
+    tone: "emerald",
+  },
+  {
+    title: "Fuel Cost",
+    value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`,
+    icon: <FiCreditCard />,
+    path: "/fuelmanagement",
+    tone: "teal",
+  },
+  {
+    title: "Maintenance Cost",
+    value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`,
+    icon: <FiDollarSign />,
+    path: "/servicerecords",
+    tone: "fuchsia",
+  },
 ];
-
 
 /* ------------------------------------------------------------------ */
 /*  Single card                                                       */
@@ -136,7 +209,9 @@ function StatCard({ title, value, icon, path, tone }) {
         />
       </div>
 
-      <p className="relative mt-5 text-sm font-medium text-slate-500">{title}</p>
+      <p className="relative mt-5 text-sm font-medium text-slate-500">
+        {title}
+      </p>
       <h2 className="relative mt-1 text-[26px] leading-tight font-bold text-slate-800 tabular-nums">
         {animatedValue}
       </h2>
@@ -166,7 +241,12 @@ function StatRow({ label, items }) {
 /*  Exported section                                                  */
 /* ------------------------------------------------------------------ */
 export default function ExecutiveStats() {
-  const [data, setData] = useState({ pending_approvals: 0, available_vehicles: 0, fuel_cost: 0, maintenance_cost: 0 });
+  const [data, setData] = useState({
+    pending_approvals: 0,
+    available_vehicles: 0,
+    fuel_cost: 0,
+    maintenance_cost: 0,
+  });
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -184,7 +264,11 @@ export default function ExecutiveStats() {
   return (
     <div>
       <StatRow label="Executive Overview" items={createStats(data)} />
-      {error && <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

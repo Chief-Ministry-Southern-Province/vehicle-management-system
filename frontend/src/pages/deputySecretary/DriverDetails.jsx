@@ -1,5 +1,4 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
-
 import { useEffect, useMemo, useState } from "react";
 import {
   FiCalendar,
@@ -153,13 +152,11 @@ export const DRIVERS = [
     registration: "WP-CAA-4471",
   },
 ];
-
 const STATUS_STYLES = {
   Available: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   "On Trip": "bg-blue-50 text-blue-700 ring-blue-100",
   Unavailable: "bg-rose-50 text-rose-700 ring-rose-100",
 };
-
 function getInitials(name) {
   return name
     .split(" ")
@@ -168,7 +165,6 @@ function getInitials(name) {
     .slice(0, 2)
     .toUpperCase();
 }
-
 function formatDate(date) {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -176,26 +172,21 @@ function formatDate(date) {
     day: "numeric",
   });
 }
-
 function daysUntil(date) {
   const today = new Date();
   const target = new Date(date);
   return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
-
 function StatusPill({ status }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
-        STATUS_STYLES[status] || STATUS_STYLES.Available
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLES[status] || STATUS_STYLES.Available}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {status}
     </span>
   );
 }
-
 function SummaryCard({ icon, label, value, sub, tone }) {
   const tones = {
     blue: "bg-blue-50 text-blue-600 border-blue-100",
@@ -203,7 +194,6 @@ function SummaryCard({ icon, label, value, sub, tone }) {
     amber: "bg-amber-50 text-amber-600 border-amber-100",
     rose: "bg-rose-50 text-rose-600 border-rose-100",
   };
-
   return (
     <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-4">
@@ -221,11 +211,9 @@ function SummaryCard({ icon, label, value, sub, tone }) {
     </div>
   );
 }
-
 function DriverCard({ driver }) {
   const expiryDays = daysUntil(driver.licenceRenewalDate);
   const expiringSoon = expiryDays <= 180;
-
   return (
     <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-blue-100 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
@@ -235,7 +223,9 @@ function DriverCard({ driver }) {
           </div>
           <div>
             <h3 className="font-bold text-slate-900">{driver.fullName}</h3>
-            <p className="mt-1 text-sm text-slate-500">{driver.designation || "Government Driver"}</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {driver.designation || "Government Driver"}
+            </p>
             <p className="mt-1 text-xs font-semibold text-blue-600">
               {driver.id}
             </p>
@@ -246,9 +236,21 @@ function DriverCard({ driver }) {
 
       <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
         <DetailLine icon={<FiShield />} label="NIC" value={driver.nic} />
-        <DetailLine icon={<FiDroplet />} label="Blood" value={driver.bloodGroup} />
-        <DetailLine icon={<FiPhone />} label="Phone" value={driver.contactNumber} />
-        <DetailLine icon={<FiCalendar />} label="DOB" value={formatDate(driver.dateOfBirth)} />
+        <DetailLine
+          icon={<FiDroplet />}
+          label="Blood"
+          value={driver.bloodGroup}
+        />
+        <DetailLine
+          icon={<FiPhone />}
+          label="Phone"
+          value={driver.contactNumber}
+        />
+        <DetailLine
+          icon={<FiCalendar />}
+          label="DOB"
+          value={formatDate(driver.dateOfBirth)}
+        />
       </div>
 
       <div className="mt-5 rounded-2xl bg-slate-50 p-4">
@@ -265,11 +267,7 @@ function DriverCard({ driver }) {
             </p>
           </div>
           <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              expiringSoon
-                ? "bg-amber-100 text-amber-700"
-                : "bg-emerald-100 text-emerald-700"
-            }`}
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${expiringSoon ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}
           >
             {formatDate(driver.licenceRenewalDate)}
           </span>
@@ -291,7 +289,6 @@ function DriverCard({ driver }) {
     </article>
   );
 }
-
 function DetailLine({ icon, label, value }) {
   return (
     <div className="flex min-w-0 items-center gap-2 text-slate-600">
@@ -305,32 +302,34 @@ function DetailLine({ icon, label, value }) {
     </div>
   );
 }
-
 export default function DriverDetails() {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-
   useEffect(() => {
     let active = true;
     getDrivers()
       .then((response) => {
-        if (active) setDrivers((response?.data?.drivers || []).map(normalizeDriver));
+        if (active)
+          setDrivers((response?.data?.drivers || []).map(normalizeDriver));
       })
       .catch((error) => {
-        if (active) setLoadError(error?.message || "Unable to load drivers from the database.");
+        if (active)
+          setLoadError(
+            error?.message || "Unable to load drivers from the database.",
+          );
       })
       .finally(() => {
         if (active) setLoading(false);
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
-
   const filteredDrivers = useMemo(() => {
     const q = query.trim().toLowerCase();
-
     return drivers.filter((driver) => {
       const matchesQuery =
         !q ||
@@ -342,36 +341,42 @@ export default function DriverDetails() {
         driver.vehicle.toLowerCase().includes(q);
       const matchesStatus =
         statusFilter === "All" || driver.status === statusFilter;
-
       return matchesQuery && matchesStatus;
     });
   }, [drivers, query, statusFilter]);
-
   const summary = useMemo(
     () => ({
       total: drivers.length,
       available: drivers.filter((driver) => driver.status === "Available")
         .length,
       onTrip: drivers.filter((driver) => driver.status === "On Trip").length,
-      unavailable: drivers.filter((driver) => driver.status === "Unavailable").length,
+      unavailable: drivers.filter((driver) => driver.status === "Unavailable")
+        .length,
     }),
-    [drivers]
+    [drivers],
   );
-
   const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
-
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
         <header className="mb-6">
-          <p className="text-sm font-semibold text-blue-600">Fleet Management</p>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Driver Details</h1>
+          <p className="text-sm font-semibold text-blue-600">
+            Fleet Management
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900">
+            Driver Details
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            View driver identity, licence, contact, vehicle allocation, and availability information.
+            View driver identity, licence, contact, vehicle allocation, and
+            availability information.
           </p>
         </header>
 
-        {loadError && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{loadError}</div>}
+        {loadError && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {loadError}
+          </div>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
@@ -450,7 +455,11 @@ export default function DriverDetails() {
             </div>
           </div>
 
-          {loading && <p className="py-12 text-center text-sm text-slate-500">Loading drivers from the database…</p>}
+          {loading && (
+            <p className="py-12 text-center text-sm text-slate-500">
+              Loading drivers from the database…
+            </p>
+          )}
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {filteredDrivers.map((driver) => (
               <DriverCard key={driver.id} driver={driver} />

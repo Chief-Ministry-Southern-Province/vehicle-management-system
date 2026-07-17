@@ -36,17 +36,12 @@ export default function DriverQuickActions() {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-slate-900 text-lg">
-          Quick Actions
-        </h3>
+        <h3 className="font-bold text-slate-900 text-lg">Quick Actions</h3>
 
-        <span className="text-xs text-slate-400">
-          Driver Tools
-        </span>
+        <span className="text-xs text-slate-400">Driver Tools</span>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-
         {actions.map((item) => (
           <button
             key={item.title}
@@ -58,16 +53,11 @@ export default function DriverQuickActions() {
               {item.icon}
             </div>
 
-            <h4 className="font-semibold text-slate-800">
-              {item.title}
-            </h4>
+            <h4 className="font-semibold text-slate-800">{item.title}</h4>
 
-            <p className="text-xs text-slate-500 mt-1">
-              {item.subtitle}
-            </p>
+            <p className="text-xs text-slate-500 mt-1">{item.subtitle}</p>
           </button>
         ))}
-
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import PendingRequestsTable from "../../components/departmentOfficer/PendingRequestsTable";
-
 export default function PendingRecommendations() {
   return (
     <DashboardLayout>
