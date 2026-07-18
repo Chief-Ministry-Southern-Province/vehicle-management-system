@@ -9,12 +9,9 @@ import {
 export default function TechnicalSpecifications() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Header */}
       <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50 via-blue-50 to-slate-50 px-6 py-5">
-
         <div className="flex items-center gap-4">
-
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg">
             <FiSettings size={20} />
           </div>
@@ -25,19 +22,16 @@ export default function TechnicalSpecifications() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Engine details, chassis information, fuel specifications, and technical records.
+              Engine details, chassis information, fuel specifications, and
+              technical records.
             </p>
           </div>
-
         </div>
-
       </div>
 
       {/* Form */}
       <div className="p-6">
-
         <div className="grid gap-5 md:grid-cols-2">
-
           {/* VIN */}
           <div>
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
@@ -97,7 +91,6 @@ export default function TechnicalSpecifications() {
 
           {/* Notes */}
           <div className="md:col-span-2">
-
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
               <FiFileText size={14} />
               Additional Technical Notes
@@ -108,13 +101,9 @@ export default function TechnicalSpecifications() {
               placeholder="Enter maintenance remarks, engine specifications, modifications, warranty information, or any other technical details..."
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm transition-all outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100 resize-none"
             />
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

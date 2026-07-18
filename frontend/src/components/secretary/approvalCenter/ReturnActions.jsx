@@ -16,30 +16,22 @@ const returns = [
 export default function ReturnActions() {
   return (
     <div className="bg-white border rounded-2xl p-6">
-
       <div className="flex items-center gap-2 mb-5">
         <FiRotateCcw />
 
-        <h3 className="font-bold">
-          Recent Return Actions
-        </h3>
+        <h3 className="font-bold">Recent Return Actions</h3>
       </div>
 
       <div className="space-y-4">
-
         {returns.map((item) => (
           <div
             key={item.id}
             className="flex justify-between items-center border-b pb-3"
           >
             <div>
-              <p className="font-medium">
-                {item.id}
-              </p>
+              <p className="font-medium">{item.id}</p>
 
-              <p className="text-xs text-slate-500">
-                {item.department}
-              </p>
+              <p className="text-xs text-slate-500">{item.department}</p>
             </div>
 
             <span className="text-xs bg-slate-100 px-2 py-1 rounded-full">
@@ -47,9 +39,7 @@ export default function ReturnActions() {
             </span>
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

@@ -1,9 +1,4 @@
-import {
-  FiClock,
-  FiTruck,
-  FiDollarSign,
-  FiCheckCircle,
-} from "react-icons/fi";
+import { FiClock, FiTruck, FiDollarSign, FiCheckCircle } from "react-icons/fi";
 
 const stats = [
   {
@@ -40,10 +35,7 @@ export default function ApprovalStats() {
   return (
     <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-5">
       {stats.map((item) => (
-        <div
-          key={item.title}
-          className="bg-white border rounded-2xl p-6"
-        >
+        <div key={item.title} className="bg-white border rounded-2xl p-6">
           <div className="flex justify-between items-center mb-5">
             <div className={`p-3 rounded-xl bg-slate-50 ${item.color}`}>
               {item.icon}
@@ -54,13 +46,9 @@ export default function ApprovalStats() {
             </span>
           </div>
 
-          <p className="text-sm text-slate-500">
-            {item.title}
-          </p>
+          <p className="text-sm text-slate-500">{item.title}</p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {item.value}
-          </h2>
+          <h2 className="text-3xl font-bold mt-2">{item.value}</h2>
         </div>
       ))}
     </div>

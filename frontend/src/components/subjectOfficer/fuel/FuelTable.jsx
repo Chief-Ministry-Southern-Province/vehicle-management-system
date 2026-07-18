@@ -62,62 +62,37 @@ const logs = [
 export default function FuelTable() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Table */}
       <div className="overflow-x-auto">
-
         <table className="w-full">
-
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-6 py-4 text-left">Date</th>
 
-              <th className="px-6 py-4 text-left">
-                Date
-              </th>
+              <th className="px-6 py-4 text-left">Vehicle</th>
 
-              <th className="px-6 py-4 text-left">
-                Vehicle
-              </th>
+              <th className="px-6 py-4 text-left">Driver</th>
 
-              <th className="px-6 py-4 text-left">
-                Driver
-              </th>
+              <th className="px-6 py-4 text-left">Fuel</th>
 
-              <th className="px-6 py-4 text-left">
-                Fuel
-              </th>
+              <th className="px-6 py-4 text-left">Price/L</th>
 
-              <th className="px-6 py-4 text-left">
-                Price/L
-              </th>
+              <th className="px-6 py-4 text-left">Amount</th>
 
-              <th className="px-6 py-4 text-left">
-                Amount
-              </th>
-
-              <th className="px-6 py-4 text-left">
-                Status
-              </th>
-
+              <th className="px-6 py-4 text-left">Status</th>
             </tr>
           </thead>
 
           <tbody>
-
             {logs.map((log, index) => (
               <tr
                 key={index}
                 className="border-b border-slate-100 transition hover:bg-slate-50"
               >
-
-                <td className="px-6 py-4 text-sm text-slate-600">
-                  {log.date}
-                </td>
+                <td className="px-6 py-4 text-sm text-slate-600">{log.date}</td>
 
                 <td className="px-6 py-4">
-
                   <div className="flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                       <FiDroplet size={18} />
                     </div>
@@ -127,13 +102,9 @@ export default function FuelTable() {
                         {log.vehicle}
                       </h4>
 
-                      <p className="text-xs text-slate-500">
-                        {log.model}
-                      </p>
+                      <p className="text-xs text-slate-500">{log.model}</p>
                     </div>
-
                   </div>
-
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-600">
@@ -157,7 +128,6 @@ export default function FuelTable() {
                 </td>
 
                 <td className="px-6 py-4">
-
                   {log.status === "Verified" ? (
                     <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                       <FiCheckCircle size={12} />
@@ -169,27 +139,20 @@ export default function FuelTable() {
                       Pending
                     </span>
                   )}
-
                 </td>
-
               </tr>
             ))}
-
           </tbody>
-
         </table>
-
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
-
         <p className="text-sm text-slate-500">
           Showing 1–5 of 128 fuel records
         </p>
 
         <div className="flex items-center gap-2">
-
           <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
             <FiChevronLeft />
           </button>
@@ -209,11 +172,8 @@ export default function FuelTable() {
           <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
             <FiChevronRight />
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

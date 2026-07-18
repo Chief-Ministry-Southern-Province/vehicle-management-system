@@ -7,7 +7,6 @@ import {
 } from "react-icons/fi";
 
 const activities = [
- 
   {
     id: "REQ-8830",
     title: "Request Approved",
@@ -36,13 +35,13 @@ const activities = [
     time: "3 days ago",
     status: "pending",
   },
-//    {
-//     id: "REQ-8829",
-//     title: "Vehicle Allocated",
-//     description: "Toyota Prius assigned for Field Visit",
-//     time: "2 hours ago",
-//     status: "approved",
-//   },
+  //    {
+  //     id: "REQ-8829",
+  //     title: "Vehicle Allocated",
+  //     description: "Toyota Prius assigned for Field Visit",
+  //     time: "2 hours ago",
+  //     status: "approved",
+  //   },
 ];
 
 const statusStyles = {
@@ -86,39 +85,27 @@ const statusStyles = {
 export default function RecentActivity() {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Header */}
 
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-
         <div>
-
-          <h2 className="text-xl font-bold text-slate-900">
-            Recent Activity
-          </h2>
+          <h2 className="text-xl font-bold text-slate-900">Recent Activity</h2>
 
           <p className="mt-1 text-sm text-slate-500">
             Latest updates from your transport requests
           </p>
-
         </div>
 
         <button className="flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-100">
-
           View All
-
           <FiArrowRight size={16} />
-
         </button>
-
       </div>
 
       {/* Timeline */}
 
       <div className="p-6">
-
         <div className="space-y-5">
-
           {activities.map((activity, index) => {
             const style = statusStyles[activity.status];
 
@@ -127,11 +114,9 @@ export default function RecentActivity() {
                 key={activity.id}
                 className="group relative flex gap-5 rounded-2xl border border-slate-100 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:bg-slate-50 hover:shadow-lg"
               >
-
                 {/* Timeline */}
 
                 <div className="relative flex flex-col items-center">
-
                   <div
                     className={`flex h-12 w-12 items-center justify-center rounded-2xl ${style.iconBg} ${style.iconColor}`}
                   >
@@ -143,17 +128,13 @@ export default function RecentActivity() {
                       className={`mt-2 h-12 w-1 rounded-full ${style.line}`}
                     />
                   )}
-
                 </div>
 
                 {/* Content */}
 
                 <div className="flex-1">
-
                   <div className="flex items-start justify-between gap-4">
-
                     <div>
-
                       <h3 className="font-semibold text-slate-900">
                         {activity.title}
                       </h3>
@@ -161,7 +142,6 @@ export default function RecentActivity() {
                       <p className="mt-1 text-sm text-slate-500">
                         {activity.description}
                       </p>
-
                     </div>
 
                     <span
@@ -169,11 +149,9 @@ export default function RecentActivity() {
                     >
                       {style.label}
                     </span>
-
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                       {activity.id}
                     </span>
@@ -181,19 +159,13 @@ export default function RecentActivity() {
                     <span className="text-xs text-slate-400">
                       {activity.time}
                     </span>
-
                   </div>
-
                 </div>
-
               </div>
             );
           })}
-
         </div>
-
       </div>
-
     </div>
   );
 }

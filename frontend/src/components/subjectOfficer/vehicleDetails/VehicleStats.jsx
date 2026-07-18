@@ -1,9 +1,4 @@
-import {
-  FiActivity,
-  FiMapPin,
-  FiTool,
-  FiCheckCircle,
-} from "react-icons/fi";
+import { FiActivity, FiMapPin, FiTool, FiCheckCircle } from "react-icons/fi";
 
 export default function VehicleStats() {
   const stats = [
@@ -45,13 +40,11 @@ export default function VehicleStats() {
           className="group bg-white border border-slate-200 rounded-2xl p-3 hover:shadow-md transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-3">
-
             <div
               className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.bg} ${item.color}`}
             >
               {item.icon}
             </div>
-
           </div>
 
           <p className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">
@@ -61,7 +54,6 @@ export default function VehicleStats() {
           <h4 className="mt-1 font-semibold text-sm text-slate-900 truncate">
             {item.value}
           </h4>
-
         </div>
       ))}
     </div>

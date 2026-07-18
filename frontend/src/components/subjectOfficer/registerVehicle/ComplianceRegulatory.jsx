@@ -8,12 +8,9 @@ import {
 export default function ComplianceRegulatory() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Header */}
       <div className="border-b border-slate-100 bg-gradient-to-r from-green-50 via-emerald-50 to-slate-50 px-6 py-5">
-
         <div className="flex items-center gap-4">
-
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg">
             <FiShield size={20} />
           </div>
@@ -24,19 +21,16 @@ export default function ComplianceRegulatory() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Registration details, insurance coverage, and legal compliance records.
+              Registration details, insurance coverage, and legal compliance
+              records.
             </p>
           </div>
-
         </div>
-
       </div>
 
       {/* Form */}
       <div className="p-6">
-
         <div className="grid gap-5 md:grid-cols-2">
-
           {/* Registration Expiry */}
           <div>
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
@@ -88,14 +82,11 @@ export default function ComplianceRegulatory() {
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-all focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100"
             />
           </div>
-
         </div>
 
         {/* Compliance Status */}
         <div className="mt-6 rounded-2xl border border-green-100 bg-green-50 p-4">
-
           <div className="flex items-start gap-3">
-
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-600">
               <FiCheckCircle />
             </div>
@@ -106,18 +97,14 @@ export default function ComplianceRegulatory() {
               </h4>
 
               <p className="mt-1 text-sm text-slate-600">
-                Ensure all registration, insurance, and licensing
-                information is valid and up to date before activating
-                the vehicle within the fleet management system.
+                Ensure all registration, insurance, and licensing information is
+                valid and up to date before activating the vehicle within the
+                fleet management system.
               </p>
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

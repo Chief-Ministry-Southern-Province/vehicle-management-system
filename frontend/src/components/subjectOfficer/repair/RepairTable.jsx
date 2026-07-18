@@ -48,14 +48,10 @@ const repairs = [
 export default function RepairTable() {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-
         <div>
-          <h3 className="font-semibold text-slate-900">
-            Repair Records
-          </h3>
+          <h3 className="font-semibold text-slate-900">Repair Records</h3>
 
           <p className="mt-1 text-sm text-slate-500">
             Track vehicle repair history and workshop activities.
@@ -65,74 +61,47 @@ export default function RepairTable() {
         <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
           {repairs.length} Records
         </span>
-
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-
         <table className="w-full">
-
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-6 py-4 text-left">Vehicle</th>
 
-              <th className="px-6 py-4 text-left">
-                Vehicle
-              </th>
+              <th className="px-6 py-4 text-left">Repair Type</th>
 
-              <th className="px-6 py-4 text-left">
-                Repair Type
-              </th>
+              <th className="px-6 py-4 text-left">Severity</th>
 
-              <th className="px-6 py-4 text-left">
-                Severity
-              </th>
+              <th className="px-6 py-4 text-left">Cost</th>
 
-              <th className="px-6 py-4 text-left">
-                Cost
-              </th>
+              <th className="px-6 py-4 text-left">Downtime</th>
 
-              <th className="px-6 py-4 text-left">
-                Downtime
-              </th>
-
-              <th className="px-6 py-4 text-left">
-                Date
-              </th>
-
+              <th className="px-6 py-4 text-left">Date</th>
             </tr>
           </thead>
 
           <tbody>
-
             {repairs.map((item, index) => (
               <tr
                 key={index}
                 className="border-b border-slate-100 transition hover:bg-slate-50"
               >
-
                 <td className="px-6 py-4">
-
                   <div className="flex items-center gap-3">
-
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                       <FiTool size={18} />
                     </div>
 
                     <div>
-
                       <h4 className="font-medium text-slate-900">
                         {item.vehicle}
                       </h4>
 
-                      <p className="text-xs text-slate-500">
-                        {item.model}
-                      </p>
-
+                      <p className="text-xs text-slate-500">{item.model}</p>
                     </div>
-
                   </div>
-
                 </td>
 
                 <td className="px-6 py-4 text-sm text-slate-600">
@@ -140,7 +109,6 @@ export default function RepairTable() {
                 </td>
 
                 <td className="px-6 py-4">
-
                   {item.severity === "Critical" && (
                     <span className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
                       <FiAlertTriangle size={12} />
@@ -160,7 +128,6 @@ export default function RepairTable() {
                       Low
                     </span>
                   )}
-
                 </td>
 
                 <td className="px-6 py-4 font-medium text-slate-900">
@@ -174,25 +141,19 @@ export default function RepairTable() {
                 <td className="px-6 py-4 text-sm text-slate-600">
                   {item.date}
                 </td>
-
               </tr>
             ))}
-
           </tbody>
-
         </table>
-
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
-
         <p className="text-sm text-slate-500">
           Showing 1–4 of 42 repair records
         </p>
 
         <div className="flex items-center gap-2">
-
           <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
             <FiChevronLeft />
           </button>
@@ -212,11 +173,8 @@ export default function RepairTable() {
           <button className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50">
             <FiChevronRight />
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

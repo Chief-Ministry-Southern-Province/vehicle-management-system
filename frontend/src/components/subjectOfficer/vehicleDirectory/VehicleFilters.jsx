@@ -1,15 +1,9 @@
-import {
-  FiSearch,
-  FiFilter,
-  FiChevronDown,
-} from "react-icons/fi";
+import { FiSearch, FiFilter, FiChevronDown } from "react-icons/fi";
 
 export default function VehicleFilters() {
   return (
     <div className="border-b border-slate-200 bg-white px-5 py-4">
-
       <div className="flex flex-wrap items-center gap-3">
-
         {/* Search */}
         <div className="relative flex-1 min-w-[250px]">
           <FiSearch
@@ -53,9 +47,7 @@ export default function VehicleFilters() {
           Newest
           <FiChevronDown size={16} />
         </button>
-
       </div>
-
     </div>
   );
 }

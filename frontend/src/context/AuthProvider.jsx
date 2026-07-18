@@ -20,9 +20,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => getStoredAuthValue("token"));
 
   const login = (userData, authToken = userData?.token) => {
-    const nextUser = authToken
-      ? { ...userData, token: undefined }
-      : userData;
+    const nextUser = authToken ? { ...userData, token: undefined } : userData;
 
     localStorage.setItem("user", JSON.stringify(nextUser));
 

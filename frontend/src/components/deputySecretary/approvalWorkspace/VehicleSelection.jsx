@@ -22,24 +22,18 @@ const vehicles = [
 export default function VehicleSelection() {
   return (
     <div className="bg-white border rounded-2xl">
-
       <div className="p-5 border-b">
-        <h3 className="font-bold text-xl">
-          Select Vehicle
-        </h3>
+        <h3 className="font-bold text-xl">Select Vehicle</h3>
       </div>
 
       <div className="p-4 space-y-3">
-
         {vehicles.map((vehicle) => (
           <div
             key={vehicle.name}
             className="border rounded-xl p-4 hover:border-blue-500 cursor-pointer"
           >
             <div className="flex justify-between">
-              <h4 className="font-semibold">
-                {vehicle.name}
-              </h4>
+              <h4 className="font-semibold">{vehicle.name}</h4>
 
               <span className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full">
                 {vehicle.status}
@@ -50,12 +44,9 @@ export default function VehicleSelection() {
               <span>Fuel {vehicle.fuel}</span>
               <span>{vehicle.location}</span>
             </div>
-
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

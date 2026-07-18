@@ -32,9 +32,7 @@ export default function VehicleTabs() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-
       <div className="flex flex-wrap gap-2">
-
         {tabs.map((tab, index) => (
           <button
             key={tab.name}
@@ -48,9 +46,7 @@ export default function VehicleTabs() {
             {tab.name}
           </button>
         ))}
-
       </div>
-
     </div>
   );
 }
