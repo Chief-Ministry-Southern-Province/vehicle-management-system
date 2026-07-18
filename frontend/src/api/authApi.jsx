@@ -110,6 +110,20 @@ export const getCurrentUser = async () => {
   }
 };
 
+export const getProfile = async () => {
+  try {
+    const response = await API.get("/profile", { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateProfile = async (profile) => {
+  try {
+    const response = await API.put("/profile", profile, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 // ============================
 // Vehicle requests
 // ============================

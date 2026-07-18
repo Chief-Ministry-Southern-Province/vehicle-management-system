@@ -256,7 +256,7 @@ const menuItems = [
 
       {
         name: "User Settings",
-        path: "/settings",
+        path: "/setting",
         icon: <FiSettings />,
       },
     ],
@@ -280,12 +280,12 @@ export default function Sidebar() {
   return (
     <aside
       data-no-translate
-      className="w-64 h-screen flex flex-col bg-white border-r border-slate-200/80 relative"
+      className="w-64 h-screen flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200/80 dark:border-slate-800 relative"
     >
       {/* ---------------------------------------------------------- */}
       {/*  Header / Brand                                             */}
       {/* ---------------------------------------------------------- */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 border-b border-slate-100">
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800">
         {/* soft glow accents */}
         <div className="absolute -top-12 -right-10 h-36 w-36 rounded-full bg-blue-400/10 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-cyan-400/10 blur-3xl" />
@@ -409,7 +409,7 @@ export default function Sidebar() {
       {/* ---------------------------------------------------------- */}
       {/*  Profile + Logout                                            */}
       {/* ---------------------------------------------------------- */}
-      <div className="relative border-t border-slate-100 p-3 space-y-2 bg-slate-50/60">
+      <div className="relative border-t border-slate-100 dark:border-slate-800 p-3 space-y-2 bg-slate-50/60 dark:bg-slate-950">
         <button
           onClick={handleLogout}
           className="group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"

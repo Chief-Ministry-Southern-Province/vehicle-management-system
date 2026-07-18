@@ -4,7 +4,7 @@ import MonthlyCostAnalysis from "../../components/deputySecretary/dashboard/Mont
 export default function DeputySecretaryDashboard() {
   return (
     <DashboardLayout>
-      <div className="bg-slate-50 min-h-screen p-6">
+      <div className="min-h-screen bg-slate-50 p-6 dark:bg-slate-900">
         <ExecutiveStats />
         <MonthlyCostAnalysis />
       </div>

@@ -82,14 +82,14 @@ export default function MonthlyCostAnalysis() {
   );
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <FiBarChart2 />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               Monthly Cost Analysis
             </h2>
             <p className="mt-1 text-sm text-slate-500">
@@ -102,7 +102,7 @@ export default function MonthlyCostAnalysis() {
           <select
             value={year}
             onChange={(event) => setYear(event.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
           >
             {years.map((option) => (
               <option key={option}>{option}</option>

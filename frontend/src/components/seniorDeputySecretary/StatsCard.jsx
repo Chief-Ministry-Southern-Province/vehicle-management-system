@@ -169,7 +169,7 @@ function StatCard({ title, value, icon, path, tone }) {
       aria-label={`View ${title} details`}
       className={[
         "group relative cursor-pointer overflow-hidden rounded-[18px]",
-        "border border-slate-100 bg-white/80 backdrop-blur-sm p-5",
+        "border border-slate-100 bg-white/80 backdrop-blur-sm p-5 dark:border-slate-700 dark:bg-slate-800",
         "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)]",
         "transition-all duration-300 ease-out",
         "hover:-translate-y-1 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)]",
@@ -209,10 +209,10 @@ function StatCard({ title, value, icon, path, tone }) {
         />
       </div>
 
-      <p className="relative mt-5 text-sm font-medium text-slate-500">
+      <p className="relative mt-5 text-sm font-medium text-slate-500 dark:text-slate-400">
         {title}
       </p>
-      <h2 className="relative mt-1 text-[26px] leading-tight font-bold text-slate-800 tabular-nums">
+      <h2 className="relative mt-1 text-[26px] leading-tight font-bold text-slate-800 dark:text-white tabular-nums">
         {animatedValue}
       </h2>
     </div>
@@ -225,7 +225,7 @@ function StatCard({ title, value, icon, path, tone }) {
 function StatRow({ label, items }) {
   return (
     <div className="mb-6 last:mb-0">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
         {label}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
