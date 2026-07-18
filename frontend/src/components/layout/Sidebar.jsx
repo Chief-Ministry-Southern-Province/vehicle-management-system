@@ -173,7 +173,7 @@ const menuItems = [
         roles: ["subject_officer"],
       },
       {
-        name: "Fuel Management",
+        name: "Fuel Records",
         path: "/fuelmanagement",
         icon: <FiDroplet />,
         roles: ["subject_officer"],
