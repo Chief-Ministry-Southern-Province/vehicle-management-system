@@ -191,7 +191,7 @@ function StatCard({ title, value, icon, path, tone }) {
         <div
           className={[
             "flex h-11 w-11 items-center justify-center rounded-xl text-white text-lg shadow-md",
-            "bg-gradient-to-br transition-transform duration-300",
+            "bg-linear-to-br transition-transform duration-300",
             "group-hover:scale-110 group-hover:rotate-3",
             palette.icon,
           ].join(" ")}

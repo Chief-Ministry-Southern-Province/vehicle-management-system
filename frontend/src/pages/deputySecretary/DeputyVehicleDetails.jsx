@@ -107,6 +107,20 @@ export default function DeputyVehicleDetails() {
       (total, service) => total + (Number(service.cost) || 0),
       0,
     );
+  const repairDetails = Array.isArray(vehicle.repair_details)
+    ? vehicle.repair_details
+    : [];
+  const repairTotal = repairDetails.reduce(
+    (total, repair) => total + (Number(repair.cost) || 0),
+    0,
+  );
+  const fuelDetails = Array.isArray(vehicle.fuel_details)
+    ? vehicle.fuel_details
+    : [];
+  const fuelTotal = fuelDetails.reduce(
+    (total, fuel) => total + (Number(fuel.cost) || 0),
+    0,
+  );
   return (
     <DashboardLayout>
       <main className="min-h-screen bg-slate-50 p-6">
@@ -288,6 +302,153 @@ export default function DeputyVehicleDetails() {
                         </td>
                         <td className="px-4 py-4 text-right text-sm font-semibold text-slate-800">
                           {Number(service.cost || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm xl:col-span-2">
+            <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <FiTool className="text-red-600" />
+                <div>
+                  <h2 className="font-bold text-slate-900">Repair Details</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Complete repair history recorded by the Subject Officer.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-red-50 px-4 py-2 text-right">
+                <p className="text-xs font-semibold uppercase text-red-500">
+                  Total Repair Cost
+                </p>
+                <p className="font-bold text-red-700">
+                  LKR{" "}
+                  {repairTotal.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
+            </div>
+            {repairDetails.length === 0 ? (
+              <div className="mt-5 rounded-xl bg-slate-50 p-8 text-center text-sm text-slate-500">
+                No repair records have been added for this vehicle.
+              </div>
+            ) : (
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full min-w-[650px]">
+                  <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="rounded-l-xl px-4 py-3">#</th>
+                      <th className="px-4 py-3">Repair Date</th>
+                      <th className="px-4 py-3">Repair Type</th>
+                      <th className="rounded-r-xl px-4 py-3 text-right">
+                        Cost (LKR)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {repairDetails.map((repair, index) => (
+                      <tr
+                        key={`${repair.repair_date}-${repair.repair_type}-${index}`}
+                        className="border-b border-slate-100"
+                      >
+                        <td className="px-4 py-4 text-sm text-slate-400">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-slate-700">
+                          {formatDate(repair.repair_date)}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-slate-700">
+                          {valueOrDash(repair.repair_type)}
+                        </td>
+                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-800">
+                          {Number(repair.cost || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm xl:col-span-2">
+            <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <FiDroplet className="text-cyan-600" />
+                <div>
+                  <h2 className="font-bold text-slate-900">Fuel Details</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Complete fuel history recorded by the Subject Officer.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-cyan-50 px-4 py-2 text-right">
+                <p className="text-xs font-semibold uppercase text-cyan-600">
+                  Total Fuel Cost
+                </p>
+                <p className="font-bold text-cyan-700">
+                  LKR{" "}
+                  {fuelTotal.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
+            </div>
+            {fuelDetails.length === 0 ? (
+              <div className="mt-5 rounded-xl bg-slate-50 p-8 text-center text-sm text-slate-500">
+                No fuel records have been added for this vehicle.
+              </div>
+            ) : (
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full min-w-[750px]">
+                  <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="rounded-l-xl px-4 py-3">#</th>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Fuel Type</th>
+                      <th className="px-4 py-3 text-right">Capacity (L)</th>
+                      <th className="rounded-r-xl px-4 py-3 text-right">
+                        Cost (LKR)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fuelDetails.map((fuel, index) => (
+                      <tr
+                        key={`${fuel.date}-${fuel.fuel_type}-${index}`}
+                        className="border-b border-slate-100"
+                      >
+                        <td className="px-4 py-4 text-sm text-slate-400">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-slate-700">
+                          {formatDate(fuel.date)}
+                        </td>
+                        <td className="px-4 py-4 text-sm capitalize text-slate-700">
+                          {valueOrDash(fuel.fuel_type)}
+                        </td>
+                        <td className="px-4 py-4 text-right text-sm text-slate-700">
+                          {Number(fuel.capacity || 0).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-800">
+                          {Number(fuel.cost || 0).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
