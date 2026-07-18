@@ -41,8 +41,10 @@ class VehicleController extends Controller
 
     private function payload(Request $request, ?Vehicle $vehicle = null): array
     {
-        if (is_string($request->input('service_details'))) {
-            $request->merge(['service_details' => json_decode($request->input('service_details'), true)]);
+        foreach (['service_details', 'repair_details', 'fuel_details'] as $detailsKey) {
+            if (is_string($request->input($detailsKey))) {
+                $request->merge([$detailsKey => json_decode($request->input($detailsKey), true)]);
+            }
         }
 
         $validated = $request->validate([
@@ -71,6 +73,15 @@ class VehicleController extends Controller
             'service_details.*.service_date' => ['required', 'date'],
             'service_details.*.service_type' => ['required', 'string', 'max:255'],
             'service_details.*.cost' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'repair_details' => ['nullable', 'array', 'max:100'],
+            'repair_details.*.repair_date' => ['required', 'date'],
+            'repair_details.*.repair_type' => ['required', 'string', 'max:255'],
+            'repair_details.*.cost' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
+            'fuel_details' => ['nullable', 'array', 'max:100'],
+            'fuel_details.*.date' => ['required', 'date'],
+            'fuel_details.*.fuel_type' => ['required', Rule::in(['diesel', 'petrol'])],
+            'fuel_details.*.capacity' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'fuel_details.*.cost' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
