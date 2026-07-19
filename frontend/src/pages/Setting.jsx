@@ -14,6 +14,12 @@ export default function Setting() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    localStorage.setItem("theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
+  useEffect(() => {
     let active = true;
     getProfile().then((response) => {
       const currentUser = response?.data?.user;
@@ -27,9 +33,6 @@ export default function Setting() {
 
   const changeTheme = (nextTheme) => {
     setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-    document.documentElement.style.colorScheme = nextTheme;
   };
 
   const saveProfile = async (event) => {
