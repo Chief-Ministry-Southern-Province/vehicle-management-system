@@ -20,14 +20,14 @@ export default function Topbar() {
   return (
     <header
       data-no-translate
-      className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl"
+      className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95"
     >
       <div className="flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+          <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-xl">
             {t("app.name")}
           </h1>
-          <p className="mt-0.5 hidden truncate text-xs text-slate-500 sm:block">
+          <p className="mt-0.5 hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:block">
             <span className="font-semibold text-blue-700">
               {t("app.ministry")}
             </span>
@@ -36,7 +36,7 @@ export default function Topbar() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 sm:px-3">
+          <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:px-3">
             <FiGlobe className="shrink-0 text-blue-600" aria-hidden="true" />
             <span className="sr-only">{t("language.label")}</span>
             <select
@@ -52,13 +52,13 @@ export default function Topbar() {
               ))}
             </select>
           </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-2 pr-3 shadow-sm">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-2 pr-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md shadow-blue-200">
               {user?.name ? initials(user.name) : <FiUser size={19} />}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
             </div>
             <div className="hidden min-w-0 sm:block">
-              <p className="max-w-44 truncate text-sm font-bold text-slate-800">
+              <p className="max-w-44 truncate text-sm font-bold text-slate-800 dark:text-slate-100">
                 {user?.name || t("user.government")}
               </p>
               <p className="mt-0.5 max-w-44 truncate text-xs font-medium text-blue-600">

@@ -7,6 +7,10 @@ import RoleProvider from "./context/RoleProvider";
 import { AuthProvider } from "./context/AuthProvider";
 import LanguageProvider from "./context/LanguageProvider";
 
+const savedTheme = localStorage.getItem("theme") || "light";
+document.documentElement.classList.toggle("dark", savedTheme === "dark");
+document.documentElement.style.colorScheme = savedTheme;
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <LanguageProvider>

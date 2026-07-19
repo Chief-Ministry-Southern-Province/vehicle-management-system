@@ -40,6 +40,7 @@ import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDet
 import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
+import Setting from "./pages/Setting";
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -102,14 +103,16 @@ function App() {
             <Route path="/final-approvals/:id" element={withAuth(<FinalApprovalDetails />, ["secretary", "senior_deputy_secretary"])} />
 
 
-
-
             <Route path="/secretarydashboard" element={withAuth(<SecretaryDashboard />)} />
 
             
             <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />
             <Route path="/tripshistory" element={withAuth(<TripsHistory />)} />
             <Route path="/reportvehicle" element={withAuth(<ReportVehicle />)} />
+
+
+            <Route path="/setting" element={withAuth(<Setting />)} />
+
 
           </Routes>
 

@@ -1,1 +1,62 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+html.dark body { background: #020617; color: #e2e8f0; }
+
+html.dark aside .text-slate-900,
+html.dark aside .text-slate-800,
+html.dark aside .text-slate-700 { color: #f1f5f9; }
+html.dark aside .text-slate-600,
+html.dark aside .text-slate-500 { color: #94a3b8; }
+
+/* Shared application surfaces */
+html.dark .bg-white,
+html.dark .bg-white\/95,
+html.dark .bg-white\/80 { background-color: #0f172a; }
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-100 { background-color: #1e293b; }
+
+/* Typography remains readable on dark surfaces */
+html.dark .text-slate-950,
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 { color: #f1f5f9; }
+html.dark .text-slate-600,
+html.dark .text-slate-500 { color: #cbd5e1; }
+html.dark .text-slate-400 { color: #94a3b8; }
+
+/* Forms, tables, cards and separators */
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-300 { border-color: #334155; }
+html.dark input,
+html.dark select,
+html.dark textarea {
+  border-color: #475569;
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #64748b; }
+html.dark input:disabled,
+html.dark select:disabled,
+html.dark textarea:disabled {
+  background-color: #0f172a;
+  color: #94a3b8;
+}
+html.dark option { background-color: #1e293b; color: #f8fafc; }
+html.dark thead,
+html.dark thead.bg-slate-50 { background-color: #1e293b; }
+html.dark tbody { background-color: #0f172a; }
+html.dark tbody tr:hover { background-color: #1e293b; }
+
+/* Keep pale status and action badges legible */
+html.dark .bg-blue-50 { background-color: #172554; }
+html.dark .bg-blue-100 { background-color: #1e3a8a; }
+html.dark .bg-emerald-50 { background-color: #052e2b; }
+html.dark .bg-red-50 { background-color: #450a0a; }
+html.dark .bg-amber-50 { background-color: #451a03; }
