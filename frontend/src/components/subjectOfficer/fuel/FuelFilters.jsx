@@ -1,6 +1,12 @@
 import { FiCalendar, FiSearch, FiX } from "react-icons/fi";
 
-export default function FuelFilters({ filters, onChange, onClear }) {
+export default function FuelFilters({
+  filters,
+  onChange,
+  selectedMonth,
+  onMonthChange,
+  onClear,
+}) {
   return (
     <div className="border-b border-slate-200 bg-white px-5 py-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -20,11 +26,12 @@ export default function FuelFilters({ filters, onChange, onClear }) {
 
         <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
           <FiCalendar size={16} className="text-slate-400" />
-          <span className="sr-only">Filter by date</span>
+          <span className="sr-only">Filter by month</span>
           <input
-            type="date"
-            value={filters.date}
-            onChange={(event) => onChange("date", event.target.value)}
+            type="month"
+            value={selectedMonth}
+            onChange={(event) => onMonthChange(event.target.value)}
+            aria-label="Filter fuel records by month"
             className="bg-transparent text-sm outline-none"
           />
         </label>

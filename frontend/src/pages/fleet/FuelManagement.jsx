@@ -6,9 +6,9 @@ import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
 import { getVehicles } from "../../api/authApi";
 
-const EMPTY_FILTERS = { search: "", date: "", fuelType: "" };
+const EMPTY_FILTERS = { search: "", fuelType: "" };
 const START_YEAR = 2025;
-const END_YEAR = Math.max(2030, new Date().getFullYear() + 10);
+const END_YEAR = Math.max(2030, new Date().getFullYear() + 5);
 const YEAR_OPTIONS = Array.from(
   { length: END_YEAR - START_YEAR + 1 },
   (_, index) => START_YEAR + index,
@@ -77,10 +77,9 @@ export default function FuelManagement() {
         `${log.vehicle || ""} ${log.model || ""}`
           .toLowerCase()
           .includes(search);
-      const matchesDate = !filters.date || log.date === filters.date;
       const matchesFuelType =
         !filters.fuelType || log.fuel_type === filters.fuelType;
-      return matchesSearch && matchesDate && matchesFuelType;
+      return matchesSearch && matchesFuelType;
     });
   }, [filters, logs]);
 
@@ -136,7 +135,11 @@ export default function FuelManagement() {
 
   const updateFilter = (name, value) => {
     setFilters((current) => ({ ...current, [name]: value }));
-    setSelectedMonth("");
+  };
+
+  const changeMonth = (month) => {
+    setSelectedMonth(month);
+    if (month) setSelectedYear(month.slice(0, 4));
   };
 
   const selectChartMonth = (chartData) => {
@@ -278,6 +281,8 @@ export default function FuelManagement() {
           <FuelFilters
             filters={filters}
             onChange={updateFilter}
+            selectedMonth={selectedMonth}
+            onMonthChange={changeMonth}
             onClear={() => {
               setFilters(EMPTY_FILTERS);
               setSelectedMonth("");
