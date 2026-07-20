@@ -21,8 +21,8 @@ function formatNumber(value) {
 export default function FuelTable({ logs, loading, error }) {
   return (
     <div className="overflow-hidden bg-white">
-      <div className="max-h-[460px] overflow-auto">
-        <table className="w-full min-w-[760px]">
+      <div className="max-h-115 overflow-auto">
+        <table className="w-full min-w-190">
           <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
             <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
               <th className="px-6 py-4 text-left">Date</th>
