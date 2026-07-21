@@ -25,39 +25,6 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
-const COSTS_BY_YEAR = {
-  2024: {
-    fuel: [
-      185000, 192000, 178000, 205000, 214000, 198000, 226000, 219000, 208000,
-      231000, 224000, 242000,
-    ],
-    maintenance: [
-      92000, 78000, 118000, 86000, 132000, 97000, 145000, 108000, 126000,
-      101000, 154000, 116000,
-    ],
-  },
-  2025: {
-    fuel: [
-      210000, 218000, 202000, 229000, 238000, 221000, 247000, 241000, 233000,
-      254000, 248000, 263000,
-    ],
-    maintenance: [
-      105000, 91000, 127000, 98000, 144000, 112000, 158000, 121000, 139000,
-      115000, 166000, 129000,
-    ],
-  },
-  2026: {
-    fuel: [
-      236000, 244000, 231000, 257000, 265000, 252000, 274000, 268000, 281000,
-      276000, 289000, 297000,
-    ],
-    maintenance: [
-      116000, 103000, 139000, 112000, 153000, 124000, 171000, 133000, 148000,
-      129000, 179000, 142000,
-    ],
-  },
-};
-
 function formatCurrency(value) {
   return `LKR ${Number(value).toLocaleString()}`;
 }
@@ -68,18 +35,56 @@ function formatAxisValue(value) {
   return value;
 }
 
-export default function MonthlyCostAnalysis() {
-  const years = Object.keys(COSTS_BY_YEAR).sort((a, b) => b - a);
-  const [year, setYear] = useState(years[0]);
-  const data = useMemo(
-    () =>
-      MONTHS.map((month, index) => ({
-        month,
-        fuelCost: COSTS_BY_YEAR[year].fuel[index],
-        maintenanceCost: COSTS_BY_YEAR[year].maintenance[index],
-      })),
-    [year],
-  );
+export default function MonthlyCostAnalysis({ vehicles, loading, error }) {
+  const years = useMemo(() => {
+    const availableYears = new Set([new Date().getFullYear()]);
+    vehicles.forEach((vehicle) => {
+      [
+        [vehicle.fuel_details, "date"],
+        [vehicle.service_details, "service_date"],
+        [vehicle.repair_details, "repair_date"],
+      ].forEach(([records, dateField]) => {
+        if (!Array.isArray(records)) return;
+        records.forEach((record) => {
+          const date = new Date(record[dateField]);
+          if (!Number.isNaN(date.getTime())) availableYears.add(date.getFullYear());
+        });
+      });
+    });
+    return [...availableYears].sort((a, b) => b - a).map(String);
+  }, [vehicles]);
+
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const data = useMemo(() => {
+    const monthlyCosts = MONTHS.map((month) => ({
+      month,
+      fuelCost: 0,
+      maintenanceCost: 0,
+      repairCost: 0,
+    }));
+
+    const addCosts = (records, dateField, costField) => {
+      if (!Array.isArray(records)) return;
+      records.forEach((record) => {
+        const date = new Date(record[dateField]);
+        if (Number.isNaN(date.getTime()) || String(date.getFullYear()) !== year) return;
+        monthlyCosts[date.getMonth()][costField] += Number(record.cost) || 0;
+      });
+    };
+
+    vehicles.forEach((vehicle) => {
+      addCosts(vehicle.fuel_details, "date", "fuelCost");
+      addCosts(vehicle.service_details, "service_date", "maintenanceCost");
+      addCosts(vehicle.repair_details, "repair_date", "repairCost");
+    });
+    return monthlyCosts;
+  }, [vehicles, year]);
+
+  const costLabels = {
+    fuelCost: "Fuel Cost",
+    maintenanceCost: "Service Cost",
+    repairCost: "Repair Cost",
+  };
 
   return (
     <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -93,7 +98,7 @@ export default function MonthlyCostAnalysis() {
               Monthly Cost Analysis
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Fuel and maintenance expenditure by month
+              Fuel, service, and repair expenditure by month
             </p>
           </div>
         </div>
@@ -114,8 +119,17 @@ export default function MonthlyCostAnalysis() {
       <div
         className="mt-5 h-[380px] w-full"
         role="img"
-        aria-label={`Monthly fuel and maintenance costs for ${year}`}
+        aria-label={`Monthly fuel, service, and repair costs for ${year}`}
       >
+        {loading ? (
+          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+            Loading monthly costs...
+          </div>
+        ) : error ? (
+          <div className="flex h-full items-center justify-center text-sm font-medium text-red-600">
+            {error}
+          </div>
+        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
@@ -148,15 +162,13 @@ export default function MonthlyCostAnalysis() {
             <Tooltip
               formatter={(value, name) => [
                 formatCurrency(value),
-                name === "fuelCost" ? "Fuel Cost" : "Maintenance Cost",
+                costLabels[name] || name,
               ]}
               labelFormatter={(label) => `${label} ${year}`}
               contentStyle={{ borderRadius: 12, borderColor: "#e2e8f0" }}
             />
             <Legend
-              formatter={(value) =>
-                value === "fuelCost" ? "Fuel Cost" : "Maintenance Cost"
-              }
+              formatter={(value) => costLabels[value] || value}
             />
             <Line
               type="monotone"
@@ -174,8 +186,17 @@ export default function MonthlyCostAnalysis() {
               dot={{ r: 3, fill: "#d946ef" }}
               activeDot={{ r: 6 }}
             />
+            <Line
+              type="monotone"
+              dataKey="repairCost"
+              stroke="#ef4444"
+              strokeWidth={3}
+              dot={{ r: 3, fill: "#ef4444" }}
+              activeDot={{ r: 6 }}
+            />
           </LineChart>
         </ResponsiveContainer>
+        )}
       </div>
     </section>
   );
