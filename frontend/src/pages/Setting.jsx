@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FiCheck, FiMoon, FiSave, FiSun, FiUser } from "react-icons/fi";
+import { FiCheck, FiLock, FiMoon, FiSave, FiSun, FiUser } from "react-icons/fi";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { getProfile, updateProfile } from "../api/authApi";
+import { changePassword, getProfile, updateProfile } from "../api/authApi";
 import { useAuth } from "../context/useAuth";
 
 export default function Setting() {
@@ -12,6 +12,12 @@ export default function Setting() {
   const [account, setAccount] = useState(user || {});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwords, setPasswords] = useState({
+    current_password: "",
+    password: "",
+    password_confirmation: "",
+  });
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -46,6 +52,27 @@ export default function Setting() {
     finally { setSaving(false); }
   };
 
+  const savePassword = async (event) => {
+    event.preventDefault();
+    if (passwords.password !== passwords.password_confirmation) {
+      toast.error("New password confirmation does not match.");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await changePassword(passwords);
+      setPasswords({ current_password: "", password: "", password_confirmation: "" });
+      toast.success("Password changed successfully.");
+    } catch (error) {
+      toast.error(error?.message || "Unable to change password.");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const driver = account.driver;
+
   const field = "mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
   return (
     <DashboardLayout>
@@ -69,9 +96,45 @@ export default function Setting() {
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Full Name<input required value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} className={field} /></label>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Phone Number<input value={profile.phone} onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} className={field} /></label>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Email Address<input disabled value={account.email || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Employee ID<input disabled value={account.employee_id || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">NIC<input disabled value={account.employee_id || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
               </div>
               <div className="flex justify-end"><button disabled={saving} className="flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"><FiSave />{saving ? "Saving..." : "Save Changes"}</button></div>
+            </form>
+          )}
+
+          {!loading && account.role === "driver" && driver && (
+            <div className="mt-8 border-t border-slate-100 pt-6 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white">Driver Details</h3>
+              <p className="mt-1 text-sm text-slate-500">Your registered driver and licence information.</p>
+              <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {[
+                  ["Driver ID", driver.driver_id],
+                  ["Date of Birth", driver.date_of_birth],
+                  ["Address", driver.address],
+                  ["Blood Group", driver.blood_group],
+                  ["Licence Number", driver.licence_number],
+                  ["Licence Type", driver.licence_type],
+                  ["Licence Expiry Date", driver.licence_renewal_date],
+                  ["Allocated Vehicle", driver.allocated_vehicle || "Not allocated"],
+                  ["Availability Status", driver.status?.replaceAll("_", " ")],
+                ].map(([label, value]) => (
+                  <label key={label} className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {label}<input disabled value={value || "Not provided"} className={`${field} cursor-not-allowed capitalize opacity-70`} />
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loading && (
+            <form onSubmit={savePassword} className="mt-8 border-t border-slate-100 pt-6 dark:border-slate-700">
+              <div className="flex items-center gap-3"><span className="rounded-xl bg-blue-50 p-3 text-blue-700 dark:bg-blue-950 dark:text-blue-300"><FiLock /></span><div><h3 className="font-bold text-slate-900 dark:text-white">Change Password</h3><p className="text-sm text-slate-500">Confirm your current password before setting a new one.</p></div></div>
+              <div className="mt-5 grid gap-5 md:grid-cols-3">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Current Password<input required type="password" autoComplete="current-password" value={passwords.current_password} onChange={(e) => setPasswords((p) => ({ ...p, current_password: e.target.value }))} className={field} /></label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">New Password<input required minLength={8} type="password" autoComplete="new-password" value={passwords.password} onChange={(e) => setPasswords((p) => ({ ...p, password: e.target.value }))} className={field} /></label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Confirm New Password<input required minLength={8} type="password" autoComplete="new-password" value={passwords.password_confirmation} onChange={(e) => setPasswords((p) => ({ ...p, password_confirmation: e.target.value }))} className={field} /></label>
+              </div>
+              <div className="mt-5 flex justify-end"><button disabled={changingPassword} className="flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"><FiLock />{changingPassword ? "Changing..." : "Change Password"}</button></div>
             </form>
           )}
         </section>

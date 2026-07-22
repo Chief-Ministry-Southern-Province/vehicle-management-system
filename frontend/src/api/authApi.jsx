@@ -127,6 +127,15 @@ export const updateProfile = async (profile) => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const changePassword = async (passwords) => {
+  try {
+    const response = await API.put("/profile/password", passwords, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 // ============================
 // Vehicle requests
 // ============================
