@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 use Throwable;
 
 class AuthController extends Controller
@@ -249,7 +250,13 @@ class AuthController extends Controller
             $user->update(['password' => Hash::make($validated['password'])]);
 
             // Invalidate all other sessions after a password change for security.
-            $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
+            $currentAccessToken = $request->user()->currentAccessToken();
+            $currentTokenId = $currentAccessToken instanceof PersonalAccessToken
+                ? $currentAccessToken->getKey()
+                : null;
+            if ($currentTokenId !== null) {
+                $user->tokens()->where('id', '!=', $currentTokenId)->delete();
+            }
 
             return response()->json([
                 'success' => true,
