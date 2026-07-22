@@ -7,7 +7,30 @@ import {
   FiDollarSign,
   FiArrowUpRight,
 } from "react-icons/fi";
-import { getExecutiveStats } from "../../../api/authApi";
+import { getExecutiveStats, getVehicles } from "../../../api/authApi";
+
+const CURRENT_YEAR = new Date().getFullYear();
+
+const sumAnnualCosts = (vehicles, detailsKey, dateKey) =>
+  vehicles.reduce((total, vehicle) => {
+    const details = Array.isArray(vehicle[detailsKey])
+      ? vehicle[detailsKey]
+      : [];
+
+    return (
+      total +
+      details.reduce((detailTotal, detail) => {
+        const date = new Date(detail[dateKey]);
+        if (
+          Number.isNaN(date.getTime()) ||
+          date.getFullYear() !== CURRENT_YEAR
+        ) {
+          return detailTotal;
+        }
+        return detailTotal + (Number(detail.cost) || 0);
+      }, 0)
+    );
+  }, 0);
 
 /* ------------------------------------------------------------------ */
 /*  Animated counter — counts up from 0 to the numeric part of value  */
@@ -137,21 +160,21 @@ const createStats = (data) => [
     tone: "emerald",
   },
   {
-    title: "Fuel Cost",
+    title: `Fuel Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`,
     icon: <FiCreditCard />,
     path: "/fuelmanagement",
     tone: "teal",
   },
   {
-    title: "Service Cost",
+    title: `Service Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`,
     icon: <FiDollarSign />,
     path: "/servicerecords",
     tone: "fuchsia",
   },
   {
-    title: "Repair Cost",
+    title: `Repair Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.repair_cost || 0).toLocaleString()}`,
     icon: <FiDollarSign />,
     path: "/repairrecords",
@@ -235,7 +258,7 @@ function StatRow({ label, items }) {
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
         {label}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {items.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}
@@ -253,14 +276,36 @@ export default function ExecutiveStats() {
     available_vehicles: 0,
     fuel_cost: 0,
     maintenance_cost: 0,
+    repair_cost: 0,
   });
   const [error, setError] = useState("");
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const response = await getExecutiveStats();
-        setData(response?.data || {});
+        const [statsResponse, vehiclesResponse] = await Promise.all([
+          getExecutiveStats(),
+          getVehicles(),
+        ]);
+        const vehicles = vehiclesResponse?.data?.vehicles;
+        if (!Array.isArray(vehicles)) {
+          throw new Error("Unable to read vehicle cost records.");
+        }
+
+        setData({
+          ...(statsResponse?.data || {}),
+          fuel_cost: sumAnnualCosts(vehicles, "fuel_details", "date"),
+          maintenance_cost: sumAnnualCosts(
+            vehicles,
+            "service_details",
+            "service_date",
+          ),
+          repair_cost: sumAnnualCosts(
+            vehicles,
+            "repair_details",
+            "repair_date",
+          ),
+        });
       } catch (loadError) {
         setError(loadError?.message || "Unable to load dashboard statistics.");
       }
