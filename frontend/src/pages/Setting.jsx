@@ -108,18 +108,18 @@ export default function Setting() {
               <p className="mt-1 text-sm text-slate-500">Your registered driver and licence information.</p>
               <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {[
-                  ["Driver ID", driver.driver_id],
-                  ["Date of Birth", driver.date_of_birth],
+                  ["Name", driver.full_name],
+                  ["NIC", driver.nic],
                   ["Address", driver.address],
-                  ["Blood Group", driver.blood_group],
-                  ["Licence Number", driver.licence_number],
                   ["Licence Type", driver.licence_type],
+                  ["Licence Number", driver.licence_number],
                   ["Licence Expiry Date", driver.licence_renewal_date],
+                  ["Contact Number", driver.contact_number],
                   ["Allocated Vehicle", driver.allocated_vehicle || "Not allocated"],
-                  ["Availability Status", driver.status?.replaceAll("_", " ")],
+                  ["Blood Group", driver.blood_group],
                 ].map(([label, value]) => (
                   <label key={label} className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    {label}<input disabled value={value || "Not provided"} className={`${field} cursor-not-allowed capitalize opacity-70`} />
+                    {label}<input disabled value={value || "Not provided"} className={`${field} cursor-not-allowed opacity-70`} />
                   </label>
                 ))}
               </div>
