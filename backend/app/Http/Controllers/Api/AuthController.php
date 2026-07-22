@@ -7,10 +7,12 @@ use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Models\Driver;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -40,24 +42,47 @@ class AuthController extends Controller
         try {
             $validated = $request->validated();
 
-            $user = User::create([
-                // Keep using the existing database column for compatibility; it now
-                // contains the NIC supplied by the registration form.
-                'employee_id' => $validated['nic'],
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? null,
-                'department' => $validated['department'] ?? null,
-                'role' => $validated['role'] ?? 'employee',
-                'password' => Hash::make($validated['password']),
-                'status' => 'active',
-            ]);
+            [$user, $driver] = DB::transaction(function () use ($validated): array {
+                $user = User::create([
+                    // Keep using the existing database column for compatibility; it now
+                    // contains the NIC supplied by the registration form.
+                    'employee_id' => $validated['nic'],
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'] ?? null,
+                    'department' => $validated['department'] ?? null,
+                    'role' => $validated['role'] ?? 'employee',
+                    'password' => Hash::make($validated['password']),
+                    'status' => 'active',
+                ]);
+
+                $driver = null;
+                if ($user->role === 'driver') {
+                    $driver = Driver::create([
+                        'driver_id' => sprintf('DRV-%04d', $user->id),
+                        'full_name' => $user->name,
+                        'date_of_birth' => $validated['date_of_birth'],
+                        'nic' => $validated['nic'],
+                        'address' => $validated['address'],
+                        'contact_number' => $validated['phone'],
+                        'blood_group' => $validated['blood_group'] ?? null,
+                        'licence_number' => $validated['licence_number'],
+                        'licence_type' => $validated['licence_type'],
+                        'licence_renewal_date' => $validated['licence_renewal_date'],
+                        'allocated_vehicle' => $validated['allocated_vehicle'] ?? null,
+                        'status' => 'available',
+                    ]);
+                }
+
+                return [$user, $driver];
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Registration successful.',
                 'data' => [
                     'user' => $user,
+                    'driver' => $driver,
                 ],
             ], 201);
         } catch (Throwable $e) {
@@ -155,7 +180,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'user' => $request->user(),
+                    'user' => $request->user()->load('driver'),
                 ],
             ], 200);
         } catch (Throwable $e) {
@@ -177,12 +202,21 @@ class AuthController extends Controller
                 'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
             ]);
 
-            $user->update($validated);
+            DB::transaction(function () use ($user, $validated): void {
+                $user->update($validated);
+
+                if ($user->isDriver() && $user->driver) {
+                    $user->driver->update(array_filter([
+                        'full_name' => $validated['name'] ?? null,
+                        'contact_number' => $validated['phone'] ?? null,
+                    ], fn ($value) => $value !== null));
+                }
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully.',
-                'data' => ['user' => $user->fresh()],
+                'data' => ['user' => $user->fresh()->load('driver')],
             ], 200);
         } catch (ValidationException $e) {
             throw $e;
