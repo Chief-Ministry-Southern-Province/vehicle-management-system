@@ -14,7 +14,10 @@ const API = axios.create({
 
 export const registerUser = async (userData) => {
   try {
-    const response = await API.post("/register", userData);
+    const token = localStorage.getItem("token");
+    const response = await API.post("/register", userData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     return response.data;
   } catch (error) {
