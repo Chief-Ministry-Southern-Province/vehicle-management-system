@@ -33,9 +33,7 @@ class AuthController extends Controller
 
     /**
      * POST /api/register
-     * Self-registration. New accounts default to "employee" role
-     * regardless of what the client sends, unless created by an
-     * authenticated admin-type role (handled separately in UserController).
+     * Create a user. Access is restricted to Deputy Secretaries by the route.
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -43,7 +41,9 @@ class AuthController extends Controller
             $validated = $request->validated();
 
             $user = User::create([
-                'employee_id' => $validated['employee_id'],
+                // Keep using the existing database column for compatibility; it now
+                // contains the NIC supplied by the registration form.
+                'employee_id' => $validated['nic'],
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
@@ -53,14 +53,11 @@ class AuthController extends Controller
                 'status' => 'active',
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
             return response()->json([
                 'success' => true,
                 'message' => 'Registration successful.',
                 'data' => [
                     'user' => $user,
-                    'token' => $token,
                 ],
             ], 201);
         } catch (Throwable $e) {

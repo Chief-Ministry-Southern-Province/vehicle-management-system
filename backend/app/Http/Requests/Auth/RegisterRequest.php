@@ -15,7 +15,7 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'string', 'max:50', 'unique:users,employee_id'],
+            'nic' => ['required', 'string', 'max:20', 'unique:users,employee_id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -32,7 +32,7 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'employee_id.unique' => 'This employee ID is already registered.',
+            'nic.unique' => 'This NIC is already registered.',
             'email.unique' => 'An account with this email already exists.',
             'password.confirmed' => 'Password confirmation does not match.',
         ];
