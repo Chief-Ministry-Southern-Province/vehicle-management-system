@@ -2,12 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiClock,
-  FiCheckSquare,
   FiCreditCard,
   FiDollarSign,
   FiArrowUpRight,
+  FiFilePlus,
+  FiTool,
+  FiTruck,
+  FiUsers,
 } from "react-icons/fi";
-import { getExecutiveStats, getVehicles } from "../../../api/authApi";
+import {
+  getDrivers,
+  getExecutiveStats,
+  getVehicles,
+} from "../../../api/authApi";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -144,7 +151,21 @@ const TONES = {
 /*  Data — grouped into 3 rows. Only `path` is wired up; the actual   */
 /*  destination pages are built separately.                           */
 /* ------------------------------------------------------------------ */
-const createStats = (data) => [
+const createOverviewStats = (data) => [
+  {
+    title: "Available Vehicles",
+    value: data.available_vehicles ?? 0,
+    icon: <FiTruck />,
+    path: "/totalvehicles?status=available",
+    tone: "emerald",
+  },
+  {
+    title: "Available Drivers",
+    value: data.available_drivers ?? 0,
+    icon: <FiUsers />,
+    path: "/drivers?status=available",
+    tone: "blue",
+  },
   {
     title: "Pending Approvals",
     value: data.pending_approvals ?? 0,
@@ -153,12 +174,16 @@ const createStats = (data) => [
     tone: "amber",
   },
   {
-    title: "Available Vehicles",
-    value: data.available_vehicles ?? 0,
-    icon: <FiCheckSquare />,
-    path: "/totalvehicles?status=available",
-    tone: "emerald",
+    title: "Registration Requests",
+    value:
+      data.registration_requests ?? data.pending_registration_requests ?? 0,
+    icon: <FiFilePlus />,
+    path: "/registervehicle",
+    tone: "indigo",
   },
+];
+
+const createCostStats = (data) => [
   {
     title: `Fuel Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`,
@@ -169,7 +194,7 @@ const createStats = (data) => [
   {
     title: `Service Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`,
-    icon: <FiDollarSign />,
+    icon: <FiTool />,
     path: "/servicerecords",
     tone: "fuchsia",
   },
@@ -252,13 +277,15 @@ function StatCard({ title, value, icon, path, tone }) {
 /* ------------------------------------------------------------------ */
 /*  Row wrapper — label + responsive grid                             */
 /* ------------------------------------------------------------------ */
-function StatRow({ label, items }) {
+function StatRow({ label, items, columns = 4 }) {
   return (
     <div className="mb-6 last:mb-0">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
         {label}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div
+        className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}
+      >
         {items.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}
@@ -274,6 +301,8 @@ export default function ExecutiveStats() {
   const [data, setData] = useState({
     pending_approvals: 0,
     available_vehicles: 0,
+    available_drivers: 0,
+    registration_requests: 0,
     fuel_cost: 0,
     maintenance_cost: 0,
     repair_cost: 0,
@@ -283,17 +312,26 @@ export default function ExecutiveStats() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [statsResponse, vehiclesResponse] = await Promise.all([
-          getExecutiveStats(),
-          getVehicles(),
-        ]);
+        const [statsResponse, vehiclesResponse, driversResponse] =
+          await Promise.all([
+            getExecutiveStats(),
+            getVehicles(),
+            getDrivers(),
+          ]);
         const vehicles = vehiclesResponse?.data?.vehicles;
+        const drivers = driversResponse?.data?.drivers;
         if (!Array.isArray(vehicles)) {
           throw new Error("Unable to read vehicle cost records.");
+        }
+        if (!Array.isArray(drivers)) {
+          throw new Error("Unable to read driver records.");
         }
 
         setData({
           ...(statsResponse?.data || {}),
+          available_drivers: drivers.filter(
+            (driver) => driver.status?.toLowerCase() === "available",
+          ).length,
           fuel_cost: sumAnnualCosts(vehicles, "fuel_details", "date"),
           maintenance_cost: sumAnnualCosts(
             vehicles,
@@ -315,7 +353,15 @@ export default function ExecutiveStats() {
 
   return (
     <div>
-      <StatRow label="Executive Overview" items={createStats(data)} />
+      <StatRow
+        label="Fleet & Approvals"
+        items={createOverviewStats(data)}
+      />
+      <StatRow
+        label={`Fleet Costs (${CURRENT_YEAR})`}
+        items={createCostStats(data)}
+        columns={3}
+      />
       {error && (
         <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}

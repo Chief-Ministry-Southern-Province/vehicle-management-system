@@ -25,6 +25,8 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
+const EMPTY_VEHICLES = [];
+
 function formatCurrency(value) {
   return `LKR ${Number(value).toLocaleString()}`;
 }
@@ -35,10 +37,16 @@ function formatAxisValue(value) {
   return value;
 }
 
-export default function MonthlyCostAnalysis({ vehicles, loading, error }) {
+export default function MonthlyCostAnalysis({
+  vehicles = EMPTY_VEHICLES,
+  loading = false,
+  error = "",
+}) {
+  const fleet = Array.isArray(vehicles) ? vehicles : EMPTY_VEHICLES;
+
   const years = useMemo(() => {
     const availableYears = new Set([new Date().getFullYear()]);
-    vehicles.forEach((vehicle) => {
+    fleet.forEach((vehicle) => {
       [
         [vehicle.fuel_details, "date"],
         [vehicle.service_details, "service_date"],
@@ -52,7 +60,7 @@ export default function MonthlyCostAnalysis({ vehicles, loading, error }) {
       });
     });
     return [...availableYears].sort((a, b) => b - a).map(String);
-  }, [vehicles]);
+  }, [fleet]);
 
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const data = useMemo(() => {
@@ -72,13 +80,13 @@ export default function MonthlyCostAnalysis({ vehicles, loading, error }) {
       });
     };
 
-    vehicles.forEach((vehicle) => {
+    fleet.forEach((vehicle) => {
       addCosts(vehicle.fuel_details, "date", "fuelCost");
       addCosts(vehicle.service_details, "service_date", "maintenanceCost");
       addCosts(vehicle.repair_details, "repair_date", "repairCost");
     });
     return monthlyCosts;
-  }, [vehicles, year]);
+  }, [fleet, year]);
 
   const costLabels = {
     fuelCost: "Fuel Cost",
