@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Driver;
 use App\Models\User;
+use App\Models\VehicleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class DriverRegistrationTest extends TestCase
@@ -61,6 +64,10 @@ class DriverRegistrationTest extends TestCase
         $this->actingAs($driverUser)->getJson('/api/driver/today-schedule')
             ->assertOk()
             ->assertJsonCount(0, 'data.trips');
+
+        $this->actingAs($driverUser)->getJson('/api/driver/assigned-vehicle')
+            ->assertOk()
+            ->assertJsonPath('data.vehicle', null);
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void
@@ -82,5 +89,52 @@ class DriverRegistrationTest extends TestCase
         ])->assertOk();
 
         $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
+    }
+
+    public function test_driver_is_unavailable_only_inside_an_assigned_journey_time_slot(): void
+    {
+        Carbon::setTestNow('2026-07-23 09:00:00');
+
+        try {
+            $driverUser = User::factory()->create([
+                'employee_id' => '200012345679',
+                'role' => 'driver',
+            ]);
+            $requester = User::factory()->create();
+            $driver = Driver::create([
+                'driver_id' => 'DRV-TIME-1',
+                'full_name' => $driverUser->name,
+                'date_of_birth' => '2000-01-01',
+                'nic' => $driverUser->employee_id,
+                'address' => 'Test Road',
+                'contact_number' => '0712345678',
+                'licence_number' => 'TIME-LIC-1',
+                'licence_type' => 'B',
+                'licence_renewal_date' => '2028-01-01',
+                'status' => 'unavailable',
+            ]);
+
+            VehicleRequest::create([
+                'user_id' => $requester->id,
+                'requester_name' => $requester->name,
+                'purpose' => 'Scheduled journey',
+                'destination' => 'Galle',
+                'departure_at' => '2026-07-23 10:00:00',
+                'expected_return_at' => '2026-07-23 13:30:00',
+                'passenger_count' => 1,
+                'status' => 'approved',
+                'allocated_driver_id' => $driver->id,
+            ]);
+
+            $this->assertSame('available', $driver->fresh()->status);
+
+            Carbon::setTestNow('2026-07-23 11:00:00');
+            $this->assertSame('unavailable', $driver->fresh()->status);
+
+            Carbon::setTestNow('2026-07-23 13:30:00');
+            $this->assertSame('available', $driver->fresh()->status);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }

@@ -4,15 +4,31 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class DriverController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => ['drivers' => Driver::orderBy('driver_id')->get()]]);
+        $validated = $request->validate([
+            'departure_at' => ['nullable', 'date', 'required_with:expected_return_at'],
+            'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
+        ]);
+        $drivers = Driver::orderBy('driver_id')->get();
+
+        if (isset($validated['departure_at'], $validated['expected_return_at'])) {
+            $drivers->each(function (Driver $driver) use ($validated): void {
+                $driver->setAttribute(
+                    'available_for_slot',
+                    ! $driver->hasScheduleConflict($validated['departure_at'], $validated['expected_return_at']),
+                );
+            });
+        }
+
+        return response()->json(['success' => true, 'data' => ['drivers' => $drivers]]);
     }
 
     public function dashboardStats(Request $request): JsonResponse
@@ -87,6 +103,29 @@ class DriverController extends Controller
         ]);
     }
 
+    public function assignedVehicle(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $registration = $driver->allocated_vehicle
+            ?: data_get($driver->current_assignment, 'vehicle_registration');
+        $vehicle = $registration
+            ? Vehicle::where('registration_number', $registration)->first()
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'data' => ['vehicle' => $vehicle],
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $driver = Driver::create($this->payload($request));
@@ -127,7 +166,7 @@ class DriverController extends Controller
             'licence_type' => ['required', 'string', 'max:100'],
             'licence_renewal_date' => ['required', 'date'],
             'allocated_vehicle' => ['nullable', 'string', 'max:50', 'exists:vehicles,registration_number'],
-            'status' => ['required', Rule::in(['available', 'on_trip', 'unavailable'])],
+            'status' => ['sometimes', Rule::in(['available', 'on_trip', 'unavailable'])],
             'previous_journeys' => ['nullable', 'array', 'max:100'],
             'previous_journeys.*.date' => ['required', 'date'],
             'previous_journeys.*.origin' => ['required', 'string', 'max:255'],
