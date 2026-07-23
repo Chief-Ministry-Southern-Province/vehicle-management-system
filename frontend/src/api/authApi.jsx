@@ -154,6 +154,15 @@ export const getDriverTodaySchedule = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getDriverAssignedVehicle = async () => {
+  try {
+    const response = await API.get("/driver/assigned-vehicle", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 // ============================
 // Vehicle requests
 // ============================
@@ -405,9 +414,10 @@ export const updateVehicle = async (registrationNumber, formData) => {
   }
 };
 
-export const getDrivers = async () => {
+export const getDrivers = async (schedule = {}) => {
   try {
     const response = await API.get("/drivers", {
+      params: schedule,
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

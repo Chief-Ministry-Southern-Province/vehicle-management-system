@@ -400,7 +400,7 @@ function DatabaseRecommendation({ request }) {
     </section>
   );
 }
-function DatabaseAllocationPanel({ onAllocationChange }) {
+function DatabaseAllocationPanel({ onAllocationChange, request }) {
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [driverId, setDriverId] = useState("");
@@ -411,12 +411,15 @@ function DatabaseAllocationPanel({ onAllocationChange }) {
     const load = async () => {
       try {
         const [driverResponse, vehicleResponse] = await Promise.all([
-          getDrivers(),
+          getDrivers({
+            departure_at: request.departure_at,
+            expected_return_at: request.expected_return_at,
+          }),
           getVehicles(),
         ]);
         setDrivers(
           (driverResponse?.data?.drivers || []).filter(
-            (driver) => driver.status === "available",
+            (driver) => driver.available_for_slot ?? driver.status === "available",
           ),
         );
         setVehicles(vehicleResponse?.data?.vehicles || []);
@@ -425,7 +428,7 @@ function DatabaseAllocationPanel({ onAllocationChange }) {
       }
     };
     load();
-  }, []);
+  }, [request.departure_at, request.expected_return_at]);
   const driver = useMemo(
     () => drivers.find((item) => item.driver_id === driverId),
     [driverId, drivers],
@@ -788,7 +791,7 @@ export default function ApprovalWorkspace() {
               <AllocatedVehicleDetails request={request} />
             ) : (
               <>
-                <DatabaseAllocationPanel onAllocationChange={setAllocation} />
+                <DatabaseAllocationPanel onAllocationChange={setAllocation} request={request} />
                 <ApprovalActions
                   onAllocate={allocate}
                   allocating={allocating}
