@@ -136,6 +136,15 @@ export const changePassword = async (passwords) => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getDriverDashboardStats = async () => {
+  try {
+    const response = await API.get("/driver/dashboard-stats", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 // ============================
 // Vehicle requests
 // ============================
