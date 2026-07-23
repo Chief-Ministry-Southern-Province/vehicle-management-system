@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('role:driver')->get('/driver/dashboard-stats', [DriverController::class, 'dashboardStats']);
+    Route::middleware('role:driver')->get('/driver/today-schedule', [DriverController::class, 'todaySchedule']);
 
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);

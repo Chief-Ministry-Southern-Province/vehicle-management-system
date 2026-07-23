@@ -57,6 +57,10 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.stats.today_trips', 0)
             ->assertJsonPath('data.stats.scheduled_trips', 0)
             ->assertJsonPath('data.stats.completed_trips', 0);
+
+        $this->actingAs($driverUser)->getJson('/api/driver/today-schedule')
+            ->assertOk()
+            ->assertJsonCount(0, 'data.trips');
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void
