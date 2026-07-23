@@ -1,28 +1,82 @@
 import { FiAlertTriangle, FiDroplet, FiTool, FiTruck } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { getVehicles } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 
 const money = (value) =>
   `LKR ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export default function FleetStats({ vehicles = [], loading, error }) {
+const getErrorMessage = (error) => {
+  const message = error?.message || error?.error;
+  return typeof message === "string"
+    ? message
+    : "Unable to load the fleet overview.";
+};
+
+export default function FleetStats() {
   const { translate } = useLanguage();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadFleetStats = async () => {
+      try {
+        const response = await getVehicles();
+        const records = response?.data?.vehicles ?? response?.vehicles;
+
+        if (!Array.isArray(records)) {
+          throw new Error("Unable to read vehicle records.");
+        }
+
+        if (active) {
+          setVehicles(records);
+          setError("");
+        }
+      } catch (loadError) {
+        if (active) {
+          setVehicles([]);
+          setError(getErrorMessage(loadError));
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadFleetStats();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const serviceRecords = vehicles.flatMap((vehicle) =>
     Array.isArray(vehicle.service_details) ? vehicle.service_details : [],
   );
-  const repairCost = serviceRecords.reduce(
-    (total, service) =>
-      /repair/i.test(service.service_type || "")
-        ? total + (Number(service.cost) || 0)
-        : total,
+  const repairRecords = vehicles.flatMap((vehicle) =>
+    Array.isArray(vehicle.repair_details) ? vehicle.repair_details : [],
+  );
+  const fuelRecords = vehicles.flatMap((vehicle) =>
+    Array.isArray(vehicle.fuel_details) ? vehicle.fuel_details : [],
+  );
+  const repairCost = repairRecords.reduce(
+    (total, repair) => total + (Number(repair.cost) || 0),
     0,
   );
   const serviceCost = serviceRecords.reduce(
-    (total, service) =>
-      !/repair/i.test(service.service_type || "")
-        ? total + (Number(service.cost) || 0)
-        : total,
+    (total, service) => total + (Number(service.cost) || 0),
     0,
   );
+  const fuelCost = fuelRecords.reduce(
+    (total, fuel) => total + (Number(fuel.cost) || 0),
+    0,
+  );
+  const hasStatus = (status) =>
+    vehicles.filter(
+      (vehicle) => vehicle.status?.toLowerCase() === status,
+    ).length;
 
   const stats = [
     {
@@ -34,32 +88,29 @@ export default function FleetStats({ vehicles = [], loading, error }) {
     },
     {
       title: translate("Available Now"),
-      value: vehicles.filter((vehicle) => vehicle.status === "available")
-        .length,
+      value: hasStatus("available"),
       subtitle: translate("Ready for allocation"),
       icon: <FiTruck />,
       bg: "from-emerald-500 to-teal-600",
     },
     {
       title: translate("Unavailable Now"),
-      value: vehicles.filter((vehicle) => vehicle.status === "unavailable")
-        .length,
+      value: hasStatus("unavailable"),
       subtitle: translate("Currently unavailable"),
       icon: <FiTruck />,
       bg: "from-slate-500 to-slate-700",
     },
     {
       title: translate("Maintenance"),
-      value: vehicles.filter((vehicle) => vehicle.status === "maintenance")
-        .length,
+      value: hasStatus("maintenance"),
       subtitle: translate("In maintenance"),
       icon: <FiTool />,
       bg: "from-amber-500 to-orange-600",
     },
     {
       title: translate("Fuel Cost"),
-      value: money(0),
-      subtitle: translate("No stored fuel transactions"),
+      value: money(fuelCost),
+      subtitle: translate("Recorded fuel spending"),
       icon: <FiDroplet />,
       bg: "from-cyan-500 to-sky-600",
     },

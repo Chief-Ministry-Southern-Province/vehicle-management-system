@@ -2,12 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiClock,
-  FiCheckSquare,
   FiCreditCard,
   FiDollarSign,
   FiArrowUpRight,
+  FiTool,
+  FiTruck,
+  FiUsers,
 } from "react-icons/fi";
-import { getExecutiveStats } from "../../api/authApi";
+import { getDrivers, getExecutiveStats, getVehicles } from "../../api/authApi";
+
+const CURRENT_YEAR = new Date().getFullYear();
+
+const sumAnnualCosts = (vehicles, detailsKey, dateKey) =>
+  vehicles.reduce((total, vehicle) => {
+    const records = Array.isArray(vehicle[detailsKey])
+      ? vehicle[detailsKey]
+      : [];
+
+    return (
+      total +
+      records.reduce((recordTotal, record) => {
+        const date = new Date(record[dateKey]);
+        if (
+          Number.isNaN(date.getTime()) ||
+          date.getFullYear() !== CURRENT_YEAR
+        ) {
+          return recordTotal;
+        }
+        return recordTotal + (Number(record.cost) || 0);
+      }, 0)
+    );
+  }, 0);
 
 /* ------------------------------------------------------------------ */
 /*  Animated counter — counts up from 0 to the numeric part of value  */
@@ -121,7 +146,7 @@ const TONES = {
 /*  Data — grouped into 3 rows. Only `path` is wired up; the actual   */
 /*  destination pages are built separately.                           */
 /* ------------------------------------------------------------------ */
-const createStats = (data) => [
+const createOverviewStats = (data) => [
   {
     title: "Pending Final Approvals",
     value: data.pending_approvals ?? 0,
@@ -130,25 +155,42 @@ const createStats = (data) => [
     tone: "amber",
   },
   {
-    title: "Available Vehicles",
-    value: data.available_vehicles ?? 0,
-    icon: <FiCheckSquare />,
-    path: "/totalvehicles?status=available",
+    title: "Total Vehicles",
+    value: data.total_vehicles ?? 0,
+    icon: <FiTruck />,
+    path: "/totalvehicles",
     tone: "emerald",
   },
   {
-    title: "Fuel Cost",
+    title: "Total Drivers",
+    value: data.total_drivers ?? 0,
+    icon: <FiUsers />,
+    path: "/drivers",
+    tone: "blue",
+  },
+];
+
+const createCostStats = (data) => [
+  {
+    title: `Fuel Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.fuel_cost || 0).toLocaleString()}`,
     icon: <FiCreditCard />,
     path: "/fuelmanagement",
     tone: "teal",
   },
   {
-    title: "Maintenance Cost",
+    title: `Service Cost (${CURRENT_YEAR})`,
     value: `LKR ${Number(data.maintenance_cost || 0).toLocaleString()}`,
-    icon: <FiDollarSign />,
+    icon: <FiTool />,
     path: "/servicerecords",
     tone: "fuchsia",
+  },
+  {
+    title: `Repair Cost (${CURRENT_YEAR})`,
+    value: `LKR ${Number(data.repair_cost || 0).toLocaleString()}`,
+    icon: <FiDollarSign />,
+    path: "/repairrecords",
+    tone: "red",
   },
 ];
 
@@ -228,7 +270,7 @@ function StatRow({ label, items }) {
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
         {label}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}
@@ -243,17 +285,46 @@ function StatRow({ label, items }) {
 export default function StatsCard() {
   const [data, setData] = useState({
     pending_approvals: 0,
-    available_vehicles: 0,
+    total_vehicles: 0,
+    total_drivers: 0,
     fuel_cost: 0,
     maintenance_cost: 0,
+    repair_cost: 0,
   });
   const [error, setError] = useState("");
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const response = await getExecutiveStats();
-        setData(response?.data || {});
+        const [statsResponse, vehiclesResponse, driversResponse] =
+          await Promise.all([
+            getExecutiveStats(),
+            getVehicles(),
+            getDrivers(),
+          ]);
+        const vehicles = vehiclesResponse?.data?.vehicles;
+        const drivers = driversResponse?.data?.drivers;
+
+        if (!Array.isArray(vehicles) || !Array.isArray(drivers)) {
+          throw new Error("Unable to read fleet statistics.");
+        }
+
+        setData({
+          ...(statsResponse?.data || {}),
+          total_vehicles: vehicles.length,
+          total_drivers: drivers.length,
+          fuel_cost: sumAnnualCosts(vehicles, "fuel_details", "date"),
+          maintenance_cost: sumAnnualCosts(
+            vehicles,
+            "service_details",
+            "service_date",
+          ),
+          repair_cost: sumAnnualCosts(
+            vehicles,
+            "repair_details",
+            "repair_date",
+          ),
+        });
       } catch (loadError) {
         setError(loadError?.message || "Unable to load dashboard statistics.");
       }
@@ -263,7 +334,11 @@ export default function StatsCard() {
 
   return (
     <div>
-      <StatRow label="Executive Overview" items={createStats(data)} />
+      <StatRow label="Executive Overview" items={createOverviewStats(data)} />
+      <StatRow
+        label={`Fleet Costs (${CURRENT_YEAR})`}
+        items={createCostStats(data)}
+      />
       {error && (
         <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}

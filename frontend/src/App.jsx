@@ -57,7 +57,7 @@ function App() {
 
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/register" element={withAuth(<Register />, ["deputy_secretary"])} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
 

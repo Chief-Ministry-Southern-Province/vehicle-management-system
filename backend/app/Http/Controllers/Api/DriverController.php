@@ -4,15 +4,126 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class DriverController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => ['drivers' => Driver::orderBy('driver_id')->get()]]);
+        $validated = $request->validate([
+            'departure_at' => ['nullable', 'date', 'required_with:expected_return_at'],
+            'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
+        ]);
+        $drivers = Driver::orderBy('driver_id')->get();
+
+        if (isset($validated['departure_at'], $validated['expected_return_at'])) {
+            $drivers->each(function (Driver $driver) use ($validated): void {
+                $driver->setAttribute(
+                    'available_for_slot',
+                    ! $driver->hasScheduleConflict($validated['departure_at'], $validated['expected_return_at']),
+                );
+            });
+        }
+
+        return response()->json(['success' => true, 'data' => ['drivers' => $drivers]]);
+    }
+
+    public function dashboardStats(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $trips = $driver->vehicleRequests()->where('status', 'approved');
+        $total = (clone $trips)->count();
+        $completed = (clone $trips)->where('expected_return_at', '<', now())->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'stats' => [
+                    'total_trips' => $total,
+                    'today_trips' => (clone $trips)->whereDate('departure_at', today())->count(),
+                    'scheduled_trips' => (clone $trips)->where('departure_at', '>=', now())->count(),
+                    'completed_trips' => $completed,
+                    'completion_rate' => $total > 0 ? (int) round(($completed / $total) * 100) : 0,
+                ],
+            ],
+        ]);
+    }
+
+    public function todaySchedule(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $trips = $driver->vehicleRequests()
+            ->where('status', 'approved')
+            ->whereDate('departure_at', today())
+            ->with('allocatedVehicle:id,registration_number,make,model')
+            ->orderBy('departure_at')
+            ->get()
+            ->map(function ($trip): array {
+                $status = match (true) {
+                    $trip->expected_return_at->isPast() => 'Completed',
+                    $trip->departure_at->isPast() => 'Ongoing',
+                    default => 'Pending',
+                };
+
+                return [
+                    'id' => $trip->id,
+                    'reference' => 'REQ-' . str_pad((string) $trip->id, 4, '0', STR_PAD_LEFT),
+                    'departure_at' => $trip->departure_at->toISOString(),
+                    'expected_return_at' => $trip->expected_return_at->toISOString(),
+                    'purpose' => $trip->purpose,
+                    'destination' => $trip->destination,
+                    'requester_name' => $trip->requester_name,
+                    'status' => $status,
+                    'vehicle' => $trip->allocatedVehicle,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => ['trips' => $trips],
+        ]);
+    }
+
+    public function assignedVehicle(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $registration = $driver->allocated_vehicle
+            ?: data_get($driver->current_assignment, 'vehicle_registration');
+        $vehicle = $registration
+            ? Vehicle::where('registration_number', $registration)->first()
+            : null;
+
+        return response()->json([
+            'success' => true,
+            'data' => ['vehicle' => $vehicle],
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -55,7 +166,7 @@ class DriverController extends Controller
             'licence_type' => ['required', 'string', 'max:100'],
             'licence_renewal_date' => ['required', 'date'],
             'allocated_vehicle' => ['nullable', 'string', 'max:50', 'exists:vehicles,registration_number'],
-            'status' => ['required', Rule::in(['available', 'on_trip', 'unavailable'])],
+            'status' => ['sometimes', Rule::in(['available', 'on_trip', 'unavailable'])],
             'previous_journeys' => ['nullable', 'array', 'max:100'],
             'previous_journeys.*.date' => ['required', 'date'],
             'previous_journeys.*.origin' => ['required', 'string', 'max:255'],

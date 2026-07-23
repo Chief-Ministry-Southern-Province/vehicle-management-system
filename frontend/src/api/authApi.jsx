@@ -14,7 +14,10 @@ const API = axios.create({
 
 export const registerUser = async (userData) => {
   try {
-    const response = await API.post("/register", userData);
+    const token = localStorage.getItem("token");
+    const response = await API.post("/register", userData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     return response.data;
   } catch (error) {
@@ -120,6 +123,42 @@ export const getProfile = async () => {
 export const updateProfile = async (profile) => {
   try {
     const response = await API.put("/profile", profile, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const changePassword = async (passwords) => {
+  try {
+    const response = await API.put("/profile/password", passwords, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriverDashboardStats = async () => {
+  try {
+    const response = await API.get("/driver/dashboard-stats", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriverTodaySchedule = async () => {
+  try {
+    const response = await API.get("/driver/today-schedule", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriverAssignedVehicle = async () => {
+  try {
+    const response = await API.get("/driver/assigned-vehicle", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
     return response.data;
   } catch (error) { throw error.response?.data || error.message; }
 };
@@ -375,9 +414,10 @@ export const updateVehicle = async (registrationNumber, formData) => {
   }
 };
 
-export const getDrivers = async () => {
+export const getDrivers = async (schedule = {}) => {
   try {
     const response = await API.get("/drivers", {
+      params: schedule,
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

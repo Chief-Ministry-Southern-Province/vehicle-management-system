@@ -4,8 +4,9 @@ import {
   FiTool,
   FiAlertTriangle,
 } from "react-icons/fi";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../../context/useLanguage";
+import { getVehicles } from "../../api/authApi";
 
 const statusStyles = {
   available: {
@@ -31,20 +32,65 @@ const statusStyles = {
   },
 };
 
-export default function FleetStatusGrid({
-  vehicles = [],
-  loading,
-  error,
-  onRetry,
-}) {
+const getVehicleList = (response) => {
+  const vehicles = response?.data?.vehicles ?? response?.vehicles ?? response?.data;
+  return Array.isArray(vehicles) ? vehicles : [];
+};
+
+const getErrorMessage = (error) =>
+  error?.message ||
+  error?.error ||
+  (typeof error === "string" ? error : "Unable to load the fleet overview.");
+
+export default function FleetStatusGrid() {
   const { translate } = useLanguage();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadFleet = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await getVehicles();
+      setVehicles(getVehicleList(response));
+    } catch (loadError) {
+      setVehicles([]);
+      setError(getErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getVehicles()
+      .then((response) => {
+        if (!cancelled) setVehicles(getVehicleList(response));
+      })
+      .catch((loadError) => {
+        if (!cancelled) {
+          setVehicles([]);
+          setError(getErrorMessage(loadError));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const summary = useMemo(
     () =>
       vehicles.reduce(
         (totals, vehicle) => {
-          if (Object.hasOwn(totals, vehicle.status))
-            totals[vehicle.status] += 1;
+          const status = vehicle.status?.toLowerCase();
+          if (Object.hasOwn(totals, status)) totals[status] += 1;
           return totals;
         },
         { available: 0, maintenance: 0, unavailable: 0 },
@@ -102,7 +148,7 @@ export default function FleetStatusGrid({
               <p>{error}</p>
               <button
                 type="button"
-                onClick={onRetry}
+                onClick={loadFleet}
                 className="rounded-lg bg-red-100 px-3 py-2 font-semibold hover:bg-red-200"
               >
                 {translate("Retry")}
@@ -119,13 +165,13 @@ export default function FleetStatusGrid({
           {!loading &&
             !error &&
             vehicles.map((vehicle) => {
-              const style =
-                statusStyles[vehicle.status] || statusStyles.unavailable;
+              const status = vehicle.status?.toLowerCase();
+              const style = statusStyles[status] || statusStyles.unavailable;
               const StatusIcon = style.icon;
 
               return (
                 <div
-                  key={vehicle.id}
+                  key={vehicle.id ?? vehicle.registration_number}
                   className="group bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex justify-between items-start">

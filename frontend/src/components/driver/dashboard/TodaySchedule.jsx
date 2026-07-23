@@ -1,86 +1,70 @@
-const trips = [
-  {
-    id: "REQ-8830",
-    time: "08:30 AM",
-    title: "Trip to Dept. Sec. Office",
-    pickup: "Main HQ South Wing",
-    dropoff: "Regional Training Center",
-    status: "Completed",
-  },
-  {
-    id: "REQ-9902",
-    time: "11:45 AM",
-    title: "Trip to Technical Audit Team",
-    pickup: "Regional Training Center",
-    dropoff: "Ministry Finance Dept",
-    status: "Ongoing",
-  },
-  {
-    id: "REQ-9944",
-    time: "02:15 PM",
-    title: "Trip to Protocol Division",
-    pickup: "Ministry Finance Dept",
-    dropoff: "International Airport",
-    status: "Pending",
-  },
-];
+import { useEffect, useState } from "react";
+import { getDriverTodaySchedule } from "../../../api/authApi";
+
+const statusStyle = {
+  Completed: "bg-emerald-50 text-emerald-700",
+  Ongoing: "bg-blue-100 text-blue-700",
+  Pending: "bg-amber-50 text-amber-700",
+};
+
+const formatTime = (value) => new Intl.DateTimeFormat("en-LK", {
+  hour: "2-digit",
+  minute: "2-digit",
+}).format(new Date(value));
 
 export default function TodaySchedule() {
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    getDriverTodaySchedule()
+      .then((response) => {
+        if (active) setTrips(response?.data?.trips || []);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError?.message || "Unable to load today's schedule.");
+      })
+      .finally(() => active && setLoading(false));
+
+    return () => { active = false; };
+  }, []);
+
   return (
-    <div className="bg-white border rounded-2xl p-6">
-      <div className="flex justify-between mb-6">
-        <h2 className="text-2xl font-bold">Today's Schedule</h2>
-
-        <div className="flex gap-2">
-          <button className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg">
-            Today
-          </button>
-
-          <button className="border px-3 py-1 rounded-lg">Tomorrow</button>
+    <div className="rounded-2xl border bg-white p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Today&apos;s Schedule</h2>
+          <p className="mt-1 text-sm text-slate-500">Approved trips assigned to you today.</p>
         </div>
+        <span className="rounded-lg bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-600">Today</span>
       </div>
+
+      {loading && <p className="py-10 text-center text-sm text-slate-500">Loading schedule...</p>}
+      {error && <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
+      {!loading && !error && trips.length === 0 && (
+        <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-slate-500">No trips are scheduled for today.</p>
+      )}
 
       <div className="space-y-5">
         {trips.map((trip) => (
-          <div
-            key={trip.id}
-            className={`border rounded-2xl p-5 ${
-              trip.status === "Ongoing" ? "bg-blue-50 border-blue-200" : ""
-            }`}
-          >
-            <div className="flex justify-between">
+          <div key={trip.id} className={`rounded-2xl border p-5 ${trip.status === "Ongoing" ? "border-blue-200 bg-blue-50" : ""}`}>
+            <div className="flex flex-wrap justify-between gap-3">
               <div>
-                <p className="text-xs text-slate-400">{trip.id}</p>
-
-                <h3 className="font-bold mt-1">{trip.time}</h3>
-
-                <h4 className="text-lg font-semibold mt-1">{trip.title}</h4>
+                <p className="text-xs text-slate-400">{trip.reference}</p>
+                <h3 className="mt-1 font-bold">{formatTime(trip.departure_at)} - {formatTime(trip.expected_return_at)}</h3>
+                <h4 className="mt-1 text-lg font-semibold">{trip.purpose}</h4>
               </div>
-
-              <span className="text-xs px-3 py-1 rounded-full bg-slate-100">
-                {trip.status}
-              </span>
+              <span className={`h-fit rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[trip.status] || "bg-slate-100 text-slate-600"}`}>{trip.status}</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mt-4">
-              <div>
-                <p className="text-xs text-slate-400">PICKUP</p>
-
-                <p>{trip.pickup}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-slate-400">DROP-OFF</p>
-
-                <p>{trip.dropoff}</p>
-              </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div><p className="text-xs text-slate-400">DESTINATION</p><p>{trip.destination}</p></div>
+              <div><p className="text-xs text-slate-400">REQUESTED BY</p><p>{trip.requester_name}</p></div>
+              <div><p className="text-xs text-slate-400">VEHICLE</p><p>{trip.vehicle ? `${trip.vehicle.make} ${trip.vehicle.model} (${trip.vehicle.registration_number})` : "Not assigned"}</p></div>
             </div>
-
-            {trip.status === "Pending" && (
-              <button className="w-full mt-5 bg-blue-600 text-white py-3 rounded-xl">
-                Start Trip
-              </button>
-            )}
           </div>
         ))}
       </div>

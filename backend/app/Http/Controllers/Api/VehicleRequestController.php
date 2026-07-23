@@ -154,8 +154,12 @@ class VehicleRequestController extends Controller
                 abort(422, 'The selected vehicle is no longer available.');
             }
 
-            if ($driver->status !== 'available') {
-                abort(422, 'The selected driver is no longer available.');
+            if ($driver->hasScheduleConflict(
+                $vehicleRequest->departure_at,
+                $vehicleRequest->expected_return_at,
+                $vehicleRequest->id,
+            )) {
+                abort(422, 'The selected driver already has a journey during this time slot.');
             }
 
             $vehicleRequest->update([
@@ -169,7 +173,6 @@ class VehicleRequestController extends Controller
             $vehicle->update(['status' => 'unavailable']);
             $driver->update([
                 'allocated_vehicle' => $vehicle->registration_number,
-                'status' => 'unavailable',
             ]);
         });
 

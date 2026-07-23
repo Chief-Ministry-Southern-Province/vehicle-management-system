@@ -89,34 +89,59 @@ function Breadcrumb() {
 }
 function SummaryCard({ icon, tone, label, value, sub }) {
   const tones = {
-    indigo: "from-indigo-500 to-indigo-600 bg-indigo-500/10 ring-indigo-100",
-    emerald:
-      "from-emerald-500 to-emerald-600 bg-emerald-500/10 ring-emerald-100",
-    red: "from-red-500 to-red-600 bg-red-500/10 ring-red-100",
-    amber: "from-amber-400 to-amber-500 bg-amber-500/10 ring-amber-100",
+    indigo: {
+      accent: "bg-indigo-500",
+      icon: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+      glow: "bg-indigo-200",
+    },
+    emerald: {
+      accent: "bg-emerald-500",
+      icon: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+      glow: "bg-emerald-200",
+    },
+    red: {
+      accent: "bg-red-500",
+      icon: "bg-red-50 text-red-600 ring-red-100",
+      glow: "bg-red-200",
+    },
+    amber: {
+      accent: "bg-amber-500",
+      icon: "bg-amber-50 text-amber-600 ring-amber-100",
+      glow: "bg-amber-200",
+    },
   };
-  const [iconGrad, glow, ring] = tones[tone].split(" ");
+  const style = tones[tone] || tones.indigo;
+
   return (
     <div
-      className={`relative overflow-hidden rounded-[16px] border border-slate-100 bg-white p-4 shadow-sm ring-1 ${ring}`}
+      className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg sm:p-5"
     >
       <div
-        className={`pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full blur-2xl opacity-70 ${glow}`}
+        className={`absolute inset-x-0 top-0 h-1 ${style.accent}`}
       />
-      <div className="relative flex items-center gap-3">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md bg-gradient-to-br ${iconGrad}`}
-        >
-          {icon}
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-500">{label}</p>
-          <p className="text-xl font-bold text-slate-800 leading-tight">
+      <div
+        className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-40 blur-3xl transition-transform duration-300 group-hover:scale-125 ${style.glow}`}
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {label}
+          </p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {value}
           </p>
         </div>
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110 ${style.icon}`}
+        >
+          {icon}
+        </div>
       </div>
-      {sub && <p className="relative mt-2 text-[11px] text-slate-400">{sub}</p>}
+
+      {sub && (
+        <p className="relative mt-3 truncate text-xs text-slate-400">{sub}</p>
+      )}
     </div>
   );
 }
@@ -377,7 +402,7 @@ export default function TotalVehicles() {
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             icon={<FiTruck />}
             tone="indigo"

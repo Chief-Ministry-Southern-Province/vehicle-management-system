@@ -233,6 +233,25 @@ const menuItems = [
     ],
   },
 
+  {
+    title: "ADMINISTRATION PANEL",
+    items: [
+      {
+        name: "Create Employee",
+        path: "/register",
+        icon: <FiBarChart2 />,
+        roles: ["deputy_secretary"],
+      },
+
+      {
+        name: "System Changes",
+        path: "/setting",
+        icon: <FiUsers />,
+        roles: ["deputy_secretary"],
+      },
+    ],
+  },
+
   // ==========================================
   // REPORTS
   // ==========================================
