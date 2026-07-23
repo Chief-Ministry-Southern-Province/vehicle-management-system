@@ -15,6 +15,35 @@ class DriverController extends Controller
         return response()->json(['success' => true, 'data' => ['drivers' => Driver::orderBy('driver_id')->get()]]);
     }
 
+    public function dashboardStats(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $trips = $driver->vehicleRequests()->where('status', 'approved');
+        $total = (clone $trips)->count();
+        $completed = (clone $trips)->where('expected_return_at', '<', now())->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'stats' => [
+                    'total_trips' => $total,
+                    'today_trips' => (clone $trips)->whereDate('departure_at', today())->count(),
+                    'scheduled_trips' => (clone $trips)->where('departure_at', '>=', now())->count(),
+                    'completed_trips' => $completed,
+                    'completion_rate' => $total > 0 ? (int) round(($completed / $total) * 100) : 0,
+                ],
+            ],
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $driver = Driver::create($this->payload($request));

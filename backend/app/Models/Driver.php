@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Driver extends Model
@@ -22,5 +23,10 @@ class Driver extends Model
             'previous_journeys' => 'array',
             'current_assignment' => 'array',
         ];
+    }
+
+    public function vehicleRequests(): HasMany
+    {
+        return $this->hasMany(VehicleRequest::class, 'allocated_driver_id');
     }
 }

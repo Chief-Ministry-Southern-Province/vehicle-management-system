@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'recommend']);
     });
 
+    Route::middleware('role:driver')->get('/driver/dashboard-stats', [DriverController::class, 'dashboardStats']);
+
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);

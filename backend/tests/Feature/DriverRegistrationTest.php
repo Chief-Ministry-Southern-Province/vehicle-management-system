@@ -50,6 +50,13 @@ class DriverRegistrationTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.user.driver.licence_number', 'B1234567')
             ->assertJsonPath('data.user.driver.blood_group', 'O+');
+
+        $this->actingAs($driverUser)->getJson('/api/driver/dashboard-stats')
+            ->assertOk()
+            ->assertJsonPath('data.stats.total_trips', 0)
+            ->assertJsonPath('data.stats.today_trips', 0)
+            ->assertJsonPath('data.stats.scheduled_trips', 0)
+            ->assertJsonPath('data.stats.completed_trips', 0);
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void
