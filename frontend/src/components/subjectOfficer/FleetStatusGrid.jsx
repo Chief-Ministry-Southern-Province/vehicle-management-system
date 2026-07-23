@@ -64,8 +64,26 @@ export default function FleetStatusGrid() {
   }, []);
 
   useEffect(() => {
-    loadFleet();
-  }, [loadFleet]);
+    let cancelled = false;
+
+    getVehicles()
+      .then((response) => {
+        if (!cancelled) setVehicles(getVehicleList(response));
+      })
+      .catch((loadError) => {
+        if (!cancelled) {
+          setVehicles([]);
+          setError(getErrorMessage(loadError));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const summary = useMemo(
     () =>
