@@ -68,6 +68,18 @@ class DriverRegistrationTest extends TestCase
         $this->actingAs($driverUser)->getJson('/api/driver/assigned-vehicle')
             ->assertOk()
             ->assertJsonPath('data.vehicle', null);
+
+        $this->actingAs($driverUser)->postJson('/api/driver/issue-reports', [
+            'issue_type' => 'journey_delay',
+            'details' => 'Heavy traffic is delaying the journey.',
+        ])->assertCreated()
+            ->assertJsonPath('data.report.driver.nic', '200012345678')
+            ->assertJsonPath('data.report.issue_type', 'journey_delay');
+
+        $this->actingAs($deputySecretary)->getJson('/api/issue-reports')
+            ->assertOk()
+            ->assertJsonPath('data.reports.0.driver.full_name', 'Test Driver')
+            ->assertJsonPath('data.reports.0.details', 'Heavy traffic is delaying the journey.');
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void

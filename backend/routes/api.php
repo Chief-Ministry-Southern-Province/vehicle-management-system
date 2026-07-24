@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\VehicleRequestController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\DashboardStatsController;
+use App\Http\Controllers\Api\VehicleIssueReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:driver')->get('/driver/dashboard-stats', [DriverController::class, 'dashboardStats']);
     Route::middleware('role:driver')->get('/driver/today-schedule', [DriverController::class, 'todaySchedule']);
     Route::middleware('role:driver')->get('/driver/assigned-vehicle', [DriverController::class, 'assignedVehicle']);
+    Route::middleware('role:driver')->post('/driver/issue-reports', [VehicleIssueReportController::class, 'store']);
+    Route::middleware('role:subject_officer,deputy_secretary')->get('/issue-reports', [VehicleIssueReportController::class, 'index']);
 
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
