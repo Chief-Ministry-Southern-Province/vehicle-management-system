@@ -60,7 +60,7 @@ class DriverController extends Controller
         ]);
     }
 
-    public function todaySchedule(Request $request): JsonResponse
+    public function scheduledJourneys(Request $request): JsonResponse
     {
         $driver = $request->user()->driver;
 
@@ -73,34 +73,62 @@ class DriverController extends Controller
 
         $trips = $driver->vehicleRequests()
             ->where('status', 'approved')
-            ->whereDate('departure_at', today())
+            ->where('expected_return_at', '>', now())
             ->with('allocatedVehicle:id,registration_number,make,model')
             ->orderBy('departure_at')
             ->get()
-            ->map(function ($trip): array {
-                $status = match (true) {
-                    $trip->expected_return_at->isPast() => 'Completed',
-                    $trip->departure_at->isPast() => 'Ongoing',
-                    default => 'Pending',
-                };
-
-                return [
-                    'id' => $trip->id,
-                    'reference' => 'REQ-' . str_pad((string) $trip->id, 4, '0', STR_PAD_LEFT),
-                    'departure_at' => $trip->departure_at->toISOString(),
-                    'expected_return_at' => $trip->expected_return_at->toISOString(),
-                    'purpose' => $trip->purpose,
-                    'destination' => $trip->destination,
-                    'requester_name' => $trip->requester_name,
-                    'status' => $status,
-                    'vehicle' => $trip->allocatedVehicle,
-                ];
-            });
+            ->map(fn ($trip): array => $this->tripPayload($trip));
 
         return response()->json([
             'success' => true,
             'data' => ['trips' => $trips],
         ]);
+    }
+
+    public function tripHistory(Request $request): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No driver directory record is linked to this account.',
+            ], 404);
+        }
+
+        $trips = $driver->vehicleRequests()
+            ->where('status', 'approved')
+            ->where('expected_return_at', '<=', now())
+            ->with('allocatedVehicle:id,registration_number,make,model')
+            ->orderByDesc('expected_return_at')
+            ->get()
+            ->map(fn ($trip): array => $this->tripPayload($trip));
+
+        return response()->json([
+            'success' => true,
+            'data' => ['trips' => $trips],
+        ]);
+    }
+
+    private function tripPayload($trip): array
+    {
+        $status = match (true) {
+            $trip->expected_return_at->lte(now()) => 'Completed',
+            $trip->departure_at->lte(now()) => 'Ongoing',
+            default => 'Pending',
+        };
+
+        return [
+            'id' => $trip->id,
+            'reference' => 'REQ-' . str_pad((string) $trip->id, 4, '0', STR_PAD_LEFT),
+            'departure_at' => $trip->departure_at->toISOString(),
+            'expected_return_at' => $trip->expected_return_at->toISOString(),
+            'purpose' => $trip->purpose,
+            'destination' => $trip->destination,
+            'requester_name' => $trip->requester_name,
+            'status' => $status,
+            'vehicle' => $trip->allocatedVehicle,
+        ];
     }
 
     public function assignedVehicle(Request $request): JsonResponse

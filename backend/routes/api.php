@@ -40,7 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('role:driver')->get('/driver/dashboard-stats', [DriverController::class, 'dashboardStats']);
-    Route::middleware('role:driver')->get('/driver/today-schedule', [DriverController::class, 'todaySchedule']);
+    Route::middleware('role:driver')->get('/driver/scheduled-journeys', [DriverController::class, 'scheduledJourneys']);
+    Route::middleware('role:driver')->get('/driver/trip-history', [DriverController::class, 'tripHistory']);
     Route::middleware('role:driver')->get('/driver/assigned-vehicle', [DriverController::class, 'assignedVehicle']);
     Route::middleware('role:driver')->post('/driver/issue-reports', [VehicleIssueReportController::class, 'store']);
     Route::middleware('role:subject_officer,deputy_secretary')->get('/issue-reports', [VehicleIssueReportController::class, 'index']);

@@ -61,7 +61,11 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.stats.scheduled_trips', 0)
             ->assertJsonPath('data.stats.completed_trips', 0);
 
-        $this->actingAs($driverUser)->getJson('/api/driver/today-schedule')
+        $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
+            ->assertOk()
+            ->assertJsonCount(0, 'data.trips');
+
+        $this->actingAs($driverUser)->getJson('/api/driver/trip-history')
             ->assertOk()
             ->assertJsonCount(0, 'data.trips');
 
@@ -145,6 +149,63 @@ class DriverRegistrationTest extends TestCase
 
             Carbon::setTestNow('2026-07-23 13:30:00');
             $this->assertSame('available', $driver->fresh()->status);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_scheduled_journeys_and_trip_history_are_split_by_completion_time(): void
+    {
+        Carbon::setTestNow('2026-07-24 12:00:00');
+
+        try {
+            $driverUser = User::factory()->create([
+                'employee_id' => '200012345680',
+                'role' => 'driver',
+            ]);
+            $requester = User::factory()->create();
+            $driver = Driver::create([
+                'driver_id' => 'DRV-JOURNEY-1',
+                'full_name' => $driverUser->name,
+                'date_of_birth' => '2000-01-01',
+                'nic' => $driverUser->employee_id,
+                'address' => 'Test Road',
+                'contact_number' => '0712345678',
+                'licence_number' => 'JOURNEY-LIC-1',
+                'licence_type' => 'B',
+                'licence_renewal_date' => '2028-01-01',
+            ]);
+
+            $makeTrip = fn (string $purpose, string $departure, string $return) => VehicleRequest::create([
+                'user_id' => $requester->id,
+                'requester_name' => $requester->name,
+                'purpose' => $purpose,
+                'destination' => 'Colombo',
+                'departure_at' => $departure,
+                'expected_return_at' => $return,
+                'passenger_count' => 1,
+                'status' => 'approved',
+                'allocated_driver_id' => $driver->id,
+            ]);
+
+            $makeTrip('Completed journey', '2026-07-23 08:00:00', '2026-07-23 10:00:00');
+            $makeTrip('Ongoing journey', '2026-07-24 10:00:00', '2026-07-24 14:00:00');
+            $makeTrip('Future journey', '2026-07-26 08:00:00', '2026-07-26 10:00:00');
+
+            $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
+                ->assertOk()
+                ->assertJsonCount(2, 'data.trips')
+                ->assertJsonPath('data.trips.0.purpose', 'Ongoing journey')
+                ->assertJsonPath('data.trips.0.status', 'Ongoing')
+                ->assertJsonPath('data.trips.1.purpose', 'Future journey')
+                ->assertJsonMissing(['purpose' => 'Completed journey']);
+
+            $this->actingAs($driverUser)->getJson('/api/driver/trip-history')
+                ->assertOk()
+                ->assertJsonCount(1, 'data.trips')
+                ->assertJsonPath('data.trips.0.purpose', 'Completed journey')
+                ->assertJsonPath('data.trips.0.status', 'Completed')
+                ->assertJsonMissing(['purpose' => 'Ongoing journey']);
         } finally {
             Carbon::setTestNow();
         }
