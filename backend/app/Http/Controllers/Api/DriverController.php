@@ -8,6 +8,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\VehicleRequest;
 
 class DriverController extends Controller
 {
@@ -44,7 +45,7 @@ class DriverController extends Controller
 
         $trips = $driver->vehicleRequests()->where('status', 'approved');
         $total = (clone $trips)->count();
-        $completed = (clone $trips)->where('expected_return_at', '<', now())->count();
+        $completed = (clone $trips)->where('journey_status', 'completed')->count();
 
         return response()->json([
             'success' => true,
@@ -52,7 +53,7 @@ class DriverController extends Controller
                 'stats' => [
                     'total_trips' => $total,
                     'today_trips' => (clone $trips)->whereDate('departure_at', today())->count(),
-                    'scheduled_trips' => (clone $trips)->where('departure_at', '>=', now())->count(),
+                    'scheduled_trips' => (clone $trips)->where('journey_status', '!=', 'completed')->count(),
                     'completed_trips' => $completed,
                     'completion_rate' => $total > 0 ? (int) round(($completed / $total) * 100) : 0,
                 ],
@@ -73,8 +74,8 @@ class DriverController extends Controller
 
         $trips = $driver->vehicleRequests()
             ->where('status', 'approved')
-            ->where('expected_return_at', '>', now())
-            ->with('allocatedVehicle:id,registration_number,make,model')
+            ->where('journey_status', '!=', 'completed')
+            ->with('allocatedVehicle')
             ->orderBy('departure_at')
             ->get()
             ->map(fn ($trip): array => $this->tripPayload($trip));
@@ -98,9 +99,9 @@ class DriverController extends Controller
 
         $trips = $driver->vehicleRequests()
             ->where('status', 'approved')
-            ->where('expected_return_at', '<=', now())
-            ->with('allocatedVehicle:id,registration_number,make,model')
-            ->orderByDesc('expected_return_at')
+            ->where('journey_status', 'completed')
+            ->with('allocatedVehicle')
+            ->orderByDesc('journey_completed_at')
             ->get()
             ->map(fn ($trip): array => $this->tripPayload($trip));
 
@@ -112,10 +113,10 @@ class DriverController extends Controller
 
     private function tripPayload($trip): array
     {
-        $status = match (true) {
-            $trip->expected_return_at->lte(now()) => 'Completed',
-            $trip->departure_at->lte(now()) => 'Ongoing',
-            default => 'Pending',
+        $status = match ($trip->journey_status) {
+            'ongoing' => 'Ongoing',
+            'completed' => 'Completed',
+            default => 'Scheduled',
         };
 
         return [
@@ -126,9 +127,56 @@ class DriverController extends Controller
             'purpose' => $trip->purpose,
             'destination' => $trip->destination,
             'requester_name' => $trip->requester_name,
+            'passenger_count' => $trip->passenger_count,
+            'passenger_names' => $trip->passenger_names,
             'status' => $status,
+            'journey_status' => $trip->journey_status,
+            'journey_started_at' => $trip->journey_started_at?->toISOString(),
+            'journey_completed_at' => $trip->journey_completed_at?->toISOString(),
             'vehicle' => $trip->allocatedVehicle,
         ];
+    }
+
+    public function updateJourneyStatus(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        $driver = $request->user()->driver;
+
+        if (! $driver || $vehicleRequest->allocated_driver_id !== $driver->id || $vehicleRequest->status !== 'approved') {
+            return response()->json(['success' => false, 'message' => 'Journey not found.'], 404);
+        }
+
+        $validated = $request->validate([
+            'action' => ['required', Rule::in(['start', 'complete'])],
+        ]);
+
+        if ($validated['action'] === 'start') {
+            if ($vehicleRequest->journey_status !== 'scheduled') {
+                return response()->json(['success' => false, 'message' => 'Only a scheduled journey can be started.'], 422);
+            }
+
+            $vehicleRequest->update([
+                'journey_status' => 'ongoing',
+                'journey_started_at' => now(),
+            ]);
+        } else {
+            if ($vehicleRequest->journey_status !== 'ongoing') {
+                return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
+            }
+
+            $vehicleRequest->update([
+                'journey_status' => 'completed',
+                'journey_completed_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $validated['action'] === 'start' ? 'Trip started.' : 'Trip completed.',
+            'data' => [
+                'trip' => $this->tripPayload($vehicleRequest->fresh()->load('allocatedVehicle')),
+                'driver_status' => $validated['action'] === 'start' ? 'ongoing' : 'available',
+            ],
+        ]);
     }
 
     public function assignedVehicle(Request $request): JsonResponse

@@ -25,6 +25,9 @@ class VehicleRequest extends Model
         'attachment_path',
         'attachment_original_name',
         'status',
+        'journey_status',
+        'journey_started_at',
+        'journey_completed_at',
         'recommendation_status',
         'department_priority',
         'recommendation_notes',
@@ -48,6 +51,8 @@ class VehicleRequest extends Model
             'allocated_at' => 'datetime',
             'driver_notified_at' => 'datetime',
             'approved_at' => 'datetime',
+            'journey_started_at' => 'datetime',
+            'journey_completed_at' => 'datetime',
         ];
     }
 

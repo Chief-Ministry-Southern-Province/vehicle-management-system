@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Vehicle;
 use App\Models\VehicleIssueReport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +20,7 @@ class VehicleIssueReportController extends Controller
         $validated = $request->validate([
             'issue_type' => ['required', Rule::in(self::ISSUE_TYPES)],
             'details' => ['nullable', 'string', 'max:1000'],
+            'vehicle_request_id' => ['required', 'integer', 'exists:vehicle_requests,id'],
         ]);
         $driver = $request->user()->driver;
 
@@ -29,16 +29,21 @@ class VehicleIssueReportController extends Controller
         }
 
         $journey = $driver->vehicleRequests()
+            ->whereKey($validated['vehicle_request_id'])
             ->where('status', 'approved')
-            ->where('expected_return_at', '>=', now())
-            ->orderBy('departure_at')
+            ->where('journey_status', '!=', 'completed')
+            ->with('allocatedVehicle')
             ->first();
-        $registration = $journey?->allocatedVehicle?->registration_number
-            ?: $driver->allocated_vehicle
-            ?: data_get($driver->current_assignment, 'vehicle_registration');
-        $vehicle = $registration
-            ? Vehicle::where('registration_number', $registration)->first()
-            : null;
+
+        if (! $journey) {
+            return response()->json(['success' => false, 'message' => 'The selected journey is not assigned to this driver.'], 422);
+        }
+
+        $vehicle = $journey->allocatedVehicle;
+
+        if (! $vehicle) {
+            return response()->json(['success' => false, 'message' => 'No vehicle is allocated to this journey.'], 422);
+        }
 
         $report = VehicleIssueReport::create([
             'driver_id' => $driver->id,

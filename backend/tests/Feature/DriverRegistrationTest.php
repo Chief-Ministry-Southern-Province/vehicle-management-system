@@ -76,14 +76,7 @@ class DriverRegistrationTest extends TestCase
         $this->actingAs($driverUser)->postJson('/api/driver/issue-reports', [
             'issue_type' => 'journey_delay',
             'details' => 'Heavy traffic is delaying the journey.',
-        ])->assertCreated()
-            ->assertJsonPath('data.report.driver.nic', '200012345678')
-            ->assertJsonPath('data.report.issue_type', 'journey_delay');
-
-        $this->actingAs($deputySecretary)->getJson('/api/issue-reports')
-            ->assertOk()
-            ->assertJsonPath('data.reports.0.driver.full_name', 'Test Driver')
-            ->assertJsonPath('data.reports.0.details', 'Heavy traffic is delaying the journey.');
+        ])->assertUnprocessable();
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void
@@ -154,7 +147,7 @@ class DriverRegistrationTest extends TestCase
         }
     }
 
-    public function test_scheduled_journeys_and_trip_history_are_split_by_completion_time(): void
+    public function test_driver_can_start_complete_and_report_the_vehicle_for_a_journey(): void
     {
         Carbon::setTestNow('2026-07-24 12:00:00');
 
@@ -176,27 +169,44 @@ class DriverRegistrationTest extends TestCase
                 'licence_renewal_date' => '2028-01-01',
             ]);
 
-            $makeTrip = fn (string $purpose, string $departure, string $return) => VehicleRequest::create([
+            $vehicle = \App\Models\Vehicle::create([
+                'registration_number' => 'TEST-1001',
+                'vehicle_type' => 'Van',
+                'make' => 'Toyota',
+                'model' => 'Hiace',
+                'fuel_type' => 'Diesel',
+                'fuel_capacity' => 70,
+                'fuel_level' => 75,
+                'seat_capacity' => 12,
+                'revenue_license_expiry' => '2027-07-24',
+            ]);
+
+            $makeTrip = fn (string $purpose, string $departure, string $return, string $journeyStatus) => VehicleRequest::create([
                 'user_id' => $requester->id,
                 'requester_name' => $requester->name,
                 'purpose' => $purpose,
                 'destination' => 'Colombo',
                 'departure_at' => $departure,
                 'expected_return_at' => $return,
-                'passenger_count' => 1,
+                'passenger_count' => 2,
+                'passenger_names' => 'Passenger One, Passenger Two',
                 'status' => 'approved',
+                'journey_status' => $journeyStatus,
                 'allocated_driver_id' => $driver->id,
+                'allocated_vehicle_id' => $vehicle->id,
             ]);
 
-            $makeTrip('Completed journey', '2026-07-23 08:00:00', '2026-07-23 10:00:00');
-            $makeTrip('Ongoing journey', '2026-07-24 10:00:00', '2026-07-24 14:00:00');
-            $makeTrip('Future journey', '2026-07-26 08:00:00', '2026-07-26 10:00:00');
+            $makeTrip('Completed journey', '2026-07-23 08:00:00', '2026-07-23 10:00:00', 'completed');
+            $ongoing = $makeTrip('Ongoing journey', '2026-07-24 10:00:00', '2026-07-24 14:00:00', 'ongoing');
+            $future = $makeTrip('Future journey', '2026-07-26 08:00:00', '2026-07-26 10:00:00', 'scheduled');
 
             $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
                 ->assertOk()
                 ->assertJsonCount(2, 'data.trips')
                 ->assertJsonPath('data.trips.0.purpose', 'Ongoing journey')
                 ->assertJsonPath('data.trips.0.status', 'Ongoing')
+                ->assertJsonPath('data.trips.0.passenger_count', 2)
+                ->assertJsonPath('data.trips.0.vehicle.registration_number', 'TEST-1001')
                 ->assertJsonPath('data.trips.1.purpose', 'Future journey')
                 ->assertJsonMissing(['purpose' => 'Completed journey']);
 
@@ -206,6 +216,36 @@ class DriverRegistrationTest extends TestCase
                 ->assertJsonPath('data.trips.0.purpose', 'Completed journey')
                 ->assertJsonPath('data.trips.0.status', 'Completed')
                 ->assertJsonMissing(['purpose' => 'Ongoing journey']);
+
+            $this->actingAs($driverUser)->postJson('/api/driver/issue-reports', [
+                'vehicle_request_id' => $ongoing->id,
+                'issue_type' => 'mechanical_issue',
+                'details' => 'Engine warning light is on.',
+            ])->assertCreated()
+                ->assertJsonPath('data.report.vehicle_id', $vehicle->id)
+                ->assertJsonPath('data.report.vehicle_request_id', $ongoing->id);
+
+            $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
+                'action' => 'start',
+            ])->assertOk()
+                ->assertJsonPath('data.trip.status', 'Ongoing')
+                ->assertJsonPath('data.driver_status', 'ongoing');
+
+            $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
+                'action' => 'complete',
+            ])->assertOk()
+                ->assertJsonPath('data.trip.status', 'Completed')
+                ->assertJsonPath('data.driver_status', 'available');
+
+            $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
+                ->assertOk()
+                ->assertJsonCount(1, 'data.trips')
+                ->assertJsonMissing(['purpose' => 'Future journey']);
+
+            $this->actingAs($driverUser)->getJson('/api/driver/trip-history')
+                ->assertOk()
+                ->assertJsonCount(2, 'data.trips')
+                ->assertJsonFragment(['purpose' => 'Future journey']);
         } finally {
             Carbon::setTestNow();
         }

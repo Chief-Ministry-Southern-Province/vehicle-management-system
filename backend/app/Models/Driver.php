@@ -35,6 +35,9 @@ class Driver extends Model
     {
         return $this->vehicleRequests()
             ->whereIn('status', ['vehicle_allocated', 'approved'])
+            ->where(function ($query) {
+                $query->whereNull('journey_status')->orWhere('journey_status', '!=', 'completed');
+            })
             ->when($ignoreRequestId, fn ($query) => $query->whereKeyNot($ignoreRequestId))
             ->where('departure_at', '<', $endsAt)
             ->where('expected_return_at', '>', $startsAt)
