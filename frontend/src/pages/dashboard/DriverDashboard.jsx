@@ -1,6 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import DriverStats from "../../components/driver/dashboard/DriverStats";
-import TodaySchedule from "../../components/driver/dashboard/TodaySchedule";
+import ScheduledJourney from "../../components/driver/dashboard/TodaySchedule";
 import AssignedVehicle from "../../components/driver/dashboard/AssignedVehicle";
 export default function DriverDashboard() {
   return (
@@ -13,9 +13,7 @@ export default function DriverDashboard() {
               Welcome back, Robert
             </h1>
 
-            <p className="text-slate-500 mt-2">
-              You have 4 trips scheduled for today. Drive safely.
-            </p>
+            <p className="text-slate-500 mt-2">Review your assigned journeys and drive safely.</p>
           </div>
         </div>
 
@@ -24,7 +22,7 @@ export default function DriverDashboard() {
         <div className="grid lg:grid-cols-12 gap-6 mt-6">
           {/* Left */}
           <div className="lg:col-span-8">
-            <TodaySchedule />
+            <ScheduledJourney />
           </div>
 
           {/* Right */}

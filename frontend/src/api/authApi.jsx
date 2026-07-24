@@ -145,9 +145,18 @@ export const getDriverDashboardStats = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
-export const getDriverTodaySchedule = async () => {
+export const getDriverScheduledJourneys = async () => {
   try {
-    const response = await API.get("/driver/today-schedule", {
+    const response = await API.get("/driver/scheduled-journeys", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriverTripHistory = async () => {
+  try {
+    const response = await API.get("/driver/trip-history", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;
