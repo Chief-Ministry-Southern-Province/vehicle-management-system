@@ -163,6 +163,24 @@ export const getDriverAssignedVehicle = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const createVehicleIssueReport = async (report) => {
+  try {
+    const response = await API.post("/driver/issue-reports", report, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getVehicleIssueReports = async () => {
+  try {
+    const response = await API.get("/issue-reports", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 // ============================
 // Vehicle requests
 // ============================

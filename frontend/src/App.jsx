@@ -40,6 +40,7 @@ import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDet
 import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
+import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
 
 const withAuth = (element, allowedRoles) => (
@@ -83,6 +84,7 @@ function App() {
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
             <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />)}/>
+            <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />, ["subject_officer", "deputy_secretary"])} />
 
             
             
@@ -108,7 +110,7 @@ function App() {
             
             <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />
             <Route path="/tripshistory" element={withAuth(<TripsHistory />)} />
-            <Route path="/reportvehicle" element={withAuth(<ReportVehicle />)} />
+            <Route path="/reportvehicle" element={withAuth(<ReportVehicle />, ["driver"])} />
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />

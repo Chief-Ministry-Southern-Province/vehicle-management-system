@@ -10,6 +10,7 @@ import {
   FiCheckCircle,
   FiClipboard,
   FiClock,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -145,7 +146,7 @@ const menuItems = [
         roles: ["driver"],
       },
       {
-        name: "Report Vehicle",
+        name: "Report an Issue",
         path: "/reportvehicle",
         icon: <FiClock />,
         roles: ["driver"],
@@ -189,6 +190,12 @@ const menuItems = [
         path: "/repairrecords",
         icon: <FiTool />,
         roles: ["subject_officer"],
+      },
+      {
+        name: "Driver Issue Reports",
+        path: "/ontimeavailability",
+        icon: <FiAlertTriangle />,
+        roles: ["subject_officer", "deputy_secretary"],
       },
     ],
   },
