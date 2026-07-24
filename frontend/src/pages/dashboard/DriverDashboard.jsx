@@ -1,7 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import DriverStats from "../../components/driver/dashboard/DriverStats";
 import ScheduledJourney from "../../components/driver/dashboard/TodaySchedule";
-import AssignedVehicle from "../../components/driver/dashboard/AssignedVehicle";
 export default function DriverDashboard() {
   return (
     <DashboardLayout>
@@ -25,10 +24,7 @@ export default function DriverDashboard() {
             <ScheduledJourney />
           </div>
 
-          {/* Right */}
-          <div className="lg:col-span-4 space-y-6">
-            <AssignedVehicle />
-          </div>
+        
         </div>
       </div>
     </DashboardLayout>

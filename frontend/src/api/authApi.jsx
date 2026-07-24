@@ -163,6 +163,15 @@ export const getDriverTripHistory = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const updateDriverJourneyStatus = async (journeyId, action) => {
+  try {
+    const response = await API.patch(`/driver/journeys/${journeyId}/status`, { action }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const getDriverAssignedVehicle = async () => {
   try {
     const response = await API.get("/driver/assigned-vehicle", {

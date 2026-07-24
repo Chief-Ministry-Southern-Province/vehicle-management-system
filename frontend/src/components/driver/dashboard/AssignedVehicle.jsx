@@ -58,7 +58,10 @@ export default function AssignedVehicle() {
 
       <div className="p-5">
         <h3 className="text-2xl font-bold">{vehicle.make} {vehicle.model}</h3>
-        <p className="text-slate-500">{vehicle.registration_number}</p>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="text-slate-500">{vehicle.registration_number}</p>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold capitalize text-emerald-700">{vehicle.status}</span>
+        </div>
 
         <div className="mt-5">
           <div className="mb-1 flex justify-between"><span>Fuel Level</span><span>{fuelLevel}%</span></div>
@@ -69,8 +72,9 @@ export default function AssignedVehicle() {
           <div><dt className="text-slate-500">Vehicle Type</dt><dd className="font-bold text-slate-800">{vehicle.vehicle_type}</dd></div>
           <div><dt className="text-slate-500">Seat Capacity</dt><dd className="font-bold text-slate-800">{vehicle.seat_capacity || "Not recorded"}</dd></div>
           <div><dt className="text-slate-500">Fuel Type</dt><dd className="font-bold text-slate-800">{vehicle.fuel_type || "Not recorded"}</dd></div>
-          <div><dt className="text-slate-500">Status</dt><dd className="font-bold capitalize text-slate-800">{vehicle.status}</dd></div>
+          <div><dt className="text-slate-500">Fuel Capacity</dt><dd className="font-bold text-slate-800">{vehicle.fuel_capacity ? `${vehicle.fuel_capacity} L` : "Not recorded"}</dd></div>
           <div className="col-span-2"><dt className="text-slate-500">Revenue Licence Expiry</dt><dd className="font-bold text-slate-800">{formatDate(vehicle.revenue_license_expiry)}</dd></div>
+          <div className="col-span-2"><dt className="text-slate-500">Registration Expiry</dt><dd className="font-bold text-slate-800">{formatDate(vehicle.registration_expiry)}</dd></div>
         </dl>
 
         <button type="button" onClick={() => navigate("/reportvehicle")} className="mt-6 w-full rounded-xl border border-blue-200 py-3 font-semibold text-blue-600 hover:bg-blue-50">Report Vehicle Issue</button>

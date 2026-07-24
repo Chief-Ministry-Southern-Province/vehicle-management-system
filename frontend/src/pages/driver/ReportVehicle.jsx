@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FiAlertTriangle, FiSend, FiTruck } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { createVehicleIssueReport, getDriverAssignedVehicle } from "../../api/authApi";
+import { createVehicleIssueReport, getDriverScheduledJourneys } from "../../api/authApi";
 
 const issueOptions = [
   ["vehicle_breakdown", "Vehicle breakdown"],
@@ -16,15 +17,19 @@ const issueOptions = [
 ];
 
 export default function ReportVehicle() {
-  const [vehicle, setVehicle] = useState(null);
-  const [form, setForm] = useState({ issue_type: "", details: "" });
+  const [searchParams] = useSearchParams();
+  const [journeys, setJourneys] = useState([]);
+  const [form, setForm] = useState({ vehicle_request_id: searchParams.get("journey") || "", issue_type: "", details: "" });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getDriverAssignedVehicle()
-      .then((response) => setVehicle(response?.data?.vehicle || null))
-      .catch(() => setVehicle(null));
+    getDriverScheduledJourneys()
+      .then((response) => setJourneys(response?.data?.trips || []))
+      .catch(() => setJourneys([]));
   }, []);
+
+  const journey = journeys.find((item) => String(item.id) === String(form.vehicle_request_id));
+  const vehicle = journey?.vehicle;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -32,7 +37,7 @@ export default function ReportVehicle() {
     try {
       await createVehicleIssueReport(form);
       toast.success("Issue reported successfully.");
-      setForm({ issue_type: "", details: "" });
+      setForm((current) => ({ ...current, issue_type: "", details: "" }));
     } catch (error) {
       toast.error(error?.message || "Unable to submit the issue report.");
     } finally {
@@ -54,11 +59,17 @@ export default function ReportVehicle() {
           </div>
 
           <div className="mt-5 rounded-xl bg-blue-50 p-4 text-sm text-blue-900">
-            <div className="flex items-center gap-2 font-semibold"><FiTruck /> Assigned Vehicle</div>
-            <p className="mt-1">{vehicle ? `${vehicle.make} ${vehicle.model} - ${vehicle.registration_number}` : "No assigned vehicle. You can still report a journey delay."}</p>
+            <div className="flex items-center gap-2 font-semibold"><FiTruck /> Journey Vehicle</div>
+            <p className="mt-1">{vehicle ? `${vehicle.make} ${vehicle.model} - ${vehicle.registration_number}` : "Select a journey to identify its allocated vehicle."}</p>
           </div>
 
           <form onSubmit={submit} className="mt-6 space-y-5">
+            <label className="block text-sm font-semibold text-slate-700">Journey
+              <select required value={form.vehicle_request_id} onChange={(event) => setForm((current) => ({ ...current, vehicle_request_id: event.target.value }))} className={field}>
+                <option value="" disabled>Select a journey</option>
+                {journeys.map((item) => <option key={item.id} value={item.id}>{item.reference} — {item.destination} ({item.vehicle?.registration_number || "No vehicle"})</option>)}
+              </select>
+            </label>
             <label className="block text-sm font-semibold text-slate-700">Issue Type
               <select required value={form.issue_type} onChange={(event) => setForm((current) => ({ ...current, issue_type: event.target.value }))} className={field}>
                 <option value="" disabled>Select an issue</option>
