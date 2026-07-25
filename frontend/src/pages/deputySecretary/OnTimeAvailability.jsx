@@ -30,11 +30,15 @@ export default function OnTimeAvailability() {
           {reports.map((report) => (
             <article key={report.id} className="rounded-2xl border bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
-                <div className="flex gap-3"><span className="rounded-xl bg-amber-50 p-3 text-amber-600"><FiAlertTriangle /></span><div><h2 className="font-bold text-slate-900">{label(report.issue_type)}</h2><p className="text-sm text-slate-500">Reported {dateTime(report.reported_at)}</p></div></div>
+                <div className="flex gap-3"><span className="rounded-xl bg-amber-50 p-3 text-amber-600"><FiAlertTriangle /></span><div><h2 className="font-bold text-slate-900">Driver Issue</h2><p className="text-sm text-slate-500">Reported {dateTime(report.reported_at)}</p></div></div>
                 <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold capitalize text-red-700">{report.status}</span>
               </div>
 
               {report.details && <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{report.details}</p>}
+              <dl className="mt-5 grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm sm:grid-cols-2">
+                <div><dt className="text-slate-500">Driver Status</dt><dd className="mt-1 font-semibold text-red-700">{label(report.journey?.journey_status)}</dd></div>
+                <div><dt className="text-slate-500">Issue Type</dt><dd className="mt-1 font-semibold text-slate-800">{label(report.issue_type)}</dd></div>
+              </dl>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
                 <section><h3 className="flex items-center gap-2 font-bold text-blue-800"><FiUser /> Driver</h3><dl className="mt-3 space-y-2 text-sm"><div><dt className="text-slate-500">Name / ID</dt><dd className="font-semibold">{report.driver?.full_name} ({report.driver?.driver_id})</dd></div><div><dt className="text-slate-500">NIC</dt><dd>{report.driver?.nic}</dd></div><div><dt className="text-slate-500">Contact</dt><dd>{report.driver?.contact_number}</dd></div><div><dt className="text-slate-500">Licence</dt><dd>{report.driver?.licence_number} - {report.driver?.licence_type}</dd></div></dl></section>
                 <section><h3 className="flex items-center gap-2 font-bold text-blue-800"><FiTruck /> Vehicle</h3><dl className="mt-3 space-y-2 text-sm"><div><dt className="text-slate-500">Vehicle</dt><dd className="font-semibold">{report.vehicle ? `${report.vehicle.make} ${report.vehicle.model}` : "Not linked"}</dd></div><div><dt className="text-slate-500">Registration</dt><dd>{report.vehicle?.registration_number || "Not linked"}</dd></div><div><dt className="text-slate-500">Type / Status</dt><dd>{report.vehicle ? `${report.vehicle.vehicle_type} / ${label(report.vehicle.status)}` : "Not linked"}</dd></div></dl></section>

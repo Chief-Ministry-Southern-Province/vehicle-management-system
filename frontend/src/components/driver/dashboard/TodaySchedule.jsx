@@ -35,7 +35,7 @@ export default function ScheduledJourney() {
   }, []);
 
   const changeStatus = async (trip) => {
-    const action = trip.journey_status === "ongoing" ? "complete" : "start";
+    const action = ["ongoing", "issue"].includes(trip.journey_status) ? "complete" : "start";
     setUpdatingId(trip.id);
     try {
       const response = await updateDriverJourneyStatus(trip.id, action);
@@ -92,9 +92,9 @@ export default function ScheduledJourney() {
             </dl>
 
             <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
-              <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60 ${trip.journey_status === "ongoing" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
-                {trip.journey_status === "ongoing" ? <FiCheckCircle /> : <FiPlay />}
-                {updatingId === trip.id ? "Updating..." : trip.journey_status === "ongoing" ? "Complete Trip" : "Start Trip"}
+              <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60 ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
+                {["ongoing", "issue"].includes(trip.journey_status) ? <FiCheckCircle /> : <FiPlay />}
+                {updatingId === trip.id ? "Updating..." : ["ongoing", "issue"].includes(trip.journey_status) ? "Complete Trip" : "Start Trip"}
               </button>
               <button type="button" onClick={() => setSelectedTrip(trip)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><FiEye /> View Details</button>
               <button type="button" onClick={() => navigate(`/reportvehicle?journey=${trip.id}`)} className="inline-flex items-center gap-2 rounded-xl border border-amber-200 px-4 py-2.5 text-sm font-semibold text-amber-700 hover:bg-amber-50"><FiAlertTriangle /> Report Issue</button>
