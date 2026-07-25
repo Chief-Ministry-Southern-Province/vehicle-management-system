@@ -61,6 +61,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'finalApprove']);
     });
 
+    Route::middleware('role:subject_officer,deputy_secretary')
+        ->get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
+
     // Fleet records are read-only for executive roles and editable only by the Subject Officer.
     Route::middleware('role:subject_officer,deputy_secretary,secretary,senior_deputy_secretary')->group(function () {
         Route::get('/vehicles', [VehicleController::class, 'index']);
@@ -72,7 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fleet registration and edits remain restricted to the Subject Officer.
     Route::middleware('role:subject_officer')->group(function () {
-        Route::get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
         Route::post('/vehicles', [VehicleController::class, 'store']);
         // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);

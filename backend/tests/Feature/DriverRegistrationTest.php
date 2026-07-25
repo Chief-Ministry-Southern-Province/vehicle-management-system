@@ -100,6 +100,45 @@ class DriverRegistrationTest extends TestCase
         $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
     }
 
+    public function test_deputy_secretary_can_view_approved_journeys(): void
+    {
+        $deputySecretary = User::factory()->create([
+            'role' => 'deputy_secretary',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($deputySecretary)
+            ->getJson('/api/approved-journeys')
+            ->assertOk()
+            ->assertJsonPath('data.total', 0)
+            ->assertJsonCount(0, 'data.requests');
+    }
+
+    public function test_vehicle_request_local_times_are_stored_as_utc(): void
+    {
+        $employee = User::factory()->create([
+            'role' => 'employee',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($employee)->postJson('/api/vehicle-requests', [
+            'purpose' => 'Annual General Meeting',
+            'destination' => 'Chief Secretary office',
+            'departure_at' => '2026-07-26T10:00',
+            'expected_return_at' => '2026-07-26T14:00',
+            'passenger_count' => 4,
+            'passenger_names' => 'Thisara, Chathura, Anupama, Gunathilaka',
+        ])->assertCreated()
+            ->assertJsonPath('data.vehicle_request.departure_at', '2026-07-26T04:30:00.000000Z')
+            ->assertJsonPath('data.vehicle_request.expected_return_at', '2026-07-26T08:30:00.000000Z');
+
+        $this->assertDatabaseHas('vehicle_requests', [
+            'user_id' => $employee->id,
+            'departure_at' => '2026-07-26 04:30:00',
+            'expected_return_at' => '2026-07-26 08:30:00',
+        ]);
+    }
+
     public function test_driver_is_unavailable_only_inside_an_assigned_journey_time_slot(): void
     {
         Carbon::setTestNow('2026-07-23 09:00:00');

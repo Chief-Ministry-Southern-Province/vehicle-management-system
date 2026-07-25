@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Throwable;
 
 class VehicleRequestController extends Controller
@@ -406,6 +407,17 @@ class VehicleRequestController extends Controller
 
             // The uploaded file itself is not a database column; store only its metadata.
             unset($validated['attachment']);
+
+            // datetime-local inputs contain no offset and represent Sri Lankan
+            // wall-clock time. Persist them as UTC for unambiguous API output.
+            $validated['departure_at'] = Carbon::parse(
+                $validated['departure_at'],
+                config('app.local_timezone'),
+            )->utc();
+            $validated['expected_return_at'] = Carbon::parse(
+                $validated['expected_return_at'],
+                config('app.local_timezone'),
+            )->utc();
 
             $vehicleRequest = VehicleRequest::create([
                 ...$validated,

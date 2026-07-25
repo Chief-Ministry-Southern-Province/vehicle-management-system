@@ -68,6 +68,12 @@ return [
     'timezone' => 'UTC',
 
     /*
+    | Local timezone used for browser datetime-local fields. Database and API
+    | timestamps remain UTC so every dashboard receives an unambiguous instant.
+    */
+    'local_timezone' => env('APP_LOCAL_TIMEZONE', 'Asia/Colombo'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
