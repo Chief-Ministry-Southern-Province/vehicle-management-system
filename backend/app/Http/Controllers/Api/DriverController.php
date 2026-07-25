@@ -115,8 +115,9 @@ class DriverController extends Controller
     {
         $status = match ($trip->journey_status) {
             'ongoing' => 'Ongoing',
+            'issue' => 'Issue',
             'completed' => 'Completed',
-            default => 'Scheduled',
+            default => 'Pending',
         };
 
         return [
@@ -159,7 +160,7 @@ class DriverController extends Controller
                 'journey_started_at' => now(),
             ]);
         } else {
-            if ($vehicleRequest->journey_status !== 'ongoing') {
+            if (! in_array($vehicleRequest->journey_status, ['ongoing', 'issue'], true)) {
                 return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
             }
 

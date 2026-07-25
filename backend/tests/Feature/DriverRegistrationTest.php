@@ -262,7 +262,23 @@ class DriverRegistrationTest extends TestCase
                 'details' => 'Engine warning light is on.',
             ])->assertCreated()
                 ->assertJsonPath('data.report.vehicle_id', $vehicle->id)
-                ->assertJsonPath('data.report.vehicle_request_id', $ongoing->id);
+                ->assertJsonPath('data.report.vehicle_request_id', $ongoing->id)
+                ->assertJsonPath('data.report.journey.journey_status', 'issue');
+
+            $this->assertDatabaseHas('vehicle_requests', [
+                'id' => $ongoing->id,
+                'journey_status' => 'issue',
+            ]);
+
+            $subjectOfficer = User::factory()->create([
+                'role' => 'subject_officer',
+                'status' => 'active',
+            ]);
+
+            $this->actingAs($subjectOfficer)->getJson('/api/issue-reports')
+                ->assertOk()
+                ->assertJsonPath('data.reports.0.issue_type', 'mechanical_issue')
+                ->assertJsonPath('data.reports.0.journey.journey_status', 'issue');
 
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
                 'action' => 'start',

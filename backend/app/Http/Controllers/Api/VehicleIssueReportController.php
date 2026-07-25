@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VehicleIssueReport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class VehicleIssueReportController extends Controller
@@ -45,15 +46,23 @@ class VehicleIssueReportController extends Controller
             return response()->json(['success' => false, 'message' => 'No vehicle is allocated to this journey.'], 422);
         }
 
-        $report = VehicleIssueReport::create([
-            'driver_id' => $driver->id,
-            'vehicle_id' => $vehicle?->id,
-            'vehicle_request_id' => $journey?->id,
-            'issue_type' => $validated['issue_type'],
-            'details' => $validated['details'] ?? null,
-            'status' => 'open',
-            'reported_at' => now(),
-        ]);
+        $report = DB::transaction(function () use ($driver, $vehicle, $journey, $validated): VehicleIssueReport {
+            $report = VehicleIssueReport::create([
+                'driver_id' => $driver->id,
+                'vehicle_id' => $vehicle->id,
+                'vehicle_request_id' => $journey->id,
+                'issue_type' => $validated['issue_type'],
+                'details' => $validated['details'] ?? null,
+                'status' => 'open',
+                'reported_at' => now(),
+            ]);
+
+            // A reported driver issue is immediately reflected anywhere the
+            // journey's driver status is displayed.
+            $journey->update(['journey_status' => 'issue']);
+
+            return $report;
+        });
 
         return response()->json([
             'success' => true,
@@ -67,7 +76,7 @@ class VehicleIssueReportController extends Controller
         $reports = VehicleIssueReport::with([
             'driver',
             'vehicle',
-            'journey:id,requester_name,purpose,destination,departure_at,expected_return_at,status',
+            'journey:id,requester_name,purpose,destination,departure_at,expected_return_at,status,journey_status',
         ])->latest('reported_at')->get();
 
         return response()->json([
