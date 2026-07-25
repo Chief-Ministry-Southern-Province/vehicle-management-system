@@ -24,7 +24,8 @@ class DriverController extends Controller
             $drivers->each(function (Driver $driver) use ($validated): void {
                 $driver->setAttribute(
                     'available_for_slot',
-                    ! $driver->hasScheduleConflict($validated['departure_at'], $validated['expected_return_at']),
+                    $driver->isActive()
+                        && ! $driver->hasScheduleConflict($validated['departure_at'], $validated['expected_return_at']),
                 );
             });
         }
@@ -243,7 +244,7 @@ class DriverController extends Controller
             'licence_type' => ['required', 'string', 'max:100'],
             'licence_renewal_date' => ['required', 'date'],
             'allocated_vehicle' => ['nullable', 'string', 'max:50', 'exists:vehicles,registration_number'],
-            'status' => ['sometimes', Rule::in(['available', 'on_trip', 'unavailable'])],
+            'status' => ['sometimes', Rule::in(['active', 'inactive'])],
             'previous_journeys' => ['nullable', 'array', 'max:100'],
             'previous_journeys.*.date' => ['required', 'date'],
             'previous_journeys.*.origin' => ['required', 'string', 'max:255'],

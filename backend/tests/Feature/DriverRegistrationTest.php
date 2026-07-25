@@ -45,7 +45,7 @@ class DriverRegistrationTest extends TestCase
             'full_name' => 'Test Driver',
             'nic' => '200012345678',
             'contact_number' => '0712345678',
-            'status' => 'available',
+            'status' => 'active',
         ]);
 
         $driverUser = User::where('email', 'test.driver@example.com')->firstOrFail();
@@ -159,7 +159,7 @@ class DriverRegistrationTest extends TestCase
                 'licence_number' => 'TIME-LIC-1',
                 'licence_type' => 'B',
                 'licence_renewal_date' => '2028-01-01',
-                'status' => 'unavailable',
+                'status' => 'active',
             ]);
 
             VehicleRequest::create([
@@ -181,6 +181,10 @@ class DriverRegistrationTest extends TestCase
 
             Carbon::setTestNow('2026-07-23 13:30:00');
             $this->assertSame('available', $driver->fresh()->status);
+
+            $driver->update(['status' => 'inactive']);
+            $this->assertSame('unavailable', $driver->fresh()->status);
+            $this->assertFalse($driver->fresh()->isActive());
         } finally {
             Carbon::setTestNow();
         }

@@ -155,6 +155,10 @@ class VehicleRequestController extends Controller
                 abort(422, 'The selected vehicle is no longer available.');
             }
 
+            if (! $driver->isActive()) {
+                abort(422, 'The selected driver is inactive and cannot be allocated.');
+            }
+
             if ($driver->hasScheduleConflict(
                 $vehicleRequest->departure_at,
                 $vehicleRequest->expected_return_at,
