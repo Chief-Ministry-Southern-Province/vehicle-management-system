@@ -1,13 +1,16 @@
 const STATUS_LABELS = {
   available: "Available",
-  on_trip: "On Trip",
   unavailable: "Unavailable",
 };
 
-const STATUS_VALUES = {
-  Available: "available",
-  "On Trip": "on_trip",
-  Unavailable: "unavailable",
+const DUTY_STATUS_LABELS = {
+  active: "Active",
+  inactive: "Inactive",
+};
+
+const DUTY_STATUS_VALUES = {
+  Active: "active",
+  Inactive: "inactive",
 };
 
 export function normalizeDriver(driver) {
@@ -26,6 +29,9 @@ export function normalizeDriver(driver) {
     vehicle: driver.allocated_vehicle || "Not allocated",
     registration: driver.allocated_vehicle || "",
     status: STATUS_LABELS[driver.status] || driver.status || "Unavailable",
+    dutyStatus:
+      DUTY_STATUS_LABELS[driver.duty_status] ||
+      (driver.status === "available" ? "Active" : "Inactive"),
   };
 }
 
@@ -42,6 +48,6 @@ export function toDriverPayload(driver) {
     licence_type: driver.licenceType.trim(),
     licence_renewal_date: driver.licenceRenewalDate,
     allocated_vehicle: driver.registration.trim() || null,
-    status: STATUS_VALUES[driver.status] || driver.status,
+    status: DUTY_STATUS_VALUES[driver.dutyStatus] || driver.dutyStatus,
   };
 }

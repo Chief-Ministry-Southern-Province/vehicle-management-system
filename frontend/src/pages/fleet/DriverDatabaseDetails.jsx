@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getDriver, updateDriver } from "../../api/authApi";
 import { normalizeDriver, toDriverPayload } from "../../utils/driverMapper";
-const STATUSES = ["Available", "On Trip", "Unavailable"];
+const DUTY_STATUSES = ["Active", "Inactive"];
 const BLOOD_GROUPS = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 export default function DriverDatabaseDetails() {
   const { driverId } = useParams();
@@ -182,12 +182,12 @@ export default function DriverDatabaseDetails() {
             <label className="text-sm font-semibold text-slate-700">
               Status
               <select
-                name="status"
-                value={driver.status}
+                name="dutyStatus"
+                value={driver.dutyStatus}
                 onChange={change}
                 className={field}
               >
-                {STATUSES.map((status) => (
+                {DUTY_STATUSES.map((status) => (
                   <option key={status}>{status}</option>
                 ))}
               </select>
