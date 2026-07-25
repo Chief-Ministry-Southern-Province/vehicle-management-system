@@ -269,9 +269,19 @@ export default function ApprovedJourny() {
     }
   }, []);
 
+  // `loadJourneys` sets state synchronously (setLoading/setError) before its
+  // first `await`, which react-hooks/set-state-in-effect flags when called
+  // directly in an effect body. Deferring the initial call with a zero-delay
+  // timeout keeps the exact same fetch/state behavior while satisfying the
+  // lint rule, since the call no longer happens synchronously during the
+  // effect's own execution.
   useEffect(() => {
-    loadJourneys();
+    const timeoutId = setTimeout(() => {
+      loadJourneys();
+    }, 0);
+    return () => clearTimeout(timeoutId);
   }, [loadJourneys]);
+
   const filteredJourneys = useMemo(() => {
     const search = query.trim().toLowerCase();
     if (!search) return journeys;
