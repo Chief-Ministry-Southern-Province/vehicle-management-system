@@ -21,13 +21,7 @@ import {
   getDepartmentVehicleRequest,
   submitRecommendation,
 } from "../../api/authApi";
-const formatDate = (value) =>
-  value
-    ? new Date(value).toLocaleString([], {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "—";
+import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
 export default function RecommendationReview() {
   const { id } = useParams();
   const navigate = useNavigate();

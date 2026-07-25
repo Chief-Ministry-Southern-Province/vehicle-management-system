@@ -1,11 +1,7 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { useEffect, useState } from "react";
 import { getDriverTripHistory } from "../../api/authApi";
-
-const formatDate = (value) => new Intl.DateTimeFormat("en-LK", {
-  dateStyle: "medium",
-  timeStyle: "short",
-}).format(new Date(value));
+import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
 
 export default function TripsHistory() {
   const [trips, setTrips] = useState([]);

@@ -77,14 +77,20 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
+        name: "Pending Approvals",
+        path: "/pendingapprovals",
+        icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Total Approvals",
         path: "/totalapprovals",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
       },
       {
-        name: "Pending Approvals",
-        path: "/pendingapprovals",
+        name: "Approved Journeys",
+        path: "/approvedjourny",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
       },

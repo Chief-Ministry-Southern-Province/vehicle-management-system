@@ -14,15 +14,55 @@ import {
 } from "react-icons/fi";
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const display = (value) => value || "—";
-const formatDateTime = (value) =>
-  value
-    ? new Intl.DateTimeFormat(undefined, {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(new Date(value))
-    : "—";
+const journeyStatus = (journey) => {
+  if (journey.journey_status === "completed") return "Completed";
+  if (journey.journey_status === "ongoing") return "Ongoing";
+  return "Pending";
+};
+
+const isJourneyOverdue = (journey) =>
+  journey.journey_status !== "completed" &&
+  journey.expected_return_at &&
+  new Date(journey.expected_return_at).getTime() < Date.now();
+
+const journeyStatusStyle = {
+  Pending: "bg-amber-100 text-amber-700",
+  Ongoing: "bg-blue-100 text-blue-700",
+  Completed: "bg-emerald-100 text-emerald-700",
+};
+
+function DriverStatus({ journey }) {
+  const status = journeyStatus(journey);
+  const overdue = isJourneyOverdue(journey);
+
+  return (
+    <div>
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+          overdue
+            ? "bg-red-100 text-red-700 ring-2 ring-red-200"
+            : journeyStatusStyle[status]
+        }`}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${
+            overdue ? "animate-pulse bg-red-600" : "bg-current"
+          }`}
+        />
+        {status}
+      </span>
+      {overdue && (
+        <p className="mt-1.5 text-xs font-semibold text-red-600">
+          Scheduled return passed
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Detail({ icon, label, value }) {
   return (
     <div className="flex gap-3 rounded-xl bg-slate-50 p-3">
@@ -59,6 +99,7 @@ function JourneyDetails({ journey, onClose }) {
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                 <FiCheckCircle /> Approved
               </span>
+              <DriverStatus journey={journey} />
             </div>
             <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
               <FiCalendar /> Approved {formatDateTime(journey.approved_at)}
@@ -213,6 +254,7 @@ export default function ApprovedJourny() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedJourney, setSelectedJourney] = useState(null);
+
   const loadJourneys = useCallback(async () => {
     try {
       setLoading(true);
@@ -226,26 +268,10 @@ export default function ApprovedJourny() {
       setLoading(false);
     }
   }, []);
+
   useEffect(() => {
-    let active = true;
-    getApprovedJourneys()
-      .then((response) => {
-        if (!active) return;
-        setJourneys(response?.data?.requests || []);
-        setError("");
-      })
-      .catch((requestError) => {
-        if (!active) return;
-        setJourneys([]);
-        setError(requestError?.message || "Unable to load approved journeys.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    loadJourneys();
+  }, [loadJourneys]);
   const filteredJourneys = useMemo(() => {
     const search = query.trim().toLowerCase();
     if (!search) return journeys;
@@ -262,6 +288,7 @@ export default function ApprovedJourny() {
         journey.allocated_vehicle?.model,
         journey.allocated_driver?.full_name,
         journey.allocated_driver?.driver_id,
+        journeyStatus(journey),
       ].some((value) =>
         String(value || "")
           .toLowerCase()
@@ -330,13 +357,14 @@ export default function ApprovedJourny() {
         {!loading && !error && filteredJourneys.length > 0 && (
           <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px]">
+              <table className="w-full min-w-[1160px]">
                 <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <tr>
                     <th className="px-6 py-4">Requester</th>
                     <th className="px-6 py-4">Destination</th>
                     <th className="px-6 py-4">Allocated Vehicle</th>
                     <th className="px-6 py-4">Allocated Driver</th>
+                    <th className="px-6 py-4">Driver Status</th>
                     <th className="px-6 py-4">Time</th>
                     <th className="px-6 py-4 text-center">Action</th>
                   </tr>
@@ -387,6 +415,9 @@ export default function ApprovedJourny() {
                           <p className="mt-1 text-xs text-slate-500">
                             {display(driver.driver_id)}
                           </p>
+                        </td>
+                        <td className="px-6 py-5">
+                          <DriverStatus journey={journey} />
                         </td>
                         <td className="px-6 py-5 text-sm text-slate-600">
                           <p>{formatDateTime(journey.departure_at)}</p>

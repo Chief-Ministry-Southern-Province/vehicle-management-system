@@ -12,6 +12,7 @@ import { useParams } from "react-router-dom";
 import RequestHeader from "../../components/deputySecretary/approvalWorkspace/RequestHeader";
 import RequestOverview from "../../components/deputySecretary/approvalWorkspace/RequestOverview";
 import ApprovalActions from "../../components/deputySecretary/approvalWorkspace/ApprovalActions";
+import { formatLocalDateTime } from "../../utils/dateTime";
 const AVAILABLE_DRIVERS = DRIVERS.filter(
   (driver) => driver.status === "Available",
 );
@@ -376,7 +377,7 @@ function DatabaseRecommendation({ request }) {
           </p>
           <p className="mt-2 text-sm">
             {request.recommended_at
-              ? new Date(request.recommended_at).toLocaleString()
+              ? formatLocalDateTime(request.recommended_at)
               : "—"}
           </p>
         </div>
@@ -682,7 +683,7 @@ function AllocatedVehicleDetails({ request }) {
             <p className="text-xs uppercase text-slate-400">Allocated at</p>
             <p className="mt-1">
               {request.allocated_at
-                ? new Date(request.allocated_at).toLocaleString()
+                ? formatLocalDateTime(request.allocated_at)
                 : "—"}
             </p>
           </div>
@@ -698,7 +699,7 @@ function AllocatedVehicleDetails({ request }) {
                 <p className="text-xs uppercase text-slate-400">Approved at</p>
                 <p className="mt-1">
                   {request.approved_at
-                    ? new Date(request.approved_at).toLocaleString()
+                    ? formatLocalDateTime(request.approved_at)
                     : "—"}
                 </p>
               </div>

@@ -14,9 +14,8 @@ import {
   finalApproveVehicleRequest,
   getFinalApprovalVehicleRequest,
 } from "../../api/authApi";
+import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-const formatDateTime = (value) =>
-  value ? new Date(value).toLocaleString() : "—";
 function Detail({ label, children }) {
   return (
     <div>

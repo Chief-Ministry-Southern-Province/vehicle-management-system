@@ -1,4 +1,5 @@
 import { FiFileText, FiClock } from "react-icons/fi";
+import { formatLocalDateTime } from "../../../utils/dateTime";
 
 export default function RequestHeader({ request }) {
   return (
@@ -26,7 +27,7 @@ export default function RequestHeader({ request }) {
 
           <p className="text-gray-500 text-sm mt-2 flex items-center gap-2 justify-end">
             <FiClock />
-            Submitted {new Date(request.created_at).toLocaleString()}
+            Submitted {formatLocalDateTime(request.created_at)}
           </p>
         </div>
       </div>

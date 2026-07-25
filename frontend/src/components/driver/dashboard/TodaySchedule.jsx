@@ -3,19 +3,12 @@ import toast from "react-hot-toast";
 import { FiAlertTriangle, FiCheckCircle, FiEye, FiPlay, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getDriverScheduledJourneys, updateDriverJourneyStatus } from "../../../api/authApi";
+import { formatLocalDate as formatDate, formatLocalTime as formatTime } from "../../../utils/dateTime";
 
 const statusStyle = {
   Scheduled: "bg-amber-50 text-amber-700",
   Ongoing: "bg-blue-100 text-blue-700",
 };
-
-const formatDate = (value) => new Intl.DateTimeFormat("en-LK", {
-  year: "numeric", month: "short", day: "2-digit",
-}).format(new Date(value));
-
-const formatTime = (value) => new Intl.DateTimeFormat("en-LK", {
-  hour: "2-digit", minute: "2-digit",
-}).format(new Date(value));
 
 const Detail = ({ label, children }) => (
   <div>

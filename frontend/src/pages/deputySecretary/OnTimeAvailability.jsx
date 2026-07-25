@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { FiAlertTriangle, FiClock, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getVehicleIssueReports } from "../../api/authApi";
+import { formatLocalDateTime as dateTime } from "../../utils/dateTime";
 
 const label = (value) => value?.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase()) || "Not recorded";
-const dateTime = (value) => value ? new Intl.DateTimeFormat("en-LK", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "Not recorded";
 
 export default function OnTimeAvailability() {
   const [reports, setReports] = useState([]);

@@ -3,9 +3,8 @@ import { FiChevronRight, FiClock } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getFinalApprovalVehicleRequests } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-const formatDateTime = (value) =>
-  value ? new Date(value).toLocaleString() : "—";
 export default function PendingFinalApprovals() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);

@@ -1,13 +1,7 @@
 import { FiEye } from "react-icons/fi";
+import { formatLocalDateTime as formatDate } from "../../../utils/dateTime";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-const formatDate = (value) =>
-  value
-    ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(
-        new Date(value),
-      )
-    : "—";
-
 const statusClasses = {
   recommended: "bg-emerald-100 text-emerald-700",
   rejected: "bg-red-100 text-red-700",
