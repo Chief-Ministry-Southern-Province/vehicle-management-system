@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:subject_officer,deputy_secretary')->get('/issue-reports', [VehicleIssueReportController::class, 'index']);
 
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
+        Route::get('/recommendations', [VehicleRequestController::class, 'deputyRecommendationIndex']);
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'deputyRecommend']);

@@ -123,6 +123,26 @@ class VehicleRequestController extends Controller
         ]);
     }
 
+    /** Department Officer requests awaiting a Deputy Secretary recommendation. */
+    public function deputyRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with('user:id,name,employee_id,department,role')
+            ->where('status', 'submitted')
+            ->where('recommendation_status', 'pending')
+            ->whereHas('user', fn (Builder $user) => $user->where('role', 'department_officer'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests,
+                'total' => $requests->count(),
+            ],
+        ]);
+    }
+
     /** Allocate a driver and vehicle; this is not a request approval. */
     public function allocate(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
@@ -482,13 +502,7 @@ class VehicleRequestController extends Controller
 
     private function deputyPendingRequests(Builder $query): Builder
     {
-        return $query->where(function (Builder $pending): void {
-            $pending->where('status', 'recommended')
-                ->orWhere(function (Builder $officerRequest): void {
-                    $officerRequest->where('status', 'submitted')
-                        ->whereHas('user', fn (Builder $user) => $user->where('role', 'department_officer'));
-                });
-        });
+        return $query->where('status', 'recommended');
     }
 
     private function belongsToDepartment(VehicleRequest $vehicleRequest, ?string $department): bool

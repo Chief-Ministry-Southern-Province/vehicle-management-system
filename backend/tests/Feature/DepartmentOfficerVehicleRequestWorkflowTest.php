@@ -53,7 +53,7 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
             ->assertNotFound();
 
         $this->actingAs($deputySecretary)
-            ->getJson('/api/approvals/vehicle-requests?status=pending')
+            ->getJson('/api/approvals/recommendations')
             ->assertOk()
             ->assertJsonPath('data.requests.0.id', $vehicleRequest->id);
 
