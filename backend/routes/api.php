@@ -56,6 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
     });
 
+    Route::middleware('role:senior_deputy_secretary')->prefix('senior-recommendations')->group(function () {
+        Route::get('/vehicle-requests', [VehicleRequestController::class, 'seniorRecommendationIndex']);
+        Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'seniorRecommendationShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'seniorRecommend']);
+    });
+
     Route::middleware('role:deputy_secretary,secretary,senior_deputy_secretary')->get('/dashboard/executive-stats', [DashboardStatsController::class, 'executive']);
 
     Route::middleware('role:secretary,senior_deputy_secretary')->prefix('final-approvals')->group(function () {

@@ -59,7 +59,7 @@ class VehicleRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
-        $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'approver:id,name');
+        $vehicleRequest->load('user:id,name,employee_id,department,role', 'recommender:id,name,employee_id,department', 'approver:id,name');
 
         if ($vehicleRequest->status === 'approved') {
             $vehicleRequest->load('allocatedVehicle', 'allocatedDriver');
@@ -141,6 +141,32 @@ class VehicleRequestController extends Controller
                 'total' => $requests->count(),
             ],
         ]);
+    }
+
+    /** Deputy Secretary requests awaiting a Senior Deputy Secretary recommendation. */
+    public function seniorRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with('user:id,name,employee_id,department,role')
+            ->where('status', 'submitted')
+            ->where('recommendation_status', 'pending')
+            ->whereHas('user', fn (Builder $user) => $user->where('role', 'deputy_secretary'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['requests' => $requests, 'total' => $requests->count()],
+        ]);
+    }
+
+    public function seniorRecommendationShow(VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
+            return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
+        }
+
+        return $this->approvalShow($vehicleRequest);
     }
 
     /** Recommendations recorded by Department Officers and visible to the Deputy Secretary. */
@@ -421,6 +447,19 @@ class VehicleRequestController extends Controller
         return $this->saveRecommendation($request, $vehicleRequest);
     }
 
+    /** A Senior Deputy Secretary recommends requests submitted by Deputy Secretaries. */
+    public function seniorRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Senior Deputy Secretary recommendations are limited to Deputy Secretary requests.',
+            ], 422);
+        }
+
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
     private function saveRecommendation(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         if ($vehicleRequest->recommendation_status !== 'pending') {
@@ -521,7 +560,7 @@ class VehicleRequestController extends Controller
             )
             ->whereHas('user', fn (Builder $query) => $query
                 ->where('department', $department)
-                ->where('role', '!=', 'department_officer'));
+                ->where('role', 'employee'));
     }
 
     private function deputyPendingRequests(Builder $query): Builder
