@@ -284,6 +284,21 @@ class DriverRegistrationTest extends TestCase
                 ->assertJsonPath('data.reports.0.issue_type', 'mechanical_issue')
                 ->assertJsonPath('data.reports.0.journey.journey_status', 'issue');
 
+            // The issue journey remains actionable after its expected return.
+            Carbon::setTestNow('2026-07-24 15:00:00');
+
+            $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
+                ->assertOk()
+                ->assertJsonCount(2, 'data.trips')
+                ->assertJsonPath('data.trips.0.id', $ongoing->id)
+                ->assertJsonPath('data.trips.0.status', 'Issue');
+
+            $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$ongoing->id}/status", [
+                'action' => 'complete',
+            ])->assertOk()
+                ->assertJsonPath('data.trip.status', 'Completed')
+                ->assertJsonPath('data.driver_status', 'available');
+
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
                 'action' => 'start',
             ])->assertOk()
@@ -298,12 +313,13 @@ class DriverRegistrationTest extends TestCase
 
             $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
                 ->assertOk()
-                ->assertJsonCount(1, 'data.trips')
+                ->assertJsonCount(0, 'data.trips')
                 ->assertJsonMissing(['purpose' => 'Future journey']);
 
             $this->actingAs($driverUser)->getJson('/api/driver/trip-history')
                 ->assertOk()
-                ->assertJsonCount(2, 'data.trips')
+                ->assertJsonCount(3, 'data.trips')
+                ->assertJsonFragment(['purpose' => 'Ongoing journey'])
                 ->assertJsonFragment(['purpose' => 'Future journey']);
         } finally {
             Carbon::setTestNow();
