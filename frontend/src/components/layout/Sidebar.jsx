@@ -15,7 +15,6 @@ import {
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
-import nationalEmblem from "../../assets/national-emblem.png";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
 
@@ -382,52 +381,12 @@ export default function Sidebar() {
   return (
     <aside
       data-no-translate
-      className="w-64 h-screen flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200/80 dark:border-slate-800 relative"
+      className="relative flex h-full w-64 shrink-0 flex-col border-r border-slate-200/80 bg-linear-to-b from-white via-slate-50/90 to-blue-50/60 shadow-[8px_0_28px_-24px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950"
     >
-      {/* ---------------------------------------------------------- */}
-      {/*  Header / Brand                                             */}
-      {/* ---------------------------------------------------------- */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 border-b border-slate-100 dark:border-slate-800">
-        {/* soft glow accents */}
-        <div className="absolute -top-12 -right-10 h-36 w-36 rounded-full bg-blue-400/10 blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-cyan-400/10 blur-3xl" />
-
-        <div className="relative px-8 py-6">
-          <div className="flex items-center gap-3.5">
-            {/* Logo badge */}
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl from-blue-600 to-cyan-500 shadow-lg shadow-blue-200 ring-4 ring-white">
-              <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-100 p-1.5 shadow-sm sm:flex">
-                <img
-                  src={nationalEmblem}
-                  alt="National Emblem"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            </div>
-
-            {/* Text */}
-            <div className="min-w-0">
-              <h1 className="text-[17px] font-bold tracking-wide text-slate-800 truncate">
-                VMS
-              </h1>
-              <p className="text-[13px] font-medium text-slate-500 truncate">
-                {t("app.fleet")}
-              </p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-blue-600">
-                {t("app.country")}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* bottom fade divider */}
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-      </div>
-
       {/* ---------------------------------------------------------- */}
       {/*  Menu                                                       */}
       {/* ---------------------------------------------------------- */}
-      <div className="relative flex-1 overflow-y-auto py-5 px-1 [scrollbar-width:thin] [scrollbar-color:#cbd5e1_transparent]">
+      <div className="relative flex-1 overflow-y-auto px-1 py-6 [scrollbar-color:#cbd5e1_transparent] [scrollbar-width:thin] dark:[scrollbar-color:#475569_transparent]">
         {menuItems.map((section, sIdx) => {
           const visibleItems = section.items.filter(
             (item) => !item.roles || item.roles.includes(role),
@@ -437,7 +396,7 @@ export default function Sidebar() {
 
           return (
             <div key={section.title} className="mb-6 last:mb-2">
-              <h3 className="px-5 mb-2.5 text-[10.5px] font-bold tracking-[0.18em] text-slate-400 uppercase">
+              <h3 className="mb-2.5 px-5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 {t(
                   `nav.${section.title.toLowerCase().replaceAll(" ", "_")}`,
                   section.title,
@@ -456,19 +415,19 @@ export default function Sidebar() {
                         "group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium",
                         "transition-all duration-200 ease-out",
                         isActive
-                          ? "text-blue-700"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50",
+                          ? "text-blue-800 dark:text-white"
+                          : "text-slate-600 hover:bg-white/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white",
                       ].join(" ")}
                     >
                       {/* active pill background */}
                       {isActive && (
-                        <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 ring-1 ring-inset ring-blue-100 shadow-[0_2px_10px_-4px_rgba(37,99,235,0.25)]" />
+                        <span className="absolute inset-0 rounded-xl bg-linear-to-r from-blue-100/90 to-teal-50 ring-1 ring-inset ring-blue-200/80 shadow-[0_8px_24px_-16px_rgba(37,99,235,0.45)] dark:from-blue-600/25 dark:to-teal-500/15 dark:ring-cyan-300/20" />
                       )}
 
                       {/* active left accent bar */}
                       <span
                         className={[
-                          "absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-blue-600",
+                          "absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-teal-400",
                           "transition-all duration-200",
                           isActive
                             ? "opacity-100"
@@ -481,8 +440,8 @@ export default function Sidebar() {
                           "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
                           "transition-transform duration-200 group-hover:scale-105",
                           isActive
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700",
+                            ? "bg-linear-to-br from-blue-500 to-teal-400 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70 group-hover:bg-white group-hover:text-slate-700 dark:bg-white/7 dark:text-slate-400 dark:ring-transparent dark:group-hover:bg-white/10 dark:group-hover:text-slate-200",
                         ].join(" ")}
                       >
                         {item.icon}
@@ -501,7 +460,7 @@ export default function Sidebar() {
 
               {/* soft section separator, skip after the last visible section */}
               {sIdx < menuItems.length - 1 && (
-                <div className="mt-5 mx-5 h-px bg-slate-100" />
+                <div className="mx-5 mt-5 h-px bg-slate-200/70 dark:bg-white/7" />
               )}
             </div>
           );
@@ -511,12 +470,12 @@ export default function Sidebar() {
       {/* ---------------------------------------------------------- */}
       {/*  Profile + Logout                                            */}
       {/* ---------------------------------------------------------- */}
-      <div className="relative border-t border-slate-100 dark:border-slate-800 p-3 space-y-2 bg-slate-50/60 dark:bg-slate-950">
+      <div className="relative space-y-2 border-t border-slate-200/80 bg-white/60 p-3 backdrop-blur-sm dark:border-white/8 dark:bg-slate-950/55">
         <button
           onClick={handleLogout}
-          className="group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"
+          className="group flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-rose-500 transition-all duration-200 hover:bg-rose-50 hover:text-rose-600 dark:text-rose-300 dark:hover:bg-rose-400/10 dark:hover:text-rose-200"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 group-hover:bg-rose-100 transition-colors">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 transition-colors group-hover:bg-rose-100 dark:bg-rose-400/10 dark:group-hover:bg-rose-400/15">
             <FiLogOut className="text-base" />
           </span>
           <span>{t("nav.logout")}</span>

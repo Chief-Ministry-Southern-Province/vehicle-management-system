@@ -1,6 +1,7 @@
 import { FiGlobe, FiUser } from "react-icons/fi";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
+import nationalEmblem from "../../assets/national-emblem.png";
 
 const initials = (name) =>
   String(name || "User")
@@ -20,20 +21,30 @@ export default function Topbar() {
   return (
     <header
       data-no-translate
-      className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95"
+      className="relative z-40 w-full shrink-0 overflow-hidden border-b border-slate-200/80 bg-white/9 5 shadow-[0_8px_30px_-24px_rgba(15,23,42,0.75)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95"
     >
-      <div className="flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-xl">
-            {t("app.name")}
-          </h1>
-          <p className="mt-0.5 hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:block">
-            <span className="font-semibold text-blue-700">
-              {t("app.ministry")}
-            </span>
-            <span className="mx-2 text-slate-300">&bull;</span>
-            {t("app.location")}
-          </p>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-teal-400/60 to-transparent" />
+      <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-linear-to-br from-white to-slate-50 p-1.5 shadow-sm ring-1 ring-slate-900/5 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
+            <img
+              src={nationalEmblem}
+              alt="National Emblem"
+              className="h-full w-full object-contain"
+            />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-xl">
+              {t("app.name")}
+            </h1>
+            <p className="mt-0.5 hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:block">
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
+                {t("app.ministry")}
+              </span>
+              <span className="mx-2 text-slate-300">&bull;</span>
+              {t("app.location")}
+            </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:px-3">
@@ -52,7 +63,7 @@ export default function Topbar() {
               ))}
             </select>
           </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-2 pr-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-1 px-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md shadow-blue-200">
               {user?.name ? initials(user.name) : <FiUser size={19} />}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
