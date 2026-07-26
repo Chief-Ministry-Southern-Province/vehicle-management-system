@@ -206,6 +206,18 @@ const menuItems = [
     ],
   },
 
+  {
+    title: "FLLET COMPLAINTS",
+    items: [
+      {
+        name: "Driver Issue Reports",
+        path: "/ontimeavailability",
+        icon: <FiAlertTriangle />,
+        roles: ["subject_officer", "deputy_secretary"],
+      },
+    ],
+  },
+
   // ==========================================
   // SUBJECT OFFICER SECTION
   // ==========================================
@@ -242,12 +254,6 @@ const menuItems = [
         path: "/repairrecords",
         icon: <FiTool />,
         roles: ["subject_officer"],
-      },
-      {
-        name: "Driver Issue Reports",
-        path: "/ontimeavailability",
-        icon: <FiAlertTriangle />,
-        roles: ["subject_officer", "deputy_secretary"],
       },
     ],
   },
