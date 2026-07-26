@@ -6,8 +6,9 @@ import { getDriverScheduledJourneys, updateDriverJourneyStatus } from "../../../
 import { formatLocalDate as formatDate, formatLocalTime as formatTime } from "../../../utils/dateTime";
 
 const statusStyle = {
-  Scheduled: "bg-amber-50 text-amber-700",
+  Pending: "bg-amber-50 text-amber-700",
   Ongoing: "bg-blue-100 text-blue-700",
+  Issue: "bg-red-100 text-red-700",
 };
 
 const Detail = ({ label, children }) => (
