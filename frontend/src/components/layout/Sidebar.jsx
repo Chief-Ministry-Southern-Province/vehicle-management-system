@@ -197,12 +197,6 @@ const menuItems = [
         icon: <FiClipboard />,
         roles: ["deputy_secretary"],
       },
-      {
-        name: "Department Recommendations",
-        path: "/deputy/department-recommendations",
-        icon: <FiClipboard />,
-        roles: ["deputy_secretary"],
-      },
     ],
   },
 
