@@ -143,6 +143,30 @@ class VehicleRequestController extends Controller
         ]);
     }
 
+    /** Recommendations recorded by Department Officers and visible to the Deputy Secretary. */
+    public function departmentRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with(
+                'user:id,name,employee_id,department,role',
+                'recommender:id,name,employee_id,department,role',
+                'allocatedVehicle',
+                'allocatedDriver',
+            )
+            ->where('recommendation_status', 'recommended')
+            ->whereHas('recommender', fn (Builder $user) => $user->where('role', 'department_officer'))
+            ->latest('recommended_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests,
+                'total' => $requests->count(),
+            ],
+        ]);
+    }
+
     /** Allocate a driver and vehicle; this is not a request approval. */
     public function allocate(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {

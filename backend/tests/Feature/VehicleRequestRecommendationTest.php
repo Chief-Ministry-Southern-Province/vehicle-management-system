@@ -56,5 +56,17 @@ class VehicleRequestRecommendationTest extends TestCase
         $this->assertSame('2026-07-25 14:30:00', $vehicleRequest->getRawOriginal('expected_return_at'));
         $this->assertTrue($vehicleRequest->updated_at->greaterThan($originalUpdatedAt));
         $this->assertSame('2026-07-25 10:01:00', $vehicleRequest->updated_at->format('Y-m-d H:i:s'));
+
+        $deputySecretary = User::factory()->create([
+            'role' => 'deputy_secretary',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($deputySecretary)
+            ->getJson('/api/approvals/department-recommendations')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id)
+            ->assertJsonPath('data.requests.0.recommender.id', $officer->id)
+            ->assertJsonPath('data.requests.0.recommendation_status', 'recommended');
     }
 }
