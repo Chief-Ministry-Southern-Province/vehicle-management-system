@@ -38,6 +38,7 @@ import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
 import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
 import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
+import SeniorPendingRecommendations from './pages/seniorDeputySecretary/PendingRecommendations';
 import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
 import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 import TripsHistory from './pages/driver/TripsHistory';
@@ -70,7 +71,7 @@ function App() {
             
 
             <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
-            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer"])} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer", "deputy_secretary"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
             <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
@@ -98,6 +99,8 @@ function App() {
             <Route path="/deputy/pending-recommendations" element={withAuth(<DeputyPendingRecommendations />, ["deputy_secretary"])} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
             <Route path="/deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["deputy_secretary"])} />
+            <Route path="/senior-deputy/pending-recommendations" element={withAuth(<SeniorPendingRecommendations />, ["senior_deputy_secretary"])} />
+            <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />

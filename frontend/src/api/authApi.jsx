@@ -346,6 +346,46 @@ export const saveDeputyRecommendation = async (requestId, recommendation) => {
   }
 };
 
+export const getSeniorPendingRecommendations = async () => {
+  try {
+    const response = await API.get("/senior-recommendations/vehicle-requests", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getSeniorRecommendationRequest = async (requestId) => {
+  try {
+    const response = await API.get(
+      `/senior-recommendations/vehicle-requests/${requestId}`,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const saveSeniorRecommendation = async (requestId, recommendation) => {
+  try {
+    const response = await API.patch(
+      `/senior-recommendations/vehicle-requests/${requestId}`,
+      recommendation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getMyVehicleRequest = async (requestId) => {
   try {
     const response = await API.get(`/vehicle-requests/${requestId}`, {

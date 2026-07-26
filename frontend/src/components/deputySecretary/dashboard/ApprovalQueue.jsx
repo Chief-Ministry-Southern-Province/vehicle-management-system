@@ -32,7 +32,9 @@ export default function ApprovalQueue({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-5 border-b bg-gradient-to-r from-slate-50 to-white">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
-            {view === "department_recommendations"
+            {view === "senior_recommendations"
+              ? "Deputy Secretary Requests"
+              : view === "department_recommendations"
               ? "Department Officer Recommendations"
               : view === "recommendations"
               ? "Department Officer Requests"
@@ -42,7 +44,9 @@ export default function ApprovalQueue({
           </h2>
 
           <p className="text-sm text-slate-500 mt-1">
-            {view === "department_recommendations"
+            {view === "senior_recommendations"
+              ? "Provide recommendations for requests submitted by Deputy Secretaries."
+              : view === "department_recommendations"
               ? "Review recommendations recorded by Department Officers."
               : view === "recommendations"
               ? "Provide recommendations for requests submitted by Department Officers."
@@ -79,7 +83,9 @@ export default function ApprovalQueue({
                 key={item.id}
                 onClick={() =>
                   navigate(
-                    item.status === "submitted"
+                    view === "senior_recommendations"
+                      ? `/senior-deputy/recommendations/${item.id}`
+                      : item.status === "submitted"
                       ? `/deputy/recommendations/${item.id}`
                       : `/approval/${item.id}`,
                   )

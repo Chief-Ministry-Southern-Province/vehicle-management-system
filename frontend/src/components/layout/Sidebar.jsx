@@ -94,6 +94,18 @@ const menuItems = [
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
       },
+      {
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Request History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
 
       // ================= SENIOR DEPUTY SECRETARY =================
 
@@ -113,6 +125,12 @@ const menuItems = [
         name: "Total Approvals",
         path: "/finalapprovals",
         icon: <FiCheckCircle />,
+        roles: ["senior_deputy_secretary"],
+      },
+      {
+        name: "Pending Recommendation",
+        path: "/senior-deputy/pending-recommendations",
+        icon: <FiClipboard />,
         roles: ["senior_deputy_secretary"],
       },
 
