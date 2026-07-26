@@ -3,8 +3,18 @@ import { formatLocalDateTime as formatDate } from "../../../utils/dateTime";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const statusClasses = {
+  submitted: "bg-slate-100 text-slate-700",
   recommended: "bg-emerald-100 text-emerald-700",
+  vehicle_allocated: "bg-blue-100 text-blue-700",
+  approved: "bg-violet-100 text-violet-700",
   rejected: "bg-red-100 text-red-700",
+};
+const statusLabels = {
+  submitted: "Submitted",
+  recommended: "Recommended",
+  vehicle_allocated: "Allocated Vehicle",
+  approved: "Approved",
+  rejected: "Rejected",
 };
 
 export default function HistoryTable({ requests, loading, error, onView }) {
@@ -25,7 +35,7 @@ export default function HistoryTable({ requests, loading, error, onView }) {
               <th className="p-4">Destination</th>
               <th className="p-4">Request Date</th>
               <th className="p-4">Recommended By</th>
-              <th className="p-4">Status</th>
+              <th className="p-4">Request Status</th>
               <th className="p-4">Decision Date</th>
               <th className="p-4 text-center">Action</th>
             </tr>
@@ -60,9 +70,11 @@ export default function HistoryTable({ requests, loading, error, onView }) {
                 </td>
                 <td className="p-4">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${statusClasses[request.recommendation_status] || "bg-slate-100 text-slate-700"}`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClasses[request.status] || "bg-slate-100 text-slate-700"}`}
                   >
-                    {request.recommendation_status || "—"}
+                    {statusLabels[request.status] ||
+                      request.status?.replaceAll("_", " ") ||
+                      "—"}
                   </span>
                 </td>
                 <td className="p-4 text-slate-600">

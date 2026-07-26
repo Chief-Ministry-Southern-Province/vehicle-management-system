@@ -48,8 +48,11 @@ export default function HistoryFilters({
             onChange={(event) => onStatusChange(event.target.value)}
             className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-500"
           >
-            <option value="all">All decisions</option>
+            <option value="all">All request statuses</option>
+            <option value="submitted">Submitted</option>
             <option value="recommended">Recommended</option>
+            <option value="vehicle_allocated">Allocated Vehicle</option>
+            <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
         </label>
