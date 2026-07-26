@@ -47,8 +47,20 @@ const menuItems = [
         roles: ["department_officer"],
       },
       {
-        name: "Request History",
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["department_officer"],
+      },
+      {
+        name: "Department Request History",
         path: "/departmentrequesthistory",
+        icon: <FiClipboard />,
+        roles: ["department_officer"],
+      },
+      {
+        name: "My Requests",
+        path: "/requesthistory",
         icon: <FiClipboard />,
         roles: ["department_officer"],
       },

@@ -10,6 +10,7 @@ import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
+import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RecommendationReview from './pages/recommendations/RecommendationReview';
 import DepartmentRequestHistory from './pages/recommendations/DepartmentRequestHistory';
 import PendingRecommendations from './pages/recommendations/PendingRecommendations';
@@ -68,6 +69,7 @@ function App() {
             
 
             <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
             <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
@@ -93,6 +95,7 @@ function App() {
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
+            <Route path="/deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />

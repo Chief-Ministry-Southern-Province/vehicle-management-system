@@ -320,6 +320,18 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const saveDeputyRecommendation = async (requestId, recommendation) => {
+  try {
+    const response = await API.patch(
+      `/approvals/vehicle-requests/${requestId}/recommendation`,
+      recommendation,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getMyVehicleRequest = async (requestId) => {
   try {
     const response = await API.get(`/vehicle-requests/${requestId}`, {
