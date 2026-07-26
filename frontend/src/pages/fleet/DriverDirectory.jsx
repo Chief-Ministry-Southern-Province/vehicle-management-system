@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { createDriver, deleteDriver, getDrivers } from "../../api/authApi";
 import { normalizeDriver, toDriverPayload } from "../../utils/driverMapper";
-const STATUSES = ["Available", "On Trip", "Unavailable"];
+const DUTY_STATUSES = ["Active", "Inactive"];
 const EMPTY_DRIVER = {
   id: "",
   fullName: "",
@@ -26,6 +26,7 @@ const EMPTY_DRIVER = {
   vehicle: "",
   registration: "",
   status: "Available",
+  dutyStatus: "Active",
 };
 function StatusPill({ status }) {
   const styles = {
@@ -125,12 +126,12 @@ function DriverForm({ driver, existingIds, onCancel, onSave }) {
         <label className="text-sm font-semibold text-slate-700">
           Status
           <select
-            name="status"
-            value={form.status}
+            name="dutyStatus"
+            value={form.dutyStatus}
             onChange={change}
             className={field}
           >
-            {STATUSES.map((status) => (
+            {DUTY_STATUSES.map((status) => (
               <option key={status}>{status}</option>
             ))}
           </select>

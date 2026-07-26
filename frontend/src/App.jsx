@@ -10,6 +10,7 @@ import SubjectOfficerDashboard from './pages/dashboard/SubjectOfficerDashboard';
 import UserDashboard from './pages/dashboard/UserDashboard';
 import RequestHistory from './pages/requests/RequestHistory';
 import EmployeeRequestDetails from './pages/requests/EmployeeRequestDetails';
+import CreateVehicleRequest from './pages/requests/CreateVehicleRequest';
 import RecommendationReview from './pages/recommendations/RecommendationReview';
 import DepartmentRequestHistory from './pages/recommendations/DepartmentRequestHistory';
 import PendingRecommendations from './pages/recommendations/PendingRecommendations';
@@ -25,6 +26,7 @@ import FleetAnalytics from './pages/fleet/FleetAnalytics';
 import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard';
 import SeniorDeputySecretaryDashboard from './pages/dashboard/SeniorDeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
+import DeputyPendingRecommendations from './pages/deputySecretary/PendingRecommendations';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
@@ -36,10 +38,12 @@ import DeputyVehicleDetails from './pages/deputySecretary/DeputyVehicleDetails';
 import TotalApprovals from './pages/deputySecretary/TotalApprovals';
 import FinalApprovals from './pages/seniorDeputySecretary/FinalApprovals';
 import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApprovals';
+import SeniorPendingRecommendations from './pages/seniorDeputySecretary/PendingRecommendations';
 import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
 import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
 import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
+import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
 
 const withAuth = (element, allowedRoles) => (
@@ -67,6 +71,7 @@ function App() {
             
 
             <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer", "deputy_secretary"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
             <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
@@ -82,7 +87,8 @@ function App() {
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
-            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />)}/>
+            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />, ["subject_officer", "deputy_secretary"])}/>
+            <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />, ["subject_officer", "deputy_secretary"])} />
 
             
             
@@ -90,7 +96,11 @@ function App() {
             <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
+            <Route path="/deputy/pending-recommendations" element={withAuth(<DeputyPendingRecommendations />, ["deputy_secretary"])} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
+            <Route path="/deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["deputy_secretary"])} />
+            <Route path="/senior-deputy/pending-recommendations" element={withAuth(<SeniorPendingRecommendations />, ["senior_deputy_secretary"])} />
+            <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
@@ -108,7 +118,7 @@ function App() {
             
             <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />
             <Route path="/tripshistory" element={withAuth(<TripsHistory />)} />
-            <Route path="/reportvehicle" element={withAuth(<ReportVehicle />)} />
+            <Route path="/reportvehicle" element={withAuth(<ReportVehicle />, ["driver"])} />
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />

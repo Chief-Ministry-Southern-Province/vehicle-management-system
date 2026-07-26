@@ -1,3 +1,5 @@
+import { formatLocalDateTime } from "../../../utils/dateTime";
+
 function Detail({ label, children }) {
   return (
     <div>
@@ -30,14 +32,14 @@ export default function RequestOverview({ request }) {
         <Detail label="Purpose">{request.purpose}</Detail>
         <Detail label="Destination">{request.destination}</Detail>
         <Detail label="Departure">
-          {new Date(request.departure_at).toLocaleString()}
+          {formatLocalDateTime(request.departure_at)}
         </Detail>
         <Detail label="Expected Return">
-          {new Date(request.expected_return_at).toLocaleString()}
+          {formatLocalDateTime(request.expected_return_at)}
         </Detail>
         <Detail label="Passenger Count">{request.passenger_count}</Detail>
         <Detail label="Submitted">
-          {new Date(request.created_at).toLocaleString()}
+          {formatLocalDateTime(request.created_at)}
         </Detail>
         <div className="sm:col-span-2">
           <Detail label="Passenger Names">

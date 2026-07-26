@@ -71,7 +71,7 @@ class AuthController extends Controller
                         'licence_type' => $validated['licence_type'],
                         'licence_renewal_date' => $validated['licence_renewal_date'],
                         'allocated_vehicle' => $validated['allocated_vehicle'] ?? null,
-                        'status' => 'available',
+                        'status' => 'active',
                     ]);
                 }
 

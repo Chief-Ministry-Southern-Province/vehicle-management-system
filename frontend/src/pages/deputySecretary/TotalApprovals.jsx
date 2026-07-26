@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getApprovalVehicleRequests } from "../../api/authApi";
+import { formatLocalDateTime } from "../../utils/dateTime";
 const statusStyle = {
   approved: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
   vehicle_allocated:
@@ -223,10 +224,10 @@ export default function TotalApprovals() {
                       </p>
                     </td>
                     <td className="px-5 py-5 text-sm text-slate-600">
-                      <p>{new Date(request.departure_at).toLocaleString()}</p>
+                      <p>{formatLocalDateTime(request.departure_at)}</p>
                       <p className="mt-1 text-xs text-slate-400">
                         to{" "}
-                        {new Date(request.expected_return_at).toLocaleString()}
+                        {formatLocalDateTime(request.expected_return_at)}
                       </p>
                     </td>
                     <td className="px-5 py-5 text-center text-sm font-bold text-slate-700">
@@ -254,7 +255,7 @@ export default function TotalApprovals() {
                       </span>
                     </td>
                     <td className="px-5 py-5 text-sm text-slate-600">
-                      {new Date(request.created_at).toLocaleString()}
+                      {formatLocalDateTime(request.created_at)}
                     </td>
                     <td className="px-5 py-5">
                       <button

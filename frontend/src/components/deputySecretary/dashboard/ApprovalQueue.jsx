@@ -32,13 +32,25 @@ export default function ApprovalQueue({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-5 border-b bg-gradient-to-r from-slate-50 to-white">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
-            {view === "allocated"
+            {view === "senior_recommendations"
+              ? "Deputy Secretary Requests"
+              : view === "department_recommendations"
+              ? "Department Officer Recommendations"
+              : view === "recommendations"
+              ? "Department Officer Requests"
+              : view === "allocated"
               ? "Allocated Requests"
               : "Pending Allocation Queue"}
           </h2>
 
           <p className="text-sm text-slate-500 mt-1">
-            {view === "allocated"
+            {view === "senior_recommendations"
+              ? "Provide recommendations for requests submitted by Deputy Secretaries."
+              : view === "department_recommendations"
+              ? "Review recommendations recorded by Department Officers."
+              : view === "recommendations"
+              ? "Provide recommendations for requests submitted by Department Officers."
+              : view === "allocated"
               ? "Review requests with vehicles allocated by the Deputy Secretary."
               : "Review recommended transport requests and allocate vehicles."}
           </p>
@@ -69,7 +81,15 @@ export default function ApprovalQueue({
             {requests.map((item) => (
               <tr
                 key={item.id}
-                onClick={() => navigate(`/approval/${item.id}`)}
+                onClick={() =>
+                  navigate(
+                    view === "senior_recommendations"
+                      ? `/senior-deputy/recommendations/${item.id}`
+                      : item.status === "submitted"
+                      ? `/deputy/recommendations/${item.id}`
+                      : `/approval/${item.id}`,
+                  )
+                }
                 className="cursor-pointer border-t border-slate-100 transition-all duration-200 hover:bg-blue-50/40"
               >
                 <td className="px-6 py-5">
@@ -119,7 +139,12 @@ export default function ApprovalQueue({
                 <td className="px-6 py-5">
                   <div className="flex justify-center">
                     <button className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow transition-all duration-300 hover:shadow-lg hover:scale-105">
-                      {view === "allocated" ? "View" : "Allocate"}
+                      {view === "allocated" ||
+                      view === "department_recommendations"
+                        ? "View"
+                        : item.status === "submitted"
+                          ? "Recommend"
+                          : "Allocate"}
 
                       <FiChevronRight className="transition-transform group-hover:translate-x-1" />
                     </button>

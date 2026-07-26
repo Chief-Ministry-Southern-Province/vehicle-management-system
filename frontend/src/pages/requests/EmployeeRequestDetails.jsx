@@ -12,9 +12,8 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getMyVehicleRequest } from "../../api/authApi";
+import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-const formatDateTime = (value) =>
-  value ? new Date(value).toLocaleString() : "Not completed";
 const statusStyles = {
   submitted: "bg-amber-100 text-amber-700",
   recommended: "bg-blue-100 text-blue-700",

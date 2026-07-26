@@ -145,9 +145,27 @@ export const getDriverDashboardStats = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
-export const getDriverTodaySchedule = async () => {
+export const getDriverScheduledJourneys = async () => {
   try {
-    const response = await API.get("/driver/today-schedule", {
+    const response = await API.get("/driver/scheduled-journeys", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getDriverTripHistory = async () => {
+  try {
+    const response = await API.get("/driver/trip-history", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateDriverJourneyStatus = async (journeyId, action) => {
+  try {
+    const response = await API.patch(`/driver/journeys/${journeyId}/status`, { action }, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;
@@ -157,6 +175,24 @@ export const getDriverTodaySchedule = async () => {
 export const getDriverAssignedVehicle = async () => {
   try {
     const response = await API.get("/driver/assigned-vehicle", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createVehicleIssueReport = async (report) => {
+  try {
+    const response = await API.post("/driver/issue-reports", report, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const getVehicleIssueReports = async () => {
+  try {
+    const response = await API.get("/issue-reports", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;
@@ -274,6 +310,72 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
     const response = await API.patch(
       `/approvals/vehicle-requests/${requestId}/allocate`,
       allocation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getDeputyPendingRecommendations = async () => {
+  try {
+    const response = await API.get("/approvals/recommendations", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const saveDeputyRecommendation = async (requestId, recommendation) => {
+  try {
+    const response = await API.patch(
+      `/approvals/vehicle-requests/${requestId}/recommendation`,
+      recommendation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getSeniorPendingRecommendations = async () => {
+  try {
+    const response = await API.get("/senior-recommendations/vehicle-requests", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getSeniorRecommendationRequest = async (requestId) => {
+  try {
+    const response = await API.get(
+      `/senior-recommendations/vehicle-requests/${requestId}`,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const saveSeniorRecommendation = async (requestId, recommendation) => {
+  try {
+    const response = await API.patch(
+      `/senior-recommendations/vehicle-requests/${requestId}`,
+      recommendation,
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       },

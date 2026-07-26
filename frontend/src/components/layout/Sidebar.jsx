@@ -10,6 +10,7 @@ import {
   FiCheckCircle,
   FiClipboard,
   FiClock,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -46,7 +47,7 @@ const menuItems = [
         roles: ["department_officer"],
       },
       {
-        name: "Request History",
+        name: "Recommendation History",
         path: "/departmentrequesthistory",
         icon: <FiClipboard />,
         roles: ["department_officer"],
@@ -76,14 +77,14 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
-        name: "Total Approvals",
-        path: "/totalapprovals",
+        name: "Pending Approvals",
+        path: "/pendingapprovals",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
       },
       {
-        name: "Pending Approvals",
-        path: "/pendingapprovals",
+        name: "Total Approvals",
+        path: "/totalapprovals",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
       },
@@ -145,10 +146,92 @@ const menuItems = [
         roles: ["driver"],
       },
       {
-        name: "Report Vehicle",
+        name: "Report an Issue",
         path: "/reportvehicle",
         icon: <FiClock />,
         roles: ["driver"],
+      },
+    ],
+  },
+
+  // ==========================================
+  // DEPARTMENT OFFICER SECTION
+  // ==========================================
+
+  {
+    title: "VEHICLE REQUESTS",
+    items: [
+      {
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["department_officer"],
+      },
+      {
+        name: "Requests History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["department_officer"],
+      },
+    ],
+  },
+
+
+
+  // ==========================================
+  // SUBJECT OFFICER, Deputy Secretary SECTION, SENIOR DEPUTY SECRETARY SECTION
+  // ==========================================
+
+  {
+    title: "RECCOMMENDATIONS",
+    items: [
+      {
+        name: "Pending Recommendations",
+        path: "/deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Pending Recommendation",
+        path: "/senior-deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["senior_deputy_secretary"],
+      },
+    ],
+  },
+
+  {
+    title: "FLLET MANAGEMENT",
+    items: [
+      {
+        name: "Driver Issue Reports",
+        path: "/ontimeavailability",
+        icon: <FiAlertTriangle />,
+        roles: ["subject_officer", "deputy_secretary"],
+      },
+      {
+        name: "Approved Journeys",
+        path: "/approvedjourny",
+        icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
+      },
+    ],
+  },
+
+  {
+    title: "VEHICLE REQUESTS",
+    items: [
+      {
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Request History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
       },
     ],
   },

@@ -18,7 +18,7 @@ export default function DepartmentRequestHistory() {
       try {
         setLoading(true);
         setError("");
-        const response = await getDepartmentVehicleRequests("history");
+        const response = await getDepartmentVehicleRequests("all");
         if (active) setRequests(response?.data?.requests || []);
       } catch (requestError) {
         if (active)
@@ -39,7 +39,7 @@ export default function DepartmentRequestHistory() {
     const search = query.trim().toLowerCase();
     return requests.filter((request) => {
       const matchesStatus =
-        status === "all" || request.recommendation_status === status;
+        status === "all" || request.status === status;
       const matchesSearch =
         !search ||
         [

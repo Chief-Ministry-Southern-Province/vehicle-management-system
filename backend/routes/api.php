@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\VehicleRequestController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\DashboardStatsController;
+use App\Http\Controllers\Api\VehicleIssueReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,13 +40,26 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('role:driver')->get('/driver/dashboard-stats', [DriverController::class, 'dashboardStats']);
-    Route::middleware('role:driver')->get('/driver/today-schedule', [DriverController::class, 'todaySchedule']);
+    Route::middleware('role:driver')->get('/driver/scheduled-journeys', [DriverController::class, 'scheduledJourneys']);
+    Route::middleware('role:driver')->get('/driver/trip-history', [DriverController::class, 'tripHistory']);
+    Route::middleware('role:driver')->patch('/driver/journeys/{vehicleRequest}/status', [DriverController::class, 'updateJourneyStatus']);
     Route::middleware('role:driver')->get('/driver/assigned-vehicle', [DriverController::class, 'assignedVehicle']);
+    Route::middleware('role:driver')->post('/driver/issue-reports', [VehicleIssueReportController::class, 'store']);
+    Route::middleware('role:subject_officer,deputy_secretary')->get('/issue-reports', [VehicleIssueReportController::class, 'index']);
 
     Route::middleware('role:deputy_secretary')->prefix('approvals')->group(function () {
+        Route::get('/recommendations', [VehicleRequestController::class, 'deputyRecommendationIndex']);
+        Route::get('/department-recommendations', [VehicleRequestController::class, 'departmentRecommendationIndex']);
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'approvalIndex']);
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'deputyRecommend']);
         Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
+    });
+
+    Route::middleware('role:senior_deputy_secretary')->prefix('senior-recommendations')->group(function () {
+        Route::get('/vehicle-requests', [VehicleRequestController::class, 'seniorRecommendationIndex']);
+        Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'seniorRecommendationShow']);
+        Route::patch('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'seniorRecommend']);
     });
 
     Route::middleware('role:deputy_secretary,secretary,senior_deputy_secretary')->get('/dashboard/executive-stats', [DashboardStatsController::class, 'executive']);
@@ -55,6 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'finalApprovalShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/approve', [VehicleRequestController::class, 'finalApprove']);
     });
+
+    Route::middleware('role:subject_officer,deputy_secretary')
+        ->get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
 
     // Fleet records are read-only for executive roles and editable only by the Subject Officer.
     Route::middleware('role:subject_officer,deputy_secretary,secretary,senior_deputy_secretary')->group(function () {
@@ -67,7 +84,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fleet registration and edits remain restricted to the Subject Officer.
     Route::middleware('role:subject_officer')->group(function () {
-        Route::get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
         Route::post('/vehicles', [VehicleController::class, 'store']);
         // POST supports multipart image uploads reliably in PHP while retaining a dedicated update endpoint.
         Route::post('/vehicles/{vehicle:registration_number}', [VehicleController::class, 'update']);

@@ -7,8 +7,8 @@ import {
 
 const actions = [
   {
-    title: "Today's Schedule",
-    subtitle: "View assigned trips",
+    title: "Scheduled Journey",
+    subtitle: "View incomplete trips",
     icon: <FiCalendar />,
     color: "bg-blue-50 text-blue-600",
   },

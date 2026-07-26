@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import HistoryFilters from "../../components/employee/HistoryFilters";
 import { getMyVehicleRequests } from "../../api/authApi";
+import { formatLocalDateTime } from "../../utils/dateTime";
 const statusColor = {
   approved: "bg-green-100 text-green-700",
   vehicle_allocated: "bg-indigo-100 text-indigo-700",
@@ -99,7 +100,7 @@ export default function RequestHistory() {
                       REQ-{String(request.id).padStart(4, "0")}
                     </td>
                     <td className="p-4 text-gray-600">
-                      {new Date(request.created_at).toLocaleDateString()}
+                      {formatLocalDateTime(request.created_at)}
                     </td>
                     <td className="p-4">{request.destination}</td>
                     <td className="p-4 text-gray-600">{request.purpose}</td>

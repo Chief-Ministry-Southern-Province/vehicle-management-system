@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Throwable;
 
 class VehicleRequestController extends Controller
@@ -58,7 +59,7 @@ class VehicleRequestController extends Controller
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
-        $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'approver:id,name');
+        $vehicleRequest->load('user:id,name,employee_id,department,role', 'recommender:id,name,employee_id,department', 'approver:id,name');
 
         if ($vehicleRequest->status === 'approved') {
             $vehicleRequest->load('allocatedVehicle', 'allocatedDriver');
@@ -81,7 +82,7 @@ class VehicleRequestController extends Controller
             ->latest();
 
         if ($status === 'pending') {
-            $query->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected']);
+            $this->deputyPendingRequests($query);
         } elseif ($status === 'allocated') {
             $query->where('status', 'vehicle_allocated');
         }
@@ -94,7 +95,7 @@ class VehicleRequestController extends Controller
                 'requests' => $requests,
                 'total' => $requests->count(),
                 'stats' => [
-                    'pending' => (clone $baseQuery)->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected'])->count(),
+                    'pending' => $this->deputyPendingRequests(clone $baseQuery)->count(),
                     'allocated' => (clone $baseQuery)->where('status', 'vehicle_allocated')->count(),
                     'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
                     'rejected' => (clone $baseQuery)->where('status', 'rejected')->count(),
@@ -118,6 +119,76 @@ class VehicleRequestController extends Controller
                     'allocator:id,name,employee_id',
                     'approver:id,name,employee_id',
                 ),
+            ],
+        ]);
+    }
+
+    /** Department Officer requests awaiting a Deputy Secretary recommendation. */
+    public function deputyRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with('user:id,name,employee_id,department,role')
+            ->where('status', 'submitted')
+            ->where('recommendation_status', 'pending')
+            ->whereHas('user', fn (Builder $user) => $user->where('role', 'department_officer'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests,
+                'total' => $requests->count(),
+            ],
+        ]);
+    }
+
+    /** Deputy Secretary requests awaiting a Senior Deputy Secretary recommendation. */
+    public function seniorRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with('user:id,name,employee_id,department,role')
+            ->where('status', 'submitted')
+            ->where('recommendation_status', 'pending')
+            ->whereHas('user', fn (Builder $user) => $user->where('role', 'deputy_secretary'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['requests' => $requests, 'total' => $requests->count()],
+        ]);
+    }
+
+    public function seniorRecommendationShow(VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
+            return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
+        }
+
+        return $this->approvalShow($vehicleRequest);
+    }
+
+    /** Recommendations recorded by Department Officers and visible to the Deputy Secretary. */
+    public function departmentRecommendationIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->with(
+                'user:id,name,employee_id,department,role',
+                'recommender:id,name,employee_id,department,role',
+                'allocatedVehicle',
+                'allocatedDriver',
+            )
+            ->where('recommendation_status', 'recommended')
+            ->whereHas('recommender', fn (Builder $user) => $user->where('role', 'department_officer'))
+            ->latest('recommended_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'requests' => $requests,
+                'total' => $requests->count(),
             ],
         ]);
     }
@@ -152,6 +223,10 @@ class VehicleRequestController extends Controller
 
             if ($vehicle->status !== 'available') {
                 abort(422, 'The selected vehicle is no longer available.');
+            }
+
+            if (! $driver->isActive()) {
+                abort(422, 'The selected driver is inactive and cannot be allocated.');
             }
 
             if ($driver->hasScheduleConflict(
@@ -333,7 +408,8 @@ class VehicleRequestController extends Controller
     /** A request detail is accessible only to an officer in the requester's department. */
     public function departmentShow(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)) {
+        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)
+            || $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
@@ -350,10 +426,42 @@ class VehicleRequestController extends Controller
     /** Save the department officer's recommendation or rejection. */
     public function recommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)) {
+        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)
+            || $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
+    /** A Deputy Secretary recommends requests submitted by Department Officers. */
+    public function deputyRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Deputy Secretary recommendations are limited to Department Officer requests.',
+            ], 422);
+        }
+
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
+    /** A Senior Deputy Secretary recommends requests submitted by Deputy Secretaries. */
+    public function seniorRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Senior Deputy Secretary recommendations are limited to Deputy Secretary requests.',
+            ], 422);
+        }
+
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
+    private function saveRecommendation(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
         if ($vehicleRequest->recommendation_status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'This request has already been reviewed.'], 422);
         }
@@ -407,6 +515,17 @@ class VehicleRequestController extends Controller
             // The uploaded file itself is not a database column; store only its metadata.
             unset($validated['attachment']);
 
+            // datetime-local inputs contain no offset and represent Sri Lankan
+            // wall-clock time. Persist them as UTC for unambiguous API output.
+            $validated['departure_at'] = Carbon::parse(
+                $validated['departure_at'],
+                config('app.local_timezone'),
+            )->utc();
+            $validated['expected_return_at'] = Carbon::parse(
+                $validated['expected_return_at'],
+                config('app.local_timezone'),
+            )->utc();
+
             $vehicleRequest = VehicleRequest::create([
                 ...$validated,
                 'user_id' => $request->user()->id,
@@ -439,7 +558,14 @@ class VehicleRequestController extends Controller
                 'recommender:id,name,employee_id',
                 'allocatedVehicle',
             )
-            ->whereHas('user', fn (Builder $query) => $query->where('department', $department));
+            ->whereHas('user', fn (Builder $query) => $query
+                ->where('department', $department)
+                ->where('role', 'employee'));
+    }
+
+    private function deputyPendingRequests(Builder $query): Builder
+    {
+        return $query->where('status', 'recommended');
     }
 
     private function belongsToDepartment(VehicleRequest $vehicleRequest, ?string $department): bool

@@ -6,14 +6,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-
-const formatDate = (value) =>
-  value
-    ? new Date(value).toLocaleString([], {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "—";
+import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
 
 export default function RecommendationTable({
   requests = [],

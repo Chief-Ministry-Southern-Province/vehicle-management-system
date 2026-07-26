@@ -1,9 +1,44 @@
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import FleetStats from "../../components/subjectOfficer/FleetStats";
-import FleetStatusGrid from "../../components/subjectOfficer/FleetStatusGrid";
+import MonthlyCostAnalysis from "../../components/deputySecretary/dashboard/MonthlyCostAnalysis";
 import { useLanguage } from "../../context/useLanguage";
+import { getVehicles } from "../../api/authApi";
+
 export default function SubjectOfficerDashboard() {
   const { translate } = useLanguage();
+  const [vehicles, setVehicles] = useState([]);
+  const [loadingCosts, setLoadingCosts] = useState(true);
+  const [costError, setCostError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadVehicles = async () => {
+      try {
+        const response = await getVehicles();
+        const fleet = response?.data?.vehicles;
+        if (!Array.isArray(fleet)) {
+          throw new Error("Unable to read vehicle records.");
+        }
+        if (active) setVehicles(fleet);
+      } catch (loadError) {
+        if (active) {
+          setCostError(
+            loadError?.message || "Unable to load monthly cost data.",
+          );
+        }
+      } finally {
+        if (active) setLoadingCosts(false);
+      }
+    };
+
+    loadVehicles();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -22,9 +57,11 @@ export default function SubjectOfficerDashboard() {
 
         <FleetStats />
 
-        <div className="grid gap-6">
-          <FleetStatusGrid />
-        </div>
+        <MonthlyCostAnalysis
+          vehicles={vehicles}
+          loading={loadingCosts}
+          error={costError}
+        />
       </div>
     </DashboardLayout>
   );

@@ -19,18 +19,25 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   getDepartmentVehicleRequest,
+  getApprovalVehicleRequest,
+  getSeniorRecommendationRequest,
+  saveDeputyRecommendation,
+  saveSeniorRecommendation,
   submitRecommendation,
 } from "../../api/authApi";
-const formatDate = (value) =>
-  value
-    ? new Date(value).toLocaleString([], {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "—";
+import { useAuth } from "../../context/useAuth";
+import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
 export default function RecommendationReview() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isDeputySecretary = user?.role === "deputy_secretary";
+  const isSeniorDeputySecretary = user?.role === "senior_deputy_secretary";
+  const dashboardPath = isSeniorDeputySecretary
+    ? "/senior-deputy/pending-recommendations"
+    : isDeputySecretary
+      ? "/pendingapprovals"
+      : "/departmentofficerdashboard";
   const [request, setRequest] = useState(null);
   const [priority, setPriority] = useState("medium");
   const [notes, setNotes] = useState("");
@@ -38,7 +45,11 @@ export default function RecommendationReview() {
   useEffect(() => {
     const loadRequest = async () => {
       try {
-        const response = await getDepartmentVehicleRequest(id);
+        const response = await (isSeniorDeputySecretary
+          ? getSeniorRecommendationRequest(id)
+          : isDeputySecretary
+            ? getApprovalVehicleRequest(id)
+            : getDepartmentVehicleRequest(id));
         const vehicleRequest = response?.data?.vehicle_request;
         setRequest(vehicleRequest);
         setPriority(vehicleRequest?.department_priority || "medium");
@@ -48,18 +59,23 @@ export default function RecommendationReview() {
       }
     };
     loadRequest();
-  }, [id]);
+  }, [id, isDeputySecretary, isSeniorDeputySecretary]);
   const saveDecision = async (decision) => {
     setSaving(true);
     try {
-      const response = await submitRecommendation(id, {
+      const saveRecommendation = isSeniorDeputySecretary
+        ? saveSeniorRecommendation
+        : isDeputySecretary
+          ? saveDeputyRecommendation
+          : submitRecommendation;
+      const response = await saveRecommendation(id, {
         decision,
         department_priority: priority,
         recommendation_notes: notes,
       });
       setRequest(response?.data?.vehicle_request);
       toast.success(response?.message || "Recommendation saved.");
-      navigate("/departmentofficerdashboard");
+      navigate(dashboardPath);
     } catch (error) {
       const errors = error?.errors;
       toast.error(
@@ -91,7 +107,7 @@ export default function RecommendationReview() {
           <div className="flex flex-wrap items-start justify-between gap-6 p-6 sm:p-8">
             <div>
               <button
-                onClick={() => navigate("/departmentofficerdashboard")}
+                onClick={() => navigate(dashboardPath)}
                 className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-blue-100 transition hover:bg-white/20 hover:text-white"
               >
                 <FiArrowLeft /> Back to dashboard

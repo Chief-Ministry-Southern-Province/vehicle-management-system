@@ -69,6 +69,17 @@ function LegacyVehicleDetails() {
     saveFleetVehicle(vehicle);
     setSaved(true);
   };
+  const changeOperationalStatus = (event) => {
+    const isActive = event.target.value === "Active";
+    updateVehicle(
+      "status",
+      isActive
+        ? vehicle.status === "Maintenance"
+          ? "Available"
+          : vehicle.status
+        : "Maintenance",
+    );
+  };
   const statusStyles = {
     Available: "bg-emerald-100 text-emerald-700",
     Unavailable: "bg-rose-100 text-rose-700",
@@ -163,17 +174,40 @@ function LegacyVehicleDetails() {
               <label className="text-sm font-semibold text-slate-700">
                 Vehicle status
                 <select
-                  value={vehicle.status}
-                  onChange={(event) =>
-                    updateVehicle("status", event.target.value)
+                  value={
+                    vehicle.status === "Maintenance" ? "Inactive" : "Active"
                   }
+                  onChange={changeOperationalStatus}
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 >
-                  <option>Available</option>
-                  <option>Unavailable</option>
-                  <option>Maintenance</option>
+                  <option>Active</option>
+                  <option>Inactive</option>
                 </select>
               </label>
+              {vehicle.status === "Maintenance" ? (
+                <label className="text-sm font-semibold text-slate-700">
+                  Maintenance classification
+                  <input
+                    value="Under Maintenance"
+                    readOnly
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-normal text-slate-500 outline-none"
+                  />
+                </label>
+              ) : (
+                <label className="text-sm font-semibold text-slate-700">
+                  Availability
+                  <select
+                    value={vehicle.status}
+                    onChange={(event) =>
+                      updateVehicle("status", event.target.value)
+                    }
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 font-normal outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+                  >
+                    <option>Available</option>
+                    <option>Unavailable</option>
+                  </select>
+                </label>
+              )}
               <label className="text-sm font-semibold text-slate-700">
                 Last service date
                 <input

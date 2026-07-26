@@ -1,31 +1,28 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
-const trips = [
-  {
-    id: "TR-1029",
-    date: "Oct 23, 2024",
-    destination: "District Office A",
-    distance: "45 km",
-  },
-  {
-    id: "TR-1025",
-    date: "Oct 23, 2024",
-    destination: "Central Warehouse",
-    distance: "12 km",
-  },
-  {
-    id: "TR-1022",
-    date: "Oct 22, 2024",
-    destination: "State Secretariat",
-    distance: "8 km",
-  },
-  {
-    id: "TR-1019",
-    date: "Oct 21, 2024",
-    destination: "Regional Hospital",
-    distance: "32 km",
-  },
-];
+import { useEffect, useState } from "react";
+import { getDriverTripHistory } from "../../api/authApi";
+import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
+
 export default function TripsHistory() {
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    getDriverTripHistory()
+      .then((response) => {
+        if (active) setTrips(response?.data?.trips || []);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError?.message || "Unable to load trip history.");
+      })
+      .finally(() => active && setLoading(false));
+
+    return () => { active = false; };
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="bg-slate-50 min-h-screen p-6">
@@ -34,13 +31,20 @@ export default function TripsHistory() {
             <h2 className="text-2xl font-bold">Recent Trip History</h2>
           </div>
 
-          <table className="w-full">
+          {loading && <p className="p-10 text-center text-sm text-slate-500">Loading trip history...</p>}
+          {error && <p className="m-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
+          {!loading && !error && trips.length === 0 && (
+            <p className="p-10 text-center text-sm text-slate-500">No completed journeys yet.</p>
+          )}
+
+          {!loading && !error && trips.length > 0 && <div className="overflow-x-auto"><table className="w-full min-w-[760px]">
             <thead className="bg-slate-50">
               <tr className="text-left text-sm">
                 <th className="p-4">Trip ID</th>
-                <th>Date</th>
+                <th>Journey Date</th>
                 <th>Destination</th>
-                <th>Distance</th>
+                <th>Purpose</th>
+                <th>Vehicle</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -48,13 +52,15 @@ export default function TripsHistory() {
             <tbody>
               {trips.map((trip) => (
                 <tr key={trip.id} className="border-t">
-                  <td className="p-4 text-blue-600">{trip.id}</td>
+                  <td className="p-4 text-blue-600">{trip.reference}</td>
 
-                  <td>{trip.date}</td>
+                  <td>{formatDate(trip.departure_at)}</td>
 
                   <td>{trip.destination}</td>
 
-                  <td>{trip.distance}</td>
+                  <td>{trip.purpose}</td>
+
+                  <td>{trip.vehicle?.registration_number || "Not assigned"}</td>
 
                   <td>
                     <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
@@ -64,7 +70,7 @@ export default function TripsHistory() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>}
         </div>
       </div>
     </DashboardLayout>
