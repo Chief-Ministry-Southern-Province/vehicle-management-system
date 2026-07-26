@@ -242,6 +242,14 @@ class DriverRegistrationTest extends TestCase
             $makeTrip('Completed journey', '2026-07-23 08:00:00', '2026-07-23 10:00:00', 'completed');
             $ongoing = $makeTrip('Ongoing journey', '2026-07-24 10:00:00', '2026-07-24 14:00:00', 'ongoing');
             $future = $makeTrip('Future journey', '2026-07-26 08:00:00', '2026-07-26 10:00:00', 'scheduled');
+            $driver->update([
+                'allocated_vehicle' => $vehicle->registration_number,
+                'current_assignment' => [
+                    'request_id' => $future->id,
+                    'vehicle_registration' => $vehicle->registration_number,
+                ],
+            ]);
+            $vehicle->update(['status' => 'unavailable']);
 
             $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
                 ->assertOk()
@@ -310,6 +318,16 @@ class DriverRegistrationTest extends TestCase
             ])->assertOk()
                 ->assertJsonPath('data.trip.status', 'Completed')
                 ->assertJsonPath('data.driver_status', 'available');
+
+            $this->assertDatabaseHas('vehicles', [
+                'id' => $vehicle->id,
+                'status' => 'available',
+            ]);
+            $this->assertDatabaseHas('drivers', [
+                'id' => $driver->id,
+                'allocated_vehicle' => null,
+                'current_assignment' => null,
+            ]);
 
             $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
                 ->assertOk()

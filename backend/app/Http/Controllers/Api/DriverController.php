@@ -7,6 +7,7 @@ use App\Models\Driver;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Models\VehicleRequest;
 
@@ -165,10 +166,47 @@ class DriverController extends Controller
                 return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
             }
 
-            $vehicleRequest->update([
-                'journey_status' => 'completed',
-                'journey_completed_at' => now(),
-            ]);
+            DB::transaction(function () use ($vehicleRequest, $driver): void {
+                $lockedRequest = VehicleRequest::query()
+                    ->lockForUpdate()
+                    ->findOrFail($vehicleRequest->id);
+                $lockedDriver = Driver::query()->lockForUpdate()->findOrFail($driver->id);
+                $vehicle = $lockedRequest->allocated_vehicle_id
+                    ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
+                    : null;
+
+                $lockedRequest->update([
+                    'journey_status' => 'completed',
+                    'journey_completed_at' => now(),
+                ]);
+
+                $driverHasAnotherJourney = VehicleRequest::query()
+                    ->where('allocated_driver_id', $lockedDriver->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where('journey_status', '!=', 'completed')
+                    ->exists();
+
+                if (! $driverHasAnotherJourney) {
+                    $lockedDriver->update([
+                        'allocated_vehicle' => null,
+                        'current_assignment' => null,
+                    ]);
+                }
+
+                if ($vehicle) {
+                    $vehicleHasAnotherJourney = VehicleRequest::query()
+                        ->where('allocated_vehicle_id', $vehicle->id)
+                        ->whereKeyNot($lockedRequest->id)
+                        ->whereIn('status', ['vehicle_allocated', 'approved'])
+                        ->where('journey_status', '!=', 'completed')
+                        ->exists();
+
+                    if (! $vehicleHasAnotherJourney) {
+                        $vehicle->update(['status' => 'available']);
+                    }
+                }
+            });
         }
 
         return response()->json([
