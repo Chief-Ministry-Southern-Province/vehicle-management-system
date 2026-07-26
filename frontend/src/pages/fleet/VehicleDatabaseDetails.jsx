@@ -77,6 +77,25 @@ export default function VehicleDatabaseDetails() {
       [event.target.name]: event.target.value,
     }));
   };
+  const changeOperationalStatus = (event) => {
+    const isActive = event.target.value === "active";
+    setSaveMessage("");
+    setVehicle((current) => ({
+      ...current,
+      status: isActive
+        ? current.status === "maintenance"
+          ? "available"
+          : current.status
+        : "maintenance",
+    }));
+  };
+  const changeAvailability = (event) => {
+    setSaveMessage("");
+    setVehicle((current) => ({
+      ...current,
+      status: event.target.value,
+    }));
+  };
   const chooseImage = (event) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -323,16 +342,38 @@ export default function VehicleDatabaseDetails() {
               <label>
                 Vehicle status
                 <select
-                  name="status"
-                  value={vehicle.status}
-                  onChange={change}
+                  value={
+                    vehicle.status === "maintenance" ? "inactive" : "active"
+                  }
+                  onChange={changeOperationalStatus}
                   className={field}
                 >
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
-                  <option value="maintenance">Maintenance</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </label>
+              {vehicle.status === "maintenance" ? (
+                <label>
+                  Maintenance classification
+                  <input
+                    value="Under Maintenance"
+                    readOnly
+                    className={`${field} bg-slate-50 text-slate-500`}
+                  />
+                </label>
+              ) : (
+                <label>
+                  Availability
+                  <select
+                    value={vehicle.status}
+                    onChange={changeAvailability}
+                    className={field}
+                  >
+                    <option value="available">Available</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                </label>
+              )}
               <label>
                 Seat capacity
                 <input
