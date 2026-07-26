@@ -82,7 +82,7 @@ class VehicleRequestController extends Controller
             ->latest();
 
         if ($status === 'pending') {
-            $query->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected']);
+            $this->deputyPendingRequests($query);
         } elseif ($status === 'allocated') {
             $query->where('status', 'vehicle_allocated');
         }
@@ -95,7 +95,7 @@ class VehicleRequestController extends Controller
                 'requests' => $requests,
                 'total' => $requests->count(),
                 'stats' => [
-                    'pending' => (clone $baseQuery)->whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected'])->count(),
+                    'pending' => $this->deputyPendingRequests(clone $baseQuery)->count(),
                     'allocated' => (clone $baseQuery)->where('status', 'vehicle_allocated')->count(),
                     'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
                     'rejected' => (clone $baseQuery)->where('status', 'rejected')->count(),
@@ -338,7 +338,8 @@ class VehicleRequestController extends Controller
     /** A request detail is accessible only to an officer in the requester's department. */
     public function departmentShow(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)) {
+        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)
+            || $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
@@ -355,10 +356,29 @@ class VehicleRequestController extends Controller
     /** Save the department officer's recommendation or rejection. */
     public function recommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)) {
+        if (! $this->belongsToDepartment($vehicleRequest, $request->user()->department)
+            || $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
+    /** A Deputy Secretary recommends requests submitted by Department Officers. */
+    public function deputyRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if (! $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Deputy Secretary recommendations are limited to Department Officer requests.',
+            ], 422);
+        }
+
+        return $this->saveRecommendation($request, $vehicleRequest);
+    }
+
+    private function saveRecommendation(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
         if ($vehicleRequest->recommendation_status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'This request has already been reviewed.'], 422);
         }
@@ -455,7 +475,20 @@ class VehicleRequestController extends Controller
                 'recommender:id,name,employee_id',
                 'allocatedVehicle',
             )
-            ->whereHas('user', fn (Builder $query) => $query->where('department', $department));
+            ->whereHas('user', fn (Builder $query) => $query
+                ->where('department', $department)
+                ->where('role', '!=', 'department_officer'));
+    }
+
+    private function deputyPendingRequests(Builder $query): Builder
+    {
+        return $query->where(function (Builder $pending): void {
+            $pending->where('status', 'recommended')
+                ->orWhere(function (Builder $officerRequest): void {
+                    $officerRequest->where('status', 'submitted')
+                        ->whereHas('user', fn (Builder $user) => $user->where('role', 'department_officer'));
+                });
+        });
     }
 
     private function belongsToDepartment(VehicleRequest $vehicleRequest, ?string $department): bool
