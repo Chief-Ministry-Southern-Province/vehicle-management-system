@@ -47,20 +47,8 @@ const menuItems = [
         roles: ["department_officer"],
       },
       {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["department_officer"],
-      },
-      {
-        name: "Department Request History",
+        name: "Recommendation History",
         path: "/departmentrequesthistory",
-        icon: <FiClipboard />,
-        roles: ["department_officer"],
-      },
-      {
-        name: "My Requests",
-        path: "/requesthistory",
         icon: <FiClipboard />,
         roles: ["department_officer"],
       },
@@ -92,12 +80,6 @@ const menuItems = [
         name: "Pending Approvals",
         path: "/pendingapprovals",
         icon: <FiCheckCircle />,
-        roles: ["deputy_secretary"],
-      },
-      {
-        name: "Pending Recommendations",
-        path: "/deputy/pending-recommendations",
-        icon: <FiClipboard />,
         roles: ["deputy_secretary"],
       },
       {
@@ -174,6 +156,46 @@ const menuItems = [
         path: "/reportvehicle",
         icon: <FiClock />,
         roles: ["driver"],
+      },
+    ],
+  },
+
+  // ==========================================
+  // DEPARTMENT OFFICER SECTION
+  // ==========================================
+
+  {
+    title: "VEHICLE REQUESTS",
+    items: [
+      {
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["department_officer"],
+      },
+      {
+        name: "Requests History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["department_officer"],
+      },
+    ],
+  },
+
+
+
+  // ==========================================
+  // SUBJECT OFFICER, Deputy Secretary SECTION
+  // ==========================================
+
+  {
+    title: "RECCOMMENDATIONS",
+    items: [
+      {
+        name: "Pending Recommendations",
+        path: "/deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
       },
     ],
   },
