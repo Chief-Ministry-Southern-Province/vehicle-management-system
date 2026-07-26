@@ -17,12 +17,19 @@ class DashboardStatsController extends Controller
 
         $pendingApprovals = $isFinalApprover
             ? VehicleRequest::where('status', 'vehicle_allocated')->count()
-            : VehicleRequest::whereNotIn('status', ['vehicle_allocated', 'approved', 'rejected'])->count();
+            : VehicleRequest::where('status', 'recommended')->count();
+
+        $pendingRecommendations = VehicleRequest::query()
+            ->where('status', 'submitted')
+            ->where('recommendation_status', 'pending')
+            ->whereHas('user', fn ($user) => $user->where('role', 'department_officer'))
+            ->count();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'pending_approvals' => $pendingApprovals,
+                'pending_recommendations' => $pendingRecommendations,
                 'available_vehicles' => $vehicles->where('status', 'available')->count(),
                 // Fuel expense records are not yet stored; return an authoritative zero instead of mock data.
                 'fuel_cost' => 0,
