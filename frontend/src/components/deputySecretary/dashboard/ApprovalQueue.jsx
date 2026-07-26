@@ -32,13 +32,17 @@ export default function ApprovalQueue({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 py-5 border-b bg-gradient-to-r from-slate-50 to-white">
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
-            {view === "allocated"
+            {view === "recommendations"
+              ? "Department Officer Requests"
+              : view === "allocated"
               ? "Allocated Requests"
               : "Pending Allocation Queue"}
           </h2>
 
           <p className="text-sm text-slate-500 mt-1">
-            {view === "allocated"
+            {view === "recommendations"
+              ? "Provide recommendations for requests submitted by Department Officers."
+              : view === "allocated"
               ? "Review requests with vehicles allocated by the Deputy Secretary."
               : "Review recommended transport requests and allocate vehicles."}
           </p>

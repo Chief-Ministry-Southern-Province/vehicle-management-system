@@ -95,6 +95,12 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
+        name: "Pending Recommendations",
+        path: "/deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Total Approvals",
         path: "/totalapprovals",
         icon: <FiCheckCircle />,

@@ -320,6 +320,17 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const getDeputyPendingRecommendations = async () => {
+  try {
+    const response = await API.get("/approvals/recommendations", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const saveDeputyRecommendation = async (requestId, recommendation) => {
   try {
     const response = await API.patch(
