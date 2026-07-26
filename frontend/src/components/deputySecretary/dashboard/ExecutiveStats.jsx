@@ -5,7 +5,7 @@ import {
   FiCreditCard,
   FiDollarSign,
   FiArrowUpRight,
-  FiFilePlus,
+  FiClipboard,
   FiTool,
   FiTruck,
   FiUsers,
@@ -174,11 +174,10 @@ const createOverviewStats = (data) => [
     tone: "amber",
   },
   {
-    title: "Registration Requests",
-    value:
-      data.registration_requests ?? data.pending_registration_requests ?? 0,
-    icon: <FiFilePlus />,
-    path: "/registervehicle",
+    title: "Pending Recommendation",
+    value: data.pending_recommendations ?? 0,
+    icon: <FiClipboard />,
+    path: "/deputy/pending-recommendations",
     tone: "indigo",
   },
 ];
@@ -302,7 +301,7 @@ export default function ExecutiveStats() {
     pending_approvals: 0,
     available_vehicles: 0,
     available_drivers: 0,
-    registration_requests: 0,
+    pending_recommendations: 0,
     fuel_cost: 0,
     maintenance_cost: 0,
     repair_cost: 0,
