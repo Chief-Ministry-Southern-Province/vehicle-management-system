@@ -27,6 +27,7 @@ import DeputySecretaryDashboard from './pages/dashboard/DeputySecretaryDashboard
 import SeniorDeputySecretaryDashboard from './pages/dashboard/SeniorDeputySecretaryDashboard';
 import PendingApprovals from './pages/deputySecretary/PendingApprovals';
 import DeputyPendingRecommendations from './pages/deputySecretary/PendingRecommendations';
+import DepartmentRecommendations from './pages/deputySecretary/DepartmentRecommendations';
 import ApprovalWorkspace from './pages/deputySecretary/ApprovalWorkspace';
 import DriverDashboard from './pages/dashboard/DriverDashboard';
 import Register from './pages/auth/Register';
@@ -96,6 +97,7 @@ function App() {
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/deputy/pending-recommendations" element={withAuth(<DeputyPendingRecommendations />, ["deputy_secretary"])} />
+            <Route path="/deputy/department-recommendations" element={withAuth(<DepartmentRecommendations />, ["deputy_secretary"])} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
             <Route path="/deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />

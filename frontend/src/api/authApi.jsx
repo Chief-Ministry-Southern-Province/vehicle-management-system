@@ -331,11 +331,25 @@ export const getDeputyPendingRecommendations = async () => {
   }
 };
 
+export const getDepartmentOfficerRecommendations = async () => {
+  try {
+    const response = await API.get("/approvals/department-recommendations", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const saveDeputyRecommendation = async (requestId, recommendation) => {
   try {
     const response = await API.patch(
       `/approvals/vehicle-requests/${requestId}/recommendation`,
       recommendation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
     );
     return response.data;
   } catch (error) {
