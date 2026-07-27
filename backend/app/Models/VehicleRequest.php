@@ -42,6 +42,8 @@ class VehicleRequest extends Model
         'driver_notified_at',
         'approved_by',
         'approved_at',
+        'rejected_by',
+        'rejected_at',
     ];
 
     protected function casts(): array
@@ -53,6 +55,7 @@ class VehicleRequest extends Model
             'allocated_at' => 'datetime',
             'driver_notified_at' => 'datetime',
             'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'journey_started_at' => 'datetime',
             'journey_completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
@@ -87,6 +90,11 @@ class VehicleRequest extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 
     public function getAttachmentUrlAttribute(): ?string
