@@ -30,15 +30,17 @@ import {
 /*  here on purpose; when your API returns a URL it will render       */
 /*  automatically, otherwise a clean placeholder icon is shown.       */
 /* ------------------------------------------------------------------ */
-const STATUSES = ["Available", "Unavailable", "Maintenance"];
+const STATUSES = ["Available", "Scheduled Trip", "Unavailable", "Maintenance"];
 const STATUS_STYLES = {
   Available:
     "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
+  "Scheduled Trip": "bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100",
   Unavailable: "bg-red-50 text-red-600 ring-1 ring-inset ring-red-100",
   Maintenance: "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100",
 };
 const STATUS_ICON = {
   Available: <FiCheckSquare className="h-3 w-3" />,
+  "Scheduled Trip": <FiCalendar className="h-3 w-3" />,
   Unavailable: <FiSlash className="h-3 w-3" />,
   Maintenance: <FiTool className="h-3 w-3" />,
 };
@@ -56,7 +58,10 @@ function normalizeVehicle(vehicle) {
     licenseExpiry:
       vehicle.revenue_license_expiry || vehicle.registration_expiry,
     status: vehicle.status
-      ? `${vehicle.status.charAt(0).toUpperCase()}${vehicle.status.slice(1)}`
+      ? vehicle.status
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
       : "Unavailable",
   };
 }

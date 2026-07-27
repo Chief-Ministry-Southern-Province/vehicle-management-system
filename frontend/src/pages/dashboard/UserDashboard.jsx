@@ -65,10 +65,14 @@ export default function UserDashboard() {
         if (isMounted) {
           setStats({
             pending: requests.filter(
-              (request) => !["approved", "rejected"].includes(request.status),
+              (request) =>
+                !["approved", "completed", "rejected", "cancelled"].includes(
+                  request.status,
+                ),
             ).length,
             approved: requests.filter(
-              (request) => request.status === "approved",
+              (request) =>
+                ["approved", "completed"].includes(request.status),
             ).length,
             rejected: requests.filter(
               (request) => request.status === "rejected",

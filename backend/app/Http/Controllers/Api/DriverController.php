@@ -8,6 +8,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use App\Models\VehicleRequest;
 
@@ -22,12 +23,18 @@ class DriverController extends Controller
         $drivers = Driver::orderBy('driver_id')->get();
 
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
-            $drivers->each(function (Driver $driver) use ($validated): void {
+            $startsAt = Carbon::parse($validated['departure_at']);
+            $endsAt = Carbon::parse($validated['expected_return_at']);
+            $drivers->each(function (Driver $driver) use ($startsAt, $endsAt): void {
+                $statusForSlot = $driver->operationalStatusFor(
+                    $startsAt,
+                    $endsAt,
+                );
                 $driver->setAttribute(
                     'available_for_slot',
-                    $driver->isActive()
-                        && ! $driver->hasScheduleConflict($validated['departure_at'], $validated['expected_return_at']),
+                    $statusForSlot === 'available',
                 );
+                $driver->setAttribute('status_for_slot', $statusForSlot);
             });
         }
 
@@ -45,7 +52,7 @@ class DriverController extends Controller
             ], 404);
         }
 
-        $trips = $driver->vehicleRequests()->where('status', 'approved');
+        $trips = $driver->vehicleRequests()->whereIn('status', ['approved', 'completed']);
         $total = (clone $trips)->count();
         $completed = (clone $trips)->where('journey_status', 'completed')->count();
 
@@ -100,8 +107,12 @@ class DriverController extends Controller
         }
 
         $trips = $driver->vehicleRequests()
-            ->where('status', 'approved')
-            ->where('journey_status', 'completed')
+            // Include legacy rows that recorded only journey_status=completed.
+            ->whereIn('status', ['approved', 'completed', 'cancelled'])
+            ->where(function ($query): void {
+                $query->where('journey_status', 'completed')
+                    ->orWhere('status', 'cancelled');
+            })
             ->with('allocatedVehicle')
             ->orderByDesc('journey_completed_at')
             ->get()
@@ -119,8 +130,13 @@ class DriverController extends Controller
             'ongoing' => 'Ongoing',
             'issue' => 'Issue',
             'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
             default => 'Pending',
         };
+
+        if ($trip->status === 'cancelled') {
+            $status = 'Cancelled';
+        }
 
         return [
             'id' => $trip->id,
@@ -136,6 +152,7 @@ class DriverController extends Controller
             'journey_status' => $trip->journey_status,
             'journey_started_at' => $trip->journey_started_at?->toISOString(),
             'journey_completed_at' => $trip->journey_completed_at?->toISOString(),
+            'cancelled_at' => $trip->cancelled_at?->toISOString(),
             'vehicle' => $trip->allocatedVehicle,
         ];
     }
@@ -157,10 +174,21 @@ class DriverController extends Controller
                 return response()->json(['success' => false, 'message' => 'Only a scheduled journey can be started.'], 422);
             }
 
-            $vehicleRequest->update([
-                'journey_status' => 'ongoing',
-                'journey_started_at' => now(),
-            ]);
+            DB::transaction(function () use ($vehicleRequest): void {
+                $lockedRequest = VehicleRequest::query()
+                    ->lockForUpdate()
+                    ->findOrFail($vehicleRequest->id);
+                $vehicle = $lockedRequest->allocated_vehicle_id
+                    ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
+                    : null;
+
+                $lockedRequest->update([
+                    'journey_status' => 'ongoing',
+                    'journey_started_at' => now(),
+                ]);
+
+                $vehicle?->update(['status' => 'unavailable']);
+            });
         } else {
             if (! in_array($vehicleRequest->journey_status, ['ongoing', 'issue'], true)) {
                 return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
@@ -176,6 +204,7 @@ class DriverController extends Controller
                     : null;
 
                 $lockedRequest->update([
+                    'status' => 'completed',
                     'journey_status' => 'completed',
                     'journey_completed_at' => now(),
                 ]);
@@ -195,16 +224,25 @@ class DriverController extends Controller
                 }
 
                 if ($vehicle) {
-                    $vehicleHasAnotherJourney = VehicleRequest::query()
+                    $vehicleHasAnotherOngoingJourney = VehicleRequest::query()
+                        ->where('allocated_vehicle_id', $vehicle->id)
+                        ->whereKeyNot($lockedRequest->id)
+                        ->where('status', 'approved')
+                        ->whereIn('journey_status', ['ongoing', 'issue'])
+                        ->exists();
+
+                    $vehicleHasAnotherScheduledJourney = VehicleRequest::query()
                         ->where('allocated_vehicle_id', $vehicle->id)
                         ->whereKeyNot($lockedRequest->id)
                         ->whereIn('status', ['vehicle_allocated', 'approved'])
-                        ->where('journey_status', '!=', 'completed')
+                        ->where('journey_status', 'scheduled')
                         ->exists();
 
-                    if (! $vehicleHasAnotherJourney) {
-                        $vehicle->update(['status' => 'available']);
-                    }
+                    $vehicle->update([
+                        'status' => $vehicleHasAnotherOngoingJourney
+                            ? 'unavailable'
+                            : ($vehicleHasAnotherScheduledJourney ? 'scheduled_trip' : 'available'),
+                    ]);
                 }
             });
         }
@@ -214,7 +252,7 @@ class DriverController extends Controller
             'message' => $validated['action'] === 'start' ? 'Trip started.' : 'Trip completed.',
             'data' => [
                 'trip' => $this->tripPayload($vehicleRequest->fresh()->load('allocatedVehicle')),
-                'driver_status' => $validated['action'] === 'start' ? 'ongoing' : 'available',
+                'driver_status' => $driver->fresh()->status,
             ],
         ]);
     }

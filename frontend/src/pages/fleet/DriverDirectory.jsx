@@ -31,7 +31,8 @@ const EMPTY_DRIVER = {
 function StatusPill({ status }) {
   const styles = {
     Available: "bg-emerald-50 text-emerald-700",
-    "On Trip": "bg-blue-50 text-blue-700",
+    "Scheduled Trip": "bg-indigo-50 text-indigo-700",
+    "Ongoing Trip": "bg-blue-50 text-blue-700",
     Unavailable: "bg-red-50 text-red-700",
   };
   return (

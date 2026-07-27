@@ -17,6 +17,8 @@ const statusStyle = {
   rejected: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
   recommended: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
   submitted: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
+  completed: "bg-cyan-50 text-cyan-700 ring-1 ring-inset ring-cyan-200",
+  cancelled: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
 };
 function StatCard({ icon, label, value, tone }) {
   return (
@@ -53,6 +55,7 @@ export default function TotalApprovals() {
     pending: 0,
     approved: 0,
     rejected: 0,
+    cancelled: 0,
   });
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -85,7 +88,9 @@ export default function TotalApprovals() {
       const matchesStatus =
         status === "all" ||
         (status === "pending"
-          ? !["approved", "rejected"].includes(request.status)
+          ? !["approved", "completed", "rejected", "cancelled"].includes(
+              request.status,
+            )
           : request.status === status);
       const matchesSearch =
         !search ||
@@ -172,7 +177,9 @@ export default function TotalApprovals() {
                 <option value="all">All statuses</option>
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
+                <option value="completed">Complete</option>
                 <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
           </div>

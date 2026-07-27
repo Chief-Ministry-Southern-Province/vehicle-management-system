@@ -41,6 +41,7 @@ import PendingFinalApprovals from './pages/seniorDeputySecretary/PendingFinalApp
 import SeniorPendingRecommendations from './pages/seniorDeputySecretary/PendingRecommendations';
 import FinalApprovalDetails from './pages/seniorDeputySecretary/FinalApprovalDetails';
 import ApprovedJourny from './pages/subjectOfficer/ApprovedJourny';
+import SubjectOfficerRequestHistory from './pages/subjectOfficer/SubjectOfficerRequestHistory';
 import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
 import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
@@ -71,13 +72,15 @@ function App() {
             
 
             <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
-            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer", "deputy_secretary"])} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer", "subject_officer", "deputy_secretary"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
             <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
             
 
             <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
+            <Route path="/subjectofficer/requesthistory" element={withAuth(<SubjectOfficerRequestHistory />, ["subject_officer"])} />
+            <Route path="/subjectofficer/requests/:id" element={withAuth(<EmployeeRequestDetails historyPath="/subjectofficer/requesthistory" />, ["subject_officer"])} />
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
             <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
             <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>

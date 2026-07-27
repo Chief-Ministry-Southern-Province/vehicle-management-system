@@ -23,6 +23,13 @@ const statusStyles = {
     badge: "bg-amber-50 text-amber-700",
     label: "Maintenance",
   },
+  scheduled_trip: {
+    icon: FiTruck,
+    card: "bg-blue-100 text-blue-600",
+    dot: "bg-blue-500",
+    badge: "bg-blue-50 text-blue-700",
+    label: "Scheduled Trip",
+  },
   unavailable: {
     icon: FiAlertTriangle,
     card: "bg-red-100 text-red-600",
@@ -93,7 +100,7 @@ export default function FleetStatusGrid() {
           if (Object.hasOwn(totals, status)) totals[status] += 1;
           return totals;
         },
-        { available: 0, maintenance: 0, unavailable: 0 },
+        { available: 0, scheduled_trip: 0, maintenance: 0, unavailable: 0 },
       ),
     [vehicles],
   );
@@ -117,6 +124,11 @@ export default function FleetStatusGrid() {
             <div>
               <p className="text-slate-500">{translate("Available")}</p>
               <p className="font-bold text-green-600">{summary.available}</p>
+            </div>
+
+            <div>
+              <p className="text-slate-500">{translate("Scheduled Trip")}</p>
+              <p className="font-bold text-blue-600">{summary.scheduled_trip}</p>
             </div>
 
             <div>

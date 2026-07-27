@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Driver;
 use App\Models\User;
+use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -10,6 +12,59 @@ use Tests\TestCase;
 class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_allocating_a_vehicle_marks_it_as_a_scheduled_trip(): void
+    {
+        $deputy = User::factory()->create([
+            'role' => 'deputy_secretary',
+            'status' => 'active',
+        ]);
+        $requester = User::factory()->create(['role' => 'employee']);
+        $vehicle = Vehicle::create([
+            'registration_number' => 'SCHEDULE-1001',
+            'vehicle_type' => 'Van',
+            'make' => 'Toyota',
+            'model' => 'Hiace',
+            'status' => 'available',
+            'fuel_level' => 80,
+        ]);
+        $driver = Driver::create([
+            'driver_id' => 'DRV-SCHEDULE-1',
+            'full_name' => 'Scheduled Driver',
+            'date_of_birth' => '1990-01-01',
+            'nic' => '901234567V',
+            'address' => 'Test Road',
+            'contact_number' => '0712345678',
+            'licence_number' => 'LIC-SCHEDULE-1',
+            'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01',
+            'status' => 'active',
+        ]);
+        $vehicleRequest = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Scheduled inspection',
+            'destination' => 'Galle',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 2,
+            'status' => 'recommended',
+            'recommendation_status' => 'recommended',
+        ]);
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/allocate", [
+                'vehicle_id' => $vehicle->id,
+                'driver_id' => $driver->id,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.allocated_vehicle.status', 'scheduled_trip');
+
+        $this->assertDatabaseHas('vehicles', [
+            'id' => $vehicle->id,
+            'status' => 'scheduled_trip',
+        ]);
+    }
 
     public function test_senior_deputy_recommends_deputy_request_before_allocation(): void
     {

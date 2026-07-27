@@ -28,6 +28,8 @@ class VehicleRequest extends Model
         'journey_status',
         'journey_started_at',
         'journey_completed_at',
+        'cancelled_at',
+        'cancelled_by',
         'recommendation_status',
         'department_priority',
         'recommendation_notes',
@@ -53,6 +55,7 @@ class VehicleRequest extends Model
             'approved_at' => 'datetime',
             'journey_started_at' => 'datetime',
             'journey_completed_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
     }
 

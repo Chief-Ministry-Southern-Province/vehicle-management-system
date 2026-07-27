@@ -21,8 +21,10 @@ export default function VehicleDirectory() {
             name: `${vehicle.make} ${vehicle.model}`,
             year: vehicle.manufacturing_year || "—",
             type: vehicle.vehicle_type,
-            status:
-              vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1),
+            status: vehicle.status
+              .split("_")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" "),
             lastServiceDate: vehicle.last_service_date,
             fuelLevel: vehicle.fuel_level,
           })),

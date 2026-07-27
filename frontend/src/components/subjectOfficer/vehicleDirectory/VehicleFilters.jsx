@@ -22,7 +22,8 @@ export default function VehicleFilters() {
         <select className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-500">
           <option>All Status</option>
           <option>Available</option>
-          <option>Assigned</option>
+          <option>Scheduled Trip</option>
+          <option>Unavailable</option>
           <option>Maintenance</option>
           <option>Out of Service</option>
         </select>

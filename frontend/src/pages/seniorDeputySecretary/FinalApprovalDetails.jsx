@@ -133,7 +133,7 @@ export default function FinalApprovalDetails() {
   const attachmentUrl = request.attachment_path
     ? `${import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "http://127.0.0.1:8000"}/storage/${request.attachment_path}`
     : null;
-  const approved = request.status === "approved";
+  const approved = ["approved", "completed"].includes(request.status);
   const hasAllocation = Boolean(
     request.allocated_vehicle_id &&
     request.allocated_driver_id &&

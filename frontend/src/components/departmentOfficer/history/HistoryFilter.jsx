@@ -53,7 +53,9 @@ export default function HistoryFilters({
             <option value="recommended">Recommended</option>
             <option value="vehicle_allocated">Allocated Vehicle</option>
             <option value="approved">Approved</option>
+            <option value="completed">Complete</option>
             <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
           </select>
         </label>
       </div>

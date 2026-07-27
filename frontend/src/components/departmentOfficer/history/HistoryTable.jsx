@@ -8,6 +8,8 @@ const statusClasses = {
   vehicle_allocated: "bg-blue-100 text-blue-700",
   approved: "bg-violet-100 text-violet-700",
   rejected: "bg-red-100 text-red-700",
+  completed: "bg-blue-100 text-blue-700",
+  cancelled: "bg-slate-200 text-slate-700",
 };
 const statusLabels = {
   submitted: "Submitted",
@@ -15,6 +17,8 @@ const statusLabels = {
   vehicle_allocated: "Allocated Vehicle",
   approved: "Approved",
   rejected: "Rejected",
+  completed: "Complete",
+  cancelled: "Cancelled",
 };
 
 export default function HistoryTable({ requests, loading, error, onView }) {

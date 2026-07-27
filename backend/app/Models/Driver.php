@@ -8,6 +8,10 @@ use Illuminate\Support\Carbon;
 
 class Driver extends Model
 {
+    protected $attributes = [
+        'status' => 'active',
+    ];
+
     protected $appends = ['duty_status'];
 
     protected $fillable = [
@@ -35,6 +39,29 @@ class Driver extends Model
 
     public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null): bool
     {
+        return $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->exists();
+    }
+
+    public function operationalStatusFor(Carbon|string $startsAt, Carbon|string $endsAt): string
+    {
+        if (! $this->isActive()) {
+            return 'unavailable';
+        }
+
+        $journeys = $this->activeJourneysDuring($startsAt, $endsAt);
+
+        if ((clone $journeys)->whereIn('journey_status', ['ongoing', 'issue'])->exists()) {
+            return 'ongoing_trip';
+        }
+
+        return $journeys->exists() ? 'scheduled_trip' : 'available';
+    }
+
+    private function activeJourneysDuring(
+        Carbon|string $startsAt,
+        Carbon|string $endsAt,
+        ?int $ignoreRequestId = null,
+    ) {
         return $this->vehicleRequests()
             ->whereIn('status', ['vehicle_allocated', 'approved'])
             ->where(function ($query) {
@@ -42,8 +69,7 @@ class Driver extends Model
             })
             ->when($ignoreRequestId, fn ($query) => $query->whereKeyNot($ignoreRequestId))
             ->where('departure_at', '<', $endsAt)
-            ->where('expected_return_at', '>', $startsAt)
-            ->exists();
+            ->where('expected_return_at', '>', $startsAt);
     }
 
     public function isActive(): bool
@@ -62,8 +88,13 @@ class Driver extends Model
             return 'unavailable';
         }
 
-        return $this->hasScheduleConflict(now(), now()->addSecond())
-            ? 'unavailable'
-            : 'available';
+        if ($this->vehicleRequests()
+            ->where('status', 'approved')
+            ->whereIn('journey_status', ['ongoing', 'issue'])
+            ->exists()) {
+            return 'ongoing_trip';
+        }
+
+        return $this->operationalStatusFor(now(), now()->addSecond());
     }
 }

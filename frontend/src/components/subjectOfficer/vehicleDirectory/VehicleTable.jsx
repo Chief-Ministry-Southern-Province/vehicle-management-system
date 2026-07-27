@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const getStatusStyle = (status) =>
   ({
     Available: "bg-emerald-100 text-emerald-700",
+    "Scheduled Trip": "bg-blue-100 text-blue-700",
     Unavailable: "bg-rose-100 text-rose-700",
     Maintenance: "bg-amber-100 text-amber-700",
   })[status] || "bg-slate-100 text-slate-700";
