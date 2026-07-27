@@ -108,10 +108,14 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** The requester may cancel at any workflow stage before journey completion. */
+    /** The requester or a Deputy Secretary may cancel before journey completion. */
     public function cancel(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if ($vehicleRequest->user_id !== $request->user()->id) {
+        $user = $request->user();
+        $canCancel = $vehicleRequest->user_id === $user->id
+            || $user->role === 'deputy_secretary';
+
+        if (! $canCancel) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
