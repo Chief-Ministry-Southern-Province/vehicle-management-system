@@ -11,6 +11,57 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_subject_officer_request_is_reviewed_by_the_department_officer(): void
+    {
+        $subjectOfficer = User::factory()->create([
+            'role' => 'subject_officer',
+            'department' => 'IT',
+            'status' => 'active',
+        ]);
+        $departmentOfficer = User::factory()->create([
+            'role' => 'department_officer',
+            'department' => 'IT',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($subjectOfficer)
+            ->postJson('/api/vehicle-requests', [
+                'purpose' => 'Fleet inspection',
+                'destination' => 'Matara',
+                'departure_at' => '2026-08-01 09:00',
+                'expected_return_at' => '2026-08-01 12:00',
+                'passenger_count' => 2,
+            ])
+            ->assertCreated();
+
+        $vehicleRequest = VehicleRequest::firstOrFail();
+
+        $this->actingAs($departmentOfficer)
+            ->getJson('/api/department/vehicle-requests?status=pending')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id);
+
+        $this->actingAs($departmentOfficer)
+            ->patchJson("/api/department/vehicle-requests/{$vehicleRequest->id}/recommendation", [
+                'decision' => 'recommended',
+                'department_priority' => 'high',
+                'recommendation_notes' => 'Required for scheduled fleet inspection.',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('vehicle_requests', [
+            'id' => $vehicleRequest->id,
+            'status' => 'recommended',
+            'recommendation_status' => 'recommended',
+            'recommended_by' => $departmentOfficer->id,
+        ]);
+
+        $this->actingAs($subjectOfficer)
+            ->getJson('/api/vehicle-requests')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id);
+    }
+
     public function test_department_officer_request_is_recommended_only_by_deputy_secretary(): void
     {
         $requester = User::factory()->create([

@@ -560,7 +560,7 @@ class VehicleRequestController extends Controller
             )
             ->whereHas('user', fn (Builder $query) => $query
                 ->where('department', $department)
-                ->where('role', 'employee'));
+                ->whereIn('role', ['employee', 'subject_officer']));
     }
 
     private function deputyPendingRequests(Builder $query): Builder
