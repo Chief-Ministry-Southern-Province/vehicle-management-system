@@ -8,12 +8,34 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
 
 class VehicleController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => ['vehicles' => Vehicle::latest()->get()]]);
+        $validated = $request->validate([
+            'departure_at' => ['nullable', 'date', 'required_with:expected_return_at'],
+            'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
+        ]);
+        $vehicles = Vehicle::latest()->get();
+
+        if (isset($validated['departure_at'], $validated['expected_return_at'])) {
+            $startsAt = Carbon::parse($validated['departure_at']);
+            $endsAt = Carbon::parse($validated['expected_return_at']);
+            $vehicles->each(function (Vehicle $vehicle) use ($startsAt, $endsAt): void {
+                $vehicle->setAttribute(
+                    'available_for_slot',
+                    in_array($vehicle->status, ['available', 'scheduled_trip'], true)
+                        && ! $vehicle->hasScheduleConflict(
+                            $startsAt,
+                            $endsAt,
+                        ),
+                );
+            });
+        }
+
+        return response()->json(['success' => true, 'data' => ['vehicles' => $vehicles]]);
     }
 
     public function store(Request $request): JsonResponse
@@ -65,7 +87,7 @@ class VehicleController extends Controller
             'insurance_policy' => ['nullable', 'string', 'max:100'],
             'insurance_provider' => ['nullable', 'string', 'max:255'],
             'assignment' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', Rule::in(['available', 'unavailable', 'maintenance'])],
+            'status' => ['required', Rule::in(['available', 'scheduled_trip', 'unavailable', 'maintenance'])],
             'last_service_date' => ['nullable', 'date'],
             'fuel_level' => ['required', 'integer', 'min:0', 'max:100'],
             'service_category' => ['nullable', 'string', 'max:100'],

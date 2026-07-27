@@ -139,7 +139,7 @@ class DriverRegistrationTest extends TestCase
         ]);
     }
 
-    public function test_driver_is_unavailable_only_inside_an_assigned_journey_time_slot(): void
+    public function test_active_driver_status_reflects_the_journey_state_for_its_time_slot(): void
     {
         Carbon::setTestNow('2026-07-23 09:00:00');
 
@@ -162,7 +162,7 @@ class DriverRegistrationTest extends TestCase
                 'status' => 'active',
             ]);
 
-            VehicleRequest::create([
+            $scheduledJourney = VehicleRequest::create([
                 'user_id' => $requester->id,
                 'requester_name' => $requester->name,
                 'purpose' => 'Scheduled journey',
@@ -177,9 +177,19 @@ class DriverRegistrationTest extends TestCase
             $this->assertSame('available', $driver->fresh()->status);
 
             Carbon::setTestNow('2026-07-23 11:00:00');
-            $this->assertSame('unavailable', $driver->fresh()->status);
+            $this->assertSame('scheduled_trip', $driver->fresh()->status);
+
+            $this->actingAs(User::factory()->create(['role' => 'deputy_secretary']))
+                ->getJson('/api/drivers?departure_at=2026-07-23T10:30:00&expected_return_at=2026-07-23T11:30:00')
+                ->assertOk()
+                ->assertJsonPath('data.drivers.0.status_for_slot', 'scheduled_trip')
+                ->assertJsonPath('data.drivers.0.available_for_slot', false);
+
+            $scheduledJourney->update(['journey_status' => 'ongoing']);
+            $this->assertSame('ongoing_trip', $driver->fresh()->status);
 
             Carbon::setTestNow('2026-07-23 13:30:00');
+            $scheduledJourney->update(['journey_status' => 'completed']);
             $this->assertSame('available', $driver->fresh()->status);
 
             $driver->update(['status' => 'inactive']);
@@ -249,7 +259,12 @@ class DriverRegistrationTest extends TestCase
                     'vehicle_registration' => $vehicle->registration_number,
                 ],
             ]);
-            $vehicle->update(['status' => 'unavailable']);
+            $vehicle->update(['status' => 'scheduled_trip']);
+
+            $this->assertDatabaseHas('vehicles', [
+                'id' => $vehicle->id,
+                'status' => 'scheduled_trip',
+            ]);
 
             $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
                 ->assertOk()
@@ -307,11 +322,21 @@ class DriverRegistrationTest extends TestCase
                 ->assertJsonPath('data.trip.status', 'Completed')
                 ->assertJsonPath('data.driver_status', 'available');
 
+            $this->assertDatabaseHas('vehicles', [
+                'id' => $vehicle->id,
+                'status' => 'scheduled_trip',
+            ]);
+
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
                 'action' => 'start',
             ])->assertOk()
                 ->assertJsonPath('data.trip.status', 'Ongoing')
-                ->assertJsonPath('data.driver_status', 'ongoing');
+                ->assertJsonPath('data.driver_status', 'ongoing_trip');
+
+            $this->assertDatabaseHas('vehicles', [
+                'id' => $vehicle->id,
+                'status' => 'unavailable',
+            ]);
 
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
                 'action' => 'complete',

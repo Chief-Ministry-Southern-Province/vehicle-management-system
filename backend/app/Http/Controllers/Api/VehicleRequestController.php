@@ -221,8 +221,16 @@ class VehicleRequestController extends Controller
             $vehicle = Vehicle::query()->lockForUpdate()->findOrFail($validated['vehicle_id']);
             $driver = Driver::query()->lockForUpdate()->findOrFail($validated['driver_id']);
 
-            if ($vehicle->status !== 'available') {
+            if (! in_array($vehicle->status, ['available', 'scheduled_trip'], true)) {
                 abort(422, 'The selected vehicle is no longer available.');
+            }
+
+            if ($vehicle->hasScheduleConflict(
+                $vehicleRequest->departure_at,
+                $vehicleRequest->expected_return_at,
+                $vehicleRequest->id,
+            )) {
+                abort(422, 'The selected vehicle already has a journey during this time slot.');
             }
 
             if (! $driver->isActive()) {
@@ -245,7 +253,7 @@ class VehicleRequestController extends Controller
                 'allocated_at' => now(),
             ]);
 
-            $vehicle->update(['status' => 'unavailable']);
+            $vehicle->update(['status' => 'scheduled_trip']);
             $driver->update([
                 'allocated_vehicle' => $vehicle->registration_number,
             ]);

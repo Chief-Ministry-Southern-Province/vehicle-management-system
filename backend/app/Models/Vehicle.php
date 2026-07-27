@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class Vehicle extends Model
 {
@@ -31,5 +33,23 @@ class Vehicle extends Model
         return round(collect($this->service_details ?? [])->sum(
             fn (array $service): float => (float) ($service['cost'] ?? 0),
         ), 2);
+    }
+
+    public function vehicleRequests(): HasMany
+    {
+        return $this->hasMany(VehicleRequest::class, 'allocated_vehicle_id');
+    }
+
+    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null): bool
+    {
+        return $this->vehicleRequests()
+            ->whereIn('status', ['vehicle_allocated', 'approved'])
+            ->where(function ($query) {
+                $query->whereNull('journey_status')->orWhere('journey_status', '!=', 'completed');
+            })
+            ->when($ignoreRequestId, fn ($query) => $query->whereKeyNot($ignoreRequestId))
+            ->where('departure_at', '<', $endsAt)
+            ->where('expected_return_at', '>', $startsAt)
+            ->exists();
     }
 }
