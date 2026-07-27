@@ -14,7 +14,11 @@ const statusColor = {
   rejected: "bg-red-100 text-red-700",
   cancelled: "bg-gray-100 text-gray-700",
 };
-export default function RequestHistory() {
+export default function RequestHistory({
+  title = "Request History",
+  description = "View all your vehicle requests, including approved requests.",
+  detailBasePath = "/employee/requests",
+}) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [requests, setRequests] = useState([]);
@@ -66,10 +70,8 @@ export default function RequestHistory() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Request History</h1>
-          <p className="mt-1 text-gray-500">
-            View all your vehicle requests, including approved requests.
-          </p>
+          <h1 className="text-3xl font-bold">{title}</h1>
+          <p className="mt-1 text-gray-500">{description}</p>
         </div>
         <HistoryFilters
           query={query}
@@ -121,7 +123,7 @@ export default function RequestHistory() {
                       <button
                         type="button"
                         onClick={() =>
-                          navigate(`/employee/requests/${request.id}`)
+                          navigate(`${detailBasePath}/${request.id}`)
                         }
                         className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                         aria-label={`View request REQ-${String(request.id).padStart(4, "0")}`}

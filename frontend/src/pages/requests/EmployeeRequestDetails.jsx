@@ -96,7 +96,9 @@ function Timeline({ request }) {
     </ol>
   );
 }
-export default function EmployeeRequestDetails() {
+export default function EmployeeRequestDetails({
+  historyPath = "/requesthistory",
+}) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [request, setRequest] = useState(null);
@@ -141,7 +143,7 @@ export default function EmployeeRequestDetails() {
             <div>
               <button
                 type="button"
-                onClick={() => navigate("/requesthistory")}
+                onClick={() => navigate(historyPath)}
                 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600"
               >
                 <FiArrowLeft />
