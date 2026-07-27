@@ -1,18 +1,20 @@
-import { FiCheckCircle, FiXCircle, FiRefreshCcw } from "react-icons/fi";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 export default function ApprovalActions({
   onAllocate,
   allocating = false,
   allocated = false,
   allocationReady = false,
+  onCancel,
+  cancelling = false,
 }) {
   return (
-    <div className="flex gap-3">
+    <div className="grid gap-3 sm:grid-cols-2">
       <button
         type="button"
         onClick={onAllocate}
         disabled={allocating || allocated || !allocationReady}
-        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:opacity-80"
+        className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-4 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:opacity-80"
       >
         <FiCheckCircle />
         {allocated
@@ -22,12 +24,14 @@ export default function ApprovalActions({
             : "Allocate Vehicle"}
       </button>
 
-      <button className="w-14 h-14 border rounded-xl flex items-center justify-center text-red-500">
+      <button
+        type="button"
+        onClick={onCancel}
+        disabled={cancelling}
+        className="flex min-h-14 items-center justify-center gap-2 rounded-xl border border-red-300 bg-white px-5 py-4 font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+      >
         <FiXCircle />
-      </button>
-
-      <button className="w-14 h-14 border rounded-xl flex items-center justify-center">
-        <FiRefreshCcw />
+        {cancelling ? "Cancelling..." : "Cancel Request"}
       </button>
     </div>
   );

@@ -4,6 +4,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
 import {
   allocateVehicleRequest,
+  cancelMyVehicleRequest,
   getApprovalVehicleRequest,
   getDrivers,
   getVehicles,
@@ -742,6 +743,7 @@ export default function ApprovalWorkspace() {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
   const [allocating, setAllocating] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [allocationMessage, setAllocationMessage] = useState("");
   const [allocation, setAllocation] = useState({
     driver_id: null,
@@ -783,6 +785,30 @@ export default function ApprovalWorkspace() {
       setAllocating(false);
     }
   };
+  const cancelRequest = async () => {
+    if (
+      !window.confirm(
+        "Cancel this vehicle request? Any allocated driver and vehicle will be released.",
+      )
+    ) {
+      return;
+    }
+
+    setCancelling(true);
+    setAllocationMessage("");
+    try {
+      const response = await cancelMyVehicleRequest(id);
+      const updatedRequest = response?.data?.vehicle_request;
+      if (updatedRequest) setRequest(updatedRequest);
+      setAllocationMessage(response?.message || "Request cancelled successfully.");
+    } catch (cancelError) {
+      setAllocationMessage(
+        cancelError?.message || "Unable to cancel this request.",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
   if (request === null)
     return (
       <DashboardLayout>
@@ -798,6 +824,8 @@ export default function ApprovalWorkspace() {
       </DashboardLayout>
     );
   const allocated = ["vehicle_allocated", "approved"].includes(request.status);
+  const cancelled = request.status === "cancelled";
+  const completed = request.status === "completed";
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
@@ -815,8 +843,34 @@ export default function ApprovalWorkspace() {
             <DatabaseRecommendation request={request} />
           </div>
           <div className="space-y-6 lg:col-span-5">
-            {allocated ? (
-              <AllocatedVehicleDetails request={request} />
+            {cancelled || completed ? (
+              <section className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-3 text-slate-700">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+                    ×
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      {cancelled ? "Request Cancelled" : "Journey Complete"}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      This request cannot be allocated or processed further.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            ) : allocated ? (
+              <>
+                <AllocatedVehicleDetails request={request} />
+                <ApprovalActions
+                  onAllocate={allocate}
+                  allocating={allocating}
+                  allocated
+                  allocationReady
+                  onCancel={cancelRequest}
+                  cancelling={cancelling}
+                />
+              </>
             ) : (
               <>
                 <DatabaseAllocationPanel onAllocationChange={setAllocation} request={request} />
@@ -827,6 +881,8 @@ export default function ApprovalWorkspace() {
                   allocationReady={Boolean(
                     allocation.driver_id && allocation.vehicle_id,
                   )}
+                  onCancel={cancelRequest}
+                  cancelling={cancelling}
                 />
               </>
             )}
