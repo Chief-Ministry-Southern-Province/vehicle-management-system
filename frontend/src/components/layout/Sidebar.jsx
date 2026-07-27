@@ -66,12 +66,6 @@ const menuItems = [
         icon: <FiCheckCircle />,
         roles: ["subject_officer"],
       },
-      {
-        name: "Request History",
-        path: "/subjectofficer/requesthistory",
-        icon: <FiClipboard />,
-        roles: ["subject_officer"],
-      },
 
       // ================= DEPUTY SECRETARY =================
 
@@ -188,6 +182,12 @@ const menuItems = [
         name: "Create Vehicle Request",
         path: "/createvehiclerequest",
         icon: <FiTruck />,
+        roles: ["subject_officer"],
+      },
+      {
+        name: "Request History",
+        path: "/subjectofficer/requesthistory",
+        icon: <FiClipboard />,
         roles: ["subject_officer"],
       },
     ],
