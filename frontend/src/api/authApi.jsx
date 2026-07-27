@@ -397,6 +397,21 @@ export const getMyVehicleRequest = async (requestId) => {
   }
 };
 
+export const cancelMyVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.patch(
+      `/vehicle-requests/${requestId}/cancel`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getFinalApprovalVehicleRequests = async (status = "pending") => {
   try {
     const response = await API.get("/final-approvals/vehicle-requests", {

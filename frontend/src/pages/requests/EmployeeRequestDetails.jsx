@@ -6,12 +6,16 @@ import {
   FiDownload,
   FiFileText,
   FiMapPin,
+  FiXCircle,
   FiTruck,
   FiUser,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { getMyVehicleRequest } from "../../api/authApi";
+import {
+  cancelMyVehicleRequest,
+  getMyVehicleRequest,
+} from "../../api/authApi";
 import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const statusStyles = {
@@ -19,6 +23,8 @@ const statusStyles = {
   recommended: "bg-blue-100 text-blue-700",
   vehicle_allocated: "bg-indigo-100 text-indigo-700",
   approved: "bg-emerald-100 text-emerald-700",
+  completed: "bg-blue-100 text-blue-700",
+  cancelled: "bg-slate-200 text-slate-700",
   rejected: "bg-rose-100 text-rose-700",
 };
 function Detail({ label, children }) {
@@ -62,8 +68,20 @@ function Timeline({ request }) {
       description: request.approver
         ? `Approved by ${request.approver.name}`
         : "Awaiting final approval",
-      completed: request.status === "approved",
+      completed: ["approved", "completed"].includes(request.status),
       date: request.approved_at,
+    },
+    {
+      title: "Complete Journey",
+      description:
+        request.status === "completed"
+          ? "Journey completed by the driver"
+          : request.status === "cancelled"
+            ? "Request cancelled before journey completion"
+            : "Awaiting journey completion by the driver",
+      completed: request.status === "completed",
+      cancelled: request.status === "cancelled",
+      date: request.journey_completed_at || request.cancelled_at,
     },
   ];
   return (
@@ -76,9 +94,9 @@ function Timeline({ request }) {
             />
           )}
           <span
-            className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${step.completed ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"}`}
+            className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${step.cancelled ? "bg-slate-600 text-white" : step.completed ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-400"}`}
           >
-            {step.completed ? <FiCheck /> : <FiClock />}
+            {step.cancelled ? <FiXCircle /> : step.completed ? <FiCheck /> : <FiClock />}
           </span>
           <div>
             <p
@@ -103,6 +121,7 @@ export default function EmployeeRequestDetails({
   const navigate = useNavigate();
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
   useEffect(() => {
     const loadRequest = async () => {
       try {
@@ -129,7 +148,10 @@ export default function EmployeeRequestDetails({
         </div>
       </DashboardLayout>
     );
-  const approved = request.status === "approved";
+  const approved = ["approved", "completed"].includes(request.status);
+  const canCancel = ["submitted", "recommended", "vehicle_allocated", "approved"].includes(
+    request.status,
+  );
   const vehicle = approved ? request.allocated_vehicle : null;
   const driver = approved ? request.allocated_driver : null;
   const attachmentUrl = request.attachment_path
@@ -161,7 +183,38 @@ export default function EmployeeRequestDetails({
                 {request.status?.replaceAll("_", " ")}
               </span>
             </div>
+            {canCancel && (
+              <button
+                type="button"
+                disabled={cancelling}
+                onClick={async () => {
+                  if (!window.confirm("Cancel this vehicle request? This action cannot be undone.")) return;
+                  setCancelling(true);
+                  setError("");
+                  try {
+                    const response = await cancelMyVehicleRequest(request.id);
+                    setRequest(response?.data?.vehicle_request || {
+                      ...request,
+                      status: "cancelled",
+                    });
+                  } catch (cancelError) {
+                    setError(cancelError?.message || "Unable to cancel this request.");
+                  } finally {
+                    setCancelling(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 font-semibold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <FiXCircle />
+                {cancelling ? "Cancelling..." : "Cancel Request"}
+              </button>
+            )}
           </header>
+          {error && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-12">
             <main className="space-y-6 lg:col-span-8">
@@ -233,7 +286,7 @@ export default function EmployeeRequestDetails({
                     </Detail>
                   </dl>
                 </section>
-              ) : (
+              ) : request.status !== "cancelled" ? (
                 <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
                   <div className="flex gap-3">
                     <FiClock className="mt-0.5 shrink-0 text-amber-600" />
@@ -249,7 +302,7 @@ export default function EmployeeRequestDetails({
                     </div>
                   </div>
                 </section>
-              )}
+              ) : null}
 
               <section className="rounded-2xl border border-slate-200 bg-white p-6">
                 <h2 className="mb-4 flex items-center gap-2 font-bold text-slate-900">

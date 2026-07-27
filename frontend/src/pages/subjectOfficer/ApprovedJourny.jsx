@@ -18,6 +18,7 @@ import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const display = (value) => value || "—";
 const journeyStatus = (journey) => {
+  if (journey.status === "cancelled") return "Cancelled";
   if (journey.journey_status === "completed") return "Completed";
   if (journey.journey_status === "issue") return "Issue";
   if (journey.journey_status === "ongoing") return "Ongoing";
@@ -26,6 +27,7 @@ const journeyStatus = (journey) => {
 
 const isJourneyOverdue = (journey) =>
   journey.journey_status !== "completed" &&
+  journey.status !== "cancelled" &&
   journey.expected_return_at &&
   new Date(journey.expected_return_at).getTime() < Date.now();
 
@@ -34,6 +36,7 @@ const journeyStatusStyle = {
   Ongoing: "bg-blue-100 text-blue-700",
   Issue: "bg-red-100 text-red-700",
   Completed: "bg-emerald-100 text-emerald-700",
+  Cancelled: "bg-slate-200 text-slate-700",
 };
 
 function DriverStatus({ journey }) {

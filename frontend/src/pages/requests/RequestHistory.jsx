@@ -42,7 +42,9 @@ export default function RequestHistory({
   const counts = useMemo(
     () => ({
       all: requests.length,
-      approved: requests.filter((request) => request.status === "approved")
+      approved: requests.filter((request) =>
+        ["approved", "completed"].includes(request.status),
+      )
         .length,
     }),
     [requests],
@@ -51,7 +53,8 @@ export default function RequestHistory({
     const search = query.trim().toLowerCase();
     return requests.filter(
       (request) =>
-        (status === "all" || request.status === "approved") &&
+        (status === "all" ||
+          ["approved", "completed"].includes(request.status)) &&
         (!search ||
           String(request.id).includes(search) ||
           request.destination?.toLowerCase().includes(search) ||

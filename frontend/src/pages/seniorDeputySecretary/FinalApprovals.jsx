@@ -22,8 +22,8 @@ const views = [
     active: "bg-emerald-600 text-white",
   },
   {
-    key: "rejected",
-    label: "Rejected",
+    key: "cancelled",
+    label: "Cancelled",
     icon: FiXCircle,
     active: "bg-rose-600 text-white",
   },
@@ -31,7 +31,7 @@ const views = [
 const statusStyle = {
   pending: "bg-amber-100 text-amber-700",
   approved: "bg-emerald-100 text-emerald-700",
-  rejected: "bg-rose-100 text-rose-700",
+  cancelled: "bg-slate-200 text-slate-700",
 };
 const priorityStyle = {
   critical: "bg-red-100 text-red-700",
@@ -47,7 +47,7 @@ export default function FinalApprovals() {
   const [counts, setCounts] = useState({
     pending: 0,
     approved: 0,
-    rejected: 0,
+    cancelled: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
