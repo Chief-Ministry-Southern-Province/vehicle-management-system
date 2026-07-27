@@ -154,7 +154,8 @@ export const DRIVERS = [
 ];
 const STATUS_STYLES = {
   Available: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  "On Trip": "bg-blue-50 text-blue-700 ring-blue-100",
+  "Scheduled Trip": "bg-indigo-50 text-indigo-700 ring-indigo-100",
+  "Ongoing Trip": "bg-blue-50 text-blue-700 ring-blue-100",
   Unavailable: "bg-rose-50 text-rose-700 ring-rose-100",
 };
 function getInitials(name) {
@@ -349,7 +350,9 @@ export default function DriverDetails() {
       total: drivers.length,
       available: drivers.filter((driver) => driver.status === "Available")
         .length,
-      onTrip: drivers.filter((driver) => driver.status === "On Trip").length,
+      onTrip: drivers.filter((driver) =>
+        ["Scheduled Trip", "Ongoing Trip"].includes(driver.status),
+      ).length,
       unavailable: drivers.filter((driver) => driver.status === "Unavailable")
         .length,
     }),
@@ -395,7 +398,7 @@ export default function DriverDetails() {
           />
           <SummaryCard
             icon={<FiShield />}
-            label="On Trip"
+            label="Scheduled / Ongoing"
             value={summary.onTrip}
             sub="Currently assigned to trips"
             tone="amber"

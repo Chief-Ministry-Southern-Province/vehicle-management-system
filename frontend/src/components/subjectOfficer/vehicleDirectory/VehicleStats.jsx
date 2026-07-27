@@ -31,14 +31,12 @@ export default function VehicleStats({ vehicles = [] }) {
       text: "text-amber-600",
     },
     {
-      title: "Repairs",
-      value: vehicles.filter(
-        (vehicle) =>
-          vehicle.repairType && vehicle.repairType !== "Routine service",
-      ).length,
+      title: "Scheduled Trip",
+      value: vehicles.filter((vehicle) => vehicle.status === "Scheduled Trip")
+        .length,
       icon: <FiAlertTriangle size={18} />,
-      bg: "bg-red-50",
-      text: "text-red-600",
+      bg: "bg-blue-50",
+      text: "text-blue-600",
     },
   ];
   return (

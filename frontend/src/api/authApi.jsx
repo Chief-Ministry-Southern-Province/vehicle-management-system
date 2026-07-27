@@ -449,9 +449,10 @@ export const getApprovedJourneys = async () => {
   }
 };
 
-export const getVehicles = async () => {
+export const getVehicles = async (schedule = {}) => {
   try {
     const response = await API.get("/vehicles", {
+      params: schedule,
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

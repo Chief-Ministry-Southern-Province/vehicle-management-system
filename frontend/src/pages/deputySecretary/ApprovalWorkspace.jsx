@@ -416,11 +416,14 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             departure_at: request.departure_at,
             expected_return_at: request.expected_return_at,
           }),
-          getVehicles(),
+          getVehicles({
+            departure_at: request.departure_at,
+            expected_return_at: request.expected_return_at,
+          }),
         ]);
         setDrivers(
           (driverResponse?.data?.drivers || []).filter(
-            (driver) => driver.available_for_slot ?? driver.status === "available",
+            (driver) => driver.duty_status === "active",
           ),
         );
         setVehicles(vehicleResponse?.data?.vehicles || []);
@@ -443,7 +446,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
     () =>
       vehicles.filter(
         (item) =>
-          item.status === "available" ||
+          ["available", "scheduled_trip"].includes(item.status) ||
           item.registration_number === registeredVehicle,
       ),
     [registeredVehicle, vehicles],
@@ -462,6 +465,13 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
     setRegisteredVehicle(allocation);
     setVehicleRegistration(allocation);
   };
+  const statusLabel = (status) =>
+    ({
+      available: "Available",
+      scheduled_trip: "Scheduled Trip",
+      ongoing_trip: "Ongoing Trip",
+      unavailable: "Unavailable",
+    })[status] || status;
   const previousJourneysPanel = driver ? (
     <section className="overflow-hidden rounded-xl border border-slate-200">
       <div className="border-b bg-slate-50 px-4 py-3">
@@ -525,9 +535,14 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             onChange={changeDriver}
             className="w-full rounded-xl border px-3 py-3 font-normal"
           >
-            <option value="">Select an available driver</option>
+            <option value="">Select a driver</option>
             {drivers.map((item) => (
-              <option key={item.driver_id} value={item.driver_id}>
+              <option
+                key={item.driver_id}
+                value={item.driver_id}
+                disabled={!item.available_for_slot}
+              >
+                {statusLabel(item.status_for_slot || item.status)} —{" "}
                 {item.full_name} — {item.driver_id}
               </option>
             ))}
@@ -539,6 +554,14 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
               <p className="text-xs uppercase text-slate-400">Licence</p>
               <p className="font-semibold">
                 {driver.licence_number} · {driver.licence_type}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-slate-400">
+                Status for requested time
+              </p>
+              <p className="font-semibold">
+                {statusLabel(driver.status_for_slot || driver.status)}
               </p>
             </div>
             <div>
@@ -564,11 +587,15 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             disabled={!driverId}
             className="w-full rounded-xl border px-3 py-3 font-normal disabled:bg-slate-100"
           >
-            <option value="">Select another available vehicle</option>
+            <option value="">Select an available or scheduled vehicle</option>
             {selectableVehicles.map((item) => (
-              <option key={item.id} value={item.registration_number}>
+              <option
+                key={item.id}
+                value={item.registration_number}
+                disabled={item.available_for_slot === false}
+              >
                 {item.make} {item.model} — {item.registration_number}
-                {item.status !== "available" ? ` (${item.status})` : ""}
+                {` (${statusLabel(item.status)})`}
               </option>
             ))}
           </select>
@@ -601,7 +628,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
               </p>
               <p>
                 {vehicle.fuel_type || "—"} · {vehicle.fuel_capacity || "—"} L ·{" "}
-                <span className="capitalize">{vehicle.status}</span>
+                <span>{statusLabel(vehicle.status)}</span>
               </p>
             </div>
           </div>

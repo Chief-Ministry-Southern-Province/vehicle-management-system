@@ -1,5 +1,7 @@
 const STATUS_LABELS = {
   available: "Available",
+  scheduled_trip: "Scheduled Trip",
+  ongoing_trip: "Ongoing Trip",
   unavailable: "Unavailable",
 };
 
