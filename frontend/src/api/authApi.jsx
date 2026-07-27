@@ -439,6 +439,21 @@ export const finalApproveVehicleRequest = async (requestId) => {
   }
 };
 
+export const finalRejectVehicleRequest = async (requestId) => {
+  try {
+    const response = await API.patch(
+      `/final-approvals/vehicle-requests/${requestId}/reject`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getFinalApprovalVehicleRequest = async (requestId) => {
   try {
     const response = await API.get(
