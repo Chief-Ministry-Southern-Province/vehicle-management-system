@@ -48,7 +48,7 @@ export default function Register() {
     finally { setIsLoading(false); }
   };
   const fieldProps = { onChange: handleChange };
-  const needsBranch = ["employee", "department_officer"].includes(formData.role);
+  const needsBranch = ["employee", "department_officer", "subject_officer"].includes(formData.role);
   const isDriver = formData.role === "driver";
 
   return (
