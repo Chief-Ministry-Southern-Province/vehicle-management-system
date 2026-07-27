@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::get('/vehicle-requests', [VehicleRequestController::class, 'personalIndex']);
     Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'personalShow']);
+    Route::patch('/vehicle-requests/{vehicleRequest}/cancel', [VehicleRequestController::class, 'cancel']);
 
     Route::middleware('role:department_officer')->prefix('department')->group(function () {
         Route::get('/vehicle-requests', [VehicleRequestController::class, 'departmentIndex']);

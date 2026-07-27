@@ -52,7 +52,7 @@ class DriverController extends Controller
             ], 404);
         }
 
-        $trips = $driver->vehicleRequests()->where('status', 'approved');
+        $trips = $driver->vehicleRequests()->whereIn('status', ['approved', 'completed']);
         $total = (clone $trips)->count();
         $completed = (clone $trips)->where('journey_status', 'completed')->count();
 
@@ -107,8 +107,12 @@ class DriverController extends Controller
         }
 
         $trips = $driver->vehicleRequests()
-            ->where('status', 'approved')
-            ->where('journey_status', 'completed')
+            // Include legacy rows that recorded only journey_status=completed.
+            ->whereIn('status', ['approved', 'completed', 'cancelled'])
+            ->where(function ($query): void {
+                $query->where('journey_status', 'completed')
+                    ->orWhere('status', 'cancelled');
+            })
             ->with('allocatedVehicle')
             ->orderByDesc('journey_completed_at')
             ->get()
@@ -126,8 +130,13 @@ class DriverController extends Controller
             'ongoing' => 'Ongoing',
             'issue' => 'Issue',
             'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
             default => 'Pending',
         };
+
+        if ($trip->status === 'cancelled') {
+            $status = 'Cancelled';
+        }
 
         return [
             'id' => $trip->id,
@@ -143,6 +152,7 @@ class DriverController extends Controller
             'journey_status' => $trip->journey_status,
             'journey_started_at' => $trip->journey_started_at?->toISOString(),
             'journey_completed_at' => $trip->journey_completed_at?->toISOString(),
+            'cancelled_at' => $trip->cancelled_at?->toISOString(),
             'vehicle' => $trip->allocatedVehicle,
         ];
     }
@@ -194,6 +204,7 @@ class DriverController extends Controller
                     : null;
 
                 $lockedRequest->update([
+                    'status' => 'completed',
                     'journey_status' => 'completed',
                     'journey_completed_at' => now(),
                 ]);
