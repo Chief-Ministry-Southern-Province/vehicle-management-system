@@ -9,7 +9,8 @@ return [
     // Replace with your actual frontend URL(s) in production.
     'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:5173'), // Vite default
-        'http://localhost:3000',                       // CRA default, if used instead
+        'http://localhost:3000', 
+        'https://vehicle-management-system-lilac-alpha.vercel.app',                     // CRA default, if used instead
     ],
 
     'allowed_origins_patterns' => [],

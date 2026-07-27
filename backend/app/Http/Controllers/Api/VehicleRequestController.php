@@ -108,10 +108,14 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** The requester may cancel at any workflow stage before journey completion. */
+    /** The requester or a Deputy Secretary may cancel before journey completion. */
     public function cancel(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
-        if ($vehicleRequest->user_id !== $request->user()->id) {
+        $user = $request->user();
+        $canCancel = $vehicleRequest->user_id === $user->id
+            || $user->role === 'deputy_secretary';
+
+        if (! $canCancel) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
 
@@ -354,7 +358,7 @@ class VehicleRequestController extends Controller
     {
         $status = $request->query('status', 'pending');
 
-        if (! in_array($status, ['pending', 'approved', 'cancelled', 'all'], true)) {
+        if (! in_array($status, ['pending', 'approved', 'rejected', 'cancelled', 'all'], true)) {
             return response()->json(['success' => false, 'message' => 'Invalid request status filter.'], 422);
         }
 
@@ -368,8 +372,10 @@ class VehicleRequestController extends Controller
             $query->whereIn('status', ['approved', 'completed']);
         } elseif ($status === 'cancelled') {
             $query->where('status', 'cancelled')->whereNotNull('allocated_at');
+        } elseif ($status === 'rejected') {
+            $query->where('status', 'rejected')->whereNotNull('allocated_at');
         } else {
-            $query->whereIn('status', ['vehicle_allocated', 'approved', 'completed', 'cancelled'])
+            $query->whereIn('status', ['vehicle_allocated', 'approved', 'completed', 'rejected', 'cancelled'])
                 ->whereNotNull('allocated_at');
         }
 
@@ -383,6 +389,7 @@ class VehicleRequestController extends Controller
                 'stats' => [
                     'pending' => VehicleRequest::where('status', 'vehicle_allocated')->count(),
                     'approved' => VehicleRequest::whereIn('status', ['approved', 'completed'])->count(),
+                    'rejected' => VehicleRequest::where('status', 'rejected')->whereNotNull('allocated_at')->count(),
                     'cancelled' => VehicleRequest::where('status', 'cancelled')->whereNotNull('allocated_at')->count(),
                 ],
             ],
@@ -392,7 +399,7 @@ class VehicleRequestController extends Controller
     /** Complete allocated request details for final review. */
     public function finalApprovalShow(VehicleRequest $vehicleRequest): JsonResponse
     {
-        if (! in_array($vehicleRequest->status, ['vehicle_allocated', 'approved', 'completed', 'cancelled'], true)
+        if (! in_array($vehicleRequest->status, ['vehicle_allocated', 'approved', 'completed', 'rejected', 'cancelled'], true)
             || ($vehicleRequest->status === 'cancelled' && ! $vehicleRequest->allocated_at)) {
             return response()->json(['success' => false, 'message' => 'Request not found.'], 404);
         }
@@ -406,6 +413,7 @@ class VehicleRequestController extends Controller
                     'allocatedVehicle',
                     'allocatedDriver',
                     'allocator:id,name,employee_id',
+                    'rejector:id,name,employee_id',
                 ),
             ],
         ]);
@@ -460,6 +468,88 @@ class VehicleRequestController extends Controller
             'success' => true,
             'message' => 'Request finally approved successfully.',
             'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'allocatedDriver', 'allocator:id,name,employee_id')],
+        ]);
+    }
+
+    /** Final rejection by either the Secretary or Senior Deputy Secretary. */
+    public function finalReject(VehicleRequest $vehicleRequest): JsonResponse
+    {
+        if ($vehicleRequest->status === 'rejected' && $vehicleRequest->rejected_at) {
+            return response()->json([
+                'success' => true,
+                'message' => 'This request is already rejected.',
+                'data' => ['vehicle_request' => $vehicleRequest],
+            ]);
+        }
+
+        if ($vehicleRequest->status !== 'vehicle_allocated') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only requests awaiting final approval can be rejected.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($vehicleRequest): void {
+            $lockedRequest = VehicleRequest::query()->lockForUpdate()->findOrFail($vehicleRequest->id);
+            $driver = $lockedRequest->allocated_driver_id
+                ? Driver::query()->lockForUpdate()->find($lockedRequest->allocated_driver_id)
+                : null;
+            $vehicle = $lockedRequest->allocated_vehicle_id
+                ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
+                : null;
+
+            $lockedRequest->update([
+                'status' => 'rejected',
+                'rejected_by' => request()->user()->id,
+                'rejected_at' => now(),
+            ]);
+
+            if ($driver) {
+                $hasAnotherAssignment = VehicleRequest::query()
+                    ->where('allocated_driver_id', $driver->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where('journey_status', '!=', 'completed')
+                    ->exists();
+                if (! $hasAnotherAssignment) {
+                    $driver->update(['allocated_vehicle' => null, 'current_assignment' => null]);
+                }
+            }
+
+            if ($vehicle) {
+                $hasOngoing = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $vehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->where('status', 'approved')
+                    ->whereIn('journey_status', ['ongoing', 'issue'])
+                    ->exists();
+                $hasScheduled = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $vehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where('journey_status', 'scheduled')
+                    ->exists();
+                $vehicle->update([
+                    'status' => $hasOngoing
+                        ? 'unavailable'
+                        : ($hasScheduled ? 'scheduled_trip' : 'available'),
+                ]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Request rejected successfully.',
+            'data' => [
+                'vehicle_request' => $vehicleRequest->fresh()->load(
+                    'user:id,name,employee_id,department',
+                    'recommender:id,name,employee_id,department',
+                    'allocatedVehicle',
+                    'allocatedDriver',
+                    'allocator:id,name,employee_id',
+                    'rejector:id,name,employee_id',
+                ),
+            ],
         ]);
     }
 

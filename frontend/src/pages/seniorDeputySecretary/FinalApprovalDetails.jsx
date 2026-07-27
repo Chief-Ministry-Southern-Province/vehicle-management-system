@@ -6,12 +6,14 @@ import {
   FiFileText,
   FiTruck,
   FiUser,
+  FiXCircle,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import {
   finalApproveVehicleRequest,
+  finalRejectVehicleRequest,
   getFinalApprovalVehicleRequest,
 } from "../../api/authApi";
 import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
@@ -90,6 +92,7 @@ export default function FinalApprovalDetails() {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
   const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   useEffect(() => {
     const load = async () => {
       try {
@@ -116,6 +119,26 @@ export default function FinalApprovalDetails() {
       setApproving(false);
     }
   };
+  const reject = async () => {
+    if (
+      !window.confirm(
+        "Reject this vehicle request? The allocated driver and vehicle will be released.",
+      )
+    ) {
+      return;
+    }
+
+    setRejecting(true);
+    try {
+      const response = await finalRejectVehicleRequest(id);
+      setRequest(response?.data?.vehicle_request || request);
+      toast.success(response?.message || "Request rejected successfully.");
+    } catch (rejectionError) {
+      toast.error(rejectionError?.message || "Unable to reject this request.");
+    } finally {
+      setRejecting(false);
+    }
+  };
   if (request === null)
     return (
       <DashboardLayout>
@@ -134,6 +157,8 @@ export default function FinalApprovalDetails() {
     ? `${import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "http://127.0.0.1:8000"}/storage/${request.attachment_path}`
     : null;
   const approved = ["approved", "completed"].includes(request.status);
+  const rejected = request.status === "rejected";
+  const awaitingDecision = request.status === "vehicle_allocated";
   const hasAllocation = Boolean(
     request.allocated_vehicle_id &&
     request.allocated_driver_id &&
@@ -160,21 +185,41 @@ export default function FinalApprovalDetails() {
               {requestNumber(request.id)}
             </h1>
           </div>
-          <button
-            type="button"
-            onClick={approve}
-            disabled={approving || approved || !hasAllocation}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-slate-400 disabled:opacity-80"
-          >
-            <FiCheckCircle />
-            {approved
-              ? "Approved"
-              : !hasAllocation
-                ? "Allocation Required"
-                : approving
-                  ? "Approving..."
-                  : "Approve Request"}
-          </button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={approve}
+              disabled={
+                approving ||
+                rejecting ||
+                !awaitingDecision ||
+                !hasAllocation
+              }
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 disabled:bg-slate-400 disabled:opacity-80"
+            >
+              <FiCheckCircle />
+              {approved
+                ? "Approved"
+                : !hasAllocation
+                  ? "Allocation Required"
+                  : approving
+                    ? "Approving..."
+                    : "Approve Request"}
+            </button>
+            <button
+              type="button"
+              onClick={reject}
+              disabled={approving || rejecting || !awaitingDecision}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-rose-300 bg-white px-6 py-3 font-semibold text-rose-700 hover:bg-rose-50 disabled:border-slate-300 disabled:text-slate-400 disabled:opacity-80"
+            >
+              <FiXCircle />
+              {rejected
+                ? "Rejected"
+                : rejecting
+                  ? "Rejecting..."
+                  : "Reject Request"}
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
