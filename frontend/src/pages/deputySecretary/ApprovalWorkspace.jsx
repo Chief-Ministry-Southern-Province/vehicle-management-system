@@ -764,6 +764,8 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
   const [drivers, setDrivers] = useState([]);
   const [vehicleId, setVehicleId] = useState("");
   const [driverId, setDriverId] = useState("");
+  const [registeredVehicleId, setRegisteredVehicleId] = useState("");
+  const [changeVehicle, setChangeVehicle] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
@@ -798,6 +800,31 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
       driver.duty_status === "active" &&
       driver.available_for_slot !== false,
   );
+  const selectedDriver = drivers.find(
+    (driver) => driver.id === Number(driverId),
+  );
+  const selectedVehicle = vehicles.find(
+    (vehicle) => vehicle.id === Number(vehicleId),
+  );
+  const selectDriver = (event) => {
+    const nextDriverId = event.target.value;
+    const nextDriver = drivers.find(
+      (driver) => driver.id === Number(nextDriverId),
+    );
+    const registeredVehicle = replacements.find(
+      (vehicle) =>
+        vehicle.registration_number === nextDriver?.allocated_vehicle,
+    );
+
+    setDriverId(nextDriverId);
+    setRegisteredVehicleId(
+      registeredVehicle ? String(registeredVehicle.id) : "",
+    );
+    setVehicleId(registeredVehicle ? String(registeredVehicle.id) : "");
+    setChangeVehicle(!registeredVehicle);
+  };
+  const statusLabel = (status) =>
+    String(status || "Not recorded").replaceAll("_", " ");
 
   return (
     <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
@@ -816,7 +843,7 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
           Replacement driver
           <select
             value={driverId}
-            onChange={(event) => setDriverId(event.target.value)}
+            onChange={selectDriver}
             className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
           >
             <option value="">Select a different available driver</option>
@@ -827,21 +854,193 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
             ))}
           </select>
         </label>
-        <label className="block text-sm font-semibold text-slate-700">
-          Replacement vehicle
-          <select
-            value={vehicleId}
-            onChange={(event) => setVehicleId(event.target.value)}
-            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
-          >
-            <option value="">Select a different available vehicle</option>
-            {replacements.map((vehicle) => (
-              <option key={vehicle.id} value={vehicle.id}>
-                {vehicle.make} {vehicle.model} — {vehicle.registration_number}
-              </option>
-            ))}
-          </select>
-        </label>
+        {selectedDriver && (
+          <>
+            <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Driver
+                </p>
+                <p className="mt-1 font-bold text-slate-900">
+                  {selectedDriver.full_name}
+                </p>
+                <p className="text-slate-600">{selectedDriver.driver_id}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Driver status
+                </p>
+                <p className="mt-1 font-semibold capitalize text-slate-800">
+                  {statusLabel(
+                    selectedDriver.status_for_slot || selectedDriver.status,
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Licence
+                </p>
+                <p className="mt-1 text-slate-800">
+                  {selectedDriver.licence_number} ·{" "}
+                  {selectedDriver.licence_type}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Contact
+                </p>
+                <p className="mt-1 text-slate-800">
+                  {selectedDriver.contact_number || "Not recorded"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">
+                    Driver’s registered vehicle
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {registeredVehicleId
+                      ? "Selected automatically."
+                      : "No available registered vehicle was found for this journey."}
+                  </p>
+                </div>
+                {registeredVehicleId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const overriding = !changeVehicle;
+                      setChangeVehicle(overriding);
+                      setVehicleId(overriding ? "" : registeredVehicleId);
+                    }}
+                    className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                  >
+                    {changeVehicle
+                      ? "Use registered vehicle"
+                      : "Choose a different vehicle"}
+                  </button>
+                )}
+              </div>
+
+              {(changeVehicle || !registeredVehicleId) && (
+                <label className="mt-4 block text-sm font-semibold text-slate-700">
+                  Replacement vehicle
+                  <select
+                    value={vehicleId}
+                    onChange={(event) => setVehicleId(event.target.value)}
+                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+                  >
+                    <option value="">Select a different available vehicle</option>
+                    {replacements.map((vehicle) => (
+                      <option key={vehicle.id} value={vehicle.id}>
+                        {vehicle.make} {vehicle.model} —{" "}
+                        {vehicle.registration_number}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          </>
+        )}
+
+        {selectedVehicle && (
+          <div className="grid gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-sm sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Vehicle
+              </p>
+              <p className="mt-1 font-bold text-slate-900">
+                {selectedVehicle.make} {selectedVehicle.model}
+              </p>
+              <p className="text-slate-600">
+                {selectedVehicle.registration_number}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Vehicle status
+              </p>
+              <p className="mt-1 font-semibold capitalize text-slate-800">
+                {statusLabel(selectedVehicle.status)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Seat capacity
+              </p>
+              <p className="mt-1 font-semibold text-slate-800">
+                {selectedVehicle.seat_capacity || "Not recorded"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Fuel level
+              </p>
+              <p className="mt-1 font-semibold text-slate-800">
+                {selectedVehicle.fuel_level == null
+                  ? "Not recorded"
+                  : `${selectedVehicle.fuel_level}%`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedDriver && (
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="border-b bg-slate-50 px-4 py-3">
+              <h4 className="font-semibold text-slate-800">
+                Driver Previous Journeys
+              </h4>
+              <p className="mt-1 text-xs text-slate-500">
+                Recent journey history for {selectedDriver.full_name}
+              </p>
+            </div>
+            {Array.isArray(selectedDriver.previous_journeys) &&
+            selectedDriver.previous_journeys.length > 0 ? (
+              <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto">
+                {selectedDriver.previous_journeys.map((journey, index) => (
+                  <article
+                    key={`${journey.date}-${journey.destination}-${index}`}
+                    className="p-4 text-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {journey.origin || "Origin not recorded"} →{" "}
+                          {journey.destination || "Destination not recorded"}
+                        </p>
+                        <p className="mt-1 text-slate-500">
+                          {journey.purpose || "Purpose not recorded"}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold capitalize text-emerald-700">
+                        {journey.status || "Completed"}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span>
+                        {journey.date
+                          ? new Date(journey.date).toLocaleDateString()
+                          : "Date not recorded"}
+                      </span>
+                      <span>
+                        Vehicle:{" "}
+                        {journey.vehicle_registration || "Not recorded"}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="p-5 text-center text-sm text-slate-500">
+                No previous journeys recorded for this driver.
+              </p>
+            )}
+          </div>
+        )}
         <label className="block text-sm font-semibold text-slate-700">
           Reason for re-allocation <span className="text-red-600">*</span>
           <textarea
@@ -850,7 +1049,7 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
             rows={4}
             maxLength={2000}
             required
-            placeholder="Describe why the currently assigned vehicle must be changed."
+            placeholder="Describe why the currently assigned driver and vehicle must be changed."
             className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
           />
         </label>
