@@ -15,8 +15,8 @@ const initialForm = {
 };
 const roleOptions = [
   ["employee", "Employee"], ["department_officer", "Department Officer"],
-  ["subject_officer", "Subject Officer"], ["deputy_secretary", "Deputy Secretary"],
-  ["senior_deputy_secretary", "Senior Deputy Secretary"], ["secretary", "Secretary"], ["driver", "Driver"],
+  ["subject_officer", "Subject Officer"], ["deputy_secretary", "Assistance Secreatry"],
+  ["senior_deputy_secretary", "Senior Assistance Secretary"], ["secretary", "Secretary"], ["driver", "Driver"],
 ];
 const branchOptions = ["Admin", "Planning", "Health", "Local Government", "Accounting", "IT Branch"];
 const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];

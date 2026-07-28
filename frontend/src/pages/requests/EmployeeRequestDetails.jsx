@@ -56,7 +56,7 @@ function Timeline({ request }) {
       date: request.recommended_at,
     },
     {
-      title: "Deputy Secretary Allocated Vehicle and Driver",
+      title: "Assistance Secreatry Allocated Vehicle and Driver",
       description: request.allocated_at
         ? "Vehicle and driver allocation completed"
         : "Awaiting vehicle and driver allocation",
@@ -64,7 +64,7 @@ function Timeline({ request }) {
       date: request.allocated_at,
     },
     {
-      title: "Senior Deputy Secretary or Secretary Approval",
+      title: "Senior Assistance Secretary or Secretary Approval",
       description: request.approver
         ? `Approved by ${request.approver.name}`
         : "Awaiting final approval",
@@ -296,7 +296,7 @@ export default function EmployeeRequestDetails({
                       </h2>
                       <p className="mt-1 text-sm text-amber-800">
                         The allocated vehicle and driver will be displayed only
-                        after the Senior Deputy Secretary or Secretary approves
+                        after the Senior Assistance Secretary or Secretary approves
                         this request.
                       </p>
                     </div>

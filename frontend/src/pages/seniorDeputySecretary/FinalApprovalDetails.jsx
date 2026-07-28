@@ -53,7 +53,7 @@ function VehicleAllocationDetails({ request }) {
   ) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        No vehicle allocation is stored for this request. The Deputy Secretary
+        No vehicle allocation is stored for this request. The Assistance Secreatry
         must allocate both a driver and vehicle before final approval.
       </div>
     );
@@ -281,7 +281,7 @@ export default function FinalApprovalDetails() {
             </dl>
           </Card>
 
-          <Card title="Deputy Secretary Vehicle Allocation" icon={<FiTruck />}>
+          <Card title="Assistance Secreatry Vehicle Allocation" icon={<FiTruck />}>
             <VehicleAllocationDetails request={request} />
           </Card>
         </div>

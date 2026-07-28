@@ -32,7 +32,7 @@ export default function PendingFinalApprovals() {
       <div className="min-h-screen space-y-6 bg-slate-50 p-6">
         <header>
           <p className="text-sm font-semibold text-blue-600">
-            Senior Deputy Secretary
+            Senior Assistance Secretary
           </p>
           <h1 className="mt-1 text-3xl font-bold text-slate-900">
             Pending Final Approvals
