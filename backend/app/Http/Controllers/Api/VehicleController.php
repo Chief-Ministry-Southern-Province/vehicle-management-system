@@ -17,19 +17,21 @@ class VehicleController extends Controller
         $validated = $request->validate([
             'departure_at' => ['nullable', 'date', 'required_with:expected_return_at'],
             'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
+            'ignore_request_id' => ['nullable', 'integer', 'exists:vehicle_requests,id'],
         ]);
         $vehicles = Vehicle::latest()->get();
 
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);
             $endsAt = Carbon::parse($validated['expected_return_at']);
-            $vehicles->each(function (Vehicle $vehicle) use ($startsAt, $endsAt): void {
+            $vehicles->each(function (Vehicle $vehicle) use ($startsAt, $endsAt, $validated): void {
                 $vehicle->setAttribute(
                     'available_for_slot',
                     in_array($vehicle->status, ['available', 'scheduled_trip'], true)
                         && ! $vehicle->hasScheduleConflict(
                             $startsAt,
                             $endsAt,
+                            $validated['ignore_request_id'] ?? null,
                         ),
                 );
             });

@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'deputyRecommend']);
         Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/reallocate', [VehicleRequestController::class, 'reallocate']);
     });
 
     Route::middleware('role:senior_deputy_secretary')->prefix('senior-recommendations')->group(function () {

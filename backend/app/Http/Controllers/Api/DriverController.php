@@ -84,7 +84,7 @@ class DriverController extends Controller
         $trips = $driver->vehicleRequests()
             ->where('status', 'approved')
             ->where('journey_status', '!=', 'completed')
-            ->with('allocatedVehicle')
+            ->with('allocatedVehicle', 'previousAllocatedVehicle')
             ->orderBy('departure_at')
             ->get()
             ->map(fn ($trip): array => $this->tripPayload($trip));
@@ -154,6 +154,9 @@ class DriverController extends Controller
             'journey_completed_at' => $trip->journey_completed_at?->toISOString(),
             'cancelled_at' => $trip->cancelled_at?->toISOString(),
             'vehicle' => $trip->allocatedVehicle,
+            'previous_vehicle' => $trip->previousAllocatedVehicle,
+            'reallocation_reason' => $trip->reallocation_reason,
+            'reallocated_at' => $trip->reallocated_at?->toISOString(),
         ];
     }
 

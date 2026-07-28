@@ -36,9 +36,13 @@ class VehicleRequest extends Model
         'recommended_by',
         'recommended_at',
         'allocated_vehicle_id',
+        'previous_allocated_vehicle_id',
         'allocated_driver_id',
         'allocated_by',
         'allocated_at',
+        'reallocation_reason',
+        'reallocated_by',
+        'reallocated_at',
         'driver_notified_at',
         'approved_by',
         'approved_at',
@@ -53,6 +57,7 @@ class VehicleRequest extends Model
             'expected_return_at' => 'datetime',
             'recommended_at' => 'datetime',
             'allocated_at' => 'datetime',
+            'reallocated_at' => 'datetime',
             'driver_notified_at' => 'datetime',
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
@@ -77,6 +82,11 @@ class VehicleRequest extends Model
         return $this->belongsTo(Vehicle::class, 'allocated_vehicle_id');
     }
 
+    public function previousAllocatedVehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'previous_allocated_vehicle_id');
+    }
+
     public function allocatedDriver(): BelongsTo
     {
         return $this->belongsTo(Driver::class, 'allocated_driver_id');
@@ -85,6 +95,11 @@ class VehicleRequest extends Model
     public function allocator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'allocated_by');
+    }
+
+    public function reallocator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reallocated_by');
     }
 
     public function approver(): BelongsTo
