@@ -149,11 +149,12 @@ export default function EmployeeRequestDetails({
       </DashboardLayout>
     );
   const approved = ["approved", "completed"].includes(request.status);
+  const reallocated = Boolean(request.reallocated_at);
   const canCancel = ["submitted", "recommended", "vehicle_allocated", "approved"].includes(
     request.status,
   );
-  const vehicle = approved ? request.allocated_vehicle : null;
-  const driver = approved ? request.allocated_driver : null;
+  const vehicle = approved || reallocated ? request.allocated_vehicle : null;
+  const driver = approved || reallocated ? request.allocated_driver : null;
   const attachmentUrl = request.attachment_path
     ? `${import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") || "http://127.0.0.1:8000"}/storage/${request.attachment_path}`
     : null;
@@ -254,7 +255,7 @@ export default function EmployeeRequestDetails({
                 </dl>
               </section>
 
-              {approved ? (
+              {approved || reallocated ? (
                 <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6">
                   <div className="mb-5 flex items-center gap-3">
                     <span className="rounded-xl bg-emerald-100 p-3 text-emerald-700">
@@ -262,10 +263,14 @@ export default function EmployeeRequestDetails({
                     </span>
                     <div>
                       <h2 className="font-bold text-slate-900">
-                        Approved Vehicle and Driver
+                        {approved
+                          ? "Approved Vehicle and Driver"
+                          : "Re-allocated Vehicle and Driver"}
                       </h2>
                       <p className="text-sm text-slate-500">
-                        Visible after final approval
+                        {approved
+                          ? "Current approved allocation"
+                          : "This change is awaiting fresh final approval"}
                       </p>
                     </div>
                   </div>
@@ -284,6 +289,21 @@ export default function EmployeeRequestDetails({
                     <Detail label="Contact number">
                       {driver?.contact_number}
                     </Detail>
+                    {request.reallocation_reason && (
+                      <div className="sm:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                        <Detail label="Reason for vehicle re-allocation">
+                          <span className="whitespace-pre-wrap font-normal">
+                            {request.reallocation_reason}
+                          </span>
+                        </Detail>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Previous vehicle:{" "}
+                          {request.previous_allocated_vehicle
+                            ?.registration_number || "Not recorded"}
+                          {" · "}Changed {formatDateTime(request.reallocated_at)}
+                        </p>
+                      </div>
+                    )}
                   </dl>
                 </section>
               ) : request.status !== "cancelled" ? (

@@ -320,6 +320,21 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const reallocateVehicleRequest = async (requestId, reallocation) => {
+  try {
+    const response = await API.patch(
+      `/approvals/vehicle-requests/${requestId}/reallocate`,
+      reallocation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getDeputyPendingRecommendations = async () => {
   try {
     const response = await API.get("/approvals/recommendations", {

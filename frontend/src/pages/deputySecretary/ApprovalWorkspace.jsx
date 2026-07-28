@@ -4,6 +4,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
 import {
   allocateVehicleRequest,
+  reallocateVehicleRequest,
   cancelMyVehicleRequest,
   getApprovalVehicleRequest,
   getDrivers,
@@ -734,6 +735,103 @@ function AllocatedVehicleDetails({ request }) {
             </>
           )}
         </div>
+        {request.reallocation_reason && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+              Vehicle re-allocation reason
+            </p>
+            <p className="mt-2 text-slate-800">{request.reallocation_reason}</p>
+            <p className="mt-2 text-xs text-slate-500">
+              Changed from{" "}
+              {request.previous_allocated_vehicle?.registration_number ||
+                "the previous vehicle"}{" "}
+              by {request.reallocator?.name || "the Assistance Secreatry"} on{" "}
+              {formatLocalDateTime(request.reallocated_at)}. Fresh final
+              approval is required.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function VehicleReallocationPanel({ request, onReallocate, submitting }) {
+  const [vehicles, setVehicles] = useState([]);
+  const [vehicleId, setVehicleId] = useState("");
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getVehicles({
+      departure_at: request.departure_at,
+      expected_return_at: request.expected_return_at,
+      ignore_request_id: request.id,
+    })
+      .then((response) => setVehicles(response?.data?.vehicles || []))
+      .catch((loadError) =>
+        setError(loadError?.message || "Unable to load replacement vehicles."),
+      );
+  }, [request.departure_at, request.expected_return_at, request.id]);
+
+  const replacements = vehicles.filter(
+    (vehicle) =>
+      vehicle.id !== request.allocated_vehicle_id &&
+      ["available", "scheduled_trip"].includes(vehicle.status) &&
+      vehicle.available_for_slot !== false,
+  );
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+      <div className="border-b border-amber-100 bg-amber-50 p-5">
+        <h3 className="text-xl font-bold text-slate-900">Re-allocate Vehicle</h3>
+        <p className="mt-1 text-sm text-slate-600">
+          Change the vehicle before the journey begins. This sends the request
+          back for fresh final approval.
+        </p>
+      </div>
+      <div className="space-y-4 p-5">
+        <label className="block text-sm font-semibold text-slate-700">
+          Replacement vehicle
+          <select
+            value={vehicleId}
+            onChange={(event) => setVehicleId(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+          >
+            <option value="">Select a different available vehicle</option>
+            {replacements.map((vehicle) => (
+              <option key={vehicle.id} value={vehicle.id}>
+                {vehicle.make} {vehicle.model} — {vehicle.registration_number}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm font-semibold text-slate-700">
+          Reason for re-allocation <span className="text-red-600">*</span>
+          <textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            rows={4}
+            maxLength={2000}
+            required
+            placeholder="Describe why the currently assigned vehicle must be changed."
+            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+          />
+        </label>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <button
+          type="button"
+          disabled={submitting || !vehicleId || !reason.trim()}
+          onClick={() =>
+            onReallocate({
+              vehicle_id: Number(vehicleId),
+              reason: reason.trim(),
+            })
+          }
+          className="w-full rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting ? "Re-allocating..." : "Re-allocate and request fresh approval"}
+        </button>
       </div>
     </section>
   );
@@ -743,6 +841,7 @@ export default function ApprovalWorkspace() {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
   const [allocating, setAllocating] = useState(false);
+  const [reallocating, setReallocating] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [allocationMessage, setAllocationMessage] = useState("");
   const [allocation, setAllocation] = useState({
@@ -809,6 +908,24 @@ export default function ApprovalWorkspace() {
       setCancelling(false);
     }
   };
+  const reallocate = async (payload) => {
+    setReallocating(true);
+    setAllocationMessage("");
+    try {
+      const response = await reallocateVehicleRequest(id, payload);
+      const updatedRequest = response?.data?.vehicle_request;
+      if (updatedRequest) setRequest(updatedRequest);
+      setAllocationMessage(
+        response?.message || "Vehicle re-allocated successfully.",
+      );
+    } catch (reallocationError) {
+      setAllocationMessage(
+        reallocationError?.message || "Unable to re-allocate the vehicle.",
+      );
+    } finally {
+      setReallocating(false);
+    }
+  };
   if (request === null)
     return (
       <DashboardLayout>
@@ -862,6 +979,16 @@ export default function ApprovalWorkspace() {
             ) : allocated ? (
               <>
                 <AllocatedVehicleDetails request={request} />
+                {!request.journey_started_at &&
+                  !["ongoing", "issue", "completed"].includes(
+                    request.journey_status,
+                  ) && (
+                    <VehicleReallocationPanel
+                      request={request}
+                      onReallocate={reallocate}
+                      submitting={reallocating}
+                    />
+                  )}
                 <ApprovalActions
                   onAllocate={allocate}
                   allocating={allocating}
