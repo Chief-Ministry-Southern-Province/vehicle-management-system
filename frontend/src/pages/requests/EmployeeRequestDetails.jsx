@@ -300,6 +300,9 @@ export default function EmployeeRequestDetails({
                           Previous vehicle:{" "}
                           {request.previous_allocated_vehicle
                             ?.registration_number || "Not recorded"}
+                          {" · "}Previous driver:{" "}
+                          {request.previous_allocated_driver?.full_name ||
+                            "Not recorded"}
                           {" · "}Changed {formatDateTime(request.reallocated_at)}
                         </p>
                       </div>

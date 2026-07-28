@@ -742,7 +742,10 @@ function AllocatedVehicleDetails({ request }) {
             </p>
             <p className="mt-2 text-slate-800">{request.reallocation_reason}</p>
             <p className="mt-2 text-xs text-slate-500">
-              Changed from{" "}
+              Changed from driver{" "}
+              {request.previous_allocated_driver?.full_name ||
+                "the previous driver"}{" "}
+              and vehicle{" "}
               {request.previous_allocated_vehicle?.registration_number ||
                 "the previous vehicle"}{" "}
               by {request.reallocator?.name || "the Assistance Secreatry"} on{" "}
@@ -758,19 +761,28 @@ function AllocatedVehicleDetails({ request }) {
 
 function VehicleReallocationPanel({ request, onReallocate, submitting }) {
   const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [vehicleId, setVehicleId] = useState("");
+  const [driverId, setDriverId] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getVehicles({
+    const schedule = {
       departure_at: request.departure_at,
       expected_return_at: request.expected_return_at,
       ignore_request_id: request.id,
-    })
-      .then((response) => setVehicles(response?.data?.vehicles || []))
+    };
+    Promise.all([getVehicles(schedule), getDrivers(schedule)])
+      .then(([vehicleResponse, driverResponse]) => {
+        setVehicles(vehicleResponse?.data?.vehicles || []);
+        setDrivers(driverResponse?.data?.drivers || []);
+      })
       .catch((loadError) =>
-        setError(loadError?.message || "Unable to load replacement vehicles."),
+        setError(
+          loadError?.message ||
+            "Unable to load replacement drivers and vehicles.",
+        ),
       );
   }, [request.departure_at, request.expected_return_at, request.id]);
 
@@ -780,17 +792,41 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
       ["available", "scheduled_trip"].includes(vehicle.status) &&
       vehicle.available_for_slot !== false,
   );
+  const replacementDrivers = drivers.filter(
+    (driver) =>
+      driver.id !== request.allocated_driver_id &&
+      driver.duty_status === "active" &&
+      driver.available_for_slot !== false,
+  );
 
   return (
     <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
       <div className="border-b border-amber-100 bg-amber-50 p-5">
-        <h3 className="text-xl font-bold text-slate-900">Re-allocate Vehicle</h3>
+        <h3 className="text-xl font-bold text-slate-900">
+          Re-allocate Driver and Vehicle
+        </h3>
         <p className="mt-1 text-sm text-slate-600">
-          Change the vehicle before the journey begins. This sends the request
-          back for fresh final approval.
+          Replace both assignments before the journey begins. The previous
+          driver and vehicle will be released, and fresh final approval will be
+          required.
         </p>
       </div>
       <div className="space-y-4 p-5">
+        <label className="block text-sm font-semibold text-slate-700">
+          Replacement driver
+          <select
+            value={driverId}
+            onChange={(event) => setDriverId(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+          >
+            <option value="">Select a different available driver</option>
+            {replacementDrivers.map((driver) => (
+              <option key={driver.id} value={driver.id}>
+                {driver.full_name} — {driver.driver_id}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="block text-sm font-semibold text-slate-700">
           Replacement vehicle
           <select
@@ -821,16 +857,19 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="button"
-          disabled={submitting || !vehicleId || !reason.trim()}
+          disabled={submitting || !driverId || !vehicleId || !reason.trim()}
           onClick={() =>
             onReallocate({
               vehicle_id: Number(vehicleId),
+              driver_id: Number(driverId),
               reason: reason.trim(),
             })
           }
           className="w-full rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? "Re-allocating..." : "Re-allocate and request fresh approval"}
+          {submitting
+            ? "Re-allocating..."
+            : "Re-allocate both and request fresh approval"}
         </button>
       </div>
     </section>

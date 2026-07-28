@@ -93,6 +93,8 @@ function VehicleAllocationDetails({ request }) {
           <p className="mt-3 text-xs text-slate-500">
             Previous vehicle:{" "}
             {request.previous_allocated_vehicle?.registration_number || "Not recorded"}
+            {" · "}Previous driver:{" "}
+            {request.previous_allocated_driver?.full_name || "Not recorded"}
             {" · "}Changed by {request.reallocator?.name || "Assistance Secreatry"}
             {" · "}{formatDateTime(request.reallocated_at)}
           </p>
