@@ -70,7 +70,7 @@ class VehicleRequestController extends Controller
         return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest]]);
     }
 
-    /** Recommended vehicle requests visible to the Deputy Secretary allocation queue. */
+    /** Recommended vehicle requests visible to the Assistance Secreatry allocation queue. */
     public function approvalIndex(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
@@ -108,7 +108,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** The requester or a Deputy Secretary may cancel before journey completion. */
+    /** The requester or an Assistance Secreatry may cancel before journey completion. */
     public function cancel(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         $user = $request->user();
@@ -192,7 +192,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** A complete request record for the Deputy Secretary workspace. */
+    /** A complete request record for the Assistance Secreatry workspace. */
     public function approvalShow(VehicleRequest $vehicleRequest): JsonResponse
     {
         return response()->json([
@@ -210,7 +210,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Department Officer requests awaiting a Deputy Secretary recommendation. */
+    /** Department Officer requests awaiting an Assistance Secreatry recommendation. */
     public function deputyRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -230,7 +230,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Deputy Secretary requests awaiting a Senior Deputy Secretary recommendation. */
+    /** Assistance Secreatry requests awaiting a Senior Assistance Secretary recommendation. */
     public function seniorRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -256,7 +256,7 @@ class VehicleRequestController extends Controller
         return $this->approvalShow($vehicleRequest);
     }
 
-    /** Recommendations recorded by Department Officers and visible to the Deputy Secretary. */
+    /** Recommendations recorded by Department Officers and visible to the Assistance Secreatry. */
     public function departmentRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -353,7 +353,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Requests allocated by the Deputy Secretary and visible for final approval. */
+    /** Requests allocated by the Assistance Secreatry and visible for final approval. */
     public function finalApprovalIndex(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
@@ -419,7 +419,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Final approval by either the Secretary or Senior Deputy Secretary. */
+    /** Final approval by either the Secretary or Senior Assistance Secretary. */
     public function finalApprove(VehicleRequest $vehicleRequest): JsonResponse
     {
         if ($vehicleRequest->status === 'approved') {
@@ -433,7 +433,7 @@ class VehicleRequestController extends Controller
         if ($vehicleRequest->status !== 'vehicle_allocated') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only requests allocated by the Deputy Secretary can receive final approval.',
+                'message' => 'Only requests allocated by the Assistance Secreatry can receive final approval.',
             ], 422);
         }
 
@@ -471,7 +471,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Final rejection by either the Secretary or Senior Deputy Secretary. */
+    /** Final rejection by either the Secretary or Senior Assistance Secretary. */
     public function finalReject(VehicleRequest $vehicleRequest): JsonResponse
     {
         if ($vehicleRequest->status === 'rejected' && $vehicleRequest->rejected_at) {
@@ -623,26 +623,26 @@ class VehicleRequestController extends Controller
         return $this->saveRecommendation($request, $vehicleRequest);
     }
 
-    /** A Deputy Secretary recommends requests submitted by Department Officers. */
+    /** An Assistance Secreatry recommends requests submitted by Department Officers. */
     public function deputyRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         if (! $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Deputy Secretary recommendations are limited to Department Officer requests.',
+                'message' => 'Assistance Secreatry recommendations are limited to Department Officer requests.',
             ], 422);
         }
 
         return $this->saveRecommendation($request, $vehicleRequest);
     }
 
-    /** A Senior Deputy Secretary recommends requests submitted by Deputy Secretaries. */
+    /** A Senior Assistance Secretary recommends requests submitted by Assistance Secreatries. */
     public function seniorRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Senior Deputy Secretary recommendations are limited to Deputy Secretary requests.',
+                'message' => 'Senior Assistance Secretary recommendations are limited to Assistance Secreatry requests.',
             ], 422);
         }
 
