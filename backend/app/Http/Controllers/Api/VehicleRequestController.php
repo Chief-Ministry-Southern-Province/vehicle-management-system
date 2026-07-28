@@ -69,6 +69,7 @@ class VehicleRequestController extends Controller
                 'allocatedVehicle',
                 'previousAllocatedVehicle',
                 'allocatedDriver',
+                'previousAllocatedDriver',
                 'reallocator:id,name',
             );
         }
@@ -210,6 +211,7 @@ class VehicleRequestController extends Controller
                     'allocatedVehicle',
                     'previousAllocatedVehicle',
                     'allocatedDriver',
+                    'previousAllocatedDriver',
                     'allocator:id,name,employee_id',
                     'reallocator:id,name,employee_id',
                     'approver:id,name,employee_id',
@@ -361,11 +363,12 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Replace an allocated vehicle before the driver starts and require fresh final approval. */
+    /** Replace an allocated driver and vehicle before journey start and require fresh final approval. */
     public function reallocate(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         $validated = $request->validate([
             'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
+            'driver_id' => ['required', 'integer', 'exists:drivers,id'],
             'reason' => ['required', 'string', 'max:2000'],
         ]);
 
@@ -389,9 +392,14 @@ class VehicleRequestController extends Controller
                 abort(422, 'Select a different vehicle for re-allocation.');
             }
 
+            if ((int) $lockedRequest->allocated_driver_id === (int) $validated['driver_id']) {
+                abort(422, 'Select a different driver for re-allocation.');
+            }
+
             $oldVehicle = Vehicle::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_vehicle_id);
             $newVehicle = Vehicle::query()->lockForUpdate()->findOrFail($validated['vehicle_id']);
-            $driver = Driver::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_driver_id);
+            $oldDriver = Driver::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_driver_id);
+            $newDriver = Driver::query()->lockForUpdate()->findOrFail($validated['driver_id']);
 
             if (! in_array($newVehicle->status, ['available', 'scheduled_trip'], true)) {
                 abort(422, 'The selected replacement vehicle is no longer available.');
@@ -405,10 +413,24 @@ class VehicleRequestController extends Controller
                 abort(422, 'The selected replacement vehicle already has a journey during this time slot.');
             }
 
+            if (! $newDriver->isActive()) {
+                abort(422, 'The selected replacement driver is inactive and cannot be allocated.');
+            }
+
+            if ($newDriver->hasScheduleConflict(
+                $lockedRequest->departure_at,
+                $lockedRequest->expected_return_at,
+                $lockedRequest->id,
+            )) {
+                abort(422, 'The selected replacement driver already has a journey during this time slot.');
+            }
+
             $lockedRequest->update([
                 'status' => 'vehicle_allocated',
                 'previous_allocated_vehicle_id' => $oldVehicle->id,
                 'allocated_vehicle_id' => $newVehicle->id,
+                'previous_allocated_driver_id' => $oldDriver->id,
+                'allocated_driver_id' => $newDriver->id,
                 'allocated_by' => $request->user()->id,
                 'allocated_at' => now(),
                 'reallocation_reason' => trim($validated['reason']),
@@ -422,10 +444,26 @@ class VehicleRequestController extends Controller
             ]);
 
             $newVehicle->update(['status' => 'scheduled_trip']);
-            $driver->update([
+            $newDriver->update([
                 'allocated_vehicle' => $newVehicle->registration_number,
                 'current_assignment' => null,
             ]);
+
+            $oldDriverHasAnotherAssignment = VehicleRequest::query()
+                ->where('allocated_driver_id', $oldDriver->id)
+                ->whereKeyNot($lockedRequest->id)
+                ->whereIn('status', ['vehicle_allocated', 'approved'])
+                ->where(function ($query): void {
+                    $query->whereNull('journey_status')
+                        ->orWhere('journey_status', '!=', 'completed');
+                })
+                ->exists();
+            if (! $oldDriverHasAnotherAssignment) {
+                $oldDriver->update([
+                    'allocated_vehicle' => null,
+                    'current_assignment' => null,
+                ]);
+            }
 
             $oldVehicleHasOngoing = VehicleRequest::query()
                 ->where('allocated_vehicle_id', $oldVehicle->id)
@@ -448,7 +486,7 @@ class VehicleRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Vehicle re-allocated. Fresh final approval is now required.',
+            'message' => 'Driver and vehicle re-allocated. Fresh final approval is now required.',
             'data' => [
                 'vehicle_request' => $vehicleRequest->fresh()->load(
                     'user:id,name,employee_id,department',
@@ -456,6 +494,7 @@ class VehicleRequestController extends Controller
                     'allocatedVehicle',
                     'previousAllocatedVehicle',
                     'allocatedDriver',
+                    'previousAllocatedDriver',
                     'allocator:id,name,employee_id',
                     'reallocator:id,name,employee_id',
                 ),
@@ -473,7 +512,7 @@ class VehicleRequestController extends Controller
         }
 
         $query = VehicleRequest::query()
-            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'reallocator:id,name')
+            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
             ->latest();
 
         if ($status === 'pending') {
@@ -523,6 +562,7 @@ class VehicleRequestController extends Controller
                     'allocatedVehicle',
                     'previousAllocatedVehicle',
                     'allocatedDriver',
+                    'previousAllocatedDriver',
                     'allocator:id,name,employee_id',
                     'reallocator:id,name,employee_id',
                     'rejector:id,name,employee_id',
@@ -538,7 +578,7 @@ class VehicleRequestController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'This request is already finally approved.',
-                'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
+                'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
             ]);
         }
 
@@ -579,7 +619,7 @@ class VehicleRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Request finally approved successfully.',
-            'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
+            'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
         ]);
     }
 

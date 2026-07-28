@@ -38,6 +38,7 @@ class VehicleRequest extends Model
         'allocated_vehicle_id',
         'previous_allocated_vehicle_id',
         'allocated_driver_id',
+        'previous_allocated_driver_id',
         'allocated_by',
         'allocated_at',
         'reallocation_reason',
@@ -90,6 +91,11 @@ class VehicleRequest extends Model
     public function allocatedDriver(): BelongsTo
     {
         return $this->belongsTo(Driver::class, 'allocated_driver_id');
+    }
+
+    public function previousAllocatedDriver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class, 'previous_allocated_driver_id');
     }
 
     public function allocator(): BelongsTo

@@ -42,13 +42,17 @@ class Driver extends Model
         return $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->exists();
     }
 
-    public function operationalStatusFor(Carbon|string $startsAt, Carbon|string $endsAt): string
+    public function operationalStatusFor(
+        Carbon|string $startsAt,
+        Carbon|string $endsAt,
+        ?int $ignoreRequestId = null,
+    ): string
     {
         if (! $this->isActive()) {
             return 'unavailable';
         }
 
-        $journeys = $this->activeJourneysDuring($startsAt, $endsAt);
+        $journeys = $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId);
 
         if ((clone $journeys)->whereIn('journey_status', ['ongoing', 'issue'])->exists()) {
             return 'ongoing_trip';

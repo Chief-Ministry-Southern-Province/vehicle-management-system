@@ -19,16 +19,18 @@ class DriverController extends Controller
         $validated = $request->validate([
             'departure_at' => ['nullable', 'date', 'required_with:expected_return_at'],
             'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
+            'ignore_request_id' => ['nullable', 'integer', 'exists:vehicle_requests,id'],
         ]);
         $drivers = Driver::orderBy('driver_id')->get();
 
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);
             $endsAt = Carbon::parse($validated['expected_return_at']);
-            $drivers->each(function (Driver $driver) use ($startsAt, $endsAt): void {
+            $drivers->each(function (Driver $driver) use ($startsAt, $endsAt, $validated): void {
                 $statusForSlot = $driver->operationalStatusFor(
                     $startsAt,
                     $endsAt,
+                    $validated['ignore_request_id'] ?? null,
                 );
                 $driver->setAttribute(
                     'available_for_slot',
