@@ -798,7 +798,9 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
     (driver) =>
       driver.id !== request.allocated_driver_id &&
       driver.duty_status === "active" &&
-      driver.available_for_slot !== false,
+      !["unavailable", "inactive"].includes(
+        String(driver.status_for_slot || driver.status || "").toLowerCase(),
+      ),
   );
   const selectedDriver = drivers.find(
     (driver) => driver.id === Number(driverId),
@@ -846,10 +848,15 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
             onChange={selectDriver}
             className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
           >
-            <option value="">Select a different available driver</option>
+            <option value="">Select a replacement driver</option>
             {replacementDrivers.map((driver) => (
-              <option key={driver.id} value={driver.id}>
-                {driver.full_name} — {driver.driver_id}
+              <option
+                key={driver.id}
+                value={driver.id}
+                disabled={driver.available_for_slot === false}
+              >
+                {driver.full_name} — {driver.driver_id} (
+                {statusLabel(driver.status_for_slot || driver.status)})
               </option>
             ))}
           </select>
@@ -936,7 +943,8 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
                     {replacements.map((vehicle) => (
                       <option key={vehicle.id} value={vehicle.id}>
                         {vehicle.make} {vehicle.model} —{" "}
-                        {vehicle.registration_number}
+                        {vehicle.registration_number} (
+                        {statusLabel(vehicle.status)})
                       </option>
                     ))}
                   </select>
