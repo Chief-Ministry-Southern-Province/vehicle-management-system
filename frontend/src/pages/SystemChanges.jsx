@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { FiAlertCircle, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import { useEffect, useMemo, useState } from "react";
+import { FiAlertCircle, FiFilter, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { deleteUser, getUsers } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -19,6 +19,28 @@ export default function SystemChanges() {
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
   const [error, setError] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+
+  const availableRoles = useMemo(
+    () => [...new Set(users.map((user) => user.role).filter(Boolean))]
+      .sort((a, b) => (roleLabels[a] || a).localeCompare(roleLabels[b] || b)),
+    [users],
+  );
+
+  const availableDepartments = useMemo(
+    () => [...new Set(users.map((user) => user.department).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b)),
+    [users],
+  );
+
+  const filteredUsers = useMemo(
+    () => users.filter((user) => (
+      (!roleFilter || user.role === roleFilter)
+      && (!departmentFilter || user.department === departmentFilter)
+    )),
+    [departmentFilter, roleFilter, users],
+  );
 
   useEffect(() => {
     let active = true;
@@ -69,6 +91,51 @@ export default function SystemChanges() {
           </div>
         </div>
 
+        <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end">
+          <div className="flex items-center gap-2 pb-2 text-sm font-semibold text-slate-700 sm:mr-2">
+            <FiFilter aria-hidden="true" />
+            Filter users
+          </div>
+          <label className="flex-1">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">Role</span>
+            <select
+              value={roleFilter}
+              onChange={(event) => setRoleFilter(event.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">All roles</option>
+              {availableRoles.map((role) => (
+                <option key={role} value={role}>{roleLabels[role] || role}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex-1">
+            <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">Department</span>
+            <select
+              value={departmentFilter}
+              onChange={(event) => setDepartmentFilter(event.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">All departments</option>
+              {availableDepartments.map((department) => (
+                <option key={department} value={department}>{department}</option>
+              ))}
+            </select>
+          </label>
+          {(roleFilter || departmentFilter) && (
+            <button
+              type="button"
+              onClick={() => {
+                setRoleFilter("");
+                setDepartmentFilter("");
+              }}
+              className="rounded-lg px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+
         <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
           {error ? (
             <div className="flex items-center gap-2 p-5 text-sm text-red-700">
@@ -90,9 +157,13 @@ export default function SystemChanges() {
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
                     <tr><td colSpan="6" className="px-5 py-10 text-center text-slate-500">Loading users…</td></tr>
-                  ) : users.length === 0 ? (
-                    <tr><td colSpan="6" className="px-5 py-10 text-center text-slate-500">No users found.</td></tr>
-                  ) : users.map((user) => {
+                  ) : filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-5 py-10 text-center text-slate-500">
+                        {users.length === 0 ? "No users found." : "No users match the selected filters."}
+                      </td>
+                    </tr>
+                  ) : filteredUsers.map((user) => {
                     const protectedUser = user.role === "deputy_secretary";
                     return (
                       <tr key={user.id} className="text-slate-700">
