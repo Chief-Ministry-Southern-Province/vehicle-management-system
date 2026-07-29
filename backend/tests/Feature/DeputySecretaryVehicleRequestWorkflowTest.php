@@ -134,6 +134,18 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
 
         $this->actingAs($deputy)
             ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $oldVehicle->id,
+                'driver_id' => $driver->id,
+                'reason' => 'No assignment was changed.',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'message',
+                'Change the driver, the vehicle, or both before submitting the re-allocation.',
+            );
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
                 'vehicle_id' => $newVehicle->id,
                 'driver_id' => $newDriver->id,
             ])
@@ -174,6 +186,29 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
         $this->assertDatabaseHas('drivers', [
             'id' => $newDriver->id,
             'allocated_vehicle' => 'REALLOC-NEW',
+        ]);
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $oldVehicle->id,
+                'driver_id' => $newDriver->id,
+                'reason' => 'Keep the replacement driver but use the repaired original vehicle.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.allocated_driver.driver_id', 'DRV-REALLOC-2')
+            ->assertJsonPath('data.vehicle_request.allocated_vehicle.registration_number', 'REALLOC-OLD');
+
+        $this->assertDatabaseHas('drivers', [
+            'id' => $newDriver->id,
+            'allocated_vehicle' => 'REALLOC-OLD',
+        ]);
+        $this->assertDatabaseHas('vehicles', [
+            'id' => $newVehicle->id,
+            'status' => 'available',
+        ]);
+        $this->assertDatabaseHas('vehicles', [
+            'id' => $oldVehicle->id,
+            'status' => 'scheduled_trip',
         ]);
     }
 

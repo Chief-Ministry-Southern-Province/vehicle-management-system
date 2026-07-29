@@ -388,12 +388,11 @@ class VehicleRequestController extends Controller
                 abort(422, 'The request does not have a complete existing allocation.');
             }
 
-            if ((int) $lockedRequest->allocated_vehicle_id === (int) $validated['vehicle_id']) {
-                abort(422, 'Select a different vehicle for re-allocation.');
-            }
+            $vehicleChanged = (int) $lockedRequest->allocated_vehicle_id !== (int) $validated['vehicle_id'];
+            $driverChanged = (int) $lockedRequest->allocated_driver_id !== (int) $validated['driver_id'];
 
-            if ((int) $lockedRequest->allocated_driver_id === (int) $validated['driver_id']) {
-                abort(422, 'Select a different driver for re-allocation.');
+            if (! $vehicleChanged && ! $driverChanged) {
+                abort(422, 'Change the driver, the vehicle, or both before submitting the re-allocation.');
             }
 
             $oldVehicle = Vehicle::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_vehicle_id);
@@ -449,44 +448,48 @@ class VehicleRequestController extends Controller
                 'current_assignment' => null,
             ]);
 
-            $oldDriverHasAnotherAssignment = VehicleRequest::query()
-                ->where('allocated_driver_id', $oldDriver->id)
-                ->whereKeyNot($lockedRequest->id)
-                ->whereIn('status', ['vehicle_allocated', 'approved'])
-                ->where(function ($query): void {
-                    $query->whereNull('journey_status')
-                        ->orWhere('journey_status', '!=', 'completed');
-                })
-                ->exists();
-            if (! $oldDriverHasAnotherAssignment) {
-                $oldDriver->update([
-                    'allocated_vehicle' => null,
-                    'current_assignment' => null,
-                ]);
+            if ($driverChanged) {
+                $oldDriverHasAnotherAssignment = VehicleRequest::query()
+                    ->where('allocated_driver_id', $oldDriver->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where(function ($query): void {
+                        $query->whereNull('journey_status')
+                            ->orWhere('journey_status', '!=', 'completed');
+                    })
+                    ->exists();
+                if (! $oldDriverHasAnotherAssignment) {
+                    $oldDriver->update([
+                        'allocated_vehicle' => null,
+                        'current_assignment' => null,
+                    ]);
+                }
             }
 
-            $oldVehicleHasOngoing = VehicleRequest::query()
-                ->where('allocated_vehicle_id', $oldVehicle->id)
-                ->whereKeyNot($lockedRequest->id)
-                ->where('status', 'approved')
-                ->whereIn('journey_status', ['ongoing', 'issue'])
-                ->exists();
-            $oldVehicleHasScheduled = VehicleRequest::query()
-                ->where('allocated_vehicle_id', $oldVehicle->id)
-                ->whereKeyNot($lockedRequest->id)
-                ->whereIn('status', ['vehicle_allocated', 'approved'])
-                ->where('journey_status', 'scheduled')
-                ->exists();
-            $oldVehicle->update([
-                'status' => $oldVehicleHasOngoing
-                    ? 'unavailable'
-                    : ($oldVehicleHasScheduled ? 'scheduled_trip' : 'available'),
-            ]);
+            if ($vehicleChanged) {
+                $oldVehicleHasOngoing = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $oldVehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->where('status', 'approved')
+                    ->whereIn('journey_status', ['ongoing', 'issue'])
+                    ->exists();
+                $oldVehicleHasScheduled = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $oldVehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where('journey_status', 'scheduled')
+                    ->exists();
+                $oldVehicle->update([
+                    'status' => $oldVehicleHasOngoing
+                        ? 'unavailable'
+                        : ($oldVehicleHasScheduled ? 'scheduled_trip' : 'available'),
+                ]);
+            }
         });
 
         return response()->json([
             'success' => true,
-            'message' => 'Driver and vehicle re-allocated. Fresh final approval is now required.',
+            'message' => 'Allocation updated. Fresh final approval is now required.',
             'data' => [
                 'vehicle_request' => $vehicleRequest->fresh()->load(
                     'user:id,name,employee_id,department',
