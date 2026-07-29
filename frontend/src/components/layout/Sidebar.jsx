@@ -345,7 +345,7 @@ const menuItems = [
 
       {
         name: "System Changes",
-        path: "/setting",
+        path: "/systemchanges",
         icon: <FiUsers />,
         roles: ["deputy_secretary"],
       },

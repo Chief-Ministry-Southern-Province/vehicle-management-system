@@ -46,6 +46,7 @@ import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
 import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
+import SystemChanges from './pages/SystemChanges';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -108,6 +109,7 @@ function App() {
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             <Route path="/drivers" element={withAuth(<DriverDetails />)} />
+            <Route path="/systemchanges" element={withAuth(<SystemChanges />)} />
 
 
 
