@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\DashboardStatsController;
 use App\Http\Controllers\Api\VehicleIssueReportController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +23,10 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 // ── Protected routes (valid Sanctum token required) ─────────────────
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary')->post('/register', [AuthController::class, 'register']);
+    Route::middleware('role:deputy_secretary')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
+    });
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 
