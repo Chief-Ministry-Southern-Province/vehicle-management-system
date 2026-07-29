@@ -742,7 +742,7 @@ function AllocatedVehicleDetails({ request }) {
             </p>
             <p className="mt-2 text-slate-800">{request.reallocation_reason}</p>
             <p className="mt-2 text-xs text-slate-500">
-              Changed from driver{" "}
+              Previous allocation: driver{" "}
               {request.previous_allocated_driver?.full_name ||
                 "the previous driver"}{" "}
               and vehicle{" "}
@@ -790,13 +790,11 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
 
   const replacements = vehicles.filter(
     (vehicle) =>
-      vehicle.id !== request.allocated_vehicle_id &&
       ["available", "scheduled_trip"].includes(vehicle.status) &&
       vehicle.available_for_slot !== false,
   );
   const replacementDrivers = drivers.filter(
     (driver) =>
-      driver.id !== request.allocated_driver_id &&
       driver.duty_status === "active" &&
       !["unavailable", "inactive"].includes(
         String(driver.status_for_slot || driver.status || "").toLowerCase(),
@@ -808,6 +806,10 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
   const selectedVehicle = vehicles.find(
     (vehicle) => vehicle.id === Number(vehicleId),
   );
+  const allocationChanged =
+    Boolean(driverId && vehicleId) &&
+    (Number(driverId) !== request.allocated_driver_id ||
+      Number(vehicleId) !== request.allocated_vehicle_id);
   const selectDriver = (event) => {
     const nextDriverId = event.target.value;
     const nextDriver = drivers.find(
@@ -835,9 +837,9 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
           Re-allocate Driver and Vehicle
         </h3>
         <p className="mt-1 text-sm text-slate-600">
-          Replace both assignments before the journey begins. The previous
-          driver and vehicle will be released, and fresh final approval will be
-          required.
+          Keep or replace either assignment before the journey begins.
+          Replaced resources will be released, and fresh final approval will
+          be required.
         </p>
       </div>
       <div className="space-y-4 p-5">
@@ -857,6 +859,9 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
               >
                 {driver.full_name} — {driver.driver_id} (
                 {statusLabel(driver.status_for_slot || driver.status)})
+                {driver.id === request.allocated_driver_id
+                  ? " — Currently allocated"
+                  : ""}
               </option>
             ))}
           </select>
@@ -945,6 +950,9 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
                         {vehicle.make} {vehicle.model} —{" "}
                         {vehicle.registration_number} (
                         {statusLabel(vehicle.status)})
+                        {vehicle.id === request.allocated_vehicle_id
+                          ? " — Currently allocated"
+                          : ""}
                       </option>
                     ))}
                   </select>
@@ -1057,14 +1065,14 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
             rows={4}
             maxLength={2000}
             required
-            placeholder="Describe why the currently assigned driver and vehicle must be changed."
+            placeholder="Describe why the driver and/or vehicle allocation must be changed."
             className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
           />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="button"
-          disabled={submitting || !driverId || !vehicleId || !reason.trim()}
+          disabled={submitting || !allocationChanged || !reason.trim()}
           onClick={() =>
             onReallocate({
               vehicle_id: Number(vehicleId),
@@ -1076,8 +1084,14 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
         >
           {submitting
             ? "Re-allocating..."
-            : "Re-allocate both and request fresh approval"}
+            : "Update allocation and request fresh approval"}
         </button>
+        {driverId && vehicleId && !allocationChanged && (
+          <p className="text-center text-xs font-medium text-amber-700">
+            Keep either the current driver or vehicle if needed, but change at
+            least one assignment before submitting.
+          </p>
+        )}
       </div>
     </section>
   );
