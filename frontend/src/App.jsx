@@ -109,7 +109,7 @@ function App() {
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             <Route path="/drivers" element={withAuth(<DriverDetails />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />)} />
+            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
 
 
 

@@ -320,6 +320,28 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const getUsers = async () => {
+  try {
+    const response = await API.get("/users", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await API.delete(`/users/${encodeURIComponent(userId)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const reallocateVehicleRequest = async (requestId, reallocation) => {
   try {
     const response = await API.patch(
