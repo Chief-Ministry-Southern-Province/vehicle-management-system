@@ -57,4 +57,35 @@ class UserManagementTest extends TestCase
             ->deleteJson("/api/users/{$otherUser->id}")
             ->assertForbidden();
     }
+
+    public function test_super_admin_can_add_and_list_departments(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'deputy_secretary']);
+
+        $this->actingAs($superAdmin)
+            ->postJson('/api/departments', ['name' => '  Public Services  '])
+            ->assertCreated()
+            ->assertJsonPath('data.department.name', 'Public Services');
+
+        $this->actingAs($superAdmin)
+            ->getJson('/api/departments')
+            ->assertOk()
+            ->assertJsonFragment(['name' => 'Public Services']);
+
+        $this->assertDatabaseHas('departments', [
+            'name' => 'Public Services',
+            'created_by' => $superAdmin->id,
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_add_departments(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee']);
+
+        $this->actingAs($employee)
+            ->postJson('/api/departments', ['name' => 'Unauthorized Department'])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('departments', ['name' => 'Unauthorized Department']);
+    }
 }
