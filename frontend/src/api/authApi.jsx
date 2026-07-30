@@ -342,6 +342,30 @@ export const deleteUser = async (userId) => {
   }
 };
 
+export const getDepartments = async () => {
+  try {
+    const response = await API.get("/departments", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const createDepartment = async (name) => {
+  try {
+    const response = await API.post(
+      "/departments",
+      { name },
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const reallocateVehicleRequest = async (requestId, reallocation) => {
   try {
     const response = await API.patch(
