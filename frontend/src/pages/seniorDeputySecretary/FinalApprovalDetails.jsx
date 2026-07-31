@@ -53,7 +53,7 @@ function VehicleAllocationDetails({ request }) {
   ) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        No vehicle allocation is stored for this request. The Deputy Secretary
+        No vehicle allocation is stored for this request. The Assistance Secreatry
         must allocate both a driver and vehicle before final approval.
       </div>
     );
@@ -83,6 +83,23 @@ function VehicleAllocationDetails({ request }) {
           {request.status?.replaceAll("_", " ")}
         </span>
       </Detail>
+      {request.reallocation_reason && (
+        <div className="sm:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <Detail label="Mandatory re-allocation reason">
+            <span className="whitespace-pre-wrap font-normal">
+              {request.reallocation_reason}
+            </span>
+          </Detail>
+          <p className="mt-3 text-xs text-slate-500">
+            Previous vehicle:{" "}
+            {request.previous_allocated_vehicle?.registration_number || "Not recorded"}
+            {" · "}Previous driver:{" "}
+            {request.previous_allocated_driver?.full_name || "Not recorded"}
+            {" · "}Changed by {request.reallocator?.name || "Assistance Secreatry"}
+            {" · "}{formatDateTime(request.reallocated_at)}
+          </p>
+        </div>
+      )}
     </dl>
   );
 }
@@ -281,7 +298,7 @@ export default function FinalApprovalDetails() {
             </dl>
           </Card>
 
-          <Card title="Deputy Secretary Vehicle Allocation" icon={<FiTruck />}>
+          <Card title="Assistance Secreatry Vehicle Allocation" icon={<FiTruck />}>
             <VehicleAllocationDetails request={request} />
           </Card>
         </div>

@@ -107,6 +107,17 @@ export default function ScheduledJourney() {
                 <Detail label="Number of Passengers">{trip.passenger_count}</Detail>
                 <Detail label="Vehicle Type">{trip.vehicle?.vehicle_type}</Detail>
                 <Detail label="Vehicle Number">{trip.vehicle?.registration_number}</Detail>
+                {trip.reallocation_reason && (
+                  <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/40">
+                    <Detail label="Vehicle re-allocation reason">
+                      {trip.reallocation_reason}
+                    </Detail>
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                      Previous vehicle:{" "}
+                      {trip.previous_vehicle?.registration_number || "Not recorded"}
+                    </p>
+                  </div>
+                )}
               </dl>
 
               <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4 dark:border-slate-700">
@@ -153,6 +164,8 @@ export default function ScheduledJourney() {
               <Detail label="Insurance Provider">{selectedTrip.vehicle?.insurance_provider}</Detail>
               <Detail label="Insurance Policy">{selectedTrip.vehicle?.insurance_policy}</Detail>
               <Detail label="Vehicle Status">{selectedTrip.vehicle?.status}</Detail>
+              <Detail label="Vehicle Re-allocation Reason">{selectedTrip.reallocation_reason}</Detail>
+              <Detail label="Previous Vehicle">{selectedTrip.previous_vehicle?.registration_number}</Detail>
               <Detail label="Technical Notes">{selectedTrip.vehicle?.technical_notes}</Detail>
             </dl>
           </div>

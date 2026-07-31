@@ -4,6 +4,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
 import {
   allocateVehicleRequest,
+  reallocateVehicleRequest,
   cancelMyVehicleRequest,
   getApprovalVehicleRequest,
   getDrivers,
@@ -734,6 +735,363 @@ function AllocatedVehicleDetails({ request }) {
             </>
           )}
         </div>
+        {request.reallocation_reason && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+              Vehicle re-allocation reason
+            </p>
+            <p className="mt-2 text-slate-800">{request.reallocation_reason}</p>
+            <p className="mt-2 text-xs text-slate-500">
+              Previous allocation: driver{" "}
+              {request.previous_allocated_driver?.full_name ||
+                "the previous driver"}{" "}
+              and vehicle{" "}
+              {request.previous_allocated_vehicle?.registration_number ||
+                "the previous vehicle"}{" "}
+              by {request.reallocator?.name || "the Assistance Secreatry"} on{" "}
+              {formatLocalDateTime(request.reallocated_at)}. Fresh final
+              approval is required.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function VehicleReallocationPanel({ request, onReallocate, submitting }) {
+  const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [vehicleId, setVehicleId] = useState("");
+  const [driverId, setDriverId] = useState("");
+  const [registeredVehicleId, setRegisteredVehicleId] = useState("");
+  const [changeVehicle, setChangeVehicle] = useState(false);
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const schedule = {
+      departure_at: request.departure_at,
+      expected_return_at: request.expected_return_at,
+      ignore_request_id: request.id,
+    };
+    Promise.all([getVehicles(schedule), getDrivers(schedule)])
+      .then(([vehicleResponse, driverResponse]) => {
+        setVehicles(vehicleResponse?.data?.vehicles || []);
+        setDrivers(driverResponse?.data?.drivers || []);
+      })
+      .catch((loadError) =>
+        setError(
+          loadError?.message ||
+            "Unable to load replacement drivers and vehicles.",
+        ),
+      );
+  }, [request.departure_at, request.expected_return_at, request.id]);
+
+  const replacements = vehicles.filter(
+    (vehicle) =>
+      ["available", "scheduled_trip"].includes(vehicle.status) &&
+      vehicle.available_for_slot !== false,
+  );
+  const replacementDrivers = drivers.filter(
+    (driver) =>
+      driver.duty_status === "active" &&
+      !["unavailable", "inactive"].includes(
+        String(driver.status_for_slot || driver.status || "").toLowerCase(),
+      ),
+  );
+  const selectedDriver = drivers.find(
+    (driver) => driver.id === Number(driverId),
+  );
+  const selectedVehicle = vehicles.find(
+    (vehicle) => vehicle.id === Number(vehicleId),
+  );
+  const allocationChanged =
+    Boolean(driverId && vehicleId) &&
+    (Number(driverId) !== request.allocated_driver_id ||
+      Number(vehicleId) !== request.allocated_vehicle_id);
+  const selectDriver = (event) => {
+    const nextDriverId = event.target.value;
+    const nextDriver = drivers.find(
+      (driver) => driver.id === Number(nextDriverId),
+    );
+    const registeredVehicle = replacements.find(
+      (vehicle) =>
+        vehicle.registration_number === nextDriver?.allocated_vehicle,
+    );
+
+    setDriverId(nextDriverId);
+    setRegisteredVehicleId(
+      registeredVehicle ? String(registeredVehicle.id) : "",
+    );
+    setVehicleId(registeredVehicle ? String(registeredVehicle.id) : "");
+    setChangeVehicle(!registeredVehicle);
+  };
+  const statusLabel = (status) =>
+    String(status || "Not recorded").replaceAll("_", " ");
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+      <div className="border-b border-amber-100 bg-amber-50 p-5">
+        <h3 className="text-xl font-bold text-slate-900">
+          Re-allocate Driver and Vehicle
+        </h3>
+        <p className="mt-1 text-sm text-slate-600">
+          Keep or replace either assignment before the journey begins.
+          Replaced resources will be released, and fresh final approval will
+          be required.
+        </p>
+      </div>
+      <div className="space-y-4 p-5">
+        <label className="block text-sm font-semibold text-slate-700">
+          Replacement driver
+          <select
+            value={driverId}
+            onChange={selectDriver}
+            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+          >
+            <option value="">Select a replacement driver</option>
+            {replacementDrivers.map((driver) => (
+              <option
+                key={driver.id}
+                value={driver.id}
+                disabled={driver.available_for_slot === false}
+              >
+                {driver.full_name} — {driver.driver_id} (
+                {statusLabel(driver.status_for_slot || driver.status)})
+                {driver.id === request.allocated_driver_id
+                  ? " — Currently allocated"
+                  : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        {selectedDriver && (
+          <>
+            <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Driver
+                </p>
+                <p className="mt-1 font-bold text-slate-900">
+                  {selectedDriver.full_name}
+                </p>
+                <p className="text-slate-600">{selectedDriver.driver_id}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Driver status
+                </p>
+                <p className="mt-1 font-semibold capitalize text-slate-800">
+                  {statusLabel(
+                    selectedDriver.status_for_slot || selectedDriver.status,
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Licence
+                </p>
+                <p className="mt-1 text-slate-800">
+                  {selectedDriver.licence_number} ·{" "}
+                  {selectedDriver.licence_type}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Contact
+                </p>
+                <p className="mt-1 text-slate-800">
+                  {selectedDriver.contact_number || "Not recorded"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">
+                    Driver’s registered vehicle
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {registeredVehicleId
+                      ? "Selected automatically."
+                      : "No available registered vehicle was found for this journey."}
+                  </p>
+                </div>
+                {registeredVehicleId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const overriding = !changeVehicle;
+                      setChangeVehicle(overriding);
+                      setVehicleId(overriding ? "" : registeredVehicleId);
+                    }}
+                    className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                  >
+                    {changeVehicle
+                      ? "Use registered vehicle"
+                      : "Choose a different vehicle"}
+                  </button>
+                )}
+              </div>
+
+              {(changeVehicle || !registeredVehicleId) && (
+                <label className="mt-4 block text-sm font-semibold text-slate-700">
+                  Replacement vehicle
+                  <select
+                    value={vehicleId}
+                    onChange={(event) => setVehicleId(event.target.value)}
+                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+                  >
+                    <option value="">Select a different available vehicle</option>
+                    {replacements.map((vehicle) => (
+                      <option key={vehicle.id} value={vehicle.id}>
+                        {vehicle.make} {vehicle.model} —{" "}
+                        {vehicle.registration_number} (
+                        {statusLabel(vehicle.status)})
+                        {vehicle.id === request.allocated_vehicle_id
+                          ? " — Currently allocated"
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          </>
+        )}
+
+        {selectedVehicle && (
+          <div className="grid gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4 text-sm sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Vehicle
+              </p>
+              <p className="mt-1 font-bold text-slate-900">
+                {selectedVehicle.make} {selectedVehicle.model}
+              </p>
+              <p className="text-slate-600">
+                {selectedVehicle.registration_number}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Vehicle status
+              </p>
+              <p className="mt-1 font-semibold capitalize text-slate-800">
+                {statusLabel(selectedVehicle.status)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Seat capacity
+              </p>
+              <p className="mt-1 font-semibold text-slate-800">
+                {selectedVehicle.seat_capacity || "Not recorded"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Fuel level
+              </p>
+              <p className="mt-1 font-semibold text-slate-800">
+                {selectedVehicle.fuel_level == null
+                  ? "Not recorded"
+                  : `${selectedVehicle.fuel_level}%`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedDriver && (
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="border-b bg-slate-50 px-4 py-3">
+              <h4 className="font-semibold text-slate-800">
+                Driver Previous Journeys
+              </h4>
+              <p className="mt-1 text-xs text-slate-500">
+                Recent journey history for {selectedDriver.full_name}
+              </p>
+            </div>
+            {Array.isArray(selectedDriver.previous_journeys) &&
+            selectedDriver.previous_journeys.length > 0 ? (
+              <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto">
+                {selectedDriver.previous_journeys.map((journey, index) => (
+                  <article
+                    key={`${journey.date}-${journey.destination}-${index}`}
+                    className="p-4 text-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {journey.origin || "Origin not recorded"} →{" "}
+                          {journey.destination || "Destination not recorded"}
+                        </p>
+                        <p className="mt-1 text-slate-500">
+                          {journey.purpose || "Purpose not recorded"}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold capitalize text-emerald-700">
+                        {journey.status || "Completed"}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span>
+                        {journey.date
+                          ? new Date(journey.date).toLocaleDateString()
+                          : "Date not recorded"}
+                      </span>
+                      <span>
+                        Vehicle:{" "}
+                        {journey.vehicle_registration || "Not recorded"}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="p-5 text-center text-sm text-slate-500">
+                No previous journeys recorded for this driver.
+              </p>
+            )}
+          </div>
+        )}
+        <label className="block text-sm font-semibold text-slate-700">
+          Reason for re-allocation <span className="text-red-600">*</span>
+          <textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            rows={4}
+            maxLength={2000}
+            required
+            placeholder="Describe why the driver and/or vehicle allocation must be changed."
+            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+          />
+        </label>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <button
+          type="button"
+          disabled={submitting || !allocationChanged || !reason.trim()}
+          onClick={() =>
+            onReallocate({
+              vehicle_id: Number(vehicleId),
+              driver_id: Number(driverId),
+              reason: reason.trim(),
+            })
+          }
+          className="w-full rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {submitting
+            ? "Re-allocating..."
+            : "Update allocation and request fresh approval"}
+        </button>
+        {driverId && vehicleId && !allocationChanged && (
+          <p className="text-center text-xs font-medium text-amber-700">
+            Keep either the current driver or vehicle if needed, but change at
+            least one assignment before submitting.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -743,6 +1101,7 @@ export default function ApprovalWorkspace() {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
   const [allocating, setAllocating] = useState(false);
+  const [reallocating, setReallocating] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [allocationMessage, setAllocationMessage] = useState("");
   const [allocation, setAllocation] = useState({
@@ -809,6 +1168,24 @@ export default function ApprovalWorkspace() {
       setCancelling(false);
     }
   };
+  const reallocate = async (payload) => {
+    setReallocating(true);
+    setAllocationMessage("");
+    try {
+      const response = await reallocateVehicleRequest(id, payload);
+      const updatedRequest = response?.data?.vehicle_request;
+      if (updatedRequest) setRequest(updatedRequest);
+      setAllocationMessage(
+        response?.message || "Vehicle re-allocated successfully.",
+      );
+    } catch (reallocationError) {
+      setAllocationMessage(
+        reallocationError?.message || "Unable to re-allocate the vehicle.",
+      );
+    } finally {
+      setReallocating(false);
+    }
+  };
   if (request === null)
     return (
       <DashboardLayout>
@@ -862,6 +1239,16 @@ export default function ApprovalWorkspace() {
             ) : allocated ? (
               <>
                 <AllocatedVehicleDetails request={request} />
+                {!request.journey_started_at &&
+                  !["ongoing", "issue", "completed"].includes(
+                    request.journey_status,
+                  ) && (
+                    <VehicleReallocationPanel
+                      request={request}
+                      onReallocate={reallocate}
+                      submitting={reallocating}
+                    />
+                  )}
                 <ApprovalActions
                   onAllocate={allocate}
                   allocating={allocating}

@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\DashboardStatsController;
 use App\Http\Controllers\Api\VehicleIssueReportController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\DepartmentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +24,13 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 // ── Protected routes (valid Sanctum token required) ─────────────────
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary')->post('/register', [AuthController::class, 'register']);
+    Route::middleware('role:deputy_secretary')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
+        Route::post('/departments', [DepartmentController::class, 'store']);
+        Route::delete('/departments/{department}', [DepartmentController::class, 'destroy']);
+    });
+    Route::get('/departments', [DepartmentController::class, 'index']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 
@@ -55,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'approvalShow']);
         Route::patch('/vehicle-requests/{vehicleRequest}/recommendation', [VehicleRequestController::class, 'deputyRecommend']);
         Route::patch('/vehicle-requests/{vehicleRequest}/allocate', [VehicleRequestController::class, 'allocate']);
+        Route::patch('/vehicle-requests/{vehicleRequest}/reallocate', [VehicleRequestController::class, 'reallocate']);
     });
 
     Route::middleware('role:senior_deputy_secretary')->prefix('senior-recommendations')->group(function () {

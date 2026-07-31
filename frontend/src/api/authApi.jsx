@@ -320,6 +320,79 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
   }
 };
 
+export const getUsers = async () => {
+  try {
+    const response = await API.get("/users", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await API.delete(`/users/${encodeURIComponent(userId)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getDepartments = async () => {
+  try {
+    const response = await API.get("/departments", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const createDepartment = async (name) => {
+  try {
+    const response = await API.post(
+      "/departments",
+      { name },
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const deleteDepartment = async (departmentId) => {
+  try {
+    const response = await API.delete(
+      `/departments/${encodeURIComponent(departmentId)}`,
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const reallocateVehicleRequest = async (requestId, reallocation) => {
+  try {
+    const response = await API.patch(
+      `/approvals/vehicle-requests/${requestId}/reallocate`,
+      reallocation,
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getDeputyPendingRecommendations = async () => {
   try {
     const response = await API.get("/approvals/recommendations", {

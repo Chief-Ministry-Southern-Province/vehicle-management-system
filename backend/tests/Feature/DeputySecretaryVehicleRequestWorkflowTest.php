@@ -66,6 +66,152 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_vehicle_can_be_reallocated_before_start_with_a_reason_and_fresh_approval(): void
+    {
+        $deputy = User::factory()->create(['role' => 'deputy_secretary']);
+        $approver = User::factory()->create(['role' => 'senior_deputy_secretary']);
+        $requester = User::factory()->create(['role' => 'employee']);
+        $oldVehicle = Vehicle::create([
+            'registration_number' => 'REALLOC-OLD',
+            'vehicle_type' => 'Car',
+            'make' => 'Toyota',
+            'model' => 'Corolla',
+            'status' => 'scheduled_trip',
+            'fuel_level' => 75,
+        ]);
+        $newVehicle = Vehicle::create([
+            'registration_number' => 'REALLOC-NEW',
+            'vehicle_type' => 'Car',
+            'make' => 'Honda',
+            'model' => 'Civic',
+            'status' => 'available',
+            'fuel_level' => 80,
+        ]);
+        $driver = Driver::create([
+            'driver_id' => 'DRV-REALLOC-1',
+            'full_name' => 'Reallocation Driver',
+            'date_of_birth' => '1990-01-01',
+            'nic' => '901234568V',
+            'address' => 'Test Road',
+            'contact_number' => '0712345679',
+            'licence_number' => 'LIC-REALLOC-1',
+            'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01',
+            'allocated_vehicle' => $oldVehicle->registration_number,
+            'status' => 'active',
+        ]);
+        $newDriver = Driver::create([
+            'driver_id' => 'DRV-REALLOC-2',
+            'full_name' => 'Replacement Driver',
+            'date_of_birth' => '1991-01-01',
+            'nic' => '911234568V',
+            'address' => 'Replacement Road',
+            'contact_number' => '0712345680',
+            'licence_number' => 'LIC-REALLOC-2',
+            'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01',
+            'status' => 'active',
+        ]);
+        $vehicleRequest = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Official visit',
+            'destination' => 'Matara',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 2,
+            'status' => 'approved',
+            'journey_status' => 'scheduled',
+            'recommendation_status' => 'recommended',
+            'allocated_vehicle_id' => $oldVehicle->id,
+            'allocated_driver_id' => $driver->id,
+            'allocated_by' => $deputy->id,
+            'allocated_at' => now(),
+            'approved_by' => $approver->id,
+            'approved_at' => now(),
+            'driver_notified_at' => now(),
+        ]);
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $oldVehicle->id,
+                'driver_id' => $driver->id,
+                'reason' => 'No assignment was changed.',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'message',
+                'Change the driver, the vehicle, or both before submitting the re-allocation.',
+            );
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $newVehicle->id,
+                'driver_id' => $newDriver->id,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('reason');
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $newVehicle->id,
+                'driver_id' => $newDriver->id,
+                'reason' => 'The original vehicle developed a brake-system fault.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.status', 'vehicle_allocated')
+            ->assertJsonPath('data.vehicle_request.reallocation_reason', 'The original vehicle developed a brake-system fault.')
+            ->assertJsonPath('data.vehicle_request.previous_allocated_vehicle.registration_number', 'REALLOC-OLD')
+            ->assertJsonPath('data.vehicle_request.allocated_vehicle.registration_number', 'REALLOC-NEW')
+            ->assertJsonPath('data.vehicle_request.previous_allocated_driver.driver_id', 'DRV-REALLOC-1')
+            ->assertJsonPath('data.vehicle_request.allocated_driver.driver_id', 'DRV-REALLOC-2');
+
+        $this->assertDatabaseHas('vehicle_requests', [
+            'id' => $vehicleRequest->id,
+            'status' => 'vehicle_allocated',
+            'previous_allocated_vehicle_id' => $oldVehicle->id,
+            'allocated_vehicle_id' => $newVehicle->id,
+            'previous_allocated_driver_id' => $driver->id,
+            'allocated_driver_id' => $newDriver->id,
+            'approved_by' => null,
+            'approved_at' => null,
+        ]);
+        $this->assertDatabaseHas('vehicles', ['id' => $oldVehicle->id, 'status' => 'available']);
+        $this->assertDatabaseHas('vehicles', ['id' => $newVehicle->id, 'status' => 'scheduled_trip']);
+        $this->assertDatabaseHas('drivers', [
+            'id' => $driver->id,
+            'allocated_vehicle' => null,
+            'current_assignment' => null,
+        ]);
+        $this->assertDatabaseHas('drivers', [
+            'id' => $newDriver->id,
+            'allocated_vehicle' => 'REALLOC-NEW',
+        ]);
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$vehicleRequest->id}/reallocate", [
+                'vehicle_id' => $oldVehicle->id,
+                'driver_id' => $newDriver->id,
+                'reason' => 'Keep the replacement driver but use the repaired original vehicle.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.allocated_driver.driver_id', 'DRV-REALLOC-2')
+            ->assertJsonPath('data.vehicle_request.allocated_vehicle.registration_number', 'REALLOC-OLD');
+
+        $this->assertDatabaseHas('drivers', [
+            'id' => $newDriver->id,
+            'allocated_vehicle' => 'REALLOC-OLD',
+        ]);
+        $this->assertDatabaseHas('vehicles', [
+            'id' => $newVehicle->id,
+            'status' => 'available',
+        ]);
+        $this->assertDatabaseHas('vehicles', [
+            'id' => $oldVehicle->id,
+            'status' => 'scheduled_trip',
+        ]);
+    }
+
     public function test_senior_deputy_recommends_deputy_request_before_allocation(): void
     {
         $deputy = User::factory()->create([

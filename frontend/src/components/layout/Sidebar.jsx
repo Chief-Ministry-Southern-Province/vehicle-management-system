@@ -67,7 +67,7 @@ const menuItems = [
         roles: ["subject_officer"],
       },
 
-      // ================= DEPUTY SECRETARY =================
+      // ================= ASSISTANCE SECREATRY =================
 
       {
         name: "Dashboard",
@@ -88,7 +88,7 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
 
-      // ================= SENIOR DEPUTY SECRETARY =================
+      // ================= SENIOR ASSISTANCE SECRETARY =================
 
       {
         name: "Dashboard",
@@ -196,7 +196,7 @@ const menuItems = [
 
 
   // ==========================================
-  // SUBJECT OFFICER, Deputy Secretary SECTION, SENIOR DEPUTY SECRETARY SECTION
+  // SUBJECT OFFICER, Assistance Secreatry SECTION, SENIOR ASSISTANCE SECRETARY SECTION
   // ==========================================
 
   {
@@ -294,7 +294,7 @@ const menuItems = [
   },
 
   // ==========================================
-  // DEPUTY SECRETARY SECTION
+  // ASSISTANCE SECREATRY SECTION
   // ==========================================
 
   {
@@ -345,7 +345,7 @@ const menuItems = [
 
       {
         name: "System Changes",
-        path: "/setting",
+        path: "/systemchanges",
         icon: <FiUsers />,
         roles: ["deputy_secretary"],
       },

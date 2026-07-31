@@ -33,7 +33,7 @@ export default function ApprovalQueue({
         <div>
           <h2 className="text-2xl font-bold text-slate-800">
             {view === "senior_recommendations"
-              ? "Deputy Secretary Requests"
+              ? "Assistance Secreatry Requests"
               : view === "department_recommendations"
               ? "Department Officer Recommendations"
               : view === "recommendations"
@@ -51,7 +51,7 @@ export default function ApprovalQueue({
               : view === "recommendations"
               ? "Provide recommendations for requests submitted by Department Officers."
               : view === "allocated"
-              ? "Review requests with vehicles allocated by the Deputy Secretary."
+              ? "Review requests with vehicles allocated by the Assistance Secreatry."
               : "Review recommended transport requests and allocate vehicles."}
           </p>
         </div>

@@ -62,15 +62,22 @@ class VehicleRequestController extends Controller
 
         $vehicleRequest->load('user:id,name,employee_id,department,role', 'recommender:id,name,employee_id,department', 'approver:id,name');
 
-        if (in_array($vehicleRequest->status, ['approved', 'completed', 'cancelled'], true)
-            && $vehicleRequest->approved_at) {
-            $vehicleRequest->load('allocatedVehicle', 'allocatedDriver');
+        if ((in_array($vehicleRequest->status, ['approved', 'completed', 'cancelled'], true)
+                && $vehicleRequest->approved_at)
+            || $vehicleRequest->reallocated_at) {
+            $vehicleRequest->load(
+                'allocatedVehicle',
+                'previousAllocatedVehicle',
+                'allocatedDriver',
+                'previousAllocatedDriver',
+                'reallocator:id,name',
+            );
         }
 
         return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest]]);
     }
 
-    /** Recommended vehicle requests visible to the Deputy Secretary allocation queue. */
+    /** Recommended vehicle requests visible to the Assistance Secreatry allocation queue. */
     public function approvalIndex(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
@@ -108,7 +115,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** The requester or a Deputy Secretary may cancel before journey completion. */
+    /** The requester or an Assistance Secreatry may cancel before journey completion. */
     public function cancel(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         $user = $request->user();
@@ -192,7 +199,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** A complete request record for the Deputy Secretary workspace. */
+    /** A complete request record for the Assistance Secreatry workspace. */
     public function approvalShow(VehicleRequest $vehicleRequest): JsonResponse
     {
         return response()->json([
@@ -202,15 +209,18 @@ class VehicleRequestController extends Controller
                     'user:id,name,employee_id,department',
                     'recommender:id,name,employee_id,department',
                     'allocatedVehicle',
+                    'previousAllocatedVehicle',
                     'allocatedDriver',
+                    'previousAllocatedDriver',
                     'allocator:id,name,employee_id',
+                    'reallocator:id,name,employee_id',
                     'approver:id,name,employee_id',
                 ),
             ],
         ]);
     }
 
-    /** Department Officer requests awaiting a Deputy Secretary recommendation. */
+    /** Department Officer requests awaiting an Assistance Secreatry recommendation. */
     public function deputyRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -230,7 +240,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Deputy Secretary requests awaiting a Senior Deputy Secretary recommendation. */
+    /** Assistance Secreatry requests awaiting a Senior Assistance Secretary recommendation. */
     public function seniorRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -256,7 +266,7 @@ class VehicleRequestController extends Controller
         return $this->approvalShow($vehicleRequest);
     }
 
-    /** Recommendations recorded by Department Officers and visible to the Deputy Secretary. */
+    /** Recommendations recorded by Department Officers and visible to the Assistance Secreatry. */
     public function departmentRecommendationIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()
@@ -353,7 +363,149 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Requests allocated by the Deputy Secretary and visible for final approval. */
+    /** Replace an allocated driver and vehicle before journey start and require fresh final approval. */
+    public function reallocate(Request $request, VehicleRequest $vehicleRequest): JsonResponse
+    {
+        $validated = $request->validate([
+            'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
+            'driver_id' => ['required', 'integer', 'exists:drivers,id'],
+            'reason' => ['required', 'string', 'max:2000'],
+        ]);
+
+        DB::transaction(function () use ($request, $validated, $vehicleRequest): void {
+            $lockedRequest = VehicleRequest::query()->lockForUpdate()->findOrFail($vehicleRequest->id);
+
+            if (! in_array($lockedRequest->status, ['vehicle_allocated', 'approved'], true)) {
+                abort(422, 'Only allocated requests can have their vehicle changed.');
+            }
+
+            if ($lockedRequest->journey_started_at
+                || in_array($lockedRequest->journey_status, ['ongoing', 'issue', 'completed'], true)) {
+                abort(422, 'The vehicle cannot be changed after the driver has begun the journey.');
+            }
+
+            if (! $lockedRequest->allocated_vehicle_id || ! $lockedRequest->allocated_driver_id) {
+                abort(422, 'The request does not have a complete existing allocation.');
+            }
+
+            $vehicleChanged = (int) $lockedRequest->allocated_vehicle_id !== (int) $validated['vehicle_id'];
+            $driverChanged = (int) $lockedRequest->allocated_driver_id !== (int) $validated['driver_id'];
+
+            if (! $vehicleChanged && ! $driverChanged) {
+                abort(422, 'Change the driver, the vehicle, or both before submitting the re-allocation.');
+            }
+
+            $oldVehicle = Vehicle::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_vehicle_id);
+            $newVehicle = Vehicle::query()->lockForUpdate()->findOrFail($validated['vehicle_id']);
+            $oldDriver = Driver::query()->lockForUpdate()->findOrFail($lockedRequest->allocated_driver_id);
+            $newDriver = Driver::query()->lockForUpdate()->findOrFail($validated['driver_id']);
+
+            if (! in_array($newVehicle->status, ['available', 'scheduled_trip'], true)) {
+                abort(422, 'The selected replacement vehicle is no longer available.');
+            }
+
+            if ($newVehicle->hasScheduleConflict(
+                $lockedRequest->departure_at,
+                $lockedRequest->expected_return_at,
+                $lockedRequest->id,
+            )) {
+                abort(422, 'The selected replacement vehicle already has a journey during this time slot.');
+            }
+
+            if (! $newDriver->isActive()) {
+                abort(422, 'The selected replacement driver is inactive and cannot be allocated.');
+            }
+
+            if ($newDriver->hasScheduleConflict(
+                $lockedRequest->departure_at,
+                $lockedRequest->expected_return_at,
+                $lockedRequest->id,
+            )) {
+                abort(422, 'The selected replacement driver already has a journey during this time slot.');
+            }
+
+            $lockedRequest->update([
+                'status' => 'vehicle_allocated',
+                'previous_allocated_vehicle_id' => $oldVehicle->id,
+                'allocated_vehicle_id' => $newVehicle->id,
+                'previous_allocated_driver_id' => $oldDriver->id,
+                'allocated_driver_id' => $newDriver->id,
+                'allocated_by' => $request->user()->id,
+                'allocated_at' => now(),
+                'reallocation_reason' => trim($validated['reason']),
+                'reallocated_by' => $request->user()->id,
+                'reallocated_at' => now(),
+                'approved_by' => null,
+                'approved_at' => null,
+                'driver_notified_at' => null,
+                'rejected_by' => null,
+                'rejected_at' => null,
+            ]);
+
+            $newVehicle->update(['status' => 'scheduled_trip']);
+            $newDriver->update([
+                'allocated_vehicle' => $newVehicle->registration_number,
+                'current_assignment' => null,
+            ]);
+
+            if ($driverChanged) {
+                $oldDriverHasAnotherAssignment = VehicleRequest::query()
+                    ->where('allocated_driver_id', $oldDriver->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where(function ($query): void {
+                        $query->whereNull('journey_status')
+                            ->orWhere('journey_status', '!=', 'completed');
+                    })
+                    ->exists();
+                if (! $oldDriverHasAnotherAssignment) {
+                    $oldDriver->update([
+                        'allocated_vehicle' => null,
+                        'current_assignment' => null,
+                    ]);
+                }
+            }
+
+            if ($vehicleChanged) {
+                $oldVehicleHasOngoing = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $oldVehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->where('status', 'approved')
+                    ->whereIn('journey_status', ['ongoing', 'issue'])
+                    ->exists();
+                $oldVehicleHasScheduled = VehicleRequest::query()
+                    ->where('allocated_vehicle_id', $oldVehicle->id)
+                    ->whereKeyNot($lockedRequest->id)
+                    ->whereIn('status', ['vehicle_allocated', 'approved'])
+                    ->where('journey_status', 'scheduled')
+                    ->exists();
+                $oldVehicle->update([
+                    'status' => $oldVehicleHasOngoing
+                        ? 'unavailable'
+                        : ($oldVehicleHasScheduled ? 'scheduled_trip' : 'available'),
+                ]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Allocation updated. Fresh final approval is now required.',
+            'data' => [
+                'vehicle_request' => $vehicleRequest->fresh()->load(
+                    'user:id,name,employee_id,department',
+                    'recommender:id,name,employee_id,department',
+                    'allocatedVehicle',
+                    'previousAllocatedVehicle',
+                    'allocatedDriver',
+                    'previousAllocatedDriver',
+                    'allocator:id,name,employee_id',
+                    'reallocator:id,name,employee_id',
+                ),
+            ],
+        ]);
+    }
+
+    /** Requests allocated by the Assistance Secreatry and visible for final approval. */
     public function finalApprovalIndex(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
@@ -363,7 +515,7 @@ class VehicleRequestController extends Controller
         }
 
         $query = VehicleRequest::query()
-            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'allocatedDriver')
+            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
             ->latest();
 
         if ($status === 'pending') {
@@ -411,29 +563,32 @@ class VehicleRequestController extends Controller
                     'user:id,name,employee_id,department',
                     'recommender:id,name,employee_id,department',
                     'allocatedVehicle',
+                    'previousAllocatedVehicle',
                     'allocatedDriver',
+                    'previousAllocatedDriver',
                     'allocator:id,name,employee_id',
+                    'reallocator:id,name,employee_id',
                     'rejector:id,name,employee_id',
                 ),
             ],
         ]);
     }
 
-    /** Final approval by either the Secretary or Senior Deputy Secretary. */
+    /** Final approval by either the Secretary or Senior Assistance Secretary. */
     public function finalApprove(VehicleRequest $vehicleRequest): JsonResponse
     {
         if ($vehicleRequest->status === 'approved') {
             return response()->json([
                 'success' => true,
                 'message' => 'This request is already finally approved.',
-                'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'allocatedDriver', 'allocator:id,name,employee_id')],
+                'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
             ]);
         }
 
         if ($vehicleRequest->status !== 'vehicle_allocated') {
             return response()->json([
                 'success' => false,
-                'message' => 'Only requests allocated by the Deputy Secretary can receive final approval.',
+                'message' => 'Only requests allocated by the Assistance Secreatry can receive final approval.',
             ], 422);
         }
 
@@ -467,11 +622,11 @@ class VehicleRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Request finally approved successfully.',
-            'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'allocatedDriver', 'allocator:id,name,employee_id')],
+            'data' => ['vehicle_request' => $vehicleRequest->fresh()->load('user:id,name,employee_id,department', 'recommender:id,name,employee_id,department', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'allocator:id,name,employee_id', 'reallocator:id,name,employee_id')],
         ]);
     }
 
-    /** Final rejection by either the Secretary or Senior Deputy Secretary. */
+    /** Final rejection by either the Secretary or Senior Assistance Secretary. */
     public function finalReject(VehicleRequest $vehicleRequest): JsonResponse
     {
         if ($vehicleRequest->status === 'rejected' && $vehicleRequest->rejected_at) {
@@ -623,26 +778,26 @@ class VehicleRequestController extends Controller
         return $this->saveRecommendation($request, $vehicleRequest);
     }
 
-    /** A Deputy Secretary recommends requests submitted by Department Officers. */
+    /** An Assistance Secreatry recommends requests submitted by Department Officers. */
     public function deputyRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         if (! $vehicleRequest->user()->where('role', 'department_officer')->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Deputy Secretary recommendations are limited to Department Officer requests.',
+                'message' => 'Assistance Secreatry recommendations are limited to Department Officer requests.',
             ], 422);
         }
 
         return $this->saveRecommendation($request, $vehicleRequest);
     }
 
-    /** A Senior Deputy Secretary recommends requests submitted by Deputy Secretaries. */
+    /** A Senior Assistance Secretary recommends requests submitted by Assistance Secreatries. */
     public function seniorRecommend(Request $request, VehicleRequest $vehicleRequest): JsonResponse
     {
         if (! $vehicleRequest->user()->where('role', 'deputy_secretary')->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Senior Deputy Secretary recommendations are limited to Deputy Secretary requests.',
+                'message' => 'Senior Assistance Secretary recommendations are limited to Assistance Secreatry requests.',
             ], 422);
         }
 

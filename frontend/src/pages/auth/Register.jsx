@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   FiArrowRight, FiCalendar, FiCreditCard, FiDroplet,
   FiHash, FiHome, FiLock, FiMail, FiPhone, FiTruck, FiUser,
 } from "react-icons/fi";
-import { registerUser } from "../../api/authApi";
+import { getDepartments, registerUser } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 const initialForm = {
@@ -15,10 +15,9 @@ const initialForm = {
 };
 const roleOptions = [
   ["employee", "Employee"], ["department_officer", "Department Officer"],
-  ["subject_officer", "Subject Officer"], ["deputy_secretary", "Deputy Secretary"],
-  ["senior_deputy_secretary", "Senior Deputy Secretary"], ["secretary", "Secretary"], ["driver", "Driver"],
+  ["subject_officer", "Subject Officer"], ["deputy_secretary", "Assistance Secreatry"],
+  ["senior_deputy_secretary", "Senior Assistance Secretary"], ["secretary", "Secretary"], ["driver", "Driver"],
 ];
-const branchOptions = ["Admin", "Planning", "Health", "Local Government", "Accounting", "IT Branch"];
 const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const inputClass = "w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-slate-800 outline-none transition focus:border-blue-700 focus:bg-white focus:ring-4 focus:ring-blue-100";
 const selectClass = "w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-800 outline-none focus:border-blue-700 focus:ring-4 focus:ring-blue-100";
@@ -38,6 +37,12 @@ function Field({ label, name, value, onChange, type = "text", placeholder, icon:
 export default function Register() {
   const [formData, setFormData] = useState(initialForm);
   const [isLoading, setIsLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  useEffect(() => {
+    getDepartments()
+      .then((response) => setDepartments(response.data?.departments ?? []))
+      .catch(() => toast.error("Unable to load departments."));
+  }, []);
   const handleChange = ({ target: { name, value } }) => setFormData((current) => ({ ...current, [name]: value }));
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -66,7 +71,7 @@ export default function Register() {
             </div>
 
             {needsBranch && (
-              <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Branch</span><select name="department" value={formData.department} onChange={handleChange} required className={selectClass}><option value="" disabled>Select a branch</option>{branchOptions.map((branch) => <option key={branch} value={branch}>{branch}</option>)}</select></label>
+              <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Department</span><select name="department" value={formData.department} onChange={handleChange} required className={selectClass}><option value="" disabled>Select a department</option>{departments.map((department) => <option key={department.id} value={department.name}>{department.name}</option>)}</select></label>
             )}
 
             {isDriver && (

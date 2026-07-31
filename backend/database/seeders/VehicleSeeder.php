@@ -56,7 +56,7 @@ class VehicleSeeder extends Seeder
             ['GV-1018', 'Pickup', 'Toyota', 'Hilux GR Sport', 2024, 'Super White', 'Diesel', 80, 'Facilities Management', 'available'],
             ['GV-1019', 'Van', 'Hyundai', 'Staria', 2023, 'Shimmering Silver', 'Diesel', 75, 'Central Stores', 'available'],
             ['GV-1020', 'Sedan', 'Skoda', 'Octavia', 2023, 'Magic Black', 'Petrol', 50, 'Internal Audit Division', 'available'],
-            ['GV-1021', 'SUV', 'Mitsubishi', 'Pajero Sport', 2024, 'White Diamond', 'Diesel', 68, 'Deputy Secretary Office', 'available'],
+            ['GV-1021', 'SUV', 'Mitsubishi', 'Pajero Sport', 2024, 'White Diamond', 'Diesel', 68, 'Assistance Secreatry Office', 'available'],
             ['GV-1022', 'Bus', 'Ashok Leyland', 'Viking BS6', 2023, 'Ocean Blue', 'Diesel', 200, 'Staff Transport Unit', 'available'],
             ['GV-1023', 'Pickup', 'Mahindra', 'Pik Up S11', 2022, 'Rocky Beige', 'Diesel', 80, 'Rural Development Unit', 'maintenance'],
             ['GV-1024', 'Van', 'Toyota', 'Coaster', 2023, 'White', 'Diesel', 95, 'Training Division', 'available'],
