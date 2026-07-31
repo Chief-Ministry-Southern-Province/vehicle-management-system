@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DepartmentController extends Controller
 {
@@ -39,5 +41,24 @@ class DepartmentController extends Controller
             'message' => 'Department added successfully.',
             'data' => ['department' => $department],
         ], 201);
+    }
+
+    public function destroy(Department $department): JsonResponse
+    {
+        $affectedUsers = DB::transaction(function () use ($department): int {
+            $affectedUsers = User::query()
+                ->where('department', $department->name)
+                ->update(['department' => null]);
+
+            $department->delete();
+
+            return $affectedUsers;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Department removed successfully.',
+            'data' => ['affected_users' => $affectedUsers],
+        ]);
     }
 }

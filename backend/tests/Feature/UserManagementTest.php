@@ -88,4 +88,34 @@ class UserManagementTest extends TestCase
 
         $this->assertDatabaseMissing('departments', ['name' => 'Unauthorized Department']);
     }
+
+    public function test_super_admin_can_remove_a_department_and_clear_user_assignments(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'deputy_secretary']);
+        $department = \App\Models\Department::create([
+            'name' => 'Temporary Department',
+            'created_by' => $superAdmin->id,
+        ]);
+        $employee = User::factory()->create(['department' => $department->name]);
+
+        $this->actingAs($superAdmin)
+            ->deleteJson("/api/departments/{$department->id}")
+            ->assertOk()
+            ->assertJsonPath('data.affected_users', 1);
+
+        $this->assertDatabaseMissing('departments', ['id' => $department->id]);
+        $this->assertNull($employee->fresh()->department);
+    }
+
+    public function test_non_super_admin_cannot_remove_departments(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee']);
+        $department = \App\Models\Department::query()->firstOrFail();
+
+        $this->actingAs($employee)
+            ->deleteJson("/api/departments/{$department->id}")
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('departments', ['id' => $department->id]);
+    }
 }
