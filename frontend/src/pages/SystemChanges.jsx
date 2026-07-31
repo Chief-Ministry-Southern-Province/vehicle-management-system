@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiAlertCircle, FiFilter, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { createDepartment, deleteUser, getDepartments, getUsers } from "../api/authApi";
+import { createDepartment, deleteDepartment, deleteUser, getDepartments, getUsers } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 const roleLabels = {
@@ -24,6 +24,7 @@ export default function SystemChanges() {
   const [departments, setDepartments] = useState([]);
   const [departmentName, setDepartmentName] = useState("");
   const [addingDepartment, setAddingDepartment] = useState(false);
+  const [removingDepartmentId, setRemovingDepartmentId] = useState(null);
 
   const availableRoles = useMemo(
     () => [...new Set(users.map((user) => user.role).filter(Boolean))]
@@ -83,6 +84,27 @@ export default function SystemChanges() {
       toast.error(requestError.message || "Unable to add this department.");
     } finally {
       setAddingDepartment(false);
+    }
+  };
+
+  const removeDepartment = async (department) => {
+    if (!window.confirm(
+      `Remove ${department.name}? Users assigned to it will become unassigned.`,
+    )) return;
+
+    setRemovingDepartmentId(department.id);
+    try {
+      const response = await deleteDepartment(department.id);
+      setDepartments((current) => current.filter((item) => item.id !== department.id));
+      setUsers((current) => current.map((user) => (
+        user.department === department.name ? { ...user, department: null } : user
+      )));
+      if (departmentFilter === department.name) setDepartmentFilter("");
+      toast.success(response.message || "Department removed successfully.");
+    } catch (requestError) {
+      toast.error(requestError.message || "Unable to remove this department.");
+    } finally {
+      setRemovingDepartmentId(null);
     }
   };
 
@@ -151,8 +173,18 @@ export default function SystemChanges() {
             <p className="mt-2 text-3xl font-bold text-slate-900">{departments.length}</p>
             <div className="mt-3 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
               {departments.map((department) => (
-                <span key={department.id} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                <span key={department.id} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-1 pl-3 pr-1 text-xs font-semibold text-slate-700">
                   {department.name}
+                  <button
+                    type="button"
+                    onClick={() => removeDepartment(department)}
+                    disabled={removingDepartmentId === department.id}
+                    title={`Remove ${department.name}`}
+                    aria-label={`Remove ${department.name}`}
+                    className="rounded-full p-1.5 text-slate-400 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <FiTrash2 aria-hidden="true" />
+                  </button>
                 </span>
               ))}
             </div>

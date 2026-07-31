@@ -366,6 +366,18 @@ export const createDepartment = async (name) => {
   }
 };
 
+export const deleteDepartment = async (departmentId) => {
+  try {
+    const response = await API.delete(
+      `/departments/${encodeURIComponent(departmentId)}`,
+      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const reallocateVehicleRequest = async (requestId, reallocation) => {
   try {
     const response = await API.patch(
