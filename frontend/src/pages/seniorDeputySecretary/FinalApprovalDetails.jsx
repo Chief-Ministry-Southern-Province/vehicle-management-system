@@ -75,6 +75,9 @@ function VehicleAllocationDetails({ request }) {
       <Detail label="Allocated at">
         {formatDateTime(request.allocated_at)}
       </Detail>
+      <Detail label="Parking location">
+        <span className="whitespace-pre-wrap">{request.parking_location}</span>
+      </Detail>
       <Detail label="Driver notified at">
         {formatDateTime(request.driver_notified_at)}
       </Detail>

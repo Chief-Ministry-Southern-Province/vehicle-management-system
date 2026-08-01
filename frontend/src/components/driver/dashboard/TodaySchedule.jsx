@@ -107,6 +107,7 @@ export default function ScheduledJourney() {
                 <Detail label="Number of Passengers">{trip.passenger_count}</Detail>
                 <Detail label="Vehicle Type">{trip.vehicle?.vehicle_type}</Detail>
                 <Detail label="Vehicle Number">{trip.vehicle?.registration_number}</Detail>
+                <Detail label="Parking Location">{trip.parking_location}</Detail>
                 {trip.reallocation_reason && (
                   <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/40">
                     <Detail label="Vehicle re-allocation reason">
@@ -155,6 +156,7 @@ export default function ScheduledJourney() {
               <Detail label="Vehicle">{selectedTrip.vehicle ? `${selectedTrip.vehicle.make} ${selectedTrip.vehicle.model}` : null}</Detail>
               <Detail label="Vehicle Type">{selectedTrip.vehicle?.vehicle_type}</Detail>
               <Detail label="Vehicle Number">{selectedTrip.vehicle?.registration_number}</Detail>
+              <Detail label="Parking Location">{selectedTrip.parking_location}</Detail>
               <Detail label="Fuel Type">{selectedTrip.vehicle?.fuel_type}</Detail>
               <Detail label="Fuel Level">{selectedTrip.vehicle ? `${selectedTrip.vehicle.fuel_level ?? 0}%` : null}</Detail>
               <Detail label="Fuel Capacity">{selectedTrip.vehicle?.fuel_capacity ? `${selectedTrip.vehicle.fuel_capacity} L` : null}</Detail>

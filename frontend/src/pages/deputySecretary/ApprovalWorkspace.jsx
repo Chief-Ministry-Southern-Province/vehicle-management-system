@@ -409,6 +409,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
   const [driverId, setDriverId] = useState("");
   const [registeredVehicle, setRegisteredVehicle] = useState("");
   const [vehicleRegistration, setVehicleRegistration] = useState("");
+  const [parkingLocation, setParkingLocation] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
     const load = async () => {
@@ -457,8 +458,9 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
     onAllocationChange({
       driver_id: driver?.id || null,
       vehicle_id: vehicle?.id || null,
+      parking_location: parkingLocation.trim(),
     });
-  }, [driver, onAllocationChange, vehicle]);
+  }, [driver, onAllocationChange, parkingLocation, vehicle]);
   const changeDriver = (event) => {
     const id = event.target.value;
     const nextDriver = drivers.find((item) => item.driver_id === id);
@@ -635,6 +637,21 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             </div>
           </div>
         )}
+        <label className="block text-sm font-semibold">
+          Parking location <span className="text-red-600">*</span>
+          <textarea
+            value={parkingLocation}
+            onChange={(event) => setParkingLocation(event.target.value)}
+            rows={3}
+            maxLength={500}
+            required
+            placeholder="For example: Office premises, main vehicle park; or outside office, Matara District Secretariat parking area."
+            className="mt-2 w-full rounded-xl border px-3 py-3 font-normal"
+          />
+          <span className="mt-2 block text-xs font-normal text-slate-500">
+            Specify where the vehicle will be parked during or after this journey.
+          </span>
+        </label>
         {previousJourneysPanel}
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
@@ -704,6 +721,12 @@ function AllocatedVehicleDetails({ request }) {
           </div>
         </div>
         <div className="grid gap-4 border-t pt-4 text-sm sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <p className="text-xs uppercase text-slate-400">Parking location</p>
+            <p className="mt-1 whitespace-pre-wrap font-semibold text-slate-800">
+              {request.parking_location || "Not recorded"}
+            </p>
+          </div>
           <div>
             <p className="text-xs uppercase text-slate-400">Allocated by</p>
             <p className="mt-1">{request.allocator?.name || "—"}</p>
@@ -1107,6 +1130,7 @@ export default function ApprovalWorkspace() {
   const [allocation, setAllocation] = useState({
     driver_id: null,
     vehicle_id: null,
+    parking_location: "",
   });
   useEffect(() => {
     const load = async () => {
@@ -1121,9 +1145,13 @@ export default function ApprovalWorkspace() {
     load();
   }, [id]);
   const allocate = async () => {
-    if (!allocation.driver_id || !allocation.vehicle_id) {
+    if (
+      !allocation.driver_id ||
+      !allocation.vehicle_id ||
+      !allocation.parking_location?.trim()
+    ) {
       setAllocationMessage(
-        "Select both a driver and a vehicle before allocating this request.",
+        "Select a driver and vehicle, and specify the parking location before allocating this request.",
       );
       return;
     }
@@ -1266,7 +1294,9 @@ export default function ApprovalWorkspace() {
                   allocating={allocating}
                   allocated={false}
                   allocationReady={Boolean(
-                    allocation.driver_id && allocation.vehicle_id,
+                    allocation.driver_id &&
+                      allocation.vehicle_id &&
+                      allocation.parking_location?.trim(),
                   )}
                   onCancel={cancelRequest}
                   cancelling={cancelling}
