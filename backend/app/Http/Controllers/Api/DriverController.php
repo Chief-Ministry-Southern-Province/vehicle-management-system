@@ -150,6 +150,7 @@ class DriverController extends Controller
             'requester_name' => $trip->requester_name,
             'passenger_count' => $trip->passenger_count,
             'passenger_names' => $trip->passenger_names,
+            'parking_location' => $trip->parking_location,
             'status' => $status,
             'journey_status' => $trip->journey_status,
             'journey_started_at' => $trip->journey_started_at?->toISOString(),

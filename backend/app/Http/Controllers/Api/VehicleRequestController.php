@@ -312,6 +312,7 @@ class VehicleRequestController extends Controller
         $validated = $request->validate([
             'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
             'driver_id' => ['required', 'integer', 'exists:drivers,id'],
+            'parking_location' => ['required', 'string', 'max:500'],
         ]);
 
         DB::transaction(function () use ($request, $validated, $vehicleRequest): void {
@@ -348,6 +349,7 @@ class VehicleRequestController extends Controller
                 'allocated_driver_id' => $driver->id,
                 'allocated_by' => $request->user()->id,
                 'allocated_at' => now(),
+                'parking_location' => trim($validated['parking_location']),
             ]);
 
             $vehicle->update(['status' => 'scheduled_trip']);

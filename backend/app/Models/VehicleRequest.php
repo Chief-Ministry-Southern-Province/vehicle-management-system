@@ -41,6 +41,7 @@ class VehicleRequest extends Model
         'previous_allocated_driver_id',
         'allocated_by',
         'allocated_at',
+        'parking_location',
         'reallocation_reason',
         'reallocated_by',
         'reallocated_at',
