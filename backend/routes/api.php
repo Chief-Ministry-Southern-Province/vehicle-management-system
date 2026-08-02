@@ -85,6 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:subject_officer,deputy_secretary')
         ->get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
 
+    Route::middleware('role:subject_officer')
+        ->get('/recommended-requests', [VehicleRequestController::class, 'recommendedRequestsIndex']);
+
     // Fleet records are read-only for executive roles and editable only by the Subject Officer.
     Route::middleware('role:subject_officer,deputy_secretary,secretary,senior_deputy_secretary')->group(function () {
         Route::get('/vehicles', [VehicleController::class, 'index']);

@@ -16,6 +16,25 @@ use Throwable;
 
 class VehicleRequestController extends Controller
 {
+    /** All requests that have received a positive recommendation. */
+    public function recommendedRequestsIndex(): JsonResponse
+    {
+        $requests = VehicleRequest::query()
+            ->where('recommendation_status', 'recommended')
+            ->with(
+                'user:id,name,employee_id,department',
+                'recommender:id,name,employee_id,department',
+                'allocatedVehicle',
+            )
+            ->latest('recommended_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['requests' => $requests, 'total' => $requests->count()],
+        ]);
+    }
+
     /** Finally approved journeys visible to the Subject Officer. */
     public function approvedJourneysIndex(): JsonResponse
     {
