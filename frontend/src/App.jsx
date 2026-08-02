@@ -47,6 +47,7 @@ import ReportVehicle from './pages/driver/ReportVehicle';
 import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
 import SystemChanges from './pages/SystemChanges';
+import PendingJourny from './pages/subjectOfficer/PendingJourny';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -91,6 +92,7 @@ function App() {
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
+            <Route path="/pendingJourny" element={withAuth(<PendingJourny />)}/>
             <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />, ["subject_officer", "deputy_secretary"])}/>
             <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />, ["subject_officer", "deputy_secretary"])} />
 
