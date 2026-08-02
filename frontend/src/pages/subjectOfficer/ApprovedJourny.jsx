@@ -199,6 +199,11 @@ function JourneyDetails({ journey, onClose }) {
                 value={vehicle.vehicle_type}
               />
               <Detail
+                icon={<FiMapPin />}
+                label="Parking location"
+                value={journey.parking_location}
+              />
+              <Detail
                 icon={<FiUsers />}
                 label="Seat capacity"
                 value={
@@ -301,6 +306,7 @@ export default function ApprovedJourny() {
         journey.allocated_vehicle?.registration_number,
         journey.allocated_vehicle?.make,
         journey.allocated_vehicle?.model,
+        journey.parking_location,
         journey.allocated_driver?.full_name,
         journey.allocated_driver?.driver_id,
         journeyStatus(journey),
@@ -421,6 +427,15 @@ export default function ApprovedJourny() {
                                 .filter(Boolean)
                                 .join(" "),
                             )}
+                          </p>
+                          <p className="mt-1 flex items-start gap-1 text-xs text-slate-500">
+                            <FiMapPin
+                              className="mt-0.5 shrink-0 text-blue-500"
+                              aria-hidden="true"
+                            />
+                            <span className="max-w-52 whitespace-pre-wrap">
+                              {display(journey.parking_location)}
+                            </span>
                           </p>
                         </td>
                         <td className="px-6 py-5">
