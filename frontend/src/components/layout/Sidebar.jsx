@@ -66,6 +66,12 @@ const menuItems = [
         icon: <FiCheckCircle />,
         roles: ["subject_officer"],
       },
+      {
+        name: "Pending Journeys",
+        path: "/pendingjourny",
+        icon: <FiClock />,
+        roles: ["subject_officer"],
+      },
 
       // ================= ASSISTANCE SECREATRY =================
 

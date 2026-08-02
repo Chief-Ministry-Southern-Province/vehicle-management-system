@@ -552,6 +552,17 @@ export const getApprovedJourneys = async () => {
   }
 };
 
+export const getRecommendedRequests = async () => {
+  try {
+    const response = await API.get("/recommended-requests", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getVehicles = async (schedule = {}) => {
   try {
     const response = await API.get("/vehicles", {
