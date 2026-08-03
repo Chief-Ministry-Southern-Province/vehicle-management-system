@@ -3,6 +3,7 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiClock,
+  FiDownload,
   FiEye,
   FiMapPin,
   FiRefreshCw,
@@ -15,6 +16,7 @@ import {
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
+import { generateApprovedJourneyPdf } from "../../utils/approvedJourneyPdf";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const display = (value) => value || "—";
 const journeyStatus = (journey) => {
@@ -86,6 +88,13 @@ function Detail({ icon, label, value }) {
 function JourneyDetails({ journey, onClose }) {
   const vehicle = journey.allocated_vehicle || {};
   const driver = journey.allocated_driver || {};
+  const generatePdf = () => {
+    try {
+      generateApprovedJourneyPdf(journey);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
@@ -111,6 +120,13 @@ function JourneyDetails({ journey, onClose }) {
             </p>
           </div>
           <div className="flex items-start gap-4">
+            <button
+              type="button"
+              onClick={generatePdf}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              <FiDownload /> Generate PDF
+            </button>
             <div className="text-left sm:text-right">
               <p className="font-semibold text-slate-800">
                 {display(journey.requester_name || journey.user?.name)}
