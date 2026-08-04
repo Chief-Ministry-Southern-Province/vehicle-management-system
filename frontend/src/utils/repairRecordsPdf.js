@@ -24,9 +24,11 @@ const date = (value) => {
       }).format(parsed);
 };
 
-export function generateRepairRecordsPdf(records) {
+export function generateRepairRecordsPdf(records, { recordKind = "Repair" } = {}) {
+  const kind = escapeHtml(recordKind);
+  const kindLower = recordKind.toLowerCase();
   if (!Array.isArray(records) || records.length === 0) {
-    throw new Error("Select at least one repair record to export.");
+    throw new Error(`Select at least one ${kindLower} record to export.`);
   }
 
   const totalCost = records.reduce(
@@ -47,20 +49,20 @@ export function generateRepairRecordsPdf(records) {
   const sheets = pages.map((pageRecords, pageIndex) => `
     <div class="sheet">
       <div class="masthead"><div class="brand">Vehicle Management System</div><div class="sub">Chief Ministry&nbsp;&nbsp; | &nbsp;&nbsp;Dakshinapaya, Labuduwa, Galle</div></div>
-      <div class="title"><div><h1>Selected Repair Records</h1><p>Official fleet repair history and expenditure report</p></div><span class="badge">REPAIR REPORT</span></div>
+      <div class="title"><div><h1>Selected ${kind} Records</h1><p>Official fleet ${kindLower} history and expenditure report</p></div><span class="badge">${kind.toUpperCase()} REPORT</span></div>
       ${pageIndex === 0 ? `<div class="summary"><div><span>SELECTED RECORDS</span><strong>${records.length}</strong></div><div><span>VEHICLES</span><strong>${new Set(records.map((record) => record.vehicle).filter(Boolean)).size}</strong></div><div><span>TOTAL REPAIR COST</span><strong>LKR ${money(totalCost)}</strong></div></div>` : ""}
-      <h2>Repair Record Details</h2>
-      <table><thead><tr><th>No.</th><th>Repair Date</th><th>Vehicle</th><th>Vehicle Model</th><th>Repair Type</th><th class="number">Cost (LKR)</th></tr></thead>
+      <h2>${kind} Record Details</h2>
+      <table><thead><tr><th>No.</th><th>${kind} Date</th><th>Vehicle</th><th>Vehicle Model</th><th>${kind} Type</th><th class="number">Cost (LKR)</th></tr></thead>
       <tbody>${pageRecords.map((record, index) => `<tr><td>${pageIndex * recordsPerPage + index + 1}</td><td>${escapeHtml(date(record.repair_date))}</td><td><strong>${escapeHtml(record.vehicle || "-")}</strong></td><td>${escapeHtml(record.model || "-")}</td><td>${escapeHtml(record.repair_type || "-")}</td><td class="number">${money(record.cost)}</td></tr>`).join("")}</tbody>
       ${pageIndex === pages.length - 1 ? `<tfoot><tr><td colspan="5">Selected records total</td><td class="number">${money(totalCost)}</td></tr></tfoot>` : ""}</table>
-      ${pageIndex === pages.length - 1 ? `<div class="reference"><strong>Document Reference</strong>Selected Repair Records &nbsp;|&nbsp; ${records.length} record${records.length === 1 ? "" : "s"} &nbsp;|&nbsp; Generated ${escapeHtml(generatedAt)} by the Vehicle Management System</div>` : ""}
+      ${pageIndex === pages.length - 1 ? `<div class="reference"><strong>Document Reference</strong>Selected ${kind} Records &nbsp;|&nbsp; ${records.length} record${records.length === 1 ? "" : "s"} &nbsp;|&nbsp; Generated ${escapeHtml(generatedAt)} by the Vehicle Management System</div>` : ""}
       <div class="footer"><span>Chief Ministry - Southern Province</span><span>Page ${pageIndex + 1} of ${pages.length}</span></div>
     </div>`).join("");
 
   const printWindow = window.open("", "_blank");
   if (!printWindow) throw new Error("The PDF window was blocked. Allow pop-ups and try again.");
   printWindow.opener = null;
-  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Selected Repair Records</title><style>
+  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Selected ${kind} Records</title><style>
     @page { size: A4 landscape; margin: 0; } * { box-sizing: border-box; }
     html,body { margin:0; padding:0; background:#eef1f5; color:#172033; font-family:Arial,sans-serif; }
     .sheet { position:relative; width:297mm; min-height:210mm; margin:0 auto 8mm; padding:40mm 14mm 20mm; background:#fff; page-break-after:always; overflow:hidden; }
