@@ -18,13 +18,30 @@ function formatNumber(value) {
   });
 }
 
-export default function FuelTable({ logs, loading, error }) {
+export default function FuelTable({
+  logs,
+  loading,
+  error,
+  selectedIds,
+  onToggle,
+  onToggleAll,
+}) {
+  const allSelected = logs.length > 0 && logs.every((log) => selectedIds.has(log.id));
   return (
     <div className="overflow-hidden bg-white">
       <div className="max-h-115 overflow-auto">
         <table className="w-full min-w-190">
           <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
             <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-4 py-4 text-center">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => onToggleAll(logs, !allSelected)}
+                  aria-label="Select all displayed fuel records"
+                  className="h-4 w-4 rounded border-slate-300 accent-blue-600"
+                />
+              </th>
               <th className="px-6 py-4 text-left">Date</th>
               <th className="px-6 py-4 text-left">Vehicle</th>
               <th className="px-6 py-4 text-left">Fuel Type</th>
@@ -35,25 +52,34 @@ export default function FuelTable({ logs, loading, error }) {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
                   Loading fuel records…
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm font-medium text-red-600">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm font-medium text-red-600">
                   {error}
                 </td>
               </tr>
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
                   No fuel records match the selected filters.
                 </td>
               </tr>
             ) : (
               logs.map((log) => (
                 <tr key={log.id} className="border-b border-slate-100 transition hover:bg-slate-50">
+                  <td className="px-4 py-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(log.id)}
+                      onChange={() => onToggle(log.id)}
+                      aria-label={`Select fuel record for ${log.vehicle || "vehicle"}`}
+                      className="h-4 w-4 rounded border-slate-300 accent-blue-600"
+                    />
+                  </td>
                   <td className="px-6 py-4 text-sm text-slate-600">{formatDate(log.date)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

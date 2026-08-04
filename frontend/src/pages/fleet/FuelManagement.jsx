@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import {Bar,CartesianGrid,ComposedChart,Legend,Line,ResponsiveContainer,Tooltip,XAxis,YAxis,} from "recharts";
-import { FiBarChart2, FiDroplet } from "react-icons/fi";
+import { FiBarChart2, FiDownload, FiDroplet } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
 import { getVehicles } from "../../api/authApi";
+import { generateFuelRecordsPdf } from "../../utils/fuelRecordsPdf";
 
 const EMPTY_FILTERS = { search: "", fuelType: "" };
 const START_YEAR = 2025;
@@ -23,6 +24,7 @@ export default function FuelManagement() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -158,6 +160,39 @@ export default function FuelManagement() {
   const changeYear = (year) => {
     setSelectedYear(year);
     setSelectedMonth("");
+  };
+
+  const toggleRecord = (recordId) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(recordId)) next.delete(recordId);
+      else next.add(recordId);
+      return next;
+    });
+  };
+
+  const toggleAllRecords = (records, selected) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      records.forEach((record) => {
+        if (selected) next.add(record.id);
+        else next.delete(record.id);
+      });
+      return next;
+    });
+  };
+
+  const selectedRecords = useMemo(
+    () => logs.filter((log) => selectedIds.has(log.id)),
+    [logs, selectedIds],
+  );
+
+  const exportSelectedRecords = () => {
+    try {
+      generateFuelRecordsPdf(selectedRecords);
+    } catch (exportError) {
+      window.alert(exportError.message);
+    }
   };
 
   return (
@@ -307,7 +342,30 @@ export default function FuelManagement() {
               Showing all fuel records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
             </div>
           )}
-          <FuelTable logs={displayedLogs} loading={loading} error={error} />
+          {!loading && !error && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-3">
+              <p className="text-sm text-slate-600">
+                <strong className="text-slate-900">{selectedRecords.length}</strong>{" "}
+                fuel {selectedRecords.length === 1 ? "record" : "records"} selected
+              </p>
+              <button
+                type="button"
+                onClick={exportSelectedRecords}
+                disabled={selectedRecords.length === 0}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FiDownload /> Export Selected PDF
+              </button>
+            </div>
+          )}
+          <FuelTable
+            logs={displayedLogs}
+            loading={loading}
+            error={error}
+            selectedIds={selectedIds}
+            onToggle={toggleRecord}
+            onToggleAll={toggleAllRecords}
+          />
         </section>
       </div>
     </DashboardLayout>
