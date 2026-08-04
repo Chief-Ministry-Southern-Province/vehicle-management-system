@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { FiArrowLeft, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiDownload, FiSave } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getDriver, updateDriver } from "../../api/authApi";
 import { normalizeDriver, toDriverPayload } from "../../utils/driverMapper";
+import { generateDriverDetailsPdf } from "../../utils/driverDetailsPdf";
 const DUTY_STATUSES = ["Active", "Inactive"];
 const BLOOD_GROUPS = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 export default function DriverDatabaseDetails() {
@@ -63,6 +64,13 @@ export default function DriverDatabaseDetails() {
   };
   const field =
     "mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50";
+  const exportPdf = () => {
+    try {
+      generateDriverDetailsPdf(driver);
+    } catch (exportError) {
+      window.alert(exportError.message);
+    }
+  };
   const fields = [
     ["fullName", "Full Name", "text"],
     ["dateOfBirth", "Date of Birth", "date"],
@@ -118,12 +126,21 @@ export default function DriverDatabaseDetails() {
               <span className="font-semibold text-blue-600">{driver.id}</span>
             </p>
           </div>
+          <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={exportPdf}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100"
+          >
+            <FiDownload /> Generate PDF
+          </button>
           <button
             disabled={saving}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
           >
             <FiSave /> {saving ? "Saving…" : "Save Changes"}
           </button>
+          </div>
         </header>
         {error && (
           <p className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">

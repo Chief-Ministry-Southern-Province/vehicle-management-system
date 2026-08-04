@@ -4,6 +4,7 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiDroplet,
+  FiDownload,
   FiFilter,
   FiPhone,
   FiSearch,
@@ -15,6 +16,7 @@ import {
 } from "react-icons/fi";
 import { getDrivers } from "../../api/authApi";
 import { normalizeDriver } from "../../utils/driverMapper";
+import { generateDriverDirectoryPdf } from "../../utils/driverDirectoryPdf";
 
 // Shared with ApprovalWorkspace; this non-component export is intentional.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -212,7 +214,7 @@ function SummaryCard({ icon, label, value, sub, tone }) {
     </div>
   );
 }
-function DriverCard({ driver }) {
+function DriverCard({ driver, selected, onToggle }) {
   const expiryDays = daysUntil(driver.licenceRenewalDate);
   const expiringSoon = expiryDays <= 180;
   return (
@@ -232,7 +234,7 @@ function DriverCard({ driver }) {
             </p>
           </div>
         </div>
-        <StatusPill status={driver.status} />
+        <div className="flex items-center gap-3"><label className="inline-flex items-center gap-2 text-xs font-medium text-slate-500"><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select</label><StatusPill status={driver.status} /></div>
       </div>
 
       <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
@@ -309,6 +311,7 @@ export default function DriverDetails() {
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
   useEffect(() => {
     let active = true;
     getDrivers()
@@ -359,6 +362,11 @@ export default function DriverDetails() {
     [drivers],
   );
   const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
+  const selectedDrivers = useMemo(() => drivers.filter((driver) => selectedIds.has(driver.id)), [drivers, selectedIds]);
+  const allVisibleSelected = filteredDrivers.length > 0 && filteredDrivers.every((driver) => selectedIds.has(driver.id));
+  const toggleDriver = (driverId) => setSelectedIds((current) => { const next = new Set(current); if (next.has(driverId)) next.delete(driverId); else next.add(driverId); return next; });
+  const toggleVisible = () => setSelectedIds((current) => { const next = new Set(current); filteredDrivers.forEach((driver) => { if (allVisibleSelected) next.delete(driver.id); else next.add(driver.id); }); return next; });
+  const exportSelected = () => { try { generateDriverDirectoryPdf(selectedDrivers); } catch (exportError) { window.alert(exportError.message); } };
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
@@ -458,6 +466,8 @@ export default function DriverDetails() {
             </div>
           </div>
 
+          {!loading && !loadError && drivers.length > 0 && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"><label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select all visible</label><div className="flex items-center gap-4"><span className="text-sm text-slate-600"><strong className="text-slate-900">{selectedDrivers.length}</strong> selected</span><button type="button" onClick={exportSelected} disabled={selectedDrivers.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button></div></div>}
+
           {loading && (
             <p className="py-12 text-center text-sm text-slate-500">
               Loading drivers from the database…
@@ -465,7 +475,7 @@ export default function DriverDetails() {
           )}
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {filteredDrivers.map((driver) => (
-              <DriverCard key={driver.id} driver={driver} />
+              <DriverCard key={driver.id} driver={driver} selected={selectedIds.has(driver.id)} onToggle={() => toggleDriver(driver.id)} />
             ))}
           </div>
         </div>
