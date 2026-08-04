@@ -49,6 +49,7 @@ export default function DeputyVehicleDetails() {
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(null);
   const [error, setError] = useState("");
+  const [selectedImage, setSelectedImage] = useState("");
   useEffect(() => {
     let active = true;
     const loadVehicle = async () => {
@@ -56,7 +57,10 @@ export default function DeputyVehicleDetails() {
         const response = await getVehicleById(id);
         const selected = response?.data?.vehicle;
         if (!selected) throw new Error("Vehicle not found.");
-        if (active) setVehicle(selected);
+        if (active) {
+          setVehicle(selected);
+          setSelectedImage(selected.image_urls?.[0] || selected.image_url || "");
+        }
       } catch (loadError) {
         if (active)
           setError(loadError?.message || "Unable to load vehicle details.");
@@ -94,6 +98,11 @@ export default function DeputyVehicleDetails() {
     );
   }
   const status = String(vehicle.status || "unavailable").toLowerCase();
+  const imageUrls = Array.isArray(vehicle.image_urls)
+    ? vehicle.image_urls
+    : vehicle.image_url
+      ? [vehicle.image_url]
+      : [];
   const fuelLevel = valueOrDash(vehicle.fuel_level);
   const seatCapacity = vehicle.seat_capacity ?? vehicle.seating_capacity;
   const licenceExpiry =
@@ -133,9 +142,9 @@ export default function DeputyVehicleDetails() {
 
         <header className="mt-4 flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            {vehicle.image_url ? (
+            {selectedImage ? (
               <img
-                src={vehicle.image_url}
+                src={selectedImage}
                 alt={`${vehicle.make || ""} ${vehicle.model || "Vehicle"}`}
                 className="h-20 w-20 rounded-2xl object-cover"
               />
@@ -164,6 +173,19 @@ export default function DeputyVehicleDetails() {
             {status}
           </span>
         </header>
+
+        {imageUrls.length > 1 && (
+          <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-4"><FiImage className="text-blue-600" /><h2 className="font-bold text-slate-900">Vehicle Image Gallery</h2></div>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {imageUrls.map((url, index) => (
+                <button type="button" key={`${url}-${index}`} onClick={() => setSelectedImage(url)} className={`overflow-hidden rounded-xl border-2 transition ${selectedImage === url ? "border-blue-500 ring-4 ring-blue-100" : "border-transparent hover:border-blue-200"}`}>
+                  <img src={url} alt={`${vehicle.make || "Vehicle"} ${vehicle.model || ""} view ${index + 1}`} className="h-28 w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="mt-6 grid gap-6 xl:grid-cols-2">
           <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">

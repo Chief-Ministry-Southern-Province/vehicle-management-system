@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 
@@ -57,7 +58,7 @@ class VehicleController extends Controller
         $vehicle->update($this->payload($request, $vehicle));
 
         if ($previousImage && $previousImage !== $vehicle->image_path) {
-            Storage::disk('public')->delete($previousImage);
+            File::delete(public_path($previousImage));
         }
 
         return response()->json(['success' => true, 'message' => 'Vehicle updated successfully.', 'data' => ['vehicle' => $vehicle->fresh()]]);
@@ -107,13 +108,34 @@ class VehicleController extends Controller
             'fuel_details.*.capacity' => ['required', 'numeric', 'min:0', 'max:1000'],
             'fuel_details.*.cost' => ['required', 'numeric', 'min:0', 'max:999999999.99'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')->store('vehicle-images', 'public');
+            $validated['image_path'] = $this->storePublicImage($request->file('image'));
         }
-        unset($validated['image']);
+        if ($request->hasFile('images')) {
+            $newPaths = collect($request->file('images'))
+                ->map(fn ($image): string => $this->storePublicImage($image))
+                ->all();
+            $validated['image_paths'] = [
+                ...($vehicle?->image_paths ?? []),
+                ...$newPaths,
+            ];
+        }
+        unset($validated['image'], $validated['images']);
 
         return $validated;
+    }
+
+    private function storePublicImage($image): string
+    {
+        $directory = public_path('vehicle-images');
+        File::ensureDirectoryExists($directory);
+        $filename = Str::uuid() . '.' . strtolower($image->getClientOriginalExtension());
+        $image->move($directory, $filename);
+
+        return 'vehicle-images/' . $filename;
     }
 }

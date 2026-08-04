@@ -42,8 +42,8 @@ export default function VehicleDatabaseDetails() {
   const navigate = useNavigate();
   const imageRef = useRef(null);
   const [vehicle, setVehicle] = useState(null);
-  const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   useEffect(() => {
@@ -98,11 +98,19 @@ export default function VehicleDatabaseDetails() {
     }));
   };
   const chooseImage = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
-    }
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+    setImages((current) => [...current, ...files]);
+    setPreviews((current) => [
+      ...current,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ]);
+    event.target.value = "";
+  };
+  const removeNewImage = (index) => {
+    URL.revokeObjectURL(previews[index]);
+    setImages((current) => current.filter((_, imageIndex) => imageIndex !== index));
+    setPreviews((current) => current.filter((_, imageIndex) => imageIndex !== index));
   };
   const save = async (event) => {
     event.preventDefault();
@@ -118,6 +126,8 @@ export default function VehicleDatabaseDetails() {
             "updated_at",
             "image_path",
             "image_url",
+            "image_paths",
+            "image_urls",
             "service_total_cost",
           ].includes(key) &&
           value !== null
@@ -129,7 +139,7 @@ export default function VehicleDatabaseDetails() {
               : value,
           );
       });
-      if (image) data.append("image", image);
+      images.forEach((file) => data.append("images[]", file));
       const response = await persistVehicle(registration, data);
       const updatedVehicle = response?.data?.vehicle;
       if (!updatedVehicle)
@@ -143,8 +153,9 @@ export default function VehicleDatabaseDetails() {
         repair_details: updatedVehicle.repair_details || [],
         fuel_details: updatedVehicle.fuel_details || [],
       });
-      setImage(null);
-      setPreview(null);
+      previews.forEach((url) => URL.revokeObjectURL(url));
+      setImages([]);
+      setPreviews([]);
       setSaveMessage("Vehicle details saved successfully.");
       toast.success(response?.message || "Vehicle updated.");
       navigate("/vehicledirectory", {
@@ -237,7 +248,12 @@ export default function VehicleDatabaseDetails() {
         </div>
       </DashboardLayout>
     );
-  const imageUrl = preview || vehicle.image_url;
+  const savedImageUrls = Array.isArray(vehicle.image_urls)
+    ? vehicle.image_urls
+    : vehicle.image_url
+      ? [vehicle.image_url]
+      : [];
+  const allImageUrls = [...savedImageUrls, ...previews];
   return (
     <DashboardLayout>
       <form onSubmit={save} className="min-h-screen space-y-6 bg-slate-50 p-6">
@@ -273,12 +289,17 @@ export default function VehicleDatabaseDetails() {
         <div className="grid gap-6 xl:grid-cols-3">
           <aside className="rounded-2xl border bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold">Vehicle image</h2>
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={vehicle.model}
-                className="mt-4 h-56 w-full rounded-xl object-cover"
-              />
+            {allImageUrls.length ? (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {allImageUrls.map((url, index) => (
+                  <div key={`${url}-${index}`} className="group relative overflow-hidden rounded-xl">
+                    <img src={url} alt={`${vehicle.model || "Vehicle"} ${index + 1}`} className="h-32 w-full object-cover" />
+                    {index >= savedImageUrls.length && (
+                      <button type="button" onClick={() => removeNewImage(index - savedImageUrls.length)} aria-label={`Remove new vehicle image ${index - savedImageUrls.length + 1}`} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white opacity-90 hover:bg-red-700"><FiTrash2 /></button>
+                    )}
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="mt-4 flex h-56 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
                 <FiImage size={34} />
@@ -290,11 +311,12 @@ export default function VehicleDatabaseDetails() {
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-blue-300 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700"
             >
               <FiImage />
-              Change vehicle image
+              Add vehicle images
             </button>
             <input
               ref={imageRef}
               type="file"
+              multiple
               accept="image/png,image/jpeg,image/webp"
               onChange={chooseImage}
               className="hidden"
