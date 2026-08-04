@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { FiArrowLeft, FiImage, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
+import { FiArrowLeft, FiDownload, FiImage, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getVehicle, updateVehicle as persistVehicle } from "../../api/authApi";
+import { generateVehicleDetailsPdf } from "../../utils/vehicleDetailsPdf";
 const SERVICE_TYPES = [
   "Change engine oil",
   "Replace diesel/petrol filter",
@@ -210,6 +211,13 @@ export default function VehicleDatabaseDetails() {
     }));
   const field =
     "mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50";
+  const exportPdf = () => {
+    try {
+      generateVehicleDetailsPdf(vehicle);
+    } catch (exportError) {
+      window.alert(exportError.message);
+    }
+  };
   if (vehicle === null)
     return (
       <DashboardLayout>
@@ -250,13 +258,10 @@ export default function VehicleDatabaseDetails() {
               All changes are saved to the fleet database.
             </p>
           </div>
-          <button
-            disabled={saving}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            <FiSave />
-            {saving ? "Saving..." : "Save changes"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={exportPdf} className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 hover:bg-blue-100"><FiDownload /> Generate PDF</button>
+            <button disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"><FiSave />{saving ? "Saving..." : "Save changes"}</button>
+          </div>
         </header>
 
         {saveMessage && (
