@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
+import { AiFillSchedule } from "react-icons/ai";
 
 const menuItems = [
   {
@@ -236,6 +237,12 @@ const menuItems = [
         name: "Approved Journeys",
         path: "/approvedjourny",
         icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
+      },
+      {
+        name: "Daily Schedule Trips",
+        path: "/dailyscheduletrips",
+        icon: <AiFillSchedule />,
         roles: ["deputy_secretary"],
       },
     ],
