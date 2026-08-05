@@ -418,10 +418,12 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
           getDrivers({
             departure_at: request.departure_at,
             expected_return_at: request.expected_return_at,
+            ignore_request_id: request.id,
           }),
           getVehicles({
             departure_at: request.departure_at,
             expected_return_at: request.expected_return_at,
+            ignore_request_id: request.id,
           }),
         ]);
         setDrivers(
@@ -435,7 +437,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
       }
     };
     load();
-  }, [request.departure_at, request.expected_return_at]);
+  }, [request.departure_at, request.expected_return_at, request.id]);
   const driver = useMemo(
     () => drivers.find((item) => item.driver_id === driverId),
     [driverId, drivers],
@@ -614,6 +616,11 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
                 : "Select an available vehicle for this driver."}
           </p>
         )}
+        {driver && registeredVehicle && vehicle?.available_for_slot === false && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            This scheduled vehicle lacks capacity for the combined passengers. Re-allocate the existing unstarted journey to a larger vehicle and driver, then select that scheduled pair here.
+          </div>
+        )}
         {vehicle && (
           <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm sm:grid-cols-2">
             <div>
@@ -635,6 +642,12 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
                 <span>{statusLabel(vehicle.status)}</span>
               </p>
             </div>
+          </div>
+        )}
+        {driver && (driver.status_for_slot || driver.status) === "scheduled_trip" && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            <p className="font-semibold">Merge with this driver&apos;s scheduled journey</p>
+            <p className="mt-1">The scheduled vehicle is selected automatically when it has enough remaining seats.</p>
           </div>
         )}
         <label className="block text-sm font-semibold">
