@@ -92,6 +92,7 @@ export default function ScheduledJourney() {
                 <div>
                   <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{trip.reference}</p>
                   <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{trip.purpose}</h3>
+                  {trip.is_consolidated && <p className="mt-1 text-sm font-semibold text-emerald-700">One trip covering {trip.request_count} requests</p>}
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[trip.status] || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}>
                   {trip.status}
@@ -120,6 +121,22 @@ export default function ScheduledJourney() {
                   </div>
                 )}
               </dl>
+
+              {trip.is_consolidated && (
+                <div className="mt-4 overflow-hidden rounded-2xl border border-blue-100">
+                  <div className="bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">Passenger pickup and drop details</div>
+                  <div className="divide-y divide-slate-100">
+                    {trip.requests.map((item) => (
+                      <div key={item.id} className="grid gap-2 p-4 text-sm sm:grid-cols-4">
+                        <div><span className="text-xs text-slate-400">Request</span><p className="font-semibold">{item.reference}</p></div>
+                        <div><span className="text-xs text-slate-400">Passengers</span><p className="font-semibold">{item.passenger_names || `${item.passenger_count} passenger(s)`}</p></div>
+                        <div><span className="text-xs text-slate-400">Pickup</span><p className="font-semibold">{item.pickup_place || "Not recorded"}</p></div>
+                        <div><span className="text-xs text-slate-400">Drop-off</span><p className="font-semibold">{item.drop_place || "Not recorded"}</p></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4 dark:border-slate-700">
                 <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60 ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
@@ -169,6 +186,22 @@ export default function ScheduledJourney() {
               <Detail label="Vehicle Re-allocation Reason">{selectedTrip.reallocation_reason}</Detail>
               <Detail label="Previous Vehicle">{selectedTrip.previous_vehicle?.registration_number}</Detail>
               <Detail label="Technical Notes">{selectedTrip.vehicle?.technical_notes}</Detail>
+              {selectedTrip.is_consolidated && (
+                <div className="sm:col-span-2">
+                  <p className="mb-3 font-bold text-slate-900">All merged requests</p>
+                  <div className="space-y-3">
+                    {selectedTrip.requests.map((item) => (
+                      <div key={item.id} className="rounded-xl border border-slate-200 p-4 text-sm">
+                        <p className="font-bold text-blue-700">{item.reference} — {item.purpose}</p>
+                        <p className="mt-2"><b>Passengers:</b> {item.passenger_names || `${item.passenger_count} passenger(s)`}</p>
+                        <p><b>Pickup:</b> {item.pickup_place || "Not recorded"}</p>
+                        <p><b>Drop-off:</b> {item.drop_place || "Not recorded"}</p>
+                        <p><b>Requested time:</b> {formatTime(item.departure_at)} - {formatTime(item.expected_return_at)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </dl>
           </div>
         </div>

@@ -93,6 +93,10 @@ class VehicleRequestController extends Controller
             );
         }
 
+        if ($vehicleRequest->allocated_vehicle_id && $vehicleRequest->allocated_driver_id) {
+            $vehicleRequest->setAttribute('consolidated_journey', $vehicleRequest->consolidatedJourneyPayload());
+        }
+
         return response()->json(['success' => true, 'data' => ['vehicle_request' => $vehicleRequest]]);
     }
 
@@ -346,8 +350,9 @@ class VehicleRequestController extends Controller
                 $vehicleRequest->departure_at,
                 $vehicleRequest->expected_return_at,
                 $vehicleRequest->id,
+                $vehicleRequest,
             )) {
-                abort(422, 'The selected vehicle already has a journey during this time slot.');
+                abort(422, 'The selected vehicle has an incompatible journey or insufficient seats during this time slot.');
             }
 
             if (! $driver->isActive()) {
@@ -358,8 +363,16 @@ class VehicleRequestController extends Controller
                 $vehicleRequest->departure_at,
                 $vehicleRequest->expected_return_at,
                 $vehicleRequest->id,
+                $vehicleRequest,
             )) {
-                abort(422, 'The selected driver already has a journey during this time slot.');
+                abort(422, 'The selected driver has an incompatible journey during this time slot.');
+            }
+
+            $vehicleJourneys = $vehicle->activeJourneysDuring($vehicleRequest->departure_at, $vehicleRequest->expected_return_at, $vehicleRequest->id)->get();
+            $driverJourneys = $driver->activeJourneysDuring($vehicleRequest->departure_at, $vehicleRequest->expected_return_at, $vehicleRequest->id)->get();
+            if ($vehicleJourneys->contains(fn (VehicleRequest $journey) => (int) $journey->allocated_driver_id !== $driver->id)
+                || $driverJourneys->contains(fn (VehicleRequest $journey) => (int) $journey->allocated_vehicle_id !== $vehicle->id)) {
+                abort(422, 'Consolidated journeys must use the same vehicle and driver pairing.');
             }
 
             $vehicleRequest->update([
@@ -429,6 +442,7 @@ class VehicleRequestController extends Controller
                 $lockedRequest->departure_at,
                 $lockedRequest->expected_return_at,
                 $lockedRequest->id,
+                $lockedRequest,
             )) {
                 abort(422, 'The selected replacement vehicle already has a journey during this time slot.');
             }
@@ -441,8 +455,16 @@ class VehicleRequestController extends Controller
                 $lockedRequest->departure_at,
                 $lockedRequest->expected_return_at,
                 $lockedRequest->id,
+                $lockedRequest,
             )) {
                 abort(422, 'The selected replacement driver already has a journey during this time slot.');
+            }
+
+            $vehicleJourneys = $newVehicle->activeJourneysDuring($lockedRequest->departure_at, $lockedRequest->expected_return_at, $lockedRequest->id)->get();
+            $driverJourneys = $newDriver->activeJourneysDuring($lockedRequest->departure_at, $lockedRequest->expected_return_at, $lockedRequest->id)->get();
+            if ($vehicleJourneys->contains(fn (VehicleRequest $journey) => (int) $journey->allocated_driver_id !== $newDriver->id)
+                || $driverJourneys->contains(fn (VehicleRequest $journey) => (int) $journey->allocated_vehicle_id !== $newVehicle->id)) {
+                abort(422, 'Consolidated journeys must use the same vehicle and driver pairing.');
             }
 
             $lockedRequest->update([

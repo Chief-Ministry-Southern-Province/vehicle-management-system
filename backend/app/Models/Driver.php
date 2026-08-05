@@ -37,9 +37,12 @@ class Driver extends Model
         return $this->hasMany(VehicleRequest::class, 'allocated_driver_id');
     }
 
-    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null): bool
+    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null, ?VehicleRequest $request = null): bool
     {
-        return $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->exists();
+        $journeys = $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->get();
+
+        return $journeys->isNotEmpty()
+            && (! $request || $journeys->contains(fn (VehicleRequest $journey) => ! $journey->canShareJourneyWith($request)));
     }
 
     public function operationalStatusFor(
@@ -61,7 +64,7 @@ class Driver extends Model
         return $journeys->exists() ? 'scheduled_trip' : 'available';
     }
 
-    private function activeJourneysDuring(
+    public function activeJourneysDuring(
         Carbon|string $startsAt,
         Carbon|string $endsAt,
         ?int $ignoreRequestId = null,

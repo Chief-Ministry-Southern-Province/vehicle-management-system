@@ -13,6 +13,76 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_overlapping_requests_can_be_manually_consolidated_before_start_when_seats_are_available(): void
+    {
+        $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
+        $requester = User::factory()->create(['role' => 'employee']);
+        $vehicle = Vehicle::create([
+            'registration_number' => 'SHARED-1001', 'vehicle_type' => 'Van', 'make' => 'Toyota',
+            'model' => 'Hiace', 'status' => 'scheduled_trip', 'fuel_level' => 80, 'seat_capacity' => 6,
+        ]);
+        $driver = Driver::create([
+            'driver_id' => 'DRV-SHARED-1', 'full_name' => 'Shared Driver', 'date_of_birth' => '1990-01-01',
+            'nic' => '901234560V', 'address' => 'Test Road', 'contact_number' => '0712345600',
+            'licence_number' => 'LIC-SHARED-1', 'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01', 'status' => 'active',
+            'allocated_vehicle' => $vehicle->registration_number,
+        ]);
+        $base = [
+            'user_id' => $requester->id, 'requester_name' => $requester->name,
+            'destination' => 'Galle', 'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00', 'recommendation_status' => 'recommended',
+        ];
+        VehicleRequest::create([...$base, 'purpose' => 'First visit', 'passenger_count' => 2,
+            'status' => 'approved', 'journey_status' => 'scheduled',
+            'allocated_vehicle_id' => $vehicle->id, 'allocated_driver_id' => $driver->id]);
+        $second = VehicleRequest::create([...$base, 'purpose' => 'Second visit', 'destination' => 'Nugegoda', 'passenger_count' => 3,
+            'status' => 'recommended']);
+
+        $slot = http_build_query([
+            'departure_at' => $second->departure_at->toISOString(),
+            'expected_return_at' => $second->expected_return_at->toISOString(),
+            'ignore_request_id' => $second->id,
+        ]);
+        $this->actingAs($deputy)->getJson("/api/vehicles?{$slot}")
+            ->assertOk()->assertJsonPath('data.vehicles.0.available_for_slot', true);
+        $this->actingAs($deputy)->getJson("/api/drivers?{$slot}")
+            ->assertOk()->assertJsonPath('data.drivers.0.available_for_slot', true);
+
+        $this->actingAs($deputy)
+            ->patchJson("/api/approvals/vehicle-requests/{$second->id}/allocate", [
+                'vehicle_id' => $vehicle->id, 'driver_id' => $driver->id,
+                'parking_location' => 'Main vehicle park',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.allocated_vehicle_id', $vehicle->id)
+            ->assertJsonPath('data.vehicle_request.allocated_driver_id', $driver->id);
+    }
+
+    public function test_consolidation_is_blocked_after_journey_start_or_when_capacity_is_exceeded(): void
+    {
+        $requester = User::factory()->create(['role' => 'employee']);
+        $vehicle = Vehicle::create([
+            'registration_number' => 'SHARED-1002', 'vehicle_type' => 'Car', 'make' => 'Toyota',
+            'model' => 'Corolla', 'status' => 'scheduled_trip', 'fuel_level' => 80, 'seat_capacity' => 4,
+        ]);
+        $existing = VehicleRequest::create([
+            'user_id' => $requester->id, 'requester_name' => $requester->name, 'purpose' => 'Existing',
+            'destination' => 'Galle', 'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00', 'passenger_count' => 3,
+            'status' => 'approved', 'journey_status' => 'scheduled', 'allocated_vehicle_id' => $vehicle->id,
+        ]);
+        $candidate = VehicleRequest::make([...$existing->only([
+            'user_id', 'requester_name', 'destination', 'departure_at', 'expected_return_at',
+        ]), 'purpose' => 'Candidate', 'passenger_count' => 2]);
+
+        $this->assertTrue($vehicle->hasScheduleConflict($candidate->departure_at, $candidate->expected_return_at, null, $candidate));
+
+        $existing->update(['journey_status' => 'ongoing', 'journey_started_at' => now()]);
+        $candidate->passenger_count = 1;
+        $this->assertTrue($vehicle->hasScheduleConflict($candidate->departure_at, $candidate->expected_return_at, null, $candidate));
+    }
+
     public function test_allocating_a_vehicle_marks_it_as_a_scheduled_trip(): void
     {
         $deputy = User::factory()->create([

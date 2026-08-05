@@ -26,7 +26,10 @@ class DriverController extends Controller
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);
             $endsAt = Carbon::parse($validated['expected_return_at']);
-            $drivers->each(function (Driver $driver) use ($startsAt, $endsAt, $validated): void {
+            $vehicleRequest = isset($validated['ignore_request_id'])
+                ? VehicleRequest::find($validated['ignore_request_id'])
+                : null;
+            $drivers->each(function (Driver $driver) use ($startsAt, $endsAt, $validated, $vehicleRequest): void {
                 $statusForSlot = $driver->operationalStatusFor(
                     $startsAt,
                     $endsAt,
@@ -34,7 +37,12 @@ class DriverController extends Controller
                 );
                 $driver->setAttribute(
                     'available_for_slot',
-                    $statusForSlot === 'available',
+                    $statusForSlot === 'available' || ! $driver->hasScheduleConflict(
+                        $startsAt,
+                        $endsAt,
+                        $validated['ignore_request_id'] ?? null,
+                        $vehicleRequest,
+                    ),
                 );
                 $driver->setAttribute('status_for_slot', $statusForSlot);
             });
@@ -83,13 +91,22 @@ class DriverController extends Controller
             ], 404);
         }
 
-        $trips = $driver->vehicleRequests()
+        $requests = $driver->vehicleRequests()
             ->where('status', 'approved')
             ->where('journey_status', '!=', 'completed')
             ->with('allocatedVehicle', 'previousAllocatedVehicle')
             ->orderBy('departure_at')
-            ->get()
-            ->map(fn ($trip): array => $this->tripPayload($trip));
+            ->get();
+        $seen = collect();
+        $trips = $requests->map(function (VehicleRequest $trip) use ($seen): ?array {
+            if ($seen->contains($trip->id)) {
+                return null;
+            }
+            $group = $trip->consolidatedRequests();
+            $group->each(fn (VehicleRequest $member) => $seen->push($member->id));
+
+            return $this->tripPayload($trip, $group);
+        })->filter()->values();
 
         return response()->json([
             'success' => true,
@@ -126,8 +143,10 @@ class DriverController extends Controller
         ]);
     }
 
-    private function tripPayload($trip): array
+    private function tripPayload($trip, $group = null): array
     {
+        $group ??= collect([$trip]);
+        $consolidated = $trip->consolidatedJourneyPayload();
         $status = match ($trip->journey_status) {
             'ongoing' => 'Ongoing',
             'issue' => 'Issue',
@@ -143,12 +162,12 @@ class DriverController extends Controller
         return [
             'id' => $trip->id,
             'reference' => 'REQ-' . str_pad((string) $trip->id, 4, '0', STR_PAD_LEFT),
-            'departure_at' => $trip->departure_at->toISOString(),
-            'expected_return_at' => $trip->expected_return_at->toISOString(),
-            'purpose' => $trip->purpose,
-            'destination' => $trip->destination,
+            'departure_at' => $consolidated['departure_at'],
+            'expected_return_at' => $consolidated['expected_return_at'],
+            'purpose' => $group->count() > 1 ? 'Consolidated journey (' . $group->count() . ' requests)' : $trip->purpose,
+            'destination' => $group->pluck('destination')->unique()->implode(', '),
             'requester_name' => $trip->requester_name,
-            'passenger_count' => $trip->passenger_count,
+            'passenger_count' => $consolidated['passenger_count'],
             'passenger_names' => $trip->passenger_names,
             'parking_location' => $trip->parking_location,
             'status' => $status,
@@ -160,6 +179,9 @@ class DriverController extends Controller
             'previous_vehicle' => $trip->previousAllocatedVehicle,
             'reallocation_reason' => $trip->reallocation_reason,
             'reallocated_at' => $trip->reallocated_at?->toISOString(),
+            'is_consolidated' => $group->count() > 1,
+            'request_count' => $group->count(),
+            'requests' => $consolidated['requests'],
         ];
     }
 
@@ -176,7 +198,8 @@ class DriverController extends Controller
         ]);
 
         if ($validated['action'] === 'start') {
-            if ($vehicleRequest->journey_status !== 'scheduled') {
+            $group = $vehicleRequest->consolidatedRequests();
+            if ($group->contains(fn (VehicleRequest $trip) => $trip->journey_status !== 'scheduled')) {
                 return response()->json(['success' => false, 'message' => 'Only a scheduled journey can be started.'], 422);
             }
 
@@ -188,7 +211,8 @@ class DriverController extends Controller
                     ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
                     : null;
 
-                $lockedRequest->update([
+                $group = $lockedRequest->consolidatedRequests();
+                VehicleRequest::query()->whereKey($group->pluck('id'))->update([
                     'journey_status' => 'ongoing',
                     'journey_started_at' => now(),
                 ]);
@@ -196,7 +220,8 @@ class DriverController extends Controller
                 $vehicle?->update(['status' => 'unavailable']);
             });
         } else {
-            if (! in_array($vehicleRequest->journey_status, ['ongoing', 'issue'], true)) {
+            $group = $vehicleRequest->consolidatedRequests();
+            if ($group->contains(fn (VehicleRequest $trip) => ! in_array($trip->journey_status, ['ongoing', 'issue'], true))) {
                 return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
             }
 
@@ -209,7 +234,8 @@ class DriverController extends Controller
                     ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
                     : null;
 
-                $lockedRequest->update([
+                $group = $lockedRequest->consolidatedRequests();
+                VehicleRequest::query()->whereKey($group->pluck('id'))->update([
                     'status' => 'completed',
                     'journey_status' => 'completed',
                     'journey_completed_at' => now(),

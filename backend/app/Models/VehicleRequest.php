@@ -5,10 +5,72 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 class VehicleRequest extends Model
 {
+    /** All overlapping approved requests assigned to this same vehicle/driver pair. */
+    public function consolidatedRequests(): Collection
+    {
+        if (! $this->allocated_vehicle_id || ! $this->allocated_driver_id) {
+            return collect([$this]);
+        }
+
+        $group = collect([$this]);
+        $startsAt = $this->departure_at->copy();
+        $endsAt = $this->expected_return_at->copy();
+
+        do {
+            $previousCount = $group->count();
+            $matches = self::query()
+                ->where('allocated_vehicle_id', $this->allocated_vehicle_id)
+                ->where('allocated_driver_id', $this->allocated_driver_id)
+                ->where('status', 'approved')
+                ->whereNotIn('journey_status', ['completed', 'cancelled'])
+                ->where('departure_at', '<', $endsAt)
+                ->where('expected_return_at', '>', $startsAt)
+                ->get();
+            $group = $group->merge($matches)->unique('id')->values();
+            $startsAt = $group->min('departure_at')->copy();
+            $endsAt = $group->max('expected_return_at')->copy();
+        } while ($group->count() > $previousCount);
+
+        return $group->sortBy('departure_at')->values();
+    }
+
+    public function consolidatedJourneyPayload(): array
+    {
+        $requests = $this->consolidatedRequests();
+
+        return [
+            'departure_at' => $requests->min('departure_at')->toISOString(),
+            'expected_return_at' => $requests->max('expected_return_at')->toISOString(),
+            'passenger_count' => $requests->sum('passenger_count'),
+            'request_count' => $requests->count(),
+            'requests' => $requests->map(fn (self $request): array => [
+                'id' => $request->id,
+                'reference' => 'REQ-' . str_pad((string) $request->id, 4, '0', STR_PAD_LEFT),
+                'requester_name' => $request->requester_name,
+                'purpose' => $request->purpose,
+                'passenger_count' => $request->passenger_count,
+                'passenger_names' => $request->passenger_names,
+                'pickup_place' => $request->parking_location,
+                'drop_place' => $request->destination,
+                'departure_at' => $request->departure_at->toISOString(),
+                'expected_return_at' => $request->expected_return_at->toISOString(),
+            ])->all(),
+        ];
+    }
+
+    public function canShareJourneyWith(self $other): bool
+    {
+        $hasStarted = fn (self $request): bool => (bool) $request->journey_started_at
+            || in_array($request->journey_status, ['ongoing', 'issue', 'completed'], true);
+
+        return ! $hasStarted($this)
+            && ! $hasStarted($other);
+    }
     use HasFactory;
 
     protected $appends = ['attachment_url'];

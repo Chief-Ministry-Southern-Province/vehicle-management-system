@@ -49,7 +49,23 @@ class Vehicle extends Model
         return $this->hasMany(VehicleRequest::class, 'allocated_vehicle_id');
     }
 
-    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null): bool
+    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null, ?VehicleRequest $request = null): bool
+    {
+        $journeys = $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->get();
+
+        if ($journeys->isEmpty()) {
+            return false;
+        }
+
+        if (! $request || $journeys->contains(fn (VehicleRequest $journey) => ! $journey->canShareJourneyWith($request))) {
+            return true;
+        }
+
+        return $this->seat_capacity === null
+            || $journeys->sum('passenger_count') + $request->passenger_count > $this->seat_capacity;
+    }
+
+    public function activeJourneysDuring(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null)
     {
         return $this->vehicleRequests()
             ->whereIn('status', ['vehicle_allocated', 'approved'])
@@ -58,7 +74,6 @@ class Vehicle extends Model
             })
             ->when($ignoreRequestId, fn ($query) => $query->whereKeyNot($ignoreRequestId))
             ->where('departure_at', '<', $endsAt)
-            ->where('expected_return_at', '>', $startsAt)
-            ->exists();
+            ->where('expected_return_at', '>', $startsAt);
     }
 }

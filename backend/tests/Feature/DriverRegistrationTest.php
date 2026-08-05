@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Driver;
 use App\Models\User;
+use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -367,5 +368,53 @@ class DriverRegistrationTest extends TestCase
         } finally {
             Carbon::setTestNow();
         }
+    }
+
+    public function test_driver_starts_and_completes_overlapping_allocations_as_one_consolidated_trip(): void
+    {
+        $driverUser = User::factory()->create(['employee_id' => '200012345699', 'role' => 'driver']);
+        $requester = User::factory()->create();
+        $driver = Driver::create([
+            'driver_id' => 'DRV-GROUP-1', 'full_name' => $driverUser->name, 'date_of_birth' => '2000-01-01',
+            'nic' => $driverUser->employee_id, 'address' => 'Office', 'contact_number' => '0712345699',
+            'licence_number' => 'GROUP-LIC-1', 'licence_type' => 'B', 'licence_renewal_date' => '2028-01-01',
+        ]);
+        $vehicle = Vehicle::create([
+            'registration_number' => 'GROUP-1001', 'vehicle_type' => 'Bus', 'make' => 'Tata',
+            'model' => 'Starbus', 'fuel_level' => 75, 'seat_capacity' => 28, 'status' => 'scheduled_trip',
+        ]);
+        $common = [
+            'user_id' => $requester->id, 'requester_name' => $requester->name, 'status' => 'approved',
+            'journey_status' => 'scheduled', 'allocated_driver_id' => $driver->id,
+            'allocated_vehicle_id' => $vehicle->id, 'parking_location' => 'Office Premises',
+        ];
+        $first = VehicleRequest::create([...$common, 'purpose' => 'Meeting', 'destination' => 'Nugegoda',
+            'departure_at' => '2026-08-06 09:00:00', 'expected_return_at' => '2026-08-06 12:45:00',
+            'passenger_count' => 1, 'passenger_names' => 'Yasith']);
+        $second = VehicleRequest::create([...$common, 'purpose' => 'Site inspection', 'destination' => 'Colombo',
+            'departure_at' => '2026-08-06 09:30:00', 'expected_return_at' => '2026-08-06 12:30:00',
+            'passenger_count' => 4, 'passenger_names' => 'Thisara, Chathura, Anupama, Gunathilaka']);
+
+        $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
+            ->assertOk()->assertJsonCount(1, 'data.trips')
+            ->assertJsonPath('data.trips.0.departure_at', '2026-08-06T09:00:00.000000Z')
+            ->assertJsonPath('data.trips.0.expected_return_at', '2026-08-06T12:45:00.000000Z')
+            ->assertJsonPath('data.trips.0.passenger_count', 5)
+            ->assertJsonCount(2, 'data.trips.0.requests')
+            ->assertJsonPath('data.trips.0.requests.1.drop_place', 'Colombo');
+
+        $this->actingAs($requester)->getJson("/api/vehicle-requests/{$second->id}")
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.consolidated_journey.departure_at', '2026-08-06T09:00:00.000000Z')
+            ->assertJsonPath('data.vehicle_request.consolidated_journey.expected_return_at', '2026-08-06T12:45:00.000000Z')
+            ->assertJsonCount(2, 'data.vehicle_request.consolidated_journey.requests');
+
+        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'start'])->assertOk();
+        $this->assertDatabaseHas('vehicle_requests', ['id' => $first->id, 'journey_status' => 'ongoing']);
+        $this->assertDatabaseHas('vehicle_requests', ['id' => $second->id, 'journey_status' => 'ongoing']);
+
+        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'complete'])->assertOk();
+        $this->assertDatabaseHas('vehicle_requests', ['id' => $first->id, 'status' => 'completed', 'journey_status' => 'completed']);
+        $this->assertDatabaseHas('vehicle_requests', ['id' => $second->id, 'status' => 'completed', 'journey_status' => 'completed']);
     }
 }

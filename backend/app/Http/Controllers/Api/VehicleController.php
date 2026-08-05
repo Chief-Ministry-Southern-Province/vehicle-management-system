@@ -25,7 +25,10 @@ class VehicleController extends Controller
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);
             $endsAt = Carbon::parse($validated['expected_return_at']);
-            $vehicles->each(function (Vehicle $vehicle) use ($startsAt, $endsAt, $validated): void {
+            $vehicleRequest = isset($validated['ignore_request_id'])
+                ? \App\Models\VehicleRequest::find($validated['ignore_request_id'])
+                : null;
+            $vehicles->each(function (Vehicle $vehicle) use ($startsAt, $endsAt, $validated, $vehicleRequest): void {
                 $vehicle->setAttribute(
                     'available_for_slot',
                     in_array($vehicle->status, ['available', 'scheduled_trip'], true)
@@ -33,6 +36,7 @@ class VehicleController extends Controller
                             $startsAt,
                             $endsAt,
                             $validated['ignore_request_id'] ?? null,
+                            $vehicleRequest,
                         ),
                 );
             });
