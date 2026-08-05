@@ -8,7 +8,10 @@ import { useAuth } from "../context/useAuth";
 export default function Setting() {
   const { user, token, login } = useAuth();
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [profile, setProfile] = useState({ name: user?.name || "", phone: user?.phone || "" });
+  const [profile, setProfile] = useState({
+    phone: user?.phone || "",
+    email: user?.email || "",
+  });
   const [account, setAccount] = useState(user || {});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,7 +34,10 @@ export default function Setting() {
       const currentUser = response?.data?.user;
       if (!active || !currentUser) return;
       setAccount(currentUser);
-      setProfile({ name: currentUser.name || "", phone: currentUser.phone || "" });
+      setProfile({
+        phone: currentUser.phone || "",
+        email: currentUser.email || "",
+      });
     }).catch((error) => toast.error(error?.message || "Unable to load profile details."))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
@@ -93,9 +99,9 @@ export default function Setting() {
           {loading ? <p className="py-10 text-center text-sm text-slate-500">Loading profile…</p> : (
             <form onSubmit={saveProfile} className="mt-6 space-y-5">
               <div className="grid gap-5 md:grid-cols-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Full Name<input required value={profile.name} onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} className={field} /></label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Full Name<input disabled value={account.name || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Phone Number<input value={profile.phone} onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} className={field} /></label>
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Email Address<input disabled value={account.email || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Email Address<input required type="email" value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} className={field} /></label>
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">NIC<input disabled value={account.employee_id || ""} className={`${field} cursor-not-allowed opacity-70`} /></label>
               </div>
               <div className="flex justify-end"><button disabled={saving} className="flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"><FiSave />{saving ? "Saving..." : "Save Changes"}</button></div>
