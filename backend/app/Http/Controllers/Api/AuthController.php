@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 use Throwable;
@@ -201,7 +203,19 @@ class AuthController extends Controller
             $validated = $request->validate([
                 'name' => ['sometimes', 'string', 'max:255'],
                 'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
+                'profile_picture' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             ]);
+
+            $previousPicture = $user->profile_picture_path;
+            if ($request->hasFile('profile_picture')) {
+                $directory = public_path('profile-pictures');
+                File::ensureDirectoryExists($directory);
+                $picture = $request->file('profile_picture');
+                $filename = Str::uuid() . '.' . strtolower($picture->getClientOriginalExtension());
+                $picture->move($directory, $filename);
+                $validated['profile_picture_path'] = 'profile-pictures/' . $filename;
+            }
+            unset($validated['profile_picture']);
 
             DB::transaction(function () use ($user, $validated): void {
                 $user->update($validated);
@@ -213,6 +227,10 @@ class AuthController extends Controller
                     ], fn ($value) => $value !== null));
                 }
             });
+
+            if ($previousPicture && $previousPicture !== $user->profile_picture_path) {
+                File::delete(public_path($previousPicture));
+            }
 
             return response()->json([
                 'success' => true,
