@@ -1,14 +1,14 @@
 import { formatLocalDateTime } from "./dateTime";
 
 const escapeHtml = (value) =>
-  String(value ?? "—")
+  String(value ?? "â€”")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const text = (value) => escapeHtml(value || "—");
+const text = (value) => escapeHtml(value || "â€”");
 const dateTime = (value) => escapeHtml(formatLocalDateTime(value));
 const label = (value) =>
   text(value ? String(value).replaceAll("_", " ") : "Not recorded");
@@ -98,7 +98,7 @@ export function generateApprovedJourneyPdf(journey) {
   html, body { margin: 0; padding: 0; background: #eef1f5; color: #172033; font-family: Arial, sans-serif; }
   .sheet { position: relative; width: 210mm; min-height: 297mm; margin: 0 auto 8mm; padding: 48mm 18mm 21mm; background: #fff; page-break-after: always; overflow: hidden; }
   .sheet:last-child { page-break-after: auto; }
-  .masthead { position: absolute; top: 0; left: 0; right: 0; height: 34mm; border-bottom: 2.2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; padding-top: 17mm; }
+  .masthead { position: absolute; top: 0; left: 0; right: 0; display: flex; height: 34mm; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2.2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; }
   .masthead .brand { font-size: 18pt; font-weight: 700; line-height: 1; }
   .masthead .sub { margin-top: 3mm; color: #d6e7f7; font-size: 8.8pt; }
   .title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8mm; }

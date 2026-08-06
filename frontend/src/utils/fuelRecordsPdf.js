@@ -113,7 +113,7 @@ export function generateFuelRecordsPdf(records) {
     html, body { margin: 0; padding: 0; background: #eef1f5; color: #172033; font-family: Arial, sans-serif; }
     .sheet { position: relative; width: 297mm; min-height: 210mm; margin: 0 auto 8mm; padding: 40mm 14mm 20mm; background: #fff; page-break-after: always; overflow: hidden; }
     .sheet:last-child { page-break-after: auto; }
-    .masthead { position: absolute; top: 0; left: 0; right: 0; height: 29mm; border-bottom: 2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; padding-top: 12mm; }
+    .masthead { position: absolute; top: 0; left: 0; right: 0; display: flex; height: 29mm; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; }
     .brand { font-size: 18pt; font-weight: 700; line-height: 1; }
     .sub { margin-top: 2.5mm; color: #d6e7f7; font-size: 8.8pt; }
     .title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5mm; }
