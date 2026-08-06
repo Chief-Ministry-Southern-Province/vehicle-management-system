@@ -14,6 +14,9 @@ const initials = (name) =>
 export default function Topbar() {
   const { user } = useAuth();
   const { language, languages, setLanguage, t } = useLanguage();
+  const profilePictureUrl = user?.profile_picture_path
+    ? `http://127.0.0.1:8000/${user.profile_picture_path}`
+    : null;
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
@@ -64,8 +67,16 @@ export default function Topbar() {
             </select>
           </label>
           <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-1 px-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md shadow-blue-200">
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-visible rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-sm font-bold text-white shadow-md shadow-blue-200">
               {user?.name ? initials(user.name) : <FiUser size={19} />}
+              {profilePictureUrl && (
+                <img
+                  src={profilePictureUrl}
+                  alt={`${user?.name || "User"} profile`}
+                  className="absolute inset-0 h-full w-full rounded-xl object-cover"
+                  onError={(event) => { event.currentTarget.style.display = "none"; }}
+                />
+              )}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
             </div>
             <div className="hidden min-w-0 sm:block">
