@@ -62,15 +62,21 @@ const menuItems = [
         roles: ["subject_officer"],
       },
       {
+        name: "Pending Journeys",
+        path: "/pendingjourny",
+        icon: <FiClock />,
+        roles: ["subject_officer"],
+      },
+      {
         name: "Approved Journeys",
         path: "/approvedjourny",
         icon: <FiCheckCircle />,
         roles: ["subject_officer"],
       },
       {
-        name: "Pending Journeys",
-        path: "/pendingjourny",
-        icon: <FiClock />,
+        name: "Daily Schedule Trips",
+        path: "/dailyscheduletrips",
+        icon: <AiFillSchedule />,
         roles: ["subject_officer"],
       },
 
