@@ -27,7 +27,7 @@ export default function DriverDashboard() {
         <DriverStats />
 
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-12">
-          <div className="min-w-0 lg:col-span-12 xl:col-span-10">
+          <div className="min-w-0 lg:col-span-12">
             <ScheduledJourney />
           </div>
         </div>

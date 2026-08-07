@@ -109,15 +109,20 @@ export default function ScheduledJourney() {
           {trips.map((trip) => (
             <article
               key={trip.id}
-              className={`group overflow-hidden rounded-[18px] border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-20px_rgba(15,23,42,0.22)] dark:border-slate-700 ${
+              className={`group relative overflow-hidden rounded-[18px] border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-20px_rgba(15,23,42,0.22)] dark:border-slate-700 ${
                 trip.status === "Ongoing"
                   ? "border-blue-200 bg-blue-50/60 dark:bg-blue-950/30"
                   : "border-slate-100 bg-white dark:bg-slate-900"
               }`}
             >
-              <VehicleImage vehicle={trip.vehicle} />
+              <div className="lg:hidden">
+                <VehicleImage vehicle={trip.vehicle} />
+              </div>
+              <div className="absolute inset-y-0 right-0 hidden w-80 border-l border-slate-100 lg:block dark:border-slate-700 xl:w-96">
+                <VehicleImage vehicle={trip.vehicle} className="h-full" />
+              </div>
 
-              <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-0 sm:p-5 sm:pb-0">
+              <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-0 sm:p-5 sm:pb-0 lg:mr-80 xl:mr-96">
                 <div>
                   <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{trip.reference}</p>
                   <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{trip.purpose}</h3>
@@ -128,7 +133,7 @@ export default function ScheduledJourney() {
                 </span>
               </div>
 
-              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-800/70">
+              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:mt-5 sm:grid-cols-2 lg:mr-[21.25rem] lg:grid-cols-3 xl:mr-[25.25rem] dark:bg-slate-800/70">
                 <Detail label="Requester">{trip.requester_name}</Detail>
                 <Detail label="Journey Details">{trip.purpose}</Detail>
                 <Detail label="Destination">{trip.destination}</Detail>
@@ -152,7 +157,7 @@ export default function ScheduledJourney() {
               </dl>
 
               {trip.is_consolidated && (
-                <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-blue-100 sm:mx-5">
+                <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-blue-100 sm:mx-5 lg:mr-[21.25rem] xl:mr-[25.25rem]">
                   <div className="bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">Passenger pickup and drop details</div>
                   <div className="divide-y divide-slate-100">
                     {trip.requests.map((item) => (
@@ -167,7 +172,7 @@ export default function ScheduledJourney() {
                 </div>
               )}
 
-              <div className="mt-5 grid grid-cols-1 gap-2 border-t border-slate-100 p-4 sm:flex sm:flex-wrap sm:gap-3 sm:p-5 dark:border-slate-700">
+              <div className="mt-5 grid grid-cols-1 gap-2 border-t border-slate-100 p-4 sm:flex sm:flex-wrap sm:gap-3 sm:p-5 lg:mr-80 xl:mr-96 dark:border-slate-700">
                 <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60 sm:w-auto ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
                   {["ongoing", "issue"].includes(trip.journey_status) ? <FiCheckCircle /> : <FiPlay />}
                   {updatingId === trip.id ? "Updating..." : ["ongoing", "issue"].includes(trip.journey_status) ? "Complete Trip" : "Start Trip"}
