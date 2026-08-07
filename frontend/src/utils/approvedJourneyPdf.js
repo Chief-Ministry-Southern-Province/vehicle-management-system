@@ -96,29 +96,29 @@ export function generateApprovedJourneyPdf(journey) {
   @page { size: A4; margin: 0; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: #eef1f5; color: #172033; font-family: Arial, sans-serif; }
-  .sheet { position: relative; width: 210mm; height: 296mm; margin: 0 auto; padding: 39mm 16mm 17mm; background: #fff; page-break-after: always; overflow: hidden; }
+  .sheet { position: relative; width: 210mm; height: 290mm; margin: 0 auto; padding: 42mm 18mm 18mm; background: #fff; page-break-after: always; break-after: page; overflow: hidden; }
   .sheet:last-child { page-break-after: auto; }
-  .masthead { position: absolute; top: 0; left: 0; right: 0; display: flex; height: 30mm; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1.8mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; }
-  .masthead .brand { font-size: 16pt; font-weight: 700; line-height: 1; }
-  .masthead .sub { margin-top: 2mm; color: #d6e7f7; font-size: 7.8pt; }
-  .title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4mm; }
-  h1 { margin: 0; color: #172033; font-size: 19pt; line-height: 1.1; }
-  .title p { margin: 1.2mm 0 0; color: #647084; font-size: 8pt; }
-  .badge { border-radius: 20px; background: #eaf7ef; color: #16803a; padding: 2mm 5mm; font-size: 7pt; font-weight: 700; letter-spacing: .3px; }
-  section { margin-bottom: 3.5mm; break-inside: avoid; }
-  h2 { margin: 0 0 2mm; border-left: 1.2mm solid #1558a6; padding: 1.2mm 0 1.2mm 2.5mm; color: #0b2f5b; font-size: 10pt; text-transform: uppercase; letter-spacing: .3px; }
+  .masthead { position: absolute; top: 0; left: 0; right: 0; display: flex; height: 32mm; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; }
+  .masthead .brand { font-size: 17pt; font-weight: 700; line-height: 1; }
+  .masthead .sub { margin-top: 2.5mm; color: #d6e7f7; font-size: 8.2pt; }
+  .title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5mm; }
+  h1 { margin: 0; color: #172033; font-size: 20pt; line-height: 1.1; }
+  .title p { margin: 1.5mm 0 0; color: #647084; font-size: 8.5pt; }
+  .badge { border-radius: 20px; background: #eaf7ef; color: #16803a; padding: 2.4mm 5.5mm; font-size: 7.5pt; font-weight: 700; letter-spacing: .3px; }
+  section { margin-bottom: 4mm; break-inside: avoid; }
+  h2 { margin: 0 0 2.5mm; border-left: 1.3mm solid #1558a6; padding: 1.5mm 0 1.5mm 3mm; color: #0b2f5b; font-size: 10.5pt; text-transform: uppercase; letter-spacing: .3px; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; border: .2mm solid #d6e0ea; border-bottom: 0; }
-  .field { min-height: 9.5mm; padding: 2mm 2.5mm; border-bottom: .2mm solid #d6e0ea; background: #fff; }
+  .field { min-height: 11.2mm; padding: 2.4mm 3mm; border-bottom: .2mm solid #d6e0ea; background: #fff; }
   .field:nth-child(4n+3), .field:nth-child(4n+4) { background: #f8fafc; }
   .field:nth-child(odd) { border-right: .2mm solid #d6e0ea; }
-  .field span { display: block; margin-bottom: .8mm; color: #647084; font-size: 5.8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .35px; }
-  .field strong { display: block; color: #172033; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 7.4pt; line-height: 1.2; }
-  .reference { margin-top: 4mm; border-radius: 2mm; background: #edf5fd; padding: 3mm; color: #647084; font-size: 6.8pt; }
-  .reference strong { display: block; margin-bottom: 1mm; color: #0b2f5b; font-size: 7.4pt; }
-  .notice { margin-top: 2.5mm; border-top: .2mm solid #d6e0ea; padding-top: 2.5mm; color: #647084; font-size: 6.7pt; }
-  .footer { position: absolute; right: 16mm; bottom: 6mm; left: 16mm; display: flex; justify-content: space-between; border-top: .2mm solid #d6e0ea; padding-top: 2.5mm; color: #647084; font-size: 6.8pt; }
+  .field span { display: block; margin-bottom: 1.1mm; color: #647084; font-size: 6.1pt; font-weight: 700; text-transform: uppercase; letter-spacing: .35px; }
+  .field strong { display: block; color: #172033; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 7.8pt; line-height: 1.22; }
+  .reference { margin-top: 5mm; border-radius: 2.5mm; background: #edf5fd; padding: 3.5mm; color: #647084; font-size: 7pt; }
+  .reference strong { display: block; margin-bottom: 1.2mm; color: #0b2f5b; font-size: 7.7pt; }
+  .notice { margin-top: 3mm; border-top: .2mm solid #d6e0ea; padding-top: 3mm; color: #647084; font-size: 7pt; }
+  .footer { position: absolute; right: 18mm; bottom: 6mm; left: 18mm; display: flex; justify-content: space-between; border-top: .2mm solid #d6e0ea; padding-top: 3mm; color: #647084; font-size: 7.2pt; }
   @media screen { .sheet { box-shadow: 0 8px 30px rgba(15,23,42,.16); } }
-  @media print { html, body { background: #fff; } .sheet { margin: 0; box-shadow: none; } }
+  @media print { html, body { background: #fff; } .sheet { margin: 0; box-shadow: none; } .sheet:last-child { page-break-after: avoid; break-after: avoid-page; } }
 </style></head><body>
 <div class="sheet">
   <div class="masthead"><div class="brand">Vehicle Management System</div><div class="sub">Chief Ministry&nbsp;&nbsp; | &nbsp;&nbsp;Dakshinapaya, Labuduwa, Galle</div></div>
