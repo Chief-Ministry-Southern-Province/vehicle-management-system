@@ -11,6 +11,7 @@ import {
   FiClipboard,
   FiClock,
   FiAlertTriangle,
+  FiGlobe,
   FiX,
 } from "react-icons/fi";
 
@@ -407,7 +408,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
+  const { language, languages, setLanguage, t } = useLanguage();
 
   const role = user?.role;
 
@@ -449,6 +450,24 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         <button type="button" onClick={onClose} className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" aria-label="Close navigation menu">
           <FiX />
         </button>
+      </div>
+      <div className="border-b border-slate-200/80 px-4 py-3 lg:hidden dark:border-slate-800">
+        <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
+          <FiGlobe className="shrink-0 text-lg text-blue-600" aria-hidden="true" />
+          <span className="shrink-0">{t("language.label")}</span>
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
+            aria-label={t("language.label")}
+            className="min-w-0 flex-1 cursor-pointer bg-transparent text-right outline-none"
+          >
+            {languages.map(({ code, nativeLabel }) => (
+              <option key={code} value={code}>
+                {nativeLabel}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       {/* ---------------------------------------------------------- */}
       {/*  Menu                                                       */}
