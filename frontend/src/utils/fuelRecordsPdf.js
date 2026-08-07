@@ -42,7 +42,9 @@ export function generateFuelRecordsPdf(records) {
     (total, record) => total + (Number(record.cost) || 0),
     0,
   );
-  const recordsPerPage = 15;
+  // The first page also contains the report summary, so twelve rows is the
+  // largest print-safe batch that keeps the table and footer on one A4 sheet.
+  const recordsPerPage = 12;
   const pages = Array.from(
     { length: Math.ceil(records.length / recordsPerPage) },
     (_, index) => records.slice(index * recordsPerPage, (index + 1) * recordsPerPage),
@@ -111,7 +113,7 @@ export function generateFuelRecordsPdf(records) {
     @page { size: A4 landscape; margin: 0; }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; background: #eef1f5; color: #172033; font-family: Arial, sans-serif; }
-    .sheet { position: relative; width: 297mm; min-height: 210mm; margin: 0 auto 8mm; padding: 40mm 14mm 20mm; background: #fff; page-break-after: always; overflow: hidden; }
+    .sheet { position: relative; width: 297mm; height: 204mm; margin: 0 auto; padding: 38mm 14mm 18mm; background: #fff; page-break-after: always; break-after: page; overflow: hidden; }
     .sheet:last-child { page-break-after: auto; }
     .masthead { position: absolute; top: 0; left: 0; right: 0; display: flex; height: 29mm; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2mm solid #2c79c7; background: #0b2f5b; color: #fff; text-align: center; }
     .brand { font-size: 18pt; font-weight: 700; line-height: 1; }
@@ -121,14 +123,14 @@ export function generateFuelRecordsPdf(records) {
     .title p { margin: 1.5mm 0 0; color: #647084; font-size: 9pt; }
     .badge { border-radius: 20px; background: #e8f3ff; color: #1558a6; padding: 3mm 6mm; font-size: 8pt; font-weight: 700; letter-spacing: .4px; }
     .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-bottom: 5mm; }
-    .summary div { border: .2mm solid #d6e0ea; border-radius: 2mm; background: #f8fafc; padding: 3mm 4mm; }
+    .summary div { border: .2mm solid #d6e0ea; border-radius: 2mm; background: #f8fafc; padding: 2.5mm 4mm; }
     .summary span { display: block; margin-bottom: 1mm; color: #647084; font-size: 6.5pt; font-weight: 700; letter-spacing: .35px; }
     .summary strong { color: #0b2f5b; font-size: 12pt; }
     h2 { margin: 0 0 2.5mm; border-left: 1.4mm solid #1558a6; padding: 1.5mm 0 1.5mm 3mm; color: #0b2f5b; font-size: 11.5pt; text-transform: uppercase; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7.7pt; }
     th { background: #0b2f5b; color: #fff; padding: 2.7mm 2mm; text-align: left; font-size: 6.7pt; text-transform: uppercase; letter-spacing: .25px; }
     th:nth-child(1) { width: 7%; } th:nth-child(2) { width: 13%; } th:nth-child(3) { width: 14%; } th:nth-child(4) { width: 24%; } th:nth-child(5) { width: 12%; } th:nth-child(6) { width: 13%; } th:nth-child(7) { width: 17%; }
-    td { border: .2mm solid #d6e0ea; padding: 2.6mm 2mm; overflow-wrap: anywhere; }
+    td { border: .2mm solid #d6e0ea; padding: 2.1mm 2mm; overflow-wrap: anywhere; }
     tbody tr:nth-child(even) { background: #f8fafc; }
     .number { text-align: right; }
     .capitalize { text-transform: capitalize; }
@@ -136,9 +138,9 @@ export function generateFuelRecordsPdf(records) {
     tfoot td:first-child { text-align: right; }
     .reference { margin-top: 5mm; border-radius: 2mm; background: #edf5fd; padding: 4mm; color: #647084; font-size: 7.3pt; }
     .reference strong { display: block; margin-bottom: 1.5mm; color: #0b2f5b; font-size: 8pt; }
-    .footer { position: absolute; right: 14mm; bottom: 7mm; left: 14mm; display: flex; justify-content: space-between; border-top: .2mm solid #d6e0ea; padding-top: 3mm; color: #647084; font-size: 7.5pt; }
+    .footer { position: absolute; right: 14mm; bottom: 6mm; left: 14mm; display: flex; justify-content: space-between; border-top: .2mm solid #d6e0ea; padding-top: 2.5mm; color: #647084; font-size: 7.5pt; }
     @media screen { .sheet { box-shadow: 0 8px 30px rgba(15,23,42,.16); } }
-    @media print { html, body { background: #fff; } .sheet { margin: 0; box-shadow: none; } }
+    @media print { html, body { background: #fff; } .sheet { margin: 0; box-shadow: none; } .sheet:last-child { page-break-after: avoid; break-after: avoid-page; } }
   </style></head><body>${pageHtml}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
   printWindow.document.close();
 }

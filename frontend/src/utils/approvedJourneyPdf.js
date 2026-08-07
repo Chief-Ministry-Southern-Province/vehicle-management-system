@@ -1,17 +1,17 @@
 import { formatLocalDateTime } from "./dateTime";
 
 const escapeHtml = (value) =>
-  String(value ?? "Not recorded")
+  String(value ?? "-")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-const text = (value) => escapeHtml(value || "Not recorded");
-const dateTime = (value) => escapeHtml(formatLocalDateTime(value));
+const text = (value) => escapeHtml(value || "—");
+const dateTime = (value) => escapeHtml(formatLocalDateTime(value, "—"));
 const label = (value) =>
-  text(value ? String(value).replaceAll("_", " ") : "Not recorded");
+  text(value ? String(value).replaceAll("_", " ") : "—");
 
 const row = (name, value) => `
   <div class="field"><span>${escapeHtml(name)}</span><strong>${value}</strong></div>`;
