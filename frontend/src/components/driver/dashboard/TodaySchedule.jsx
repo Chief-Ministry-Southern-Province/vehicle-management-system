@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FiAlertTriangle, FiCheckCircle, FiEye, FiPlay, FiX } from "react-icons/fi";
+import { FiAlertTriangle, FiCheckCircle, FiEye, FiPlay, FiTruck, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getDriverScheduledJourneys, updateDriverJourneyStatus } from "../../../api/authApi";
 import { formatLocalDate as formatDate, formatLocalTime as formatTime } from "../../../utils/dateTime";
@@ -15,6 +15,33 @@ const Detail = ({ label, children }) => (
   <div>
     <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</dt>
     <dd className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">{children || "Not recorded"}</dd>
+  </div>
+);
+
+const VehicleImage = ({ vehicle, className = "h-44 sm:h-52" }) => (
+  <div className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}>
+    {vehicle?.image_url ? (
+      <img
+        src={vehicle.image_url}
+        alt={`${vehicle.make || "Assigned"} ${vehicle.model || "vehicle"}`}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        onError={(event) => {
+          event.currentTarget.style.display = "none";
+          event.currentTarget.nextElementSibling?.classList.remove("hidden");
+        }}
+      />
+    ) : null}
+    <div className={`${vehicle?.image_url ? "hidden" : ""} flex h-full w-full flex-col items-center justify-center gap-2 text-slate-400`}>
+      <FiTruck className="text-4xl" />
+      <span className="text-sm font-semibold">Vehicle image not available</span>
+    </div>
+    {vehicle && (
+      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-slate-950/85 to-transparent px-4 pb-3 pt-10 text-white">
+        <p className="font-bold">{vehicle.make} {vehicle.model}</p>
+        <p className="text-xs text-slate-200">{vehicle.registration_number}</p>
+      </div>
+    )}
   </div>
 );
 
@@ -56,12 +83,12 @@ export default function ScheduledJourney() {
 
   return (
     <div className="overflow-hidden rounded-[18px] border border-slate-100 bg-white/80 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800">
-      <div className="flex flex-col gap-4 border-b border-slate-100 bg-linear-to-r from-white to-blue-50/60 p-6 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-slate-100 bg-linear-to-r from-white to-blue-50/60 p-4 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             Active Assignments
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">Scheduled Journey</h2>
+          <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">Scheduled Journey</h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">All incomplete trips assigned to you.</p>
         </div>
         <span className="inline-flex w-fit items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-200">
@@ -69,7 +96,7 @@ export default function ScheduledJourney() {
         </span>
       </div>
 
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {loading && <p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Loading journeys...</p>}
         {error && <p className="rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
         {!loading && !error && trips.length === 0 && (
@@ -82,13 +109,15 @@ export default function ScheduledJourney() {
           {trips.map((trip) => (
             <article
               key={trip.id}
-              className={`group rounded-[18px] border p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-20px_rgba(15,23,42,0.22)] dark:border-slate-700 ${
+              className={`group overflow-hidden rounded-[18px] border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-20px_rgba(15,23,42,0.22)] dark:border-slate-700 ${
                 trip.status === "Ongoing"
                   ? "border-blue-200 bg-blue-50/60 dark:bg-blue-950/30"
                   : "border-slate-100 bg-white dark:bg-slate-900"
               }`}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <VehicleImage vehicle={trip.vehicle} />
+
+              <div className="flex flex-wrap items-start justify-between gap-3 p-4 pb-0 sm:p-5 sm:pb-0">
                 <div>
                   <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{trip.reference}</p>
                   <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">{trip.purpose}</h3>
@@ -99,7 +128,7 @@ export default function ScheduledJourney() {
                 </span>
               </div>
 
-              <dl className="mt-5 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-800/70">
+              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:mt-5 sm:grid-cols-2 lg:grid-cols-3 dark:bg-slate-800/70">
                 <Detail label="Requester">{trip.requester_name}</Detail>
                 <Detail label="Journey Details">{trip.purpose}</Detail>
                 <Detail label="Destination">{trip.destination}</Detail>
@@ -123,7 +152,7 @@ export default function ScheduledJourney() {
               </dl>
 
               {trip.is_consolidated && (
-                <div className="mt-4 overflow-hidden rounded-2xl border border-blue-100">
+                <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-blue-100 sm:mx-5">
                   <div className="bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">Passenger pickup and drop details</div>
                   <div className="divide-y divide-slate-100">
                     {trip.requests.map((item) => (
@@ -138,13 +167,13 @@ export default function ScheduledJourney() {
                 </div>
               )}
 
-              <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4 dark:border-slate-700">
-                <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60 ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
+              <div className="mt-5 grid grid-cols-1 gap-2 border-t border-slate-100 p-4 sm:flex sm:flex-wrap sm:gap-3 sm:p-5 dark:border-slate-700">
+                <button type="button" disabled={updatingId === trip.id} onClick={() => changeStatus(trip)} className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60 sm:w-auto ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
                   {["ongoing", "issue"].includes(trip.journey_status) ? <FiCheckCircle /> : <FiPlay />}
                   {updatingId === trip.id ? "Updating..." : ["ongoing", "issue"].includes(trip.journey_status) ? "Complete Trip" : "Start Trip"}
                 </button>
-                <button type="button" onClick={() => setSelectedTrip(trip)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"><FiEye /> View Details</button>
-                <button type="button" onClick={() => navigate(`/reportvehicle?journey=${trip.id}`)} className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 dark:border-amber-900 dark:bg-slate-800 dark:text-amber-200 dark:hover:bg-amber-950"><FiAlertTriangle /> Report Issue</button>
+                <button type="button" onClick={() => setSelectedTrip(trip)} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"><FiEye /> View Details</button>
+                <button type="button" onClick={() => navigate(`/reportvehicle?journey=${trip.id}`)} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 sm:w-auto dark:border-amber-900 dark:bg-slate-800 dark:text-amber-200 dark:hover:bg-amber-950"><FiAlertTriangle /> Report Issue</button>
               </div>
             </article>
           ))}
@@ -152,8 +181,8 @@ export default function ScheduledJourney() {
       </div>
 
       {selectedTrip && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="journey-details-title" onMouseDown={(event) => event.target === event.currentTarget && setSelectedTrip(null)}>
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[18px] bg-white shadow-2xl dark:bg-slate-900">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="journey-details-title" onMouseDown={(event) => event.target === event.currentTarget && setSelectedTrip(null)}>
+          <div className="max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-t-[22px] bg-white shadow-2xl sm:max-h-[90vh] sm:rounded-[18px] dark:bg-slate-900">
             <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{selectedTrip.reference}</p>
@@ -161,7 +190,8 @@ export default function ScheduledJourney() {
               </div>
               <button type="button" onClick={() => setSelectedTrip(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" aria-label="Close details"><FiX size={22} /></button>
             </div>
-            <dl className="grid gap-5 p-6 sm:grid-cols-2">
+            <VehicleImage vehicle={selectedTrip.vehicle} className="h-52 sm:h-64" />
+            <dl className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
               <Detail label="Requester">{selectedTrip.requester_name}</Detail>
               <Detail label="Purpose">{selectedTrip.purpose}</Detail>
               <Detail label="Destination">{selectedTrip.destination}</Detail>
