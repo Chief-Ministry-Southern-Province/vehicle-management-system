@@ -1,4 +1,4 @@
-import { FiGlobe, FiUser } from "react-icons/fi";
+import { FiGlobe, FiMenu, FiUser } from "react-icons/fi";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import nationalEmblem from "../../assets/national-emblem.png";
@@ -11,7 +11,7 @@ const initials = (name) =>
     .join("")
     .toUpperCase();
 
-export default function Topbar() {
+export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
   const { language, languages, setLanguage, t } = useLanguage();
   const profilePictureUrl = user?.profile_picture_path
@@ -29,6 +29,15 @@ export default function Topbar() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-teal-400/60 to-transparent" />
       <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            aria-label="Open navigation menu"
+            aria-controls="dashboard-sidebar"
+          >
+            <FiMenu />
+          </button>
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-linear-to-br from-white to-slate-50 p-1.5 shadow-sm ring-1 ring-slate-900/5 dark:border-slate-700 dark:from-slate-800 dark:to-slate-900">
             <img
               src={nationalEmblem}
@@ -50,7 +59,7 @@ export default function Topbar() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:px-3">
+          <label className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm font-semibold text-slate-700 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:flex sm:px-3">
             <FiGlobe className="shrink-0 text-blue-600" aria-hidden="true" />
             <span className="sr-only">{t("language.label")}</span>
             <select

@@ -11,8 +11,10 @@ import {
   FiClipboard,
   FiClock,
   FiAlertTriangle,
+  FiX,
 } from "react-icons/fi";
 
+import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { BsPerson } from "react-icons/bs";
@@ -401,13 +403,24 @@ const menuItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { t } = useLanguage();
 
   const role = user?.role;
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const closeOnEscape = (event) => event.key === "Escape" && onClose();
+    document.addEventListener("keydown", closeOnEscape);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, onClose]);
 
   const handleLogout = () => {
     logout();
@@ -416,10 +429,27 @@ export default function Sidebar() {
 
   // Small helpers for the profile footer — purely cosmetic, no logic change
   return (
+    <>
+    <button
+      type="button"
+      aria-label="Close navigation menu"
+      onClick={onClose}
+      className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[2px] transition-opacity lg:hidden ${isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
+    />
     <aside
+      id="dashboard-sidebar"
       data-no-translate
-      className="relative flex h-full w-64 shrink-0 flex-col border-r border-slate-200/80 bg-linear-to-b from-white via-slate-50/90 to-blue-50/60 shadow-[8px_0_28px_-24px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950"
+      className={`fixed inset-y-0 left-0 z-50 flex h-full w-[min(19rem,86vw)] shrink-0 flex-col border-r border-slate-200/80 bg-linear-to-b from-white via-slate-50/90 to-blue-50/60 shadow-2xl transition-transform duration-300 ease-out dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 lg:relative lg:z-auto lg:w-64 lg:translate-x-0 lg:shadow-[8px_0_28px_-24px_rgba(15,23,42,0.45)] ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
+      <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4 lg:hidden dark:border-slate-800">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Navigation</p>
+          <p className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name || "Government User"}</p>
+        </div>
+        <button type="button" onClick={onClose} className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" aria-label="Close navigation menu">
+          <FiX />
+        </button>
+      </div>
       {/* ---------------------------------------------------------- */}
       {/*  Menu                                                       */}
       {/* ---------------------------------------------------------- */}
@@ -448,6 +478,7 @@ export default function Sidebar() {
                     <Link
                       key={item.name}
                       to={item.path}
+                      onClick={onClose}
                       className={[
                         "group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium",
                         "transition-all duration-200 ease-out",
@@ -519,5 +550,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
