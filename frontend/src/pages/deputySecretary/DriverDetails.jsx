@@ -171,6 +171,27 @@ function getInitials(name) {
     .slice(0, 2)
     .toUpperCase();
 }
+function DriverAvatar({ driver, className, textClassName = "" }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = driver.profilePhotoUrl && !imageFailed;
+
+  return (
+    <div className={`relative overflow-hidden bg-slate-900 text-white ${className}`}>
+      {showPhoto ? (
+        <img
+          src={driver.profilePhotoUrl}
+          alt={`${driver.fullName} profile`}
+          className="h-full w-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className={`flex h-full w-full items-center justify-center font-black ${textClassName}`}>
+          {getInitials(driver.fullName)}
+        </span>
+      )}
+    </div>
+  );
+}
 function formatDate(date) {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -224,9 +245,11 @@ function DriverCard({ driver, selected, onToggle, onViewProfile }) {
     <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-blue-100 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-lg font-black text-white">
-            {getInitials(driver.fullName)}
-          </div>
+          <DriverAvatar
+            driver={driver}
+            className="h-14 w-14 shrink-0 rounded-2xl"
+            textClassName="text-lg"
+          />
           <div>
             <h3 className="font-bold text-slate-900">{driver.fullName}</h3>
             <p className="mt-1 text-sm text-slate-500">
@@ -325,9 +348,11 @@ function DriverProfile({ driver, onClose }) {
             <FiX className="text-xl" />
           </button>
           <div className="flex items-center gap-5 pr-10">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-blue-600 text-2xl font-black">
-              {getInitials(driver.fullName)}
-            </div>
+            <DriverAvatar
+              driver={driver}
+              className="h-20 w-20 shrink-0 rounded-3xl ring-4 ring-white/10"
+              textClassName="text-2xl"
+            />
             <div>
               <p className="text-sm font-semibold text-blue-300">{driver.id}</p>
               <h2 id="driver-profile-title" className="mt-1 text-2xl font-bold">
@@ -354,6 +379,7 @@ function DriverProfile({ driver, onClose }) {
             <ProfileItem icon={<FiDroplet />} label="Blood Group" value={driver.bloodGroup || "Not specified"} />
             <ProfileItem icon={<FiPhone />} label="Contact Number" value={driver.contactNumber} />
             <ProfileItem icon={<FiMail />} label="Email" value={driver.email || "Not specified"} />
+            <ProfileItem icon={<FiUsers />} label="Department" value={driver.department || "Not specified"} />
             <ProfileItem icon={<FiMapPin />} label="Address" value={driver.address || "Not specified"} wide />
           </ProfileSection>
 

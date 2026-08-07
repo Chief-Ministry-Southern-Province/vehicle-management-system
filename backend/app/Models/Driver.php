@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -35,6 +36,11 @@ class Driver extends Model
     public function vehicleRequests(): HasMany
     {
         return $this->hasMany(VehicleRequest::class, 'allocated_driver_id');
+    }
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'employee_id', 'nic');
     }
 
     public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null, ?VehicleRequest $request = null): bool

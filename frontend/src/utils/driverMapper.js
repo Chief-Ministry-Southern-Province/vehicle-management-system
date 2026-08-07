@@ -16,6 +16,12 @@ const DUTY_STATUS_VALUES = {
 };
 
 export function normalizeDriver(driver) {
+  const profilePicturePath =
+    driver.user?.profile_picture_path || driver.profile_picture_path;
+  const apiOrigin =
+    import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+    "http://127.0.0.1:8000";
+
   return {
     databaseId: driver.id,
     id: driver.driver_id,
@@ -24,6 +30,11 @@ export function normalizeDriver(driver) {
     nic: driver.nic,
     address: driver.address,
     contactNumber: driver.contact_number,
+    email: driver.user?.email || driver.email || "",
+    department: driver.user?.department || driver.department || "",
+    profilePhotoUrl: profilePicturePath
+      ? `${apiOrigin}/${String(profilePicturePath).replace(/^\/+/, "")}`
+      : "",
     bloodGroup: driver.blood_group || "",
     licenceNumber: driver.licence_number,
     licenceType: driver.licence_type,

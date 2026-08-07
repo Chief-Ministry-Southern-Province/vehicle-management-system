@@ -21,7 +21,9 @@ class DriverController extends Controller
             'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
             'ignore_request_id' => ['nullable', 'integer', 'exists:vehicle_requests,id'],
         ]);
-        $drivers = Driver::orderBy('driver_id')->get();
+        $drivers = Driver::with('user:id,employee_id,email,department,profile_picture_path')
+            ->orderBy('driver_id')
+            ->get();
 
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);
@@ -321,7 +323,10 @@ class DriverController extends Controller
 
     public function show(Driver $driver): JsonResponse
     {
-        return response()->json(['success' => true, 'data' => ['driver' => $driver]]);
+        return response()->json([
+            'success' => true,
+            'data' => ['driver' => $driver->load('user:id,employee_id,email,department,profile_picture_path')],
+        ]);
     }
 
     public function update(Request $request, Driver $driver): JsonResponse
