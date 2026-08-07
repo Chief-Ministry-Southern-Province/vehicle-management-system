@@ -134,7 +134,7 @@ export function generateApprovedJourneyPdf(journey) {
   <p class="notice">This document was generated electronically by the Vehicle Management System and contains information recorded at the time of generation. Generated ${escapeHtml(generatedAt)}.</p>
   <div class="footer"><span>Chief Ministry - Southern Province</span><span>Page 2 of 2</span></div>
 </div>
-<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});<\/script>
+<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script>
 </body></html>`);
   printWindow.document.close();
 }

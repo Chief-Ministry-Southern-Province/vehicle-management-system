@@ -55,6 +55,6 @@ export function generateDriverIssueRecordsPdf(reports) {
     .field{min-height:10mm;padding:1.8mm 2.5mm;border-bottom:.2mm solid #d6e0ea}.field:nth-child(4n+3),.field:nth-child(4n+4){background:#f8fafc}.field:nth-child(odd){border-right:.2mm solid #d6e0ea}.field span{display:block;margin-bottom:.8mm;color:#647084;font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:.3px}.field strong{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font-size:7.8pt;line-height:1.2}
     .reference{margin-top:3mm;border-radius:2mm;background:#edf5fd;padding:3mm;color:#647084;font-size:7pt}.reference strong{display:block;margin-bottom:1mm;color:#0b2f5b;font-size:7.7pt}.footer{position:absolute;right:16mm;bottom:6mm;left:16mm;display:flex;justify-content:space-between;border-top:.2mm solid #d6e0ea;padding-top:3mm;color:#647084;font-size:7.2pt}
     @media screen{.sheet{box-shadow:0 8px 30px rgba(15,23,42,.16)}}@media print{html,body{background:#fff}.sheet{width:210mm;height:296mm;margin:0;box-shadow:none;page-break-inside:avoid;break-inside:avoid}}
-  </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});<\/script></body></html>`);
+  </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
   printWindow.document.close();
 }

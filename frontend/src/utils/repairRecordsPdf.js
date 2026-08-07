@@ -81,6 +81,6 @@ export function generateRepairRecordsPdf(records, { recordKind = "Repair" } = {}
     .reference { margin-top:5mm; border-radius:2mm; background:#edf5fd; padding:4mm; color:#647084; font-size:7.3pt; } .reference strong{display:block;margin-bottom:1.5mm;color:#0b2f5b;font-size:8pt}
     .footer { position:absolute; right:14mm; bottom:7mm; left:14mm; display:flex; justify-content:space-between; border-top:.2mm solid #d6e0ea; padding-top:3mm; color:#647084; font-size:7.5pt; }
     @media screen {.sheet{box-shadow:0 8px 30px rgba(15,23,42,.16)}} @media print {html,body{background:#fff}.sheet{margin:0;box-shadow:none}}
-  </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});<\/script></body></html>`);
+  </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
   printWindow.document.close();
 }

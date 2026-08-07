@@ -29,11 +29,11 @@ export function generateFuelRecordsPdf(records) {
     throw new Error("Select at least one fuel record to export.");
   }
 
-  const generatedAt = new Intl.DateTimeFormat("en-LK", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "Asia/Colombo",
-  }).format(new Date());
+  // const generatedAt = new Intl.DateTimeFormat("en-LK", {
+  //   dateStyle: "long",
+  //   timeStyle: "short",
+  //   timeZone: "Asia/Colombo",
+  // }).format(new Date());
   const totalLiters = records.reduce(
     (total, record) => total + (Number(record.capacity) || 0),
     0,
@@ -139,6 +139,6 @@ export function generateFuelRecordsPdf(records) {
     .footer { position: absolute; right: 14mm; bottom: 7mm; left: 14mm; display: flex; justify-content: space-between; border-top: .2mm solid #d6e0ea; padding-top: 3mm; color: #647084; font-size: 7.5pt; }
     @media screen { .sheet { box-shadow: 0 8px 30px rgba(15,23,42,.16); } }
     @media print { html, body { background: #fff; } .sheet { margin: 0; box-shadow: none; } }
-  </style></head><body>${pageHtml}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});<\/script></body></html>`);
+  </style></head><body>${pageHtml}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
   printWindow.document.close();
 }
