@@ -275,26 +275,26 @@ export default function ServiceRecords() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#111827] via-[#17396b] to-[#0e7490] p-6 text-white shadow-[0_24px_60px_-24px_rgba(15,23,42,0.8)] sm:p-8">
-          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10 bg-cyan-400/10" />
-          <div className="absolute -bottom-32 right-32 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />
-          <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 backdrop-blur-md">
-              <FiTool size={14} />
-              Fleet Maintenance Center
+        <header className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-[0_12px_35px_-22px_rgba(15,23,42,0.35)] sm:px-8 sm:py-7">
+          <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-blue-600 to-cyan-400" />
+          <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-blue-50" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
+                <FiTool size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Fleet Maintenance Center</p>
+                <h1 className="mt-1.5 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Service &amp; Maintenance Records</h1>
+                <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">Monitor monthly service costs and vehicle maintenance records.</p>
+              </div>
             </div>
-            <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-              Service &amp; Maintenance Records
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100 sm:text-base">
-              Monitor monthly service costs and vehicle maintenance records.
-            </p>
-            </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md">
-              <FiCalendar className="text-cyan-300" />
-              <div><p className="text-[10px] font-bold uppercase tracking-widest text-blue-200">Reporting year</p><p className="text-lg font-bold">{selectedYear}</p></div>
+            <div className="flex w-fit shrink-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm ring-1 ring-slate-200"><FiCalendar /></div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Reporting year</p>
+                <p className="mt-0.5 text-lg font-black leading-none text-slate-900">{selectedYear}</p>
+              </div>
             </div>
           </div>
         </header>
