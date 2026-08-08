@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -37,9 +38,17 @@ class Driver extends Model
         return $this->hasMany(VehicleRequest::class, 'allocated_driver_id');
     }
 
-    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null): bool
+    public function user(): HasOne
     {
-        return $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->exists();
+        return $this->hasOne(User::class, 'employee_id', 'nic');
+    }
+
+    public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null, ?VehicleRequest $request = null): bool
+    {
+        $journeys = $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->get();
+
+        return $journeys->isNotEmpty()
+            && (! $request || $journeys->contains(fn (VehicleRequest $journey) => ! $journey->canShareJourneyWith($request)));
     }
 
     public function operationalStatusFor(
@@ -61,7 +70,7 @@ class Driver extends Model
         return $journeys->exists() ? 'scheduled_trip' : 'available';
     }
 
-    private function activeJourneysDuring(
+    public function activeJourneysDuring(
         Carbon|string $startsAt,
         Carbon|string $endsAt,
         ?int $ignoreRequestId = null,

@@ -47,6 +47,8 @@ import ReportVehicle from './pages/driver/ReportVehicle';
 import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
 import SystemChanges from './pages/SystemChanges';
+import PendingJourny from './pages/subjectOfficer/PendingJourny';
+import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -89,10 +91,7 @@ function App() {
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
-            <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
-            <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
-            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />, ["subject_officer", "deputy_secretary"])}/>
-            <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />, ["subject_officer", "deputy_secretary"])} />
+            <Route path="/pendingjourny" element={withAuth(<PendingJourny />, ["subject_officer"])} />
 
             
             
@@ -107,9 +106,7 @@ function App() {
             <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
-            <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
-            <Route path="/drivers" element={withAuth(<DriverDetails />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
+            <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 
 

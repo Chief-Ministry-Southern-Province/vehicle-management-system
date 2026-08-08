@@ -10,11 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { FiBarChart2, FiTool } from "react-icons/fi";
+import { FiBarChart2, FiDownload, FiTool } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import ServiceFilters from "../../components/subjectOfficer/service/ServiceFilters";
 import ServiceScheduleTable from "../../components/subjectOfficer/service/ServiceScheduleTable";
 import { getVehicles } from "../../api/authApi";
+import { generateServiceRecordsPdf } from "../../utils/serviceRecordsPdf";
 
 const EMPTY_FILTERS = { search: "", serviceType: "" };
 const START_YEAR = 2025;
@@ -33,6 +34,7 @@ export default function ServiceRecords() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -177,6 +179,39 @@ export default function ServiceRecords() {
     (item) => item.monthKey === selectedMonth,
   )?.month;
 
+  const selectedRecords = useMemo(
+    () => records.filter((record) => selectedIds.has(record.id)),
+    [records, selectedIds],
+  );
+
+  const toggleRecord = (recordId) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(recordId)) next.delete(recordId);
+      else next.add(recordId);
+      return next;
+    });
+  };
+
+  const toggleAllRecords = (items, selected) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      items.forEach((item) => {
+        if (selected) next.add(item.id);
+        else next.delete(item.id);
+      });
+      return next;
+    });
+  };
+
+  const exportSelectedRecords = () => {
+    try {
+      generateServiceRecordsPdf(selectedRecords);
+    } catch (exportError) {
+      window.alert(exportError.message);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-5">
@@ -271,7 +306,13 @@ export default function ServiceRecords() {
               Showing all service records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
             </div>
           ) : null}
-          <ServiceScheduleTable records={displayedRecords} loading={loading} error={error} />
+          {!loading && !error && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-3">
+              <p className="text-sm text-slate-600"><strong className="text-slate-900">{selectedRecords.length}</strong> service {selectedRecords.length === 1 ? "record" : "records"} selected</p>
+              <button type="button" onClick={exportSelectedRecords} disabled={selectedRecords.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button>
+            </div>
+          )}
+          <ServiceScheduleTable records={displayedRecords} loading={loading} error={error} selectedIds={selectedIds} onToggle={toggleRecord} onToggleAll={toggleAllRecords} />
         </section>
       </div>
     </DashboardLayout>

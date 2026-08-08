@@ -244,6 +244,16 @@ export default function EmployeeRequestDetails({
                   <Detail label="Expected return">
                     {formatDateTime(request.expected_return_at)}
                   </Detail>
+                  {request.consolidated_journey?.request_count > 1 && (
+                    <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                      <p className="font-semibold text-blue-900">
+                        Consolidated journey covering {request.consolidated_journey.request_count} requests
+                      </p>
+                      <p className="mt-2 text-sm text-blue-800">
+                        Combined trip time: {formatDateTime(request.consolidated_journey.departure_at)} to {formatDateTime(request.consolidated_journey.expected_return_at)}
+                      </p>
+                    </div>
+                  )}
                   <div className="sm:col-span-2">
                     <Detail label="Destination">
                       <span className="inline-flex items-center gap-2">

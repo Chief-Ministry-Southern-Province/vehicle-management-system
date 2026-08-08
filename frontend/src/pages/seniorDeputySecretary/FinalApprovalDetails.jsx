@@ -65,7 +65,9 @@ function VehicleAllocationDetails({ request }) {
       </Detail>
       <Detail label="Registration number">{vehicle.registration_number}</Detail>
       <Detail label="Vehicle type">{vehicle.vehicle_type}</Detail>
-      <Detail label="Vehicle database ID">{vehicle.id}</Detail>
+      <Detail label="Number of vehicle seats">
+        {vehicle.seat_capacity ?? "Not recorded"}
+      </Detail>
       <Detail label="Driver's name">{driver.full_name}</Detail>
       <Detail label="Contact number">{driver.contact_number}</Detail>
       <Detail label="Driver ID number">{driver.driver_id}</Detail>
@@ -74,6 +76,9 @@ function VehicleAllocationDetails({ request }) {
       <Detail label="Allocator employee ID">{allocator?.employee_id}</Detail>
       <Detail label="Allocated at">
         {formatDateTime(request.allocated_at)}
+      </Detail>
+      <Detail label="Parking location">
+        <span className="whitespace-pre-wrap">{request.parking_location}</span>
       </Detail>
       <Detail label="Driver notified at">
         {formatDateTime(request.driver_notified_at)}

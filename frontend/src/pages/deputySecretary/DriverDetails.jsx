@@ -4,7 +4,11 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiDroplet,
+  FiDownload,
+  FiEye,
   FiFilter,
+  FiMail,
+  FiMapPin,
   FiPhone,
   FiSearch,
   FiShield,
@@ -15,6 +19,7 @@ import {
 } from "react-icons/fi";
 import { getDrivers } from "../../api/authApi";
 import { normalizeDriver } from "../../utils/driverMapper";
+import { generateDriverDirectoryPdf } from "../../utils/driverDirectoryPdf";
 
 // Shared with ApprovalWorkspace; this non-component export is intentional.
 // eslint-disable-next-line react-refresh/only-export-components
@@ -166,6 +171,27 @@ function getInitials(name) {
     .slice(0, 2)
     .toUpperCase();
 }
+function DriverAvatar({ driver, className, textClassName = "" }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = driver.profilePhotoUrl && !imageFailed;
+
+  return (
+    <div className={`relative overflow-hidden bg-slate-900 text-white ${className}`}>
+      {showPhoto ? (
+        <img
+          src={driver.profilePhotoUrl}
+          alt={`${driver.fullName} profile`}
+          className="h-full w-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className={`flex h-full w-full items-center justify-center font-black ${textClassName}`}>
+          {getInitials(driver.fullName)}
+        </span>
+      )}
+    </div>
+  );
+}
 function formatDate(date) {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -212,16 +238,18 @@ function SummaryCard({ icon, label, value, sub, tone }) {
     </div>
   );
 }
-function DriverCard({ driver }) {
+function DriverCard({ driver, selected, onToggle, onViewProfile }) {
   const expiryDays = daysUntil(driver.licenceRenewalDate);
   const expiringSoon = expiryDays <= 180;
   return (
     <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-blue-100 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-lg font-black text-white">
-            {getInitials(driver.fullName)}
-          </div>
+          <DriverAvatar
+            driver={driver}
+            className="h-14 w-14 shrink-0 rounded-2xl"
+            textClassName="text-lg"
+          />
           <div>
             <h3 className="font-bold text-slate-900">{driver.fullName}</h3>
             <p className="mt-1 text-sm text-slate-500">
@@ -232,7 +260,7 @@ function DriverCard({ driver }) {
             </p>
           </div>
         </div>
-        <StatusPill status={driver.status} />
+        <div className="flex items-center gap-3"><label className="inline-flex items-center gap-2 text-xs font-medium text-slate-500"><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select</label><StatusPill status={driver.status} /></div>
       </div>
 
       <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
@@ -286,8 +314,106 @@ function DriverCard({ driver }) {
             {driver.rating}
           </span>
         )}
+        <button
+          type="button"
+          onClick={onViewProfile}
+          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+        >
+          <FiEye /> View Profile
+        </button>
       </div>
     </article>
+  );
+}
+
+function DriverProfile({ driver, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="driver-profile-title"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <article className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+        <header className="relative bg-slate-900 p-6 text-white sm:p-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-5 top-5 rounded-xl p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+            aria-label="Close driver profile"
+          >
+            <FiX className="text-xl" />
+          </button>
+          <div className="flex items-center gap-5 pr-10">
+            <DriverAvatar
+              driver={driver}
+              className="h-20 w-20 shrink-0 rounded-3xl ring-4 ring-white/10"
+              textClassName="text-2xl"
+            />
+            <div>
+              <p className="text-sm font-semibold text-blue-300">{driver.id}</p>
+              <h2 id="driver-profile-title" className="mt-1 text-2xl font-bold">
+                {driver.fullName}
+              </h2>
+              <p className="mt-1 text-sm text-slate-300">
+                {driver.designation || "Government Driver"}
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <div className="space-y-6 p-6 sm:p-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusPill status={driver.status} />
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              Duty: {driver.dutyStatus || "Not specified"}
+            </span>
+          </div>
+
+          <ProfileSection title="Personal Information">
+            <ProfileItem icon={<FiShield />} label="NIC" value={driver.nic} />
+            <ProfileItem icon={<FiCalendar />} label="Date of Birth" value={formatDate(driver.dateOfBirth)} />
+            <ProfileItem icon={<FiDroplet />} label="Blood Group" value={driver.bloodGroup || "Not specified"} />
+            <ProfileItem icon={<FiPhone />} label="Contact Number" value={driver.contactNumber} />
+            <ProfileItem icon={<FiMail />} label="Email" value={driver.email || "Not specified"} />
+            <ProfileItem icon={<FiUsers />} label="Department" value={driver.department || "Not specified"} />
+            <ProfileItem icon={<FiMapPin />} label="Address" value={driver.address || "Not specified"} wide />
+          </ProfileSection>
+
+          <ProfileSection title="Licence & Vehicle Allocation">
+            <ProfileItem icon={<FiShield />} label="Licence Number" value={driver.licenceNumber} />
+            <ProfileItem icon={<FiShield />} label="Licence Type" value={driver.licenceType} />
+            <ProfileItem icon={<FiCalendar />} label="Licence Expiry" value={formatDate(driver.licenceRenewalDate)} />
+            <ProfileItem icon={<FiTruck />} label="Allocated Vehicle" value={driver.vehicle || "Not allocated"} />
+            <ProfileItem icon={<FiTruck />} label="Registration" value={driver.registration || "Not allocated"} />
+          </ProfileSection>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function ProfileSection({ title, children }) {
+  return (
+    <section>
+      <h3 className="border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wide text-slate-900">{title}</h3>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
+function ProfileItem({ icon, label, value, wide = false }) {
+  return (
+    <div className={`flex gap-3 rounded-2xl bg-slate-50 p-4 ${wide ? "sm:col-span-2" : ""}`}>
+      <span className="mt-0.5 shrink-0 text-blue-600">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="mt-1 break-words text-sm font-semibold text-slate-800">{value}</p>
+      </div>
+    </div>
   );
 }
 function DetailLine({ icon, label, value }) {
@@ -309,6 +435,8 @@ export default function DriverDetails() {
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [profileDriver, setProfileDriver] = useState(null);
   useEffect(() => {
     let active = true;
     getDrivers()
@@ -359,6 +487,11 @@ export default function DriverDetails() {
     [drivers],
   );
   const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
+  const selectedDrivers = useMemo(() => drivers.filter((driver) => selectedIds.has(driver.id)), [drivers, selectedIds]);
+  const allVisibleSelected = filteredDrivers.length > 0 && filteredDrivers.every((driver) => selectedIds.has(driver.id));
+  const toggleDriver = (driverId) => setSelectedIds((current) => { const next = new Set(current); if (next.has(driverId)) next.delete(driverId); else next.add(driverId); return next; });
+  const toggleVisible = () => setSelectedIds((current) => { const next = new Set(current); filteredDrivers.forEach((driver) => { if (allVisibleSelected) next.delete(driver.id); else next.add(driver.id); }); return next; });
+  const exportSelected = () => { try { generateDriverDirectoryPdf(selectedDrivers); } catch (exportError) { window.alert(exportError.message); } };
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
@@ -458,6 +591,8 @@ export default function DriverDetails() {
             </div>
           </div>
 
+          {!loading && !loadError && drivers.length > 0 && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"><label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select all visible</label><div className="flex items-center gap-4"><span className="text-sm text-slate-600"><strong className="text-slate-900">{selectedDrivers.length}</strong> selected</span><button type="button" onClick={exportSelected} disabled={selectedDrivers.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button></div></div>}
+
           {loading && (
             <p className="py-12 text-center text-sm text-slate-500">
               Loading drivers from the database…
@@ -465,11 +600,14 @@ export default function DriverDetails() {
           )}
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {filteredDrivers.map((driver) => (
-              <DriverCard key={driver.id} driver={driver} />
+              <DriverCard key={driver.id} driver={driver} selected={selectedIds.has(driver.id)} onToggle={() => toggleDriver(driver.id)} onViewProfile={() => setProfileDriver(driver)} />
             ))}
           </div>
         </div>
       </div>
+      {profileDriver && (
+        <DriverProfile driver={profileDriver} onClose={() => setProfileDriver(null)} />
+      )}
     </DashboardLayout>
   );
 }

@@ -3,14 +3,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getVehicles } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
+import { generateVehicleDirectoryPdf } from "../../utils/vehicleDirectoryPdf";
 import {
   FiFilter,
   FiChevronRight,
   FiSearch,
   FiRefreshCw,
   FiDownload,
-  FiFileText,
-  FiChevronDown,
   FiTruck,
   FiCheckSquare,
   FiSlash,
@@ -240,7 +239,6 @@ export default function TotalVehicles() {
   const [fuelFilter, setFuelFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState({
     field: "model",
     dir: "asc",
@@ -350,6 +348,13 @@ export default function TotalVehicles() {
       maintenance,
     };
   }, [vehicles]);
+  const handleGeneratePdf = () => {
+    try {
+      generateVehicleDirectoryPdf(filtered);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  };
   return (
     <DashboardLayout>
       <div className="bg-slate-50 min-h-screen p-6">
@@ -375,34 +380,15 @@ export default function TotalVehicles() {
               Refresh
             </button>
 
-            <div className="relative">
-              <button
-                onClick={() => setExportOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm"
-              >
-                <FiDownload />
-                Export
-                <FiChevronDown
-                  className={`h-3.5 w-3.5 transition-transform ${exportOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {exportOpen && (
-                <div className="absolute right-0 mt-2 w-40 rounded-xl border border-slate-100 bg-white shadow-lg overflow-hidden z-10">
-                  <button
-                    onClick={() => setExportOpen(false)}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50"
-                  >
-                    <FiFileText className="text-rose-500" /> Export as PDF
-                  </button>
-                  <button
-                    onClick={() => setExportOpen(false)}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 border-t border-slate-100"
-                  >
-                    <FiFileText className="text-emerald-600" /> Export as Excel
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={handleGeneratePdf}
+              disabled={loading || filtered.length === 0}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FiDownload />
+              Generate PDF
+            </button>
           </div>
         </div>
 

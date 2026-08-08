@@ -122,7 +122,12 @@ export const getProfile = async () => {
 
 export const updateProfile = async (profile) => {
   try {
-    const response = await API.put("/profile", profile, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    const response = await API.post("/profile", profile, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) { throw error.response?.data || error.message; }
 };
@@ -544,6 +549,17 @@ export const getFinalApprovalVehicleRequest = async (requestId) => {
 export const getApprovedJourneys = async () => {
   try {
     const response = await API.get("/approved-journeys", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getRecommendedRequests = async () => {
+  try {
+    const response = await API.get("/recommended-requests", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

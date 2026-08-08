@@ -79,28 +79,28 @@ export default function DriverStats() {
           {error}
         </p>
       )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((item) => (
           <div
             key={item.title}
-            className="group relative overflow-hidden rounded-[18px] border border-slate-100 bg-white/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-800"
+            className="group relative overflow-hidden rounded-[18px] border border-slate-100 bg-white/80 p-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-800 sm:p-5"
           >
             <div
               className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${item.glow} opacity-60 transition-opacity duration-300 group-hover:opacity-100`}
             />
-            <div className="relative mb-5 flex items-start justify-between gap-3">
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br text-lg text-white shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${item.tone}`}>
+            <div className="relative mb-3 flex items-start justify-between gap-2 sm:mb-5 sm:gap-3">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br text-base text-white shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 sm:h-11 sm:w-11 sm:text-lg ${item.tone}`}>
                 {item.icon}
               </div>
 
-              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.badgeClass}`}>
+              <span className={`max-w-20 truncate rounded-full px-2 py-1 text-[10px] font-semibold sm:max-w-none sm:px-2.5 sm:text-xs ${item.badgeClass}`}>
                 {item.badge}
               </span>
             </div>
 
             <p className="relative text-sm font-medium text-slate-500 dark:text-slate-400">{item.title}</p>
 
-            <h3 className="relative mt-1 text-[26px] font-bold leading-tight text-slate-800 tabular-nums dark:text-white">
+            <h3 className="relative mt-1 text-2xl font-bold leading-tight text-slate-800 tabular-nums dark:text-white sm:text-[26px]">
               {loading ? "..." : item.value}
             </h3>
           </div>
