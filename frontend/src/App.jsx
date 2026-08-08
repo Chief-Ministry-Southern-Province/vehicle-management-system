@@ -110,10 +110,7 @@ function App() {
             <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
-            <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
-            <Route path="/drivers" element={withAuth(<DriverDetails />)} />
-            <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
+            <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 
 
