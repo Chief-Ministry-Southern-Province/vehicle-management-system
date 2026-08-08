@@ -177,17 +177,27 @@ export default function RepairRecords() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <header className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#1f1221] via-[#5f1d35] to-[#9f3a38] p-6 text-white shadow-[0_24px_60px_-24px_rgba(76,5,25,0.7)] sm:p-8">
-          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10 bg-orange-300/10" />
-          <div className="absolute -bottom-32 right-32 h-64 w-64 rounded-full bg-rose-400/20 blur-3xl" />
-          <div className="absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-orange-200/70 to-transparent" />
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-orange-200/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-orange-100 backdrop-blur-md"><FiTool size={14} /> Fleet Repair Center</div>
-              <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">Repair Records</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-rose-100 sm:text-base">Monitor monthly repair costs and vehicle repair history.</p>
+        <header className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-6 shadow-[0_12px_35px_-22px_rgba(15,23,42,0.35)] sm:px-8 sm:py-7">
+          <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-rose-600 to-amber-400" />
+          <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-rose-50" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-700 ring-1 ring-rose-100">
+                <FiTool size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-rose-700">Fleet Repair Center</p>
+                <h1 className="mt-1.5 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Repair Records</h1>
+                <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">Monitor monthly repair costs and vehicle repair history.</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md"><FiCalendar className="text-orange-200" /><div><p className="text-[10px] font-bold uppercase tracking-widest text-rose-200">Reporting year</p><p className="text-lg font-bold">{selectedYear}</p></div></div>
+            <div className="flex w-fit shrink-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-rose-700 shadow-sm ring-1 ring-slate-200"><FiCalendar /></div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Reporting year</p>
+                <p className="mt-0.5 text-lg font-black leading-none text-slate-900">{selectedYear}</p>
+              </div>
+            </div>
           </div>
         </header>
 
