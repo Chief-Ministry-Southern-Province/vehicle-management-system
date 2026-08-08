@@ -91,11 +91,7 @@ function App() {
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
-            <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
-            <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
-            <Route path="/pendingJourny" element={withAuth(<PendingJourny />)}/>
-            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />, ["subject_officer", "deputy_secretary"])}/>
-            <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />, ["subject_officer", "deputy_secretary"])} />
+            <Route path="/pendingjourny" element={withAuth(<PendingJourny />, ["subject_officer"])} />
 
             
             
