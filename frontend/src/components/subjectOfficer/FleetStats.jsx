@@ -132,11 +132,11 @@ export default function FleetStats() {
 
   if (loading)
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 7 }).map((_, index) => (
           <div
             key={index}
-            className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white"
+            className="h-32 animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 sm:h-36"
           />
         ))}
       </div>
@@ -149,24 +149,24 @@ export default function FleetStats() {
     );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
       {stats.map((item) => (
         <div
           key={item.title}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+          className="relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition dark:border-slate-800 dark:bg-slate-900 sm:p-5 sm:hover:-translate-y-1 sm:hover:shadow-lg"
         >
           <div
             className={`flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r text-white shadow-md ${item.bg}`}
           >
             {item.icon}
           </div>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="mt-3 break-words text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:mt-4">
             {item.title}
           </p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900">
+          <h2 className="mt-1 break-words text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
             {item.value}
           </h2>
-          <p className="mt-1 text-xs text-slate-400">{item.subtitle}</p>
+          <p className="mt-1 break-words text-xs text-slate-400 dark:text-slate-500">{item.subtitle}</p>
           <div
             className={`absolute inset-x-0 bottom-0 h-1 bg-linear-to-r ${item.bg}`}
           />
