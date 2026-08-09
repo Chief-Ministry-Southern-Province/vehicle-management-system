@@ -10,35 +10,41 @@ function StatCard({ title, value, description, icon, tone, wide = false }) {
     amber: {
       icon: "from-amber-400 to-orange-500 shadow-amber-500/25",
       accent: "from-amber-400 to-orange-500",
+      surface: "sm:from-amber-50/80 sm:via-white sm:to-white dark:sm:from-amber-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-amber-200 dark:sm:hover:border-amber-800/60",
     },
     emerald: {
       icon: "from-emerald-500 to-teal-500 shadow-emerald-500/25",
       accent: "from-emerald-400 to-teal-500",
+      surface: "sm:from-emerald-50/80 sm:via-white sm:to-white dark:sm:from-emerald-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-emerald-200 dark:sm:hover:border-emerald-800/60",
     },
     rose: {
       icon: "from-rose-500 to-red-600 shadow-rose-500/25",
       accent: "from-rose-400 to-red-500",
+      surface: "sm:from-rose-50/80 sm:via-white sm:to-white dark:sm:from-rose-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-rose-200 dark:sm:hover:border-rose-800/60",
     },
   };
   const palette = tones[tone];
 
   return (
-    <article className={`group relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-[0_2px_7px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 sm:min-h-52 sm:rounded-[20px] sm:p-6 sm:hover:-translate-y-0.5 sm:hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,0.28)] ${wide ? "col-span-2 md:col-span-1" : ""}`}>
-      <div className="flex items-start justify-between gap-2 sm:block">
+    <article className={`group relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white bg-linear-to-br p-3 shadow-[0_2px_7px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 sm:min-h-40 sm:rounded-[20px] sm:p-5 sm:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.35)] sm:hover:-translate-y-1 sm:hover:shadow-[0_18px_38px_-20px_rgba(15,23,42,0.35)] ${palette.surface} ${palette.ring} ${wide ? "col-span-2 md:col-span-1" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-sm text-white shadow-lg transition-transform duration-300 group-hover:scale-105 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-xl ${palette.icon}`}
         >
           {icon}
         </div>
-        <p className="min-w-0 text-right text-2xl font-extrabold leading-none tracking-tight text-slate-950 dark:text-white sm:mt-1.5 sm:text-left sm:text-3xl">
+        <p className="min-w-0 text-right text-2xl font-extrabold leading-none tracking-tight text-slate-950 dark:text-white sm:text-4xl">
           {value}
         </p>
       </div>
 
-      <p className="mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 dark:text-slate-300 sm:mt-5 sm:text-sm sm:font-semibold">
+      <p className="mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 dark:text-slate-300 sm:mt-4 sm:text-xs sm:tracking-[0.08em]">
         {title}
       </p>
-      <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:mt-1 sm:text-sm">
+      <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:mt-1.5 sm:text-sm">
         {description}
       </p>
 
