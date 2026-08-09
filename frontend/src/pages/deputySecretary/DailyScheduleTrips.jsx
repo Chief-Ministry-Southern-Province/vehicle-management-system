@@ -235,9 +235,29 @@ export default function DailyScheduleTrips() {
           </div>
         </section>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Approved trips</p><p className="mt-1 text-2xl font-bold text-slate-900">{dailyJourneys.length}</p></div>
-          {Object.entries(STATUS).map(([key, item]) => <div key={key} className="rounded-2xl border border-slate-200 bg-white p-4"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><span className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />{item.label}</p><p className="mt-1 text-2xl font-bold text-slate-900">{totals[key]}</p></div>)}
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
+          <div className="relative overflow-hidden rounded-xl border border-blue-100 bg-linear-to-br from-white to-blue-50 p-3 shadow-sm sm:rounded-2xl sm:p-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm text-white shadow-sm sm:h-9 sm:w-9">
+                <FiCalendar />
+              </span>
+              <p className="text-2xl font-extrabold leading-none text-slate-900 sm:text-3xl">{dailyJourneys.length}</p>
+            </div>
+            <p className="mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-blue-700 sm:text-xs">Approved trips</p>
+            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500" />
+          </div>
+          {Object.entries(STATUS).map(([key, item]) => (
+            <div key={key} className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.card}`}>
+                  <span className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />
+                </span>
+                <p className="text-2xl font-extrabold leading-none text-slate-900 sm:text-3xl">{totals[key]}</p>
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 sm:text-xs">{item.label}</p>
+              <div className={`absolute inset-x-0 bottom-0 h-0.5 ${item.dot}`} />
+            </div>
+          ))}
         </div>
 
         {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
