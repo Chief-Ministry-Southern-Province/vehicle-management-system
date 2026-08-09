@@ -1,4 +1,4 @@
-import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave } from "react-icons/fi";
+import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave, FiTruck } from "react-icons/fi";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { createVehicleRequest } from "../../api/authApi";
@@ -61,27 +61,35 @@ export default function VehicleRequest() {
     <section className="rounded-3xl border border-slate-100 bg-slate-50/70 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)] sm:p-6">
       <form className="mx-auto max-w-6xl" onSubmit={submitRequest}>
         {/* Header */}
-        <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-blue-800 p-6 text-white shadow-xl sm:p-8">
-          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-blue-400/20 blur-3xl" />
-          <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-200">
-                {translate("Official Transport")}
-              </p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+        <div className="relative mb-4 overflow-hidden rounded-2xl border border-blue-400/20 bg-linear-to-br from-slate-950 via-blue-950 to-blue-800 px-4 py-4 text-white shadow-[0_16px_40px_-22px_rgba(30,64,175,0.8)] sm:mb-6 sm:px-6 sm:py-5">
+          <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-1/3 h-32 w-32 rounded-full bg-blue-500/20 blur-3xl" />
+
+          <div className="relative flex items-start gap-3 sm:gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-lg text-cyan-200 ring-1 ring-inset ring-white/20 backdrop-blur-sm sm:h-12 sm:w-12 sm:text-xl">
+              <FiTruck />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-cyan-200 sm:text-[10px]">
+                  {translate("Official Transport")}
+                </p>
+                <span className="rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-blue-50 ring-1 ring-inset ring-white/15 backdrop-blur-sm sm:text-[10px]">
+                  {translate("Draft ID")}: VMS-REQ-PENDING
+                </span>
+              </div>
+
+              <h1 className="mt-2 text-xl font-bold leading-tight tracking-tight sm:text-2xl">
                 {translate("Create New Vehicle Request")}
               </h1>
 
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">
+              <p className="mt-1.5 max-w-2xl text-xs leading-5 text-blue-100/90 sm:text-sm">
                 {translate(
                   "Please fill in the details below to request a vehicle for official business.",
                 )}
               </p>
             </div>
-
-            <span className="w-fit rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 ring-1 ring-inset ring-white/20 backdrop-blur-sm">
-              {translate("Draft ID")}: VMS-REQ-PENDING
-            </span>
           </div>
         </div>
 
