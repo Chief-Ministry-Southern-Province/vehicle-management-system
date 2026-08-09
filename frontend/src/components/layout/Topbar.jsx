@@ -14,8 +14,11 @@ const initials = (name) =>
 export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
   const { language, languages, setLanguage, t } = useLanguage();
+  const apiOrigin =
+    import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+    "http://127.0.0.1:8000";
   const profilePictureUrl = user?.profile_picture_path
-    ? `http://127.0.0.1:8000/${user.profile_picture_path}`
+    ? `${apiOrigin}/${String(user.profile_picture_path).replace(/^\/+/, "")}`
     : null;
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))

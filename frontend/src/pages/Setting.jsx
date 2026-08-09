@@ -64,6 +64,7 @@ export default function Setting() {
       if (updatedUser) {
         setAccount(updatedUser);
         setProfilePicture(null);
+        setPicturePreview(null);
         login({ ...user, ...updatedUser }, token);
       }
       toast.success("Profile updated successfully");
