@@ -58,12 +58,12 @@ export default function Topbar({ onMenuToggle }) {
           </div>
 
           <div className="min-w-0">
-            <div className="mb-0.5 hidden items-center gap-1.5 sm:flex">
+            {/* <div className="mb-0.5 hidden items-center gap-1.5 sm:flex">
               <FiShield className="text-[11px] text-blue-600 dark:text-blue-400" />
               <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                 Government of Sri Lanka
               </span>
-            </div>
+            </div> */}
             <h1 className="truncate text-sm font-extrabold tracking-tight text-slate-900 min-[390px]:text-base sm:text-xl dark:text-white">
               {t("app.name")}
             </h1>
