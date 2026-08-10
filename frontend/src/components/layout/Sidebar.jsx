@@ -180,7 +180,7 @@ const menuItems = [
         name: "Create Vehicle Request",
         path: "/createvehiclerequest",
         icon: <FiTruck />,
-        roles: ["department_officer"],
+        roles: ["employee", "department_officer", "subject_officer", "deputy_secretary", "senior_deputy_secretary", "secretary", "driver"],
       },
       {
         name: "Requests History",
@@ -194,12 +194,6 @@ const menuItems = [
   {
     title: "VEHICLE REQUESTS",
     items: [
-      {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["subject_officer"],
-      },
       {
         name: "Request History",
         path: "/subjectofficer/requesthistory",
@@ -260,12 +254,6 @@ const menuItems = [
   {
     title: "VEHICLE REQUESTS",
     items: [
-      {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["deputy_secretary"],
-      },
       {
         name: "Request History",
         path: "/requesthistory",

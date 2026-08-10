@@ -75,7 +75,7 @@ function App() {
             
 
             <Route path="/departmentofficerdashboard" element={withAuth(<DepartmentOfficerDashboard />)} />
-            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["department_officer", "subject_officer", "deputy_secretary"])} />
+            <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["employee", "department_officer", "subject_officer", "deputy_secretary", "senior_deputy_secretary", "secretary", "driver"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
             <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />

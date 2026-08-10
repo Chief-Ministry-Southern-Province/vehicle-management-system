@@ -3,9 +3,11 @@ import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { createVehicleRequest } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
+import { useAuth } from "../../context/useAuth";
 
 export default function VehicleRequest() {
   const { translate } = useLanguage();
+  const { user } = useAuth();
   const [form, setForm] = useState({
     purpose: "",
     destination: "",
@@ -72,9 +74,16 @@ export default function VehicleRequest() {
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-cyan-200 sm:text-[10px]">
-                  {translate("Official Transport")}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-cyan-200 sm:text-[10px]">
+                    {translate("Official Transport")}
+                  </p>
+                  {user?.role && (
+                    <span className="rounded-full bg-cyan-300/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-cyan-100 ring-1 ring-inset ring-cyan-200/20 sm:text-[9px]">
+                      {translate(user.role.replaceAll("_", " "))}
+                    </span>
+                  )}
+                </div>
                 <span className="rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-blue-50 ring-1 ring-inset ring-white/15 backdrop-blur-sm sm:text-[10px]">
                   {translate("Draft ID")}: VMS-REQ-PENDING
                 </span>
