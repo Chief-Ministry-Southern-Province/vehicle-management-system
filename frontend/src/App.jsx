@@ -124,6 +124,7 @@ function App() {
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />
+            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
 
 
           </Routes>

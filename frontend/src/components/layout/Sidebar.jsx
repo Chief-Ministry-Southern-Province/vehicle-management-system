@@ -469,7 +469,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           if (visibleItems.length === 0) return null;
 
           return (
-            <div key={section.title} className="mb-6 last:mb-2">
+            <div key={`${section.title}-${sIdx}`} className="mb-6 last:mb-2">
               <h3 className="mb-2.5 px-5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 {t(
                   `nav.${section.title.toLowerCase().replaceAll(" ", "_")}`,
