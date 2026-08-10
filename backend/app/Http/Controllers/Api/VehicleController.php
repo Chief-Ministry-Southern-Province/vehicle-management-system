@@ -87,6 +87,8 @@ class VehicleController extends Controller
             'engine_number' => ['nullable', 'string', 'max:100', Rule::unique('vehicles', 'engine_number')->ignore($vehicle)],
             'fuel_type' => ['nullable', 'string', 'max:100'],
             'fuel_capacity' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'fuel_efficiency' => ['nullable', 'numeric', 'gt:0', 'max:999999.99', 'required_with:fuel_efficiency_unit'],
+            'fuel_efficiency_unit' => ['nullable', Rule::in(['km/l', 'l/100km', 'km/kwh']), 'required_with:fuel_efficiency'],
             'seat_capacity' => ['nullable', 'integer', 'min:1', 'max:100'],
             'technical_notes' => ['nullable', 'string', 'max:5000'],
             'registration_expiry' => ['nullable', 'date'],

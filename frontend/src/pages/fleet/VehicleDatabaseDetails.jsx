@@ -22,6 +22,8 @@ const blank = {
   engine_number: "",
   fuel_type: "",
   fuel_capacity: "",
+  fuel_efficiency: "",
+  fuel_efficiency_unit: "km/l",
   seat_capacity: "",
   technical_notes: "",
   registration_expiry: "",
@@ -119,6 +121,7 @@ export default function VehicleDatabaseDetails() {
     try {
       const data = new FormData();
       Object.entries(vehicle).forEach(([key, value]) => {
+        if (key === "fuel_efficiency_unit" && !vehicle.fuel_efficiency) return;
         if (
           ![
             "id",
@@ -654,6 +657,32 @@ export default function VehicleDatabaseDetails() {
                 onChange={change}
                 className={field}
               />
+            </label>
+            <label>
+              Expected fuel efficiency
+              <div className="mt-2 flex overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50">
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  name="fuel_efficiency"
+                  value={vehicle.fuel_efficiency || ""}
+                  onChange={change}
+                  placeholder="e.g. 12.50"
+                  className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
+                />
+                <select
+                  name="fuel_efficiency_unit"
+                  value={vehicle.fuel_efficiency_unit || "km/l"}
+                  onChange={change}
+                  aria-label="Fuel efficiency unit"
+                  className="border-l border-slate-200 bg-slate-50 px-2 text-sm font-semibold text-slate-600 outline-none"
+                >
+                  <option value="km/l">km/L</option>
+                  <option value="l/100km">L/100 km</option>
+                  <option value="km/kwh">km/kWh</option>
+                </select>
+              </div>
             </label>
             <label>
               Registration expiry

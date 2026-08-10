@@ -15,6 +15,8 @@ const initialForm = {
   engine_number: "",
   fuel_type: "Diesel",
   fuel_capacity: "",
+  fuel_efficiency: "",
+  fuel_efficiency_unit: "km/l",
   seat_capacity: "",
   technical_notes: "",
   registration_expiry: "",
@@ -57,7 +59,10 @@ export default function RegisterVehicle() {
     setSaving(true);
     try {
       const data = new FormData();
-      Object.entries(form).forEach(([key, value]) => data.append(key, value));
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === "fuel_efficiency_unit" && !form.fuel_efficiency) return;
+        data.append(key, value);
+      });
       if (image) data.append("image", image);
       const response = await createVehicle(data);
       toast.success(response?.message || "Vehicle registered.");
@@ -222,6 +227,35 @@ export default function RegisterVehicle() {
                     onChange={change}
                     className={fieldClass}
                   />
+                </label>
+                <label>
+                  Expected fuel efficiency
+                  <div className="mt-2 flex overflow-hidden rounded-xl border border-slate-200 bg-white focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50">
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      name="fuel_efficiency"
+                      value={form.fuel_efficiency}
+                      onChange={change}
+                      placeholder="e.g. 12.50"
+                      className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
+                    />
+                    <select
+                      name="fuel_efficiency_unit"
+                      value={form.fuel_efficiency_unit}
+                      onChange={change}
+                      aria-label="Fuel efficiency unit"
+                      className="border-l border-slate-200 bg-slate-50 px-2 text-sm font-semibold text-slate-600 outline-none"
+                    >
+                      <option value="km/l">km/L</option>
+                      <option value="l/100km">L/100 km</option>
+                      <option value="km/kwh">km/kWh</option>
+                    </select>
+                  </div>
+                  <span className="mt-1.5 block text-xs text-slate-500">
+                    Enter the manufacturer-rated or approved fleet benchmark.
+                  </span>
                 </label>
                 <label>
                   Seat capacity
