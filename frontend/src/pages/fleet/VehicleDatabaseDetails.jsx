@@ -56,6 +56,7 @@ export default function VehicleDatabaseDetails() {
         setVehicle({
           ...blank,
           ...record,
+          fuel_efficiency_unit: record.fuel_efficiency_unit || "km/l",
           service_details: Array.isArray(record.service_details)
             ? record.service_details
             : [],
@@ -152,6 +153,8 @@ export default function VehicleDatabaseDetails() {
       setVehicle({
         ...blank,
         ...updatedVehicle,
+        fuel_efficiency_unit:
+          updatedVehicle.fuel_efficiency_unit || "km/l",
         service_details: updatedVehicle.service_details || [],
         repair_details: updatedVehicle.repair_details || [],
         fuel_details: updatedVehicle.fuel_details || [],
