@@ -378,7 +378,7 @@ const menuItems = [
 
       {
         name: "Drivers",
-        path: "/drivers",
+        path: "/driverdirectory",
         icon: <FiUsers />,
         roles: ["subject_officer"],
       },

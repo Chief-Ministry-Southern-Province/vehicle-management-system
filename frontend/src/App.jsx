@@ -91,7 +91,10 @@ function App() {
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
+            <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
+            <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
             <Route path="/pendingjourny" element={withAuth(<PendingJourny />, ["subject_officer"])} />
+            <Route path="/approvedjourny" element={withAuth(<ApprovedJourny />)} />
 
             
             
@@ -106,6 +109,8 @@ function App() {
             <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
+            <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
+            <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />)} />
             <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 

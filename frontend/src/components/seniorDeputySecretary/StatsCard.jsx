@@ -165,7 +165,7 @@ const createOverviewStats = (data) => [
     title: "Total Drivers",
     value: data.total_drivers ?? 0,
     icon: <FiUsers />,
-    path: "/drivers",
+    path: "/driverdetails",
     tone: "blue",
   },
 ];
