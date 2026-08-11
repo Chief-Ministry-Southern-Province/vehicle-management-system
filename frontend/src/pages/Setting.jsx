@@ -92,8 +92,11 @@ export default function Setting() {
   };
 
   const driver = account.driver;
+  const serverUrl =
+    import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+    "http://127.0.0.1:8000";
   const storedPicture = account.profile_picture_path
-    ? `http://127.0.0.1:8000/${account.profile_picture_path}`
+    ? `${serverUrl}/${account.profile_picture_path}`
     : null;
   const displayedPicture = picturePreview || storedPicture;
 
