@@ -1,4 +1,4 @@
-import { FiChevronDown, FiGlobe, FiMenu, FiShield, FiUser } from "react-icons/fi";
+import { FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import nationalEmblem from "../../assets/national-emblem.png";
