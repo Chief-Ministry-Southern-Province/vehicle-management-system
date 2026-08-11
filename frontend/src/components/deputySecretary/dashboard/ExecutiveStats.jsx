@@ -222,12 +222,12 @@ function StatCard({ title, value, icon, path, tone }) {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(path)}
       aria-label={`View ${title} details`}
       className={[
-        "group relative cursor-pointer overflow-hidden rounded-[18px]",
-        "border border-slate-100 bg-white/80 backdrop-blur-sm p-5 dark:border-slate-700 dark:bg-slate-800",
-        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)]",
+        "group relative min-h-[150px] cursor-pointer overflow-hidden rounded-[22px]",
+        "border border-white/80 bg-linear-to-br from-white via-white to-slate-50/80 p-4 dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/80 sm:min-h-[176px] sm:p-5",
+        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_14px_35px_-20px_rgba(15,23,42,0.28)]",
         "transition-all duration-300 ease-out",
-        "hover:-translate-y-1 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)]",
-        "hover:border-slate-200 active:translate-y-0 active:scale-[0.99]",
+        "hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_24px_48px_-20px_rgba(15,23,42,0.3)]",
+        "active:translate-y-0 active:scale-[0.985]",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         palette.ring,
       ].join(" ")}
@@ -235,16 +235,16 @@ function StatCard({ title, value, icon, path, tone }) {
       {/* ambient glow */}
       <div
         className={[
-          "pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full blur-2xl",
-          "opacity-60 transition-opacity duration-300 group-hover:opacity-100",
+          "pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full blur-3xl",
+          "opacity-70 transition-all duration-500 group-hover:scale-125 group-hover:opacity-100",
           palette.glow,
         ].join(" ")}
       />
 
-      <div className="relative flex items-start justify-between">
+      <div className="relative flex items-start justify-between gap-3">
         <div
           className={[
-            "flex h-11 w-11 items-center justify-center rounded-xl text-white text-lg shadow-md",
+            "flex h-11 w-11 items-center justify-center rounded-[14px] text-lg text-white shadow-lg shadow-slate-900/10 sm:h-12 sm:w-12 sm:text-xl",
             "bg-linear-to-br transition-transform duration-300",
             "group-hover:scale-110 group-hover:rotate-3",
             palette.icon,
@@ -253,22 +253,21 @@ function StatCard({ title, value, icon, path, tone }) {
           {icon}
         </div>
 
-        <FiArrowUpRight
-          className={[
-            "h-4 w-4 opacity-0 -translate-x-1 translate-y-1",
-            "transition-all duration-300",
-            "group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0",
-            palette.text,
-          ].join(" ")}
-        />
+        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 shadow-sm transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105 dark:border-slate-700 dark:bg-slate-800/80">
+          <FiArrowUpRight className={`h-4 w-4 ${palette.text}`} />
+        </span>
       </div>
 
-      <p className="relative mt-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+      <p className="relative mt-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400 sm:mt-5 sm:text-[13px]">
         {title}
       </p>
-      <h2 className="relative mt-1 text-[26px] leading-tight font-bold text-slate-800 dark:text-white tabular-nums">
+      <h2 className="relative mt-1.5 break-words text-[22px] font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white sm:text-[28px]">
         {animatedValue}
       </h2>
+      <p className="relative mt-3 flex items-center gap-2 text-[10px] font-semibold text-slate-400 sm:text-xs">
+        <span className={`h-1.5 w-1.5 rounded-full ${palette.glow}`} />
+        Tap to view details
+      </p>
     </div>
   );
 }
@@ -278,18 +277,19 @@ function StatCard({ title, value, icon, path, tone }) {
 /* ------------------------------------------------------------------ */
 function StatRow({ label, items, columns = 4 }) {
   return (
-    <div className="mb-6 last:mb-0">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
-        {label}
-      </h3>
+    <section className="mb-7 last:mb-0">
+      <div className="mb-3 flex items-center gap-3 sm:mb-4">
+        <h3 className="shrink-0 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sm:text-xs">{label}</h3>
+        <div className="h-px flex-1 bg-linear-to-r from-slate-200 to-transparent dark:from-slate-700" />
+      </div>
       <div
-        className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}
+        className={`grid gap-3 sm:grid-cols-2 sm:gap-4 ${columns === 3 ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"}`}
       >
         {items.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -351,7 +351,7 @@ export default function ExecutiveStats() {
   }, []);
 
   return (
-    <div>
+    <div className="rounded-[26px] border border-white/80 bg-white/60 p-3 shadow-[0_20px_50px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-5 lg:p-6">
       <StatRow
         label="Fleet & Approvals"
         items={createOverviewStats(data)}
