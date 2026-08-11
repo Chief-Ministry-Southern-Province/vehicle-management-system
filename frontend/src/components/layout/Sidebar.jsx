@@ -180,7 +180,7 @@ const menuItems = [
         name: "Create Vehicle Request",
         path: "/createvehiclerequest",
         icon: <FiTruck />,
-        roles: ["employee", "department_officer", "subject_officer", "deputy_secretary", "senior_deputy_secretary", "secretary", "driver"],
+        roles: ["department_officer", "subject_officer", "deputy_secretary",],
       },
       {
         name: "Requests History",
