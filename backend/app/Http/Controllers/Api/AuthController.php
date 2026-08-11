@@ -102,7 +102,7 @@ class AuthController extends Controller
         try {
             $credentials = $request->validated();
 
-            $user = User::where('email', $credentials['email'])->first();
+            $user = User::where('employee_id', $credentials['employee_id'])->first();
 
             if (! $user || ! Hash::check($credentials['password'], $user->password)) {
                 return response()->json([

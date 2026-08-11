@@ -652,17 +652,22 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
         )}
         <label className="block text-sm font-semibold">
           Parking location <span className="text-red-600">*</span>
-          <textarea
+          <select
             value={parkingLocation}
             onChange={(event) => setParkingLocation(event.target.value)}
-            rows={3}
-            maxLength={500}
             required
-            placeholder="For example: Office premises, main vehicle park; or outside office, Matara District Secretariat parking area."
-            className="mt-2 w-full rounded-xl border px-3 py-3 font-normal"
-          />
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+          >
+            <option value="" disabled>
+              Select a parking location
+            </option>
+            <option value="Office premises">Office premises</option>
+            <option value="Outside office premises">
+              Outside office premises
+            </option>
+          </select>
           <span className="mt-2 block text-xs font-normal text-slate-500">
-            Specify where the vehicle will be parked during or after this journey.
+            Select where the vehicle will be parked during or after this journey.
           </span>
         </label>
         {previousJourneysPanel}

@@ -163,7 +163,7 @@ const createOverviewStats = (data) => [
     title: "Available Drivers",
     value: data.available_drivers ?? 0,
     icon: <FiUsers />,
-    path: "/drivers?status=available",
+    path: "/driverdetails?status=available",
     tone: "blue",
   },
   {

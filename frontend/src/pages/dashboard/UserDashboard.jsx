@@ -5,43 +5,51 @@ import VehicleRequest from "../../components/employee/VehicleRequest";
 import { getMyVehicleRequests } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
-function StatCard({ title, value, description, icon, tone }) {
+function StatCard({ title, value, description, icon, tone, wide = false }) {
   const tones = {
     amber: {
       icon: "from-amber-400 to-orange-500 shadow-amber-500/25",
       accent: "from-amber-400 to-orange-500",
+      surface: "sm:from-amber-50/80 sm:via-white sm:to-white dark:sm:from-amber-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-amber-200 dark:sm:hover:border-amber-800/60",
     },
     emerald: {
       icon: "from-emerald-500 to-teal-500 shadow-emerald-500/25",
       accent: "from-emerald-400 to-teal-500",
+      surface: "sm:from-emerald-50/80 sm:via-white sm:to-white dark:sm:from-emerald-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-emerald-200 dark:sm:hover:border-emerald-800/60",
     },
     rose: {
       icon: "from-rose-500 to-red-600 shadow-rose-500/25",
       accent: "from-rose-400 to-red-500",
+      surface: "sm:from-rose-50/80 sm:via-white sm:to-white dark:sm:from-rose-950/20 dark:sm:via-slate-900 dark:sm:to-slate-900",
+      ring: "sm:hover:border-rose-200 dark:sm:hover:border-rose-800/60",
     },
   };
   const palette = tones[tone];
 
   return (
-    <article className="group relative min-h-52 overflow-hidden rounded-[20px] border border-slate-200 bg-white px-6 pb-6 pt-6 shadow-[0_2px_7px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-12px_rgba(15,23,42,0.28)] dark:border-slate-700 dark:bg-slate-900">
-      <div
-        className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br text-xl text-white shadow-lg transition-transform duration-300 group-hover:scale-105 ${palette.icon}`}
-      >
-        {icon}
+    <article className={`group relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white bg-linear-to-br p-3 shadow-[0_2px_7px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 sm:min-h-40 sm:rounded-[20px] sm:p-5 sm:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.35)] sm:hover:-translate-y-1 sm:hover:shadow-[0_18px_38px_-20px_rgba(15,23,42,0.35)] ${palette.surface} ${palette.ring} ${wide ? "col-span-2 md:col-span-1" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-sm text-white shadow-lg transition-transform duration-300 group-hover:scale-105 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-xl ${palette.icon}`}
+        >
+          {icon}
+        </div>
+        <p className="min-w-0 text-right text-2xl font-extrabold leading-none tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+          {value}
+        </p>
       </div>
 
-      <p className="mt-5 text-sm font-semibold uppercase tracking-[0.02em] text-slate-600 dark:text-slate-300">
+      <p className="mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 dark:text-slate-300 sm:mt-4 sm:text-xs sm:tracking-[0.08em]">
         {title}
       </p>
-      <p className="mt-1.5 text-3xl font-extrabold tracking-tight text-slate-950 dark:text-white">
-        {value}
-      </p>
-      <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
+      <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:mt-1.5 sm:text-sm">
         {description}
       </p>
 
       <div
-        className={`absolute inset-x-0 bottom-0 h-1 bg-linear-to-r ${palette.accent}`}
+        className={`absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r sm:h-1 ${palette.accent}`}
       />
     </article>
   );
@@ -97,18 +105,18 @@ export default function UserDashboard() {
   const statValue = (value) => (statsLoading ? "\u2014" : value);
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="mx-auto max-w-[1600px] space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold leading-tight text-gray-900 dark:text-white sm:text-3xl">
               {translate("Welcome back, {name}!").replace(
                 "{name}",
                 user?.name || "User",
               )}
             </h1>
 
-            <p className="text-gray-500 mt-1">
+            <p className="mt-1 text-sm leading-5 text-gray-500 sm:text-base">
               {translate(
                 "Here is what's happening with your transport requests today.",
               )}
@@ -117,7 +125,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 md:gap-5">
           <StatCard
             title={translate("Pending Requests")}
             value={statValue(stats.pending)}
@@ -140,6 +148,7 @@ export default function UserDashboard() {
             description={translate("Requests not approved")}
             icon={<FiXCircle />}
             tone="rose"
+            wide
           />
         </div>
         {statsError && (

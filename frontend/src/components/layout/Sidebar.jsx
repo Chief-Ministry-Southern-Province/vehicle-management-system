@@ -180,7 +180,7 @@ const menuItems = [
         name: "Create Vehicle Request",
         path: "/createvehiclerequest",
         icon: <FiTruck />,
-        roles: ["department_officer"],
+        roles: ["department_officer", "subject_officer", "deputy_secretary",],
       },
       {
         name: "Requests History",
@@ -194,12 +194,6 @@ const menuItems = [
   {
     title: "VEHICLE REQUESTS",
     items: [
-      {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["subject_officer"],
-      },
       {
         name: "Request History",
         path: "/subjectofficer/requesthistory",
@@ -260,12 +254,6 @@ const menuItems = [
   {
     title: "VEHICLE REQUESTS",
     items: [
-      {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["deputy_secretary"],
-      },
       {
         name: "Request History",
         path: "/requesthistory",
@@ -390,7 +378,7 @@ const menuItems = [
 
       {
         name: "Drivers",
-        path: "/drivers",
+        path: "/driverdirectory",
         icon: <FiUsers />,
         roles: ["subject_officer"],
       },
@@ -481,7 +469,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           if (visibleItems.length === 0) return null;
 
           return (
-            <div key={section.title} className="mb-6 last:mb-2">
+            <div key={`${section.title}-${sIdx}`} className="mb-6 last:mb-2">
               <h3 className="mb-2.5 px-5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                 {t(
                   `nav.${section.title.toLowerCase().replaceAll(" ", "_")}`,

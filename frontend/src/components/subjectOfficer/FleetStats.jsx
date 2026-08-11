@@ -132,11 +132,11 @@ export default function FleetStats() {
 
   if (loading)
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 7 }).map((_, index) => (
           <div
             key={index}
-            className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white"
+            className={`h-28 animate-pulse rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 sm:h-36 sm:rounded-2xl ${index === 6 ? "col-span-2 sm:col-span-1" : ""}`}
           />
         ))}
       </div>
@@ -149,26 +149,28 @@ export default function FleetStats() {
     );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {stats.map((item) => (
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+      {stats.map((item, index) => (
         <div
           key={item.title}
-          className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+          className={`relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl sm:p-5 sm:hover:-translate-y-1 sm:hover:shadow-lg ${index === stats.length - 1 ? "col-span-2 sm:col-span-1" : ""}`}
         >
-          <div
-            className={`flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r text-white shadow-md ${item.bg}`}
-          >
-            {item.icon}
+          <div className="flex min-w-0 items-start justify-between gap-2 sm:block">
+            <div
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-r text-sm text-white shadow-md sm:h-11 sm:w-11 sm:rounded-xl sm:text-base ${item.bg}`}
+            >
+              {item.icon}
+            </div>
+            <h2 className="min-w-0 break-words text-right text-lg font-bold leading-tight text-slate-900 dark:text-white sm:mt-1 sm:text-left sm:text-2xl">
+              {item.value}
+            </h2>
           </div>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="mt-2 break-words text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-500 dark:text-slate-400 sm:mt-4 sm:text-xs sm:font-semibold">
             {item.title}
           </p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900">
-            {item.value}
-          </h2>
-          <p className="mt-1 text-xs text-slate-400">{item.subtitle}</p>
+          <p className="mt-0.5 line-clamp-2 break-words text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:mt-1 sm:text-xs">{item.subtitle}</p>
           <div
-            className={`absolute inset-x-0 bottom-0 h-1 bg-linear-to-r ${item.bg}`}
+            className={`absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r sm:h-1 ${item.bg}`}
           />
         </div>
       ))}

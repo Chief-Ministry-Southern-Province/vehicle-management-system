@@ -95,27 +95,27 @@ export default function MonthlyCostAnalysis({
   };
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+    <section className="min-w-0 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:p-5">
+      <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:items-center">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 sm:h-11 sm:w-11">
             <FiBarChart2 />
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">
               Monthly Cost Analysis
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400 sm:text-sm">
               Fuel, service, and repair expenditure by month
             </p>
           </div>
         </div>
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+        <label className="flex w-full items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 sm:w-auto">
           <FiCalendar className="text-slate-400" /> Year
           <select
             value={year}
             onChange={(event) => setYear(event.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:min-h-0 sm:flex-none"
           >
             {years.map((option) => (
               <option key={option}>{option}</option>
@@ -125,7 +125,7 @@ export default function MonthlyCostAnalysis({
       </div>
 
       <div
-        className="mt-5 h-[380px] w-full"
+        className="mt-4 h-[280px] min-w-0 w-full sm:mt-5 sm:h-[340px] lg:h-[380px]"
         role="img"
         aria-label={`Monthly fuel, service, and repair costs for ${year}`}
       >
@@ -141,7 +141,7 @@ export default function MonthlyCostAnalysis({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
-            margin={{ top: 12, right: 20, left: 16, bottom: 8 }}
+            margin={{ top: 12, right: 4, left: 0, bottom: 8 }}
           >
             <CartesianGrid
               strokeDasharray="3 3"
@@ -153,19 +153,14 @@ export default function MonthlyCostAnalysis({
               tick={{ fill: "#64748b", fontSize: 12 }}
               axisLine={{ stroke: "#cbd5e1" }}
               tickLine={false}
+              minTickGap={14}
             />
             <YAxis
               tickFormatter={formatAxisValue}
               tick={{ fill: "#64748b", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
-              label={{
-                value: "Cost (LKR)",
-                angle: -90,
-                position: "insideLeft",
-                fill: "#64748b",
-                offset: -4,
-              }}
+              width={44}
             />
             <Tooltip
               formatter={(value, name) => [
@@ -177,13 +172,14 @@ export default function MonthlyCostAnalysis({
             />
             <Legend
               formatter={(value) => costLabels[value] || value}
+              wrapperStyle={{ fontSize: 12, lineHeight: "20px" }}
             />
             <Line
               type="monotone"
               dataKey="fuelCost"
               stroke="#0ea5e9"
               strokeWidth={3}
-              dot={{ r: 3, fill: "#0ea5e9" }}
+              dot={false}
               activeDot={{ r: 6 }}
             />
             <Line
@@ -191,7 +187,7 @@ export default function MonthlyCostAnalysis({
               dataKey="maintenanceCost"
               stroke="#d946ef"
               strokeWidth={3}
-              dot={{ r: 3, fill: "#d946ef" }}
+              dot={false}
               activeDot={{ r: 6 }}
             />
             <Line
@@ -199,7 +195,7 @@ export default function MonthlyCostAnalysis({
               dataKey="repairCost"
               stroke="#ef4444"
               strokeWidth={3}
-              dot={{ r: 3, fill: "#ef4444" }}
+              dot={false}
               activeDot={{ r: 6 }}
             />
           </LineChart>

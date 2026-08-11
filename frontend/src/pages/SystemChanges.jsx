@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiAlertCircle, FiFilter, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiAlertCircle, FiBarChart2, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { createDepartment, deleteDepartment, deleteUser, getDepartments, getUsers } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
 
@@ -13,6 +14,45 @@ const roleLabels = {
   secretary: "Secretary",
   driver: "Driver",
 };
+
+const chartColors = ["#1d4ed8", "#0891b2", "#059669", "#7c3aed", "#d97706", "#e11d48", "#475569"];
+
+function DistributionChart({ data, emptyMessage, layout = "vertical" }) {
+  if (!data.length) {
+    return <div className="flex h-72 items-center justify-center text-sm text-slate-500">{emptyMessage}</div>;
+  }
+
+  const vertical = layout === "vertical";
+
+  return (
+    <div className="h-72 w-full" role="img" aria-label="Employee distribution chart">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          layout={layout}
+          margin={vertical ? { top: 8, right: 24, bottom: 8, left: 22 } : { top: 8, right: 12, bottom: 42, left: 0 }}
+        >
+          <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" horizontal={!vertical} vertical={vertical} />
+          {vertical ? (
+            <>
+              <XAxis type="number" allowDecimals={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+              <YAxis type="category" dataKey="name" width={132} tick={{ fill: "#475569", fontSize: 11 }} />
+            </>
+          ) : (
+            <>
+              <XAxis dataKey="name" angle={-25} textAnchor="end" interval={0} height={68} tick={{ fill: "#475569", fontSize: 10 }} />
+              <YAxis allowDecimals={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+            </>
+          )}
+          <Tooltip formatter={(value) => [`${value} ${value === 1 ? "employee" : "employees"}`, "Employees"]} />
+          <Bar dataKey="count" radius={vertical ? [0, 6, 6, 0] : [6, 6, 0, 0]} maxBarSize={34}>
+            {data.map((entry, index) => <Cell key={entry.key} fill={chartColors[index % chartColors.length]} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export default function SystemChanges() {
   const [users, setUsers] = useState([]);
@@ -32,11 +72,38 @@ export default function SystemChanges() {
     [users],
   );
 
-  const availableDepartments = useMemo(
-    () => [...new Set(users.map((user) => user.department).filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b)),
-    [users],
-  );
+  const availableDepartments = useMemo(() => [...new Set([
+    ...departments.map((department) => department.name),
+    ...users.map((user) => user.department).filter(Boolean),
+  ])].sort((a, b) => a.localeCompare(b)), [departments, users]);
+
+  const roleDistribution = useMemo(() => {
+    const counts = users.reduce((result, user) => {
+      const role = user.role || "unassigned";
+      result[role] = (result[role] || 0) + 1;
+      return result;
+    }, {});
+
+    return Object.entries(counts)
+      .map(([role, count]) => ({ key: role, name: roleLabels[role] || "Unassigned", count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [users]);
+
+  const departmentDistribution = useMemo(() => {
+    const counts = users.reduce((result, user) => {
+      const department = user.department || "Unassigned";
+      result[department] = (result[department] || 0) + 1;
+      return result;
+    }, {});
+
+    departments.forEach((department) => {
+      if (!(department.name in counts)) counts[department.name] = 0;
+    });
+
+    return Object.entries(counts)
+      .map(([department, count]) => ({ key: department, name: department, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [departments, users]);
 
   const filteredUsers = useMemo(
     () => users.filter((user) => (
@@ -138,57 +205,62 @@ export default function SystemChanges() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.7fr)]">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="rounded-lg bg-blue-100 p-2 text-blue-700"><FiShield /></span>
+              <span className="rounded-lg bg-blue-100 p-2 text-blue-700"><FiBarChart2 /></span>
               <div>
-                <h3 className="font-bold text-slate-900">Super Admin privileges</h3>
-                <p className="text-sm text-slate-500">The Assistant Secretary can manage users and add departments.</p>
+                <h3 className="font-bold text-slate-900">Employees by role</h3>
+                <p className="text-sm text-slate-500">Compare how system users are distributed across access roles.</p>
               </div>
             </div>
-            <form onSubmit={addDepartment} className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <label className="flex-1">
-                <span className="sr-only">Department name</span>
-                <input
-                  value={departmentName}
-                  onChange={(event) => setDepartmentName(event.target.value)}
-                  maxLength="255"
-                  required
-                  placeholder="Enter department name"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                />
-              </label>
-              <button
-                type="submit"
-                disabled={addingDepartment || !departmentName.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0b3474] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#08285b] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <FiPlus /> {addingDepartment ? "Adding..." : "Add department"}
-              </button>
-            </form>
+            <DistributionChart data={roleDistribution} emptyMessage="No role data is available." />
           </div>
-          <div className="rounded-xl border border-slate-200 p-5">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Configured departments</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{departments.length}</p>
-            <div className="mt-3 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
-              {departments.map((department) => (
-                <span key={department.id} className="inline-flex items-center gap-1 rounded-full bg-slate-100 py-1 pl-3 pr-1 text-xs font-semibold text-slate-700">
-                  {department.name}
-                  <button
-                    type="button"
-                    onClick={() => removeDepartment(department)}
-                    disabled={removingDepartmentId === department.id}
-                    title={`Remove ${department.name}`}
-                    aria-label={`Remove ${department.name}`}
-                    className="rounded-full p-1.5 text-slate-400 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <FiTrash2 aria-hidden="true" />
-                  </button>
-                </span>
-              ))}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="rounded-lg bg-cyan-100 p-2 text-cyan-700"><FiLayers /></span>
+              <div>
+                <h3 className="font-bold text-slate-900">Employees by department</h3>
+                <p className="text-sm text-slate-500">Compare staffing across configured departments.</p>
+              </div>
             </div>
+            <DistributionChart data={departmentDistribution} emptyMessage="No department data is available." />
           </div>
+        </div>
+
+        <section className="mt-8 rounded-2xl border border-cyan-200 bg-cyan-50/40 p-5" aria-labelledby="department-management-title">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-700">Organization setup</p>
+              <h2 id="department-management-title" className="mt-1 text-2xl font-bold text-slate-900">Department Management</h2>
+              <p className="mt-1 text-sm text-slate-500">Create and maintain departments separately from user accounts.</p>
+            </div>
+            <div className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-cyan-800 shadow-sm">{departments.length} departments</div>
+          </div>
+          <form onSubmit={addDepartment} className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <label className="flex-1">
+              <span className="sr-only">Department name</span>
+              <input value={departmentName} onChange={(event) => setDepartmentName(event.target.value)} maxLength="255" required placeholder="Enter department name" className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" />
+            </label>
+            <button type="submit" disabled={addingDepartment || !departmentName.trim()} className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-60">
+              <FiPlus /> {addingDepartment ? "Adding..." : "Add department"}
+            </button>
+          </form>
+          <div className="mt-4 flex max-h-36 flex-wrap gap-2 overflow-y-auto">
+            {departments.length === 0 ? <p className="text-sm text-slate-500">No departments configured.</p> : departments.map((department) => (
+              <span key={department.id} className="inline-flex items-center gap-1 rounded-full border border-cyan-100 bg-white py-1 pl-3 pr-1 text-xs font-semibold text-slate-700 shadow-sm">
+                {department.name}
+                <button type="button" onClick={() => removeDepartment(department)} disabled={removingDepartmentId === department.id} title={`Remove ${department.name}`} aria-label={`Remove ${department.name}`} className="rounded-full p-1.5 text-slate-400 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                  <FiTrash2 aria-hidden="true" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <div className="mt-8 border-t border-slate-200 pt-7">
+          <h2 className="text-2xl font-bold text-slate-900">Registered Users</h2>
+          <p className="mt-1 text-sm text-slate-500">Filter, review, and remove individual system accounts.</p>
         </div>
 
         <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end">
