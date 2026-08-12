@@ -97,8 +97,14 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       <div className="relative h-[360px] w-full cursor-crosshair overflow-hidden rounded-2xl border border-slate-200 bg-slate-100" onClick={selectPoint} role="application" aria-label={translate("Map location selector")}>
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / WIDTH) * 100}%`, height: `${(TILE_SIZE / HEIGHT) * 100}%`, left: `${(tile.left / WIDTH) * 100}%`, top: `${(tile.top / HEIGHT) * 100}%` }} />)}
-          {routePath && <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points={routePath} fill="none" stroke="#2563eb" strokeWidth="0.8" vectorEffect="non-scaling-stroke" /></svg>}
-          {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / WIDTH) * 100}%`, top: `${(position.top / HEIGHT) * 100}%` }}>{label}</span>)}
+          {routePath && (
+            <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full drop-shadow-md" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <polyline points={routePath} fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <polyline points={routePath} fill="none" stroke="#2563eb" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <polyline points={routePath} fill="none" stroke="#67e8f9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            </svg>
+          )}
+          {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / WIDTH) * 100}%`, top: `${(position.top / HEIGHT) * 100}%` }}>{label}</span>)}
         </div>
         <div className="absolute right-3 top-3 flex flex-col gap-1" onClick={(event) => event.stopPropagation()}>
           <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-2 shadow"><FiPlus /></button>
