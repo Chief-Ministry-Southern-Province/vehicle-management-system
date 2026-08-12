@@ -39,6 +39,15 @@ function Detail({ label, children }) {
     </div>
   );
 }
+
+function savedLocation(label, latitude, longitude) {
+  if (label) return label;
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  return Number.isFinite(lat) && Number.isFinite(lng)
+    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    : "Not recorded";
+}
 function Timeline({ request }) {
   const steps = [
     {
@@ -258,7 +267,11 @@ export default function EmployeeRequestDetails({
                     <Detail label="Starting location">
                       <span className="inline-flex items-center gap-2">
                         <FiMapPin className="text-emerald-600" />
-                        {request.starting_location || "Not recorded"}
+                        {savedLocation(
+                          request.starting_location,
+                          request.starting_latitude,
+                          request.starting_longitude,
+                        )}
                       </span>
                     </Detail>
                   </div>
@@ -266,7 +279,11 @@ export default function EmployeeRequestDetails({
                     <Detail label="Ending location">
                       <span className="inline-flex items-center gap-2">
                         <FiMapPin className="text-red-500" />
-                        {request.destination}
+                        {savedLocation(
+                          request.destination,
+                          request.destination_latitude,
+                          request.destination_longitude,
+                        )}
                       </span>
                     </Detail>
                   </div>

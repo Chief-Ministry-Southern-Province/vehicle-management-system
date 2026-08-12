@@ -140,6 +140,14 @@ export default function VehicleRequest() {
 
   const submitRequest = async (event) => {
     event.preventDefault();
+    if (!startPoint || !endPoint) {
+      toast.error(translate("Select both locations to calculate distance"));
+      return;
+    }
+    if (routeLoading || !route || distanceKm === null) {
+      toast.error(routeError || translate("A feasible driving route could not be calculated for these locations."));
+      return;
+    }
     setSubmitting(true);
 
     try {
