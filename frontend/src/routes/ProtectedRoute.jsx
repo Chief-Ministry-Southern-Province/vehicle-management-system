@@ -3,9 +3,11 @@ import { useAuth } from "../context/useAuth";
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { user, token } = useAuth();
+  const hasSession = Boolean(token && user);
+  const hasRole = Boolean(user?.role);
 
-  if (!user && !token) {
-    return <Navigate to="/" />;
+  if (!hasSession || !hasRole) {
+    return <Navigate to="/" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
