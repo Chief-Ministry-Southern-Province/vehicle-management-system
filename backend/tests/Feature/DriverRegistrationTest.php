@@ -124,7 +124,13 @@ class DriverRegistrationTest extends TestCase
 
         $this->actingAs($employee)->postJson('/api/vehicle-requests', [
             'purpose' => 'Annual General Meeting',
+            'starting_location' => 'Dakshinapaya, Labuduwa',
+            'starting_latitude' => 6.0535,
+            'starting_longitude' => 80.2200,
             'destination' => 'Chief Secretary office',
+            'destination_latitude' => 6.9271,
+            'destination_longitude' => 79.8612,
+            'distance_km' => 99999,
             'departure_at' => '2026-07-26T10:00',
             'expected_return_at' => '2026-07-26T14:00',
             'passenger_count' => 4,
@@ -133,11 +139,30 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.vehicle_request.departure_at', '2026-07-26T04:30:00.000000Z')
             ->assertJsonPath('data.vehicle_request.expected_return_at', '2026-07-26T08:30:00.000000Z');
 
+        $this->assertEqualsWithDelta(104.5, VehicleRequest::firstOrFail()->distance_km, 1.0);
+        $this->assertSame(7200, VehicleRequest::firstOrFail()->route_duration_seconds);
+        $this->assertCount(3, VehicleRequest::firstOrFail()->route_geometry);
+
         $this->assertDatabaseHas('vehicle_requests', [
             'user_id' => $employee->id,
             'departure_at' => '2026-07-26 04:30:00',
             'expected_return_at' => '2026-07-26 08:30:00',
         ]);
+    }
+
+    public function test_authenticated_user_can_calculate_a_feasible_driving_route(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee', 'status' => 'active']);
+
+        $this->actingAs($employee)->postJson('/api/vehicle-requests/route', [
+            'starting_latitude' => 6.0535,
+            'starting_longitude' => 80.2200,
+            'destination_latitude' => 6.9271,
+            'destination_longitude' => 79.8612,
+        ])->assertOk()
+            ->assertJsonPath('data.route.distance_km', 104.5)
+            ->assertJsonPath('data.route.duration_seconds', 7200)
+            ->assertJsonCount(3, 'data.route.geometry');
     }
 
     public function test_active_driver_status_reflects_the_journey_state_for_its_time_slot(): void

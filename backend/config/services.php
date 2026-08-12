@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'directions' => [
+        'url' => env('DIRECTIONS_API_URL', 'https://router.project-osrm.org'),
+        'profile' => env('DIRECTIONS_PROFILE', 'driving'),
+        'timeout' => (int) env('DIRECTIONS_TIMEOUT', 15),
+    ],
+
 ];

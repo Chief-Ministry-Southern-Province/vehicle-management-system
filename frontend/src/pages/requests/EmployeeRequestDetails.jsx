@@ -255,13 +255,24 @@ export default function EmployeeRequestDetails({
                     </div>
                   )}
                   <div className="sm:col-span-2">
-                    <Detail label="Destination">
+                    <Detail label="Starting location">
+                      <span className="inline-flex items-center gap-2">
+                        <FiMapPin className="text-emerald-600" />
+                        {request.starting_location || "Not recorded"}
+                      </span>
+                    </Detail>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Detail label="Ending location">
                       <span className="inline-flex items-center gap-2">
                         <FiMapPin className="text-red-500" />
                         {request.destination}
                       </span>
                     </Detail>
                   </div>
+                  <Detail label="Calculated distance">
+                    {request.distance_km != null ? `${Number(request.distance_km).toFixed(2)} km` : "Not recorded"}
+                  </Detail>
                 </dl>
               </section>
 
