@@ -347,7 +347,12 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($deputy)
             ->postJson('/api/vehicle-requests', [
                 'purpose' => 'Official meeting',
+                'starting_location' => 'Dakshinapaya, Labuduwa',
+                'starting_latitude' => 6.0535,
+                'starting_longitude' => 80.2200,
                 'destination' => 'Colombo',
+                'destination_latitude' => 6.9271,
+                'destination_longitude' => 79.8612,
                 'departure_at' => '2026-08-10 09:00',
                 'expected_return_at' => '2026-08-10 15:00',
                 'passenger_count' => 2,

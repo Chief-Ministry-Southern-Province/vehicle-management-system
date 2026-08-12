@@ -9,6 +9,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -881,7 +882,12 @@ class VehicleRequestController extends Controller
     {
         $validated = $request->validate([
             'purpose' => ['required', 'string', 'max:255'],
+            'starting_location' => ['required', 'string', 'max:255'],
+            'starting_latitude' => ['required', 'numeric', 'between:5.7,10'],
+            'starting_longitude' => ['required', 'numeric', 'between:79.5,82'],
             'destination' => ['required', 'string', 'max:255'],
+            'destination_latitude' => ['required', 'numeric', 'between:5.7,10'],
+            'destination_longitude' => ['required', 'numeric', 'between:79.5,82'],
             'departure_at' => ['required', 'date'],
             'expected_return_at' => ['required', 'date', 'after:departure_at'],
             'passenger_count' => ['required', 'integer', 'min:1', 'max:100'],
@@ -901,6 +907,17 @@ class VehicleRequestController extends Controller
 
             // The uploaded file itself is not a database column; store only its metadata.
             unset($validated['attachment']);
+
+            // Route data is authoritative server data. Never accept client-supplied values.
+            $route = $this->fetchDrivingRoute(
+                (float) $validated['starting_latitude'],
+                (float) $validated['starting_longitude'],
+                (float) $validated['destination_latitude'],
+                (float) $validated['destination_longitude'],
+            );
+            $validated['distance_km'] = $route['distance_km'];
+            $validated['route_duration_seconds'] = $route['duration_seconds'];
+            $validated['route_geometry'] = $route['geometry'];
 
             // datetime-local inputs contain no offset and represent Sri Lankan
             // wall-clock time. Persist them as UTC for unambiguous API output.
@@ -927,6 +944,13 @@ class VehicleRequestController extends Controller
                 'message' => 'Vehicle request submitted successfully.',
                 'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name')],
             ], 201);
+        } catch (\RuntimeException $e) {
+            Log::warning('Unable to calculate a driving route while creating a request.', ['message' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'A feasible driving route could not be calculated for these locations.',
+            ], 422);
         } catch (Throwable $e) {
             Log::error('Unable to create vehicle request.', ['exception' => $e::class, 'message' => $e->getMessage()]);
 
@@ -935,6 +959,60 @@ class VehicleRequestController extends Controller
                 'message' => 'Unable to submit the vehicle request. Please try again.',
             ], 500);
         }
+    }
+
+    public function route(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'starting_latitude' => ['required', 'numeric', 'between:5.7,10'],
+            'starting_longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'destination_latitude' => ['required', 'numeric', 'between:5.7,10'],
+            'destination_longitude' => ['required', 'numeric', 'between:79.5,82'],
+        ]);
+
+        try {
+            return response()->json(['success' => true, 'data' => ['route' => $this->fetchDrivingRoute(
+                (float) $validated['starting_latitude'],
+                (float) $validated['starting_longitude'],
+                (float) $validated['destination_latitude'],
+                (float) $validated['destination_longitude'],
+            )]]);
+        } catch (Throwable $e) {
+            Log::warning('Directions service could not calculate a route.', ['message' => $e->getMessage()]);
+
+            return response()->json(['success' => false, 'message' => 'A feasible driving route could not be calculated for these locations.'], 422);
+        }
+    }
+
+    private function fetchDrivingRoute(float $startLat, float $startLng, float $endLat, float $endLng): array
+    {
+        $baseUrl = rtrim((string) config('services.directions.url'), '/');
+        $profile = rawurlencode((string) config('services.directions.profile', 'driving'));
+        $coordinates = implode(';', ["{$startLng},{$startLat}", "{$endLng},{$endLat}"]);
+        try {
+            $response = Http::acceptJson()
+                ->timeout(config('services.directions.timeout', 15))
+                ->retry(2, 250)
+                ->get("{$baseUrl}/route/v1/{$profile}/{$coordinates}", [
+                    'overview' => 'full',
+                    'geometries' => 'geojson',
+                    'steps' => 'false',
+                ])->throw()->json();
+        } catch (Throwable $e) {
+            throw new \RuntimeException('Directions service is unavailable.', previous: $e);
+        }
+
+        if (($response['code'] ?? null) !== 'Ok' || ! isset($response['routes'][0]['distance'], $response['routes'][0]['geometry']['coordinates'])) {
+            throw new \RuntimeException('Directions service returned no route.');
+        }
+
+        $route = $response['routes'][0];
+
+        return [
+            'distance_km' => round(((float) $route['distance']) / 1000, 2),
+            'duration_seconds' => (int) round((float) ($route['duration'] ?? 0)),
+            'geometry' => $route['geometry']['coordinates'],
+        ];
     }
 
     private function departmentRequests(string $department): Builder

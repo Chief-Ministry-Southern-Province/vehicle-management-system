@@ -30,7 +30,9 @@ export default function RequestOverview({ request }) {
           </span>
         </Detail>
         <Detail label="Purpose">{request.purpose}</Detail>
-        <Detail label="Destination">{request.destination}</Detail>
+        <Detail label="Starting Location">{request.starting_location || "Not recorded"}</Detail>
+        <Detail label="Ending Location">{request.destination}</Detail>
+        <Detail label="Calculated Distance">{request.distance_km != null ? `${Number(request.distance_km).toFixed(2)} km` : "Not recorded"}</Detail>
         <Detail label="Departure">
           {formatLocalDateTime(request.departure_at)}
         </Detail>

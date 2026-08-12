@@ -101,7 +101,7 @@ submitted request
   -> driver completes journey
 ```
 
-Requests include requester, purpose, destination, departure/return times, passenger count/names, optional attachment, and workflow audit fields. Allocation records the selected vehicle/driver, allocator, time, parking location, and notification state. Reallocation preserves previous vehicle/driver plus reason, actor, and timestamp.
+Requests include requester, purpose, map-selected starting/ending coordinates, their display labels, a server-calculated feasible driving-route distance and geometry, departure/return times, passenger count/names, optional attachment, and workflow audit fields. Route data is fetched from the configured OSRM-compatible Directions API and cannot be supplied or edited by the requester. Allocation records the selected vehicle/driver, allocator, time, parking location, and notification state. Reallocation preserves previous vehicle/driver plus reason, actor, and timestamp.
 
 Key workflow rules enforced by the backend and covered by tests include:
 
@@ -146,7 +146,7 @@ Primary domain entities and relationships:
 
 - `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens.
 - `Department`: unique name and optional creating user.
-- `VehicleRequest`: belongs to requesting user; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
+- `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
 - `Driver`: may be assigned to many requests and has JSON current/previous assignment data.
 - `VehicleIssueReport`: belongs to a driver and optionally a vehicle and vehicle request.
@@ -180,6 +180,8 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
+- Vehicle-request location text is resolved through the configurable `VITE_GEOCODING_API_URL` search endpoint with results restricted to Sri Lanka (`countrycodes=lk`). The default is the public OpenStreetMap Nominatim search service; preserve attribution and avoid per-keystroke autocomplete or request rates that violate the provider policy.
+- The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.

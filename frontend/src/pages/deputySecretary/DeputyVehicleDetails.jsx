@@ -255,6 +255,16 @@ export default function DeputyVehicleDetails() {
                 icon={<FiDroplet />}
               />
               <Detail
+                label="Fuel Efficiency"
+                value={
+                  vehicle.fuel_efficiency == null ||
+                  vehicle.fuel_efficiency === ""
+                    ? null
+                    : `${vehicle.fuel_efficiency} ${vehicle.fuel_efficiency_unit || "km/l"}`
+                }
+                icon={<FiDroplet />}
+              />
+              <Detail
                 label={
                   language === "si"
                     ? "ආදායම් බලපත්‍රයේ වලංගු කාලය අවසන් වන දිනය"

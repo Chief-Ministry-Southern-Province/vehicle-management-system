@@ -1,16 +1,24 @@
 import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave, FiTruck } from "react-icons/fi";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { createVehicleRequest } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
+import LocationMapPicker from "./LocationMapPicker";
+
+const formatPoint = (point) => point ? `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}` : "";
 
 export default function VehicleRequest() {
   const { translate } = useLanguage();
   const { user } = useAuth();
   const [form, setForm] = useState({
     purpose: "",
+    starting_location: "",
+    starting_latitude: "",
+    starting_longitude: "",
     destination: "",
+    destination_latitude: "",
+    destination_longitude: "",
     departure_at: "",
     expected_return_at: "",
     passenger_count: 1,
@@ -18,7 +26,112 @@ export default function VehicleRequest() {
   });
   const [attachment, setAttachment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [activePoint, setActivePoint] = useState("start");
+  const [focusPoint, setFocusPoint] = useState(null);
+  const [searching, setSearching] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState("");
   const fileInputRef = useRef(null);
+  const startPoint = form.starting_latitude === "" ? null : { lat: Number(form.starting_latitude), lng: Number(form.starting_longitude) };
+  const endPoint = form.destination_latitude === "" ? null : { lat: Number(form.destination_latitude), lng: Number(form.destination_longitude) };
+  const distanceKm = route?.distance_km ?? null;
+
+  useEffect(() => {
+    if (!startPoint || !endPoint) {
+      setRoute(null);
+      setRouteError("");
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setRouteLoading(true);
+      setRouteError("");
+      try {
+        const directionsUrl = (import.meta.env.VITE_DIRECTIONS_API_URL || "https://router.project-osrm.org").replace(/\/$/, "");
+        const coordinates = `${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}`;
+        const response = await fetch(`${directionsUrl}/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=false`);
+        if (!response.ok) throw new Error("Directions service request failed");
+        const result = await response.json();
+        const drivingRoute = result?.routes?.[0];
+        if (result?.code !== "Ok" || !drivingRoute?.geometry?.coordinates) throw new Error("No feasible route found");
+        if (!cancelled) setRoute({
+          distance_km: Number((drivingRoute.distance / 1000).toFixed(2)),
+          duration_seconds: Math.round(drivingRoute.duration || 0),
+          geometry: drivingRoute.geometry.coordinates,
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setRoute(null);
+          setRouteError(error?.message || translate("A feasible driving route could not be calculated for these locations."));
+        }
+      } finally {
+        if (!cancelled) setRouteLoading(false);
+      }
+    }, 400);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [startPoint?.lat, startPoint?.lng, endPoint?.lat, endPoint?.lng, translate]);
+
+  const selectLocation = (type, point, label = null, shouldFocus = false) => {
+    const formatted = label || formatPoint(point);
+    setForm((current) => type === "start" ? {
+      ...current,
+      starting_location: formatted,
+      starting_latitude: point.lat,
+      starting_longitude: point.lng,
+    } : {
+      ...current,
+      destination: formatted,
+      destination_latitude: point.lat,
+      destination_longitude: point.lng,
+    });
+    if (shouldFocus) setFocusPoint(point);
+    setActivePoint(type === "start" ? "end" : "start");
+  };
+
+  const updateLocationText = (type, value) => {
+    setForm((current) => type === "start" ? {
+      ...current,
+      starting_location: value,
+      starting_latitude: "",
+      starting_longitude: "",
+    } : {
+      ...current,
+      destination: value,
+      destination_latitude: "",
+      destination_longitude: "",
+    });
+  };
+
+  const findLocation = async (type) => {
+    const hasCoordinates = type === "start" ? form.starting_latitude !== "" : form.destination_latitude !== "";
+    if (hasCoordinates) return;
+    const query = (type === "start" ? form.starting_location : form.destination).trim();
+    if (query.length < 3 || searching) return;
+    setSearching(type);
+    try {
+      const parameters = new URLSearchParams({ q: query, format: "jsonv2", countrycodes: "lk", limit: "1", "accept-language": "en,si,ta" });
+      const geocodingUrl = import.meta.env.VITE_GEOCODING_API_URL || "https://nominatim.openstreetmap.org/search";
+      const response = await fetch(`${geocodingUrl}?${parameters}`);
+      if (!response.ok) throw new Error("Location lookup failed");
+      const [result] = await response.json();
+      if (!result) {
+        toast.error(translate("No matching location found in Sri Lanka."));
+        return;
+      }
+      selectLocation(type, { lat: Number(result.lat), lng: Number(result.lon) }, result.display_name, true);
+    } catch {
+      toast.error(translate("Unable to find that location. Please select it on the map."));
+    } finally {
+      setSearching(null);
+    }
+  };
+
+  const handleLocationKeyDown = (event, type) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    findLocation(type);
+  };
 
   const updateField = (event) => {
     const { name, value } = event.target;
@@ -40,7 +153,12 @@ export default function VehicleRequest() {
       toast.success(translate("Vehicle request submitted successfully."));
       setForm({
         purpose: "",
+        starting_location: "",
+        starting_latitude: "",
+        starting_longitude: "",
         destination: "",
+        destination_latitude: "",
+        destination_longitude: "",
         departure_at: "",
         expected_return_at: "",
         passenger_count: 1,
@@ -138,20 +256,41 @@ export default function VehicleRequest() {
               />
             </div>
 
+            <LocationMapPicker start={startPoint} end={endPoint} routeCoordinates={route?.geometry} focusPoint={focusPoint} activePoint={activePoint} onActivePointChange={setActivePoint} onSelect={selectLocation} translate={translate} />
+
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">
-                {translate("Destination")}
+                {translate("Starting Location")}
               </label>
 
               <input
                 type="text"
-                name="destination"
-                value={form.destination}
-                onChange={updateField}
+                name="starting_location"
+                value={form.starting_location}
+                onChange={(event) => updateLocationText("start", event.target.value)}
+                onKeyDown={(event) => handleLocationKeyDown(event, "start")}
+                onBlur={() => findLocation("start")}
                 required
-                placeholder={translate("Administrative Office")}
+                placeholder={translate("Type or select the starting point on the map")}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
+              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("start")} disabled={searching !== null || form.starting_location.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "start" ? translate("Finding location...") : translate("Find on map")}</button>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">{translate("Ending Location")}</label>
+              <input type="text" name="destination" value={form.destination} onChange={(event) => updateLocationText("end", event.target.value)} onKeyDown={(event) => handleLocationKeyDown(event, "end")} onBlur={() => findLocation("end")} required placeholder={translate("Type or select the ending point on the map")} className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50" />
+              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("end")} disabled={searching !== null || form.destination.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "end" ? translate("Finding location...") : translate("Find on map")}</button>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">{translate("Calculated Distance")}</label>
+              <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3 text-sm font-bold text-blue-900">
+                <FiMapPin className="text-blue-600" />
+                {routeLoading ? translate("Calculating feasible route...") : distanceKm === null ? translate("Select both locations to calculate distance") : `${Number(distanceKm).toFixed(2)} km`}
+                <span className="ml-auto text-xs font-medium text-blue-600">{translate("Driving route")}</span>
+              </div>
+              {routeError && <p className="mt-2 text-sm font-medium text-red-600">{routeError}</p>}
             </div>
 
             <div>
@@ -310,7 +449,7 @@ export default function VehicleRequest() {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || routeLoading || !route}
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FiSend />

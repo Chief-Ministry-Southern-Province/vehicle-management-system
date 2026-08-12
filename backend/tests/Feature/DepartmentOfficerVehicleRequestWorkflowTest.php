@@ -27,7 +27,12 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($subjectOfficer)
             ->postJson('/api/vehicle-requests', [
                 'purpose' => 'Fleet inspection',
+                'starting_location' => 'Dakshinapaya, Labuduwa',
+                'starting_latitude' => 6.0535,
+                'starting_longitude' => 80.2200,
                 'destination' => 'Matara',
+                'destination_latitude' => 5.9549,
+                'destination_longitude' => 80.5550,
                 'departure_at' => '2026-08-01 09:00',
                 'expected_return_at' => '2026-08-01 12:00',
                 'passenger_count' => 2,
@@ -83,7 +88,12 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($requester)
             ->postJson('/api/vehicle-requests', [
                 'purpose' => 'Official inspection',
+                'starting_location' => 'Dakshinapaya, Labuduwa',
+                'starting_latitude' => 6.0535,
+                'starting_longitude' => 80.2200,
                 'destination' => 'Matara',
+                'destination_latitude' => 5.9549,
+                'destination_longitude' => 80.5550,
                 'departure_at' => '2026-08-01 09:00',
                 'expected_return_at' => '2026-08-01 12:00',
                 'passenger_count' => 1,
