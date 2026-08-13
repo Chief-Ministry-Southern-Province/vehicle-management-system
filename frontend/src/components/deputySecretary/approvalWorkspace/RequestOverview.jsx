@@ -29,8 +29,8 @@ export default function RequestOverview({ request }) {
     : null;
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <section className="p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="rounded-xl bg-blue-50 p-3 text-blue-600"><FiFileText size={20} /></span>
           <div>
@@ -45,7 +45,7 @@ export default function RequestOverview({ request }) {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-slate-50/70 p-6 shadow-sm">
+      <section className="border-y border-slate-100 bg-slate-50/70 p-6">
         <div className="mb-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-violet-600">Database record</p>
           <h2 className="mt-1 text-xl font-bold text-slate-900">Request Record</h2>
@@ -58,7 +58,7 @@ export default function RequestOverview({ request }) {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <section>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Trip details</p>
@@ -89,16 +89,16 @@ export default function RequestOverview({ request }) {
         </div>
       </section>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="grid border-t border-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-slate-100">
+        <section className="p-6">
           <div className="mb-5 flex items-center justify-between gap-3"><div className="flex items-center gap-3"><span className="rounded-xl bg-violet-50 p-3 text-violet-600"><FiUsers size={20} /></span><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Travel party</p><h2 className="font-bold text-slate-900">Passengers</h2></div></div><span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-bold text-violet-700">{request.passenger_count || 0}</span></div>
           <div className="min-h-16 whitespace-pre-line rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">{request.passenger_names || "No passenger names provided."}</div>
         </section>
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="border-t border-slate-100 p-6 sm:border-t-0">
           <div className="mb-5 flex items-center gap-3"><span className="rounded-xl bg-blue-50 p-3 text-blue-600"><FiPaperclip size={20} /></span><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Supporting document</p><h2 className="font-bold text-slate-900">Attachment</h2></div></div>
           {attachmentUrl ? <a href={attachmentUrl} target="_blank" rel="noreferrer" className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 font-semibold text-blue-700 transition hover:bg-blue-100"><span className="min-w-0 truncate">{request.attachment_original_name || "View attachment"}</span><FiArrowRight className="shrink-0" /></a> : <div className="flex min-h-16 items-center rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">No attachment provided.</div>}
         </section>
       </div>
-    </div>
+    </section>
   );
 }
