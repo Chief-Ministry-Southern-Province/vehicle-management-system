@@ -2,6 +2,26 @@
 
 This file is the authoritative working guide for humans and coding agents in this repository. Read it before changing code. Keep it synchronized with routes, roles, workflows, schema, scripts, and deployment behavior whenever those change.
 
+### Agent quick-start contract
+
+Use this sequence for every repository task:
+
+1. Read this file before inspecting or changing implementation files.
+2. Identify the owning backend route/controller/model and the consuming frontend API/page/component before editing. Do not fix only the visible UI when data is missing upstream.
+3. Inspect the complete request/response field names and existing tests. Reuse canonical fields, roles, and statuses; never create UI-only aliases that hide a backend mismatch.
+4. Preserve unrelated working-tree changes. Confirm the diff contains only task-related edits.
+5. Test the smallest affected behavior first, then run the broader relevant backend or frontend checks described in Section 8.
+6. Re-read the final diff and synchronize every affected durable fact in this file. Do not create a meaningless `AGENTS.md` edit when no durable fact changed.
+
+Source-of-truth order when files disagree:
+
+1. migrations and persisted schema;
+2. backend routes, middleware, controllers, models, and tests;
+3. frontend API functions and consuming components;
+4. this file and README documentation.
+
+Fix stale lower-priority documentation or UI mappings in the same change. Never weaken backend authorization to match frontend visibility.
+
 ## 1. Project purpose
 
 VMS-GOV is a government Vehicle Management System for the Chief Ministry at Dakshinapaya, Labuduwa, Galle, Sri Lanka. It replaces paper-based official-journey requests with a traceable workflow and combines request approvals with vehicle, driver, fuel, service, repair, issue, and user administration.
@@ -187,6 +207,29 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.
+
+### 7.1 Route and map field contract
+
+Treat these as one end-to-end data contract. If any field changes, inspect the migration, `VehicleRequest` fillable/casts, submission validation, route-service result mapping, driver/detail serializers, frontend API consumer, all relevant screens, and feature tests.
+
+| Meaning | Canonical field |
+| --- | --- |
+| Starting label | `starting_location` |
+| Starting coordinates | `starting_latitude`, `starting_longitude` |
+| Ending label | `destination` |
+| Ending coordinates | `destination_latitude`, `destination_longitude` |
+| Authoritative road distance | `distance_km` |
+| Authoritative road duration | `route_duration_seconds` |
+| Authoritative GeoJSON coordinate array | `route_geometry` |
+
+Required behavior:
+
+- The client may preview a route, but request submission sends location labels/coordinates only; the backend independently calculates and persists distance, duration, and geometry.
+- Detail, recommendation, final-approval, and driver screens must display `starting_location` and `destination` explicitly. When a label is absent but valid coordinates exist, display a coordinate fallback; never coerce null coordinates into `0.000000`.
+- The driver scheduled-journey API must include the canonical route fields for a normal journey. Consolidated payloads must include route fields for each member request and must not claim a fabricated combined distance or geometry.
+- Driver maps are read-only. Zooming, panning, or recentering must never mutate request data.
+- `LocationMapPicker` uses the rendered container width and height for Web Mercator tile, path, and marker projection. Fixed desktop canvas dimensions must not be used for responsive percentage scaling because they distort tiles and misalign routes on mobile.
+- Keep OpenStreetMap attribution visible. Keep mobile controls compact, hide nonessential directional controls on small screens, and make route recentering fit the saved route.
 
 ## 8. Local setup and commands
 
