@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import {
   FiArrowLeft,
+  FiCalendar,
   FiCheckCircle,
+  FiClock,
   FiDownload,
   FiFileText,
+  FiMapPin,
+  FiNavigation,
+  FiShield,
   FiTruck,
-  FiUser,
   FiXCircle,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -18,6 +22,23 @@ import {
 } from "../../api/authApi";
 import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
+
+function displayLocation(label, latitude, longitude, fallback) {
+  if (typeof label === "string" && label.trim()) return label.trim();
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  return latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
+    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    : fallback;
+}
+
+function displayDistance(distance) {
+  if (distance == null || distance === "") return "Distance not available";
+  const numericDistance = Number(distance);
+  return Number.isFinite(numericDistance)
+    ? `${numericDistance.toFixed(2)} km`
+    : "Distance not available";
+}
 function Detail({ label, children }) {
   return (
     <div>
@@ -30,12 +51,12 @@ function Detail({ label, children }) {
     </div>
   );
 }
-function Card({ title, icon, children }) {
+function Card({ title, icon, children, className = "" }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center gap-3 border-b border-slate-100 p-5">
-        <span className="rounded-xl bg-blue-50 p-3 text-blue-600">{icon}</span>
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+    <section className={`overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm ${className}`}>
+      <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+        <span className="rounded-xl bg-blue-50 p-2.5 text-blue-600">{icon}</span>
+        <div><p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Final review</p><h2 className="mt-1 text-lg font-bold text-slate-900">{title}</h2></div>
       </div>
       <div className="p-5">{children}</div>
     </section>
@@ -189,25 +210,27 @@ export default function FinalApprovalDetails() {
   );
   return (
     <DashboardLayout>
-      <div className="min-h-screen space-y-6 bg-slate-50 p-6">
-        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="min-h-screen bg-slate-50 px-4 py-5 sm:px-6">
+        <div className="mx-auto max-w-7xl space-y-5">
+        <header className="overflow-hidden rounded-3xl bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-xl shadow-blue-900/10">
+          <div className="flex flex-wrap items-start justify-between gap-6 p-6 sm:p-8">
           <div>
             <button
               type="button"
               onClick={() => navigate("/pendingfinalapprovals")}
-              className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600"
+              className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-blue-100 transition hover:bg-white/20 hover:text-white"
             >
               <FiArrowLeft />
               Back to pending approvals
             </button>
-            <p className="text-sm font-semibold text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
               Final approval review
             </p>
-            <h1 className="mt-1 text-3xl font-bold text-slate-900">
+            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
               {requestNumber(request.id)}
             </h1>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
             <button
               type="button"
               onClick={approve}
@@ -217,7 +240,7 @@ export default function FinalApprovalDetails() {
                 !awaitingDecision ||
                 !hasAllocation
               }
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 disabled:bg-slate-400 disabled:opacity-80"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 disabled:bg-slate-500 disabled:opacity-80"
             >
               <FiCheckCircle />
               {approved
@@ -232,7 +255,7 @@ export default function FinalApprovalDetails() {
               type="button"
               onClick={reject}
               disabled={approving || rejecting || !awaitingDecision}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-rose-300 bg-white px-6 py-3 font-semibold text-rose-700 hover:bg-rose-50 disabled:border-slate-300 disabled:text-slate-400 disabled:opacity-80"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-rose-300/40 bg-rose-400/10 px-6 py-3 font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:border-white/10 disabled:text-slate-400 disabled:opacity-80"
             >
               <FiXCircle />
               {rejected
@@ -242,27 +265,34 @@ export default function FinalApprovalDetails() {
                   : "Reject Request"}
             </button>
           </div>
+          </div>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card title="Request and Journey" icon={<FiFileText />}>
-            <dl className="grid gap-5 sm:grid-cols-2">
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <Card title="Request and Journey Information" icon={<FiFileText />} className="lg:col-span-2">
+            <div className="grid gap-4 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <Detail label="Request ID">{requestNumber(request.id)}</Detail>
-              <Detail label="Requester">
-                {request.user?.name || request.requester_name}
-              </Detail>
+              <Detail label="Requester">{request.user?.name || request.requester_name}</Detail>
               <Detail label="Department">{request.user?.department}</Detail>
               <Detail label="Employee ID">{request.user?.employee_id}</Detail>
-              <Detail label="Journey">{request.destination}</Detail>
-              <Detail label="Purpose">{request.purpose}</Detail>
-              <Detail label="Departure time">
-                {formatDateTime(request.departure_at)}
-              </Detail>
-              <Detail label="Expected return">
-                {formatDateTime(request.expected_return_at)}
-              </Detail>
-              <Detail label="Passengers">{request.passenger_count}</Detail>
-            </dl>
+            </div>
+            <div className="mt-4 rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 to-indigo-50 p-4">
+              <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-600"><FiNavigation /> Purpose of trip</p>
+              <p className="text-base leading-relaxed text-slate-800">{request.purpose || "No purpose provided."}</p>
+            </div>
+            <div className="mt-4 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2">
+              <div className="flex gap-3"><span className="rounded-xl bg-emerald-100 p-3 text-emerald-700"><FiCalendar /></span><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Departure</p><p className="mt-1 font-semibold text-slate-800">{formatDateTime(request.departure_at)}</p></div></div>
+              <div className="flex gap-3"><span className="rounded-xl bg-amber-100 p-3 text-amber-700"><FiClock /></span><div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Expected return</p><p className="mt-1 font-semibold text-slate-800">{formatDateTime(request.expected_return_at)}</p></div></div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-slate-200 p-4">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Vehicle request route</p>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="flex items-start gap-3"><span className="rounded-xl bg-emerald-50 p-3 text-emerald-600"><FiMapPin /></span><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Starting location</p><p className="mt-1 break-words font-bold text-slate-900">{displayLocation(request.starting_location, request.starting_latitude, request.starting_longitude, "Starting location not provided")}</p></div></div>
+                <div className="flex items-start gap-3"><span className="rounded-xl bg-rose-50 p-3 text-rose-600"><FiMapPin /></span><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Ending location</p><p className="mt-1 break-words font-bold text-slate-900">{displayLocation(request.destination, request.destination_latitude, request.destination_longitude, "Ending location not provided")}</p></div></div>
+              </div>
+              <div className="mt-4 border-t border-slate-100 pt-3"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Calculated distance</p><p className="mt-1 font-bold text-blue-700">{displayDistance(request.distance_km)}</p></div>
+            </div>
+            <div className="mt-4 rounded-2xl bg-violet-50 p-4"><Detail label="Passengers">{request.passenger_count}</Detail></div>
           </Card>
 
           <Card title="Uploaded Files" icon={<FiDownload />}>
@@ -283,7 +313,7 @@ export default function FinalApprovalDetails() {
             )}
           </Card>
 
-          <Card title="Department Officer Recommendation" icon={<FiUser />}>
+          <Card title="Department Officer Recommendation" icon={<FiShield />}>
             <dl className="grid gap-5 sm:grid-cols-2">
               <Detail label="Officer">{request.recommender?.name}</Detail>
               <Detail label="Recommendation">
@@ -303,9 +333,10 @@ export default function FinalApprovalDetails() {
             </dl>
           </Card>
 
-          <Card title="Assistance Secreatry Vehicle Allocation" icon={<FiTruck />}>
+          <Card title="Assistance Secreatry Vehicle Allocation" icon={<FiTruck />} className="lg:col-span-2">
             <VehicleAllocationDetails request={request} />
           </Card>
+        </div>
         </div>
       </div>
     </DashboardLayout>
