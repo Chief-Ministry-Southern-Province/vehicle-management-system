@@ -24,7 +24,7 @@ function unproject({ x, y }, zoom) {
   };
 }
 
-export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false }) {
+export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false, heightClass = "h-[360px]" }) {
   const [center, setCenter] = useState(SRI_LANKA);
   const [zoom, setZoom] = useState(8);
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
         ))}
         <span className="self-center text-xs text-slate-500">{translate("Click the map to place the selected point.")}</span>
       </div>}
-      <div className={`relative h-[360px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
+      <div className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / WIDTH) * 100}%`, height: `${(TILE_SIZE / HEIGHT) * 100}%`, left: `${(tile.left / WIDTH) * 100}%`, top: `${(tile.top / HEIGHT) * 100}%` }} />)}
           {routePath && (
