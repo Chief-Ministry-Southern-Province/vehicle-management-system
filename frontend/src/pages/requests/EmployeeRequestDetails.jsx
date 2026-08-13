@@ -41,12 +41,20 @@ function Detail({ label, children }) {
 }
 
 function savedLocation(label, latitude, longitude) {
-  if (label) return label;
+  if (typeof label === "string" && label.trim()) return label.trim();
   const lat = Number(latitude);
   const lng = Number(longitude);
-  return Number.isFinite(lat) && Number.isFinite(lng)
+  return latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
     ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-    : "Not recorded";
+    : "Unavailable for this request";
+}
+
+function savedDistance(distance) {
+  if (distance == null || distance === "") return "Unavailable for this request";
+  const numericDistance = Number(distance);
+  return Number.isFinite(numericDistance)
+    ? `${numericDistance.toFixed(2)} km`
+    : "Unavailable for this request";
 }
 function Timeline({ request }) {
   const steps = [
@@ -288,7 +296,7 @@ export default function EmployeeRequestDetails({
                     </Detail>
                   </div>
                   <Detail label="Calculated distance">
-                    {request.distance_km != null ? `${Number(request.distance_km).toFixed(2)} km` : "Not recorded"}
+                    {savedDistance(request.distance_km)}
                   </Detail>
                 </dl>
               </section>

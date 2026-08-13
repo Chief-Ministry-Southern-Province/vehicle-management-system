@@ -122,7 +122,7 @@ class DriverRegistrationTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->actingAs($employee)->postJson('/api/vehicle-requests', [
+        $createdRequest = $this->actingAs($employee)->postJson('/api/vehicle-requests', [
             'purpose' => 'Annual General Meeting',
             'starting_location' => 'Dakshinapaya, Labuduwa',
             'starting_latitude' => 6.0535,
@@ -136,8 +136,22 @@ class DriverRegistrationTest extends TestCase
             'passenger_count' => 4,
             'passenger_names' => 'Thisara, Chathura, Anupama, Gunathilaka',
         ])->assertCreated()
+            ->assertJsonPath('data.vehicle_request.starting_location', 'Dakshinapaya, Labuduwa')
+            ->assertJsonPath('data.vehicle_request.starting_latitude', 6.0535)
+            ->assertJsonPath('data.vehicle_request.starting_longitude', 80.22)
+            ->assertJsonPath('data.vehicle_request.distance_km', 104.5)
             ->assertJsonPath('data.vehicle_request.departure_at', '2026-07-26T04:30:00.000000Z')
             ->assertJsonPath('data.vehicle_request.expected_return_at', '2026-07-26T08:30:00.000000Z');
+
+        $requestId = $createdRequest->json('data.vehicle_request.id');
+
+        $this->actingAs($employee)
+            ->getJson("/api/vehicle-requests/{$requestId}")
+            ->assertOk()
+            ->assertJsonPath('data.vehicle_request.starting_location', 'Dakshinapaya, Labuduwa')
+            ->assertJsonPath('data.vehicle_request.starting_latitude', 6.0535)
+            ->assertJsonPath('data.vehicle_request.starting_longitude', 80.22)
+            ->assertJsonPath('data.vehicle_request.distance_km', 104.5);
 
         $this->assertEqualsWithDelta(104.5, VehicleRequest::firstOrFail()->distance_km, 1.0);
         $this->assertSame(7200, VehicleRequest::firstOrFail()->route_duration_seconds);
@@ -145,6 +159,8 @@ class DriverRegistrationTest extends TestCase
 
         $this->assertDatabaseHas('vehicle_requests', [
             'user_id' => $employee->id,
+            'starting_location' => 'Dakshinapaya, Labuduwa',
+            'distance_km' => 104.5,
             'departure_at' => '2026-07-26 04:30:00',
             'expected_return_at' => '2026-07-26 08:30:00',
         ]);
