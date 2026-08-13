@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiChevronDown, FiInfo, FiTruck, FiUser } from "react-icons/fi";
+import { FiActivity, FiChevronDown, FiInfo, FiShield, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { DRIVERS } from "./DriverDetails";
 import {
@@ -68,12 +68,15 @@ const PREVIOUS_JOURNEYS = {
 };
 function OfficerRecommendation() {
   return (
-    <section className="overflow-hidden rounded-2xl border bg-white">
-      <div className="border-b p-5">
-        <h3 className="text-xl font-bold text-slate-900">
+    <section className="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+      <div className="border-b border-slate-100 bg-linear-to-r from-slate-950 via-blue-950 to-indigo-950 p-6 text-white">
+        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-blue-100 ring-1 ring-inset ring-white/15">
+          <FiShield size={20} />
+        </div>
+        <h3 className="text-xl font-bold">
           Department Officer Recommendation
         </h3>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-blue-100/80">
           Submitted by Ms. Nadeesha Perera, Department Officer
         </p>
       </div>
@@ -345,9 +348,13 @@ function LegacyApprovalWorkspace() {
 }
 function DatabaseRecommendation({ request }) {
   return (
-    <section className="overflow-hidden rounded-2xl border bg-white">
-      <div className="border-b p-5">
-        <h3 className="text-xl font-bold text-slate-900">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-6 py-5">
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+          <FiShield size={20} />
+        </div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Review evidence</p>
+        <h3 className="mt-1 text-xl font-bold text-slate-900">
           Department Officer Recommendation
         </h3>
         <p className="mt-1 text-sm text-slate-500">
@@ -356,8 +363,8 @@ function DatabaseRecommendation({ request }) {
             : "Not yet reviewed"}
         </p>
       </div>
-      <div className="grid gap-5 p-6 sm:grid-cols-2">
-        <div>
+      <div className="grid gap-4 p-6 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
           <p className="text-xs font-semibold uppercase text-slate-400">
             Decision
           </p>
@@ -365,7 +372,7 @@ function DatabaseRecommendation({ request }) {
             {request.recommendation_status || "pending"}
           </p>
         </div>
-        <div>
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
           <p className="text-xs font-semibold uppercase text-slate-400">
             Priority
           </p>
@@ -373,7 +380,7 @@ function DatabaseRecommendation({ request }) {
             {request.department_priority || "Not set"}
           </p>
         </div>
-        <div>
+        <div className="rounded-2xl border border-slate-100 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-slate-400">
             Recommended at
           </p>
@@ -383,7 +390,7 @@ function DatabaseRecommendation({ request }) {
               : "—"}
           </p>
         </div>
-        <div>
+        <div className="rounded-2xl border border-slate-100 bg-white p-4">
           <p className="text-xs font-semibold uppercase text-slate-400">
             Officer department
           </p>
@@ -391,7 +398,7 @@ function DatabaseRecommendation({ request }) {
             {request.recommender?.department || "—"}
           </p>
         </div>
-        <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 sm:col-span-2">
+        <div className="rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-indigo-50/70 p-5 sm:col-span-2">
           <p className="text-xs font-semibold uppercase text-blue-600">
             Recommendation notes
           </p>
@@ -522,15 +529,19 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
     </section>
   ) : null;
   return (
-    <section className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <div className="border-b p-5">
-        <h3 className="text-xl font-bold">Vehicle Allocation</h3>
+    <section className="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/95 shadow-[0_28px_80px_-45px_rgba(30,64,175,0.55)] ring-1 ring-blue-100/80 backdrop-blur-xl">
+      <div className="border-b border-blue-100 bg-linear-to-br from-blue-50 via-white to-indigo-50/70 p-6">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
+          <FiTruck size={21} />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-600">Assignment console</p>
+        <h3 className="mt-1 text-xl font-bold text-slate-950">Vehicle Allocation</h3>
         <p className="mt-1 text-sm text-slate-500">
           The driver’s allocated vehicle is selected automatically. Another
           available vehicle can be selected.
         </p>
       </div>
-      <div className="space-y-5 p-5">
+      <div className="space-y-6 p-6">
         <label className="block text-sm font-semibold">
           <span className="mb-2 flex items-center gap-2">
             <FiUser className="text-blue-600" />
@@ -539,7 +550,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
           <select
             value={driverId}
             onChange={changeDriver}
-            className="w-full rounded-xl border px-3 py-3 font-normal"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 font-normal text-slate-800 outline-none transition hover:border-blue-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
           >
             <option value="">Select a driver</option>
             {drivers.map((item) => (
@@ -555,7 +566,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
           </select>
         </label>
         {driver && (
-          <div className="grid gap-3 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
+          <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-5 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs uppercase text-slate-400">Licence</p>
               <p className="font-semibold">
@@ -591,7 +602,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             value={vehicleRegistration}
             onChange={(event) => setVehicleRegistration(event.target.value)}
             disabled={!driverId}
-            className="w-full rounded-xl border px-3 py-3 font-normal disabled:bg-slate-100"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 font-normal text-slate-800 outline-none transition hover:border-blue-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="">Select an available or scheduled vehicle</option>
             {selectableVehicles.map((item) => (
@@ -622,7 +633,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
           </div>
         )}
         {vehicle && (
-          <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm sm:grid-cols-2">
+          <div className="grid gap-4 rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-indigo-50/60 p-5 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs uppercase text-slate-400">Vehicle</p>
               <p className="font-semibold">
@@ -656,7 +667,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             value={parkingLocation}
             onChange={(event) => setParkingLocation(event.target.value)}
             required
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 font-normal outline-none transition hover:border-blue-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
           >
             <option value="" disabled>
               Select a parking location
@@ -686,15 +697,19 @@ function AllocatedVehicleDetails({ request }) {
       </section>
     );
   return (
-    <section className="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
-      <div className="border-b border-emerald-100 bg-emerald-50 p-5">
-        <h3 className="text-xl font-bold">Allocated Vehicle and Driver</h3>
+    <section className="overflow-hidden rounded-[1.75rem] border border-emerald-100 bg-white/95 shadow-[0_28px_80px_-45px_rgba(5,150,105,0.5)] ring-1 ring-emerald-100/70 backdrop-blur-xl">
+      <div className="border-b border-emerald-100 bg-linear-to-br from-emerald-50 via-white to-teal-50 p-6">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20">
+          <FiTruck size={21} />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700">Confirmed assignment</p>
+        <h3 className="mt-1 text-xl font-bold text-slate-950">Allocated Vehicle and Driver</h3>
         <p className="mt-1 text-sm text-slate-600">
           Saved database details for this request.
         </p>
       </div>
-      <div className="space-y-5 p-5">
-        <div className="grid gap-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm sm:grid-cols-2">
+      <div className="space-y-5 p-6">
+        <div className="grid gap-4 rounded-2xl border border-blue-100 bg-linear-to-br from-blue-50 to-indigo-50/60 p-5 text-sm sm:grid-cols-2">
           <div>
             <p className="text-xs uppercase text-slate-400">Vehicle</p>
             <p className="mt-1 font-bold">
@@ -712,7 +727,7 @@ function AllocatedVehicleDetails({ request }) {
             </p>
           </div>
         </div>
-        <div className="grid gap-4 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
+        <div className="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-5 text-sm sm:grid-cols-2">
           <div>
             <p className="text-xs uppercase text-slate-400">Driver</p>
             <p className="mt-1 font-bold">{driver.full_name}</p>
@@ -872,9 +887,13 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
     String(status || "Not recorded").replaceAll("_", " ");
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
-      <div className="border-b border-amber-100 bg-amber-50 p-5">
-        <h3 className="text-xl font-bold text-slate-900">
+    <section className="overflow-hidden rounded-[1.75rem] border border-amber-100 bg-white/95 shadow-[0_28px_80px_-45px_rgba(217,119,6,0.45)] ring-1 ring-amber-100/70 backdrop-blur-xl">
+      <div className="border-b border-amber-100 bg-linear-to-br from-amber-50 via-white to-orange-50 p-6">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-lg shadow-amber-500/20">
+          <FiActivity size={21} />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-amber-700">Assignment control</p>
+        <h3 className="mt-1 text-xl font-bold text-slate-950">
           Re-allocate Driver and Vehicle
         </h3>
         <p className="mt-1 text-sm text-slate-600">
@@ -883,13 +902,13 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
           be required.
         </p>
       </div>
-      <div className="space-y-4 p-5">
+      <div className="space-y-5 p-6">
         <label className="block text-sm font-semibold text-slate-700">
           Replacement driver
           <select
             value={driverId}
             onChange={selectDriver}
-            className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3.5 font-normal outline-none transition hover:border-amber-300 focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-100"
           >
             <option value="">Select a replacement driver</option>
             {replacementDrivers.map((driver) => (
@@ -1121,7 +1140,7 @@ function VehicleReallocationPanel({ request, onReallocate, submitting }) {
               reason: reason.trim(),
             })
           }
-          className="w-full rounded-xl bg-amber-600 px-4 py-3 font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-2xl bg-linear-to-r from-amber-500 to-orange-600 px-5 py-3.5 font-bold text-white shadow-lg shadow-amber-600/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {submitting
             ? "Re-allocating..."
@@ -1235,13 +1254,18 @@ export default function ApprovalWorkspace() {
   if (request === null)
     return (
       <DashboardLayout>
-        <div className="p-6 text-slate-500">Loading request details...</div>
+        <div className="flex min-h-[60vh] items-center justify-center bg-slate-50">
+          <div className="rounded-3xl border border-white bg-white/90 px-8 py-7 text-center shadow-xl shadow-slate-200/60">
+            <span className="mx-auto mb-4 block h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
+            <p className="font-semibold text-slate-700">Preparing approval workspace...</p>
+          </div>
+        </div>
       </DashboardLayout>
     );
   if (request === false)
     return (
       <DashboardLayout>
-        <div className="m-6 rounded-xl border border-red-100 bg-red-50 p-5 text-red-700">
+        <div className="m-6 rounded-3xl border border-red-100 bg-red-50 p-6 font-medium text-red-700 shadow-sm">
           {error}
         </div>
       </DashboardLayout>
@@ -1251,21 +1275,22 @@ export default function ApprovalWorkspace() {
   const completed = request.status === "completed";
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-slate-50 p-6">
-        <RequestHeader request={request} />
-        {allocationMessage && (
-          <div
-            className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${allocated ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}
-          >
-            {allocationMessage}
-          </div>
-        )}
-        <div className="mt-6 grid gap-6 lg:grid-cols-12">
-          <div className="space-y-6 lg:col-span-7">
-            <RequestOverview request={request} />
-            <DatabaseRecommendation request={request} />
-          </div>
-          <div className="space-y-6 lg:col-span-5">
+      <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <RequestHeader request={request} />
+          {allocationMessage && (
+            <div
+              className={`mt-5 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm ${allocated ? "border-emerald-200 bg-emerald-50/90 text-emerald-800" : "border-red-200 bg-red-50/90 text-red-800"}`}
+            >
+              {allocationMessage}
+            </div>
+          )}
+          <div className="grid items-start gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <RequestOverview request={request} />
+              <DatabaseRecommendation request={request} />
+            </div>
+            <div className="space-y-6 lg:col-span-1">
             {cancelled || completed ? (
               <section className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-3 text-slate-700">
@@ -1321,6 +1346,7 @@ export default function ApprovalWorkspace() {
                 />
               </>
             )}
+            </div>
           </div>
         </div>
       </div>
