@@ -27,6 +27,25 @@ import {
 } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
 import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
+
+function displayLocation(label, latitude, longitude, fallback) {
+  if (typeof label === "string" && label.trim()) return label.trim();
+
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  return latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
+    ? `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    : fallback;
+}
+
+function displayDistance(distance) {
+  if (distance == null || distance === "") return "Distance not available";
+  const numericDistance = Number(distance);
+  return Number.isFinite(numericDistance)
+    ? `${numericDistance.toFixed(2)} km`
+    : "Distance not available";
+}
+
 export default function RecommendationReview() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -264,16 +283,54 @@ export default function RecommendationReview() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-4 rounded-2xl border border-slate-200 p-5">
-                  <span className="rounded-xl bg-rose-50 p-3 text-rose-600">
-                    <FiMapPin />
-                  </span>
-                  <div>
+                <div className="rounded-2xl border border-slate-200 p-5">
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Route
+                  </p>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <div className="flex items-start gap-3">
+                      <span className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+                        <FiMapPin />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                          Starting location
+                        </p>
+                        <p className="mt-1 break-words font-bold text-slate-900">
+                          {displayLocation(
+                            request.starting_location,
+                            request.starting_latitude,
+                            request.starting_longitude,
+                            "Starting location not provided",
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="rounded-xl bg-rose-50 p-3 text-rose-600">
+                        <FiMapPin />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                          Destination
+                        </p>
+                        <p className="mt-1 break-words font-bold text-slate-900">
+                          {displayLocation(
+                            request.destination,
+                            request.destination_latitude,
+                            request.destination_longitude,
+                            "Destination not provided",
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5 border-t border-slate-100 pt-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Destination
+                      Calculated distance
                     </p>
-                    <p className="mt-1 text-lg font-bold text-slate-900">
-                      {request.destination || "Destination not provided"}
+                    <p className="mt-1 font-bold text-blue-700">
+                      {displayDistance(request.distance_km)}
                     </p>
                   </div>
                 </div>
