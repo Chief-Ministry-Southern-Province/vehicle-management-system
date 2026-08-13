@@ -29,40 +29,42 @@ export default function VehicleRequest() {
   const [activePoint, setActivePoint] = useState("start");
   const [focusPoint, setFocusPoint] = useState(null);
   const [searching, setSearching] = useState(null);
-  const [route, setRoute] = useState(null);
+  const [routeResult, setRouteResult] = useState({ key: null, route: null });
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
   const fileInputRef = useRef(null);
   const startPoint = form.starting_latitude === "" ? null : { lat: Number(form.starting_latitude), lng: Number(form.starting_longitude) };
   const endPoint = form.destination_latitude === "" ? null : { lat: Number(form.destination_latitude), lng: Number(form.destination_longitude) };
+  const startLat = startPoint?.lat;
+  const startLng = startPoint?.lng;
+  const endLat = endPoint?.lat;
+  const endLng = endPoint?.lng;
+  const routeKey = startPoint && endPoint ? `${startLng},${startLat};${endLng},${endLat}` : null;
+  const route = routeResult.key === routeKey ? routeResult.route : null;
+  const visibleRouteError = routeResult.key === routeKey ? routeError : "";
   const distanceKm = route?.distance_km ?? null;
 
   useEffect(() => {
-    if (!startPoint || !endPoint) {
-      setRoute(null);
-      setRouteError("");
-      return undefined;
-    }
+    if (!routeKey) return undefined;
     let cancelled = false;
     const timer = setTimeout(async () => {
       setRouteLoading(true);
       setRouteError("");
       try {
         const directionsUrl = (import.meta.env.VITE_DIRECTIONS_API_URL || "https://router.project-osrm.org").replace(/\/$/, "");
-        const coordinates = `${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}`;
-        const response = await fetch(`${directionsUrl}/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=false`);
+        const response = await fetch(`${directionsUrl}/route/v1/driving/${routeKey}?overview=full&geometries=geojson&steps=false`);
         if (!response.ok) throw new Error("Directions service request failed");
         const result = await response.json();
         const drivingRoute = result?.routes?.[0];
         if (result?.code !== "Ok" || !drivingRoute?.geometry?.coordinates) throw new Error("No feasible route found");
-        if (!cancelled) setRoute({
+        if (!cancelled) setRouteResult({ key: routeKey, route: {
           distance_km: Number((drivingRoute.distance / 1000).toFixed(2)),
           duration_seconds: Math.round(drivingRoute.duration || 0),
           geometry: drivingRoute.geometry.coordinates,
-        });
+        } });
       } catch (error) {
         if (!cancelled) {
-          setRoute(null);
+          setRouteResult({ key: routeKey, route: null });
           setRouteError(error?.message || translate("A feasible driving route could not be calculated for these locations."));
         }
       } finally {
@@ -70,7 +72,7 @@ export default function VehicleRequest() {
       }
     }, 400);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [startPoint?.lat, startPoint?.lng, endPoint?.lat, endPoint?.lng, translate]);
+  }, [routeKey, translate]);
 
   const selectLocation = (type, point, label = null, shouldFocus = false) => {
     const formatted = label || formatPoint(point);
@@ -145,7 +147,7 @@ export default function VehicleRequest() {
       return;
     }
     if (routeLoading || !route || distanceKm === null) {
-      toast.error(routeError || translate("A feasible driving route could not be calculated for these locations."));
+      toast.error(visibleRouteError || translate("A feasible driving route could not be calculated for these locations."));
       return;
     }
     setSubmitting(true);
@@ -298,7 +300,7 @@ export default function VehicleRequest() {
                 {routeLoading ? translate("Calculating feasible route...") : distanceKm === null ? translate("Select both locations to calculate distance") : `${Number(distanceKm).toFixed(2)} km`}
                 <span className="ml-auto text-xs font-medium text-blue-600">{translate("Driving route")}</span>
               </div>
-              {routeError && <p className="mt-2 text-sm font-medium text-red-600">{routeError}</p>}
+              {visibleRouteError && <p className="mt-2 text-sm font-medium text-red-600">{visibleRouteError}</p>}
             </div>
 
             <div>

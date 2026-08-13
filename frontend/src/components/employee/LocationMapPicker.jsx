@@ -1,10 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
 
 const TILE_SIZE = 256;
 const WIDTH = 900;
 const HEIGHT = 360;
 const SRI_LANKA = { lat: 7.8731, lng: 80.7718 };
+
+function getRouteViewport(routeCoordinates) {
+  const longitudes = routeCoordinates.map(([lng]) => lng);
+  const latitudes = routeCoordinates.map(([, lat]) => lat);
+  const longitudeSpan = Math.max(...longitudes) - Math.min(...longitudes);
+  const latitudeSpan = Math.max(...latitudes) - Math.min(...latitudes);
+  const span = Math.max(longitudeSpan, latitudeSpan, 0.01);
+
+  return {
+    center: {
+      lat: (Math.min(...latitudes) + Math.max(...latitudes)) / 2,
+      lng: (Math.min(...longitudes) + Math.max(...longitudes)) / 2,
+    },
+    zoom: Math.max(7, Math.min(15, Math.floor(Math.log2(3.2 / span)) + 7)),
+  };
+}
 
 function project({ lat, lng }, zoom) {
   const scale = TILE_SIZE * 2 ** zoom;
@@ -25,24 +41,36 @@ function unproject({ x, y }, zoom) {
 }
 
 export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false, heightClass = "h-[360px]" }) {
-  const [center, setCenter] = useState(SRI_LANKA);
-  const [zoom, setZoom] = useState(8);
-  useEffect(() => {
-    if (focusPoint) {
-      setCenter(focusPoint);
-      setZoom((value) => Math.max(value, 13));
-    }
-  }, [focusPoint]);
-  useEffect(() => {
-    if (!routeCoordinates?.length) return;
-    const longitudes = routeCoordinates.map(([lng]) => lng);
-    const latitudes = routeCoordinates.map(([, lat]) => lat);
-    const longitudeSpan = Math.max(...longitudes) - Math.min(...longitudes);
-    const latitudeSpan = Math.max(...latitudes) - Math.min(...latitudes);
-    const span = Math.max(longitudeSpan, latitudeSpan, 0.01);
-    setCenter({ lat: (Math.min(...latitudes) + Math.max(...latitudes)) / 2, lng: (Math.min(...longitudes) + Math.max(...longitudes)) / 2 });
-    setZoom(Math.max(7, Math.min(15, Math.floor(Math.log2(3.2 / span)) + 7)));
-  }, [routeCoordinates]);
+  const [viewport, setViewport] = useState({
+    center: SRI_LANKA,
+    zoom: 8,
+    focusPoint,
+    routeCoordinates,
+  });
+
+  if (focusPoint !== viewport.focusPoint) {
+    setViewport({
+      center: focusPoint || viewport.center,
+      zoom: focusPoint ? Math.max(viewport.zoom, 13) : viewport.zoom,
+      focusPoint,
+      routeCoordinates,
+    });
+  } else if (routeCoordinates !== viewport.routeCoordinates) {
+    const nextViewport = routeCoordinates?.length
+      ? getRouteViewport(routeCoordinates)
+      : { center: viewport.center, zoom: viewport.zoom };
+    setViewport({ ...nextViewport, focusPoint, routeCoordinates });
+  }
+
+  const { center, zoom } = viewport;
+  const setCenter = (nextCenter) => setViewport((current) => ({
+    ...current,
+    center: typeof nextCenter === "function" ? nextCenter(current.center) : nextCenter,
+  }));
+  const setZoom = (nextZoom) => setViewport((current) => ({
+    ...current,
+    zoom: typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom,
+  }));
   const centerPixel = project(center, zoom);
 
   const tiles = useMemo(() => {
