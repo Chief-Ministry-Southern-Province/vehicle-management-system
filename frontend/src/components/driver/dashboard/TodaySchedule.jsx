@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FiAlertTriangle, FiCheckCircle, FiEye, FiPlay, FiTruck, FiX } from "react-icons/fi";
+import { FiAlertTriangle, FiCheckCircle, FiEye, FiMapPin, FiNavigation, FiPlay, FiTruck, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getDriverScheduledJourneys, updateDriverJourneyStatus } from "../../../api/authApi";
 import { formatLocalDate as formatDate, formatLocalTime as formatTime } from "../../../utils/dateTime";
+import LocationMapPicker from "../../employee/LocationMapPicker";
 
 const statusStyle = {
   Pending: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-200",
@@ -17,6 +18,20 @@ const Detail = ({ label, children }) => (
     <dd className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">{children || "Not recorded"}</dd>
   </div>
 );
+
+const routeDistance = (distance) => {
+  if (distance == null || distance === "") return "Distance not available";
+  const numericDistance = Number(distance);
+  return Number.isFinite(numericDistance) ? `${numericDistance.toFixed(2)} km` : "Distance not available";
+};
+
+const routePoint = (latitude, longitude) => {
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  return latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
+    ? { lat, lng }
+    : null;
+};
 
 const VehicleImage = ({ vehicle, className = "h-44 sm:h-52" }) => (
   <div className={`relative overflow-hidden bg-slate-100 dark:bg-slate-800 ${className}`}>
@@ -133,13 +148,35 @@ export default function ScheduledJourney() {
                 </span>
               </div>
 
-              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:mt-5 sm:grid-cols-2 lg:mr-[21.25rem] lg:grid-cols-3 xl:mr-[25.25rem] dark:bg-slate-800/70">
+              <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mx-5 sm:mt-5 lg:mr-[21.25rem] xl:mr-[25.25rem] dark:border-slate-700 dark:bg-slate-900">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-linear-to-r from-blue-50 to-indigo-50/70 px-4 py-3 dark:border-slate-700 dark:from-blue-950/50 dark:to-indigo-950/30">
+                  <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300"><FiNavigation /> Journey route</p>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-200">{routeDistance(trip.distance_km)}</span>
+                </div>
+                <div className="grid gap-4 p-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                  <div className="flex items-start gap-3"><span className="mt-0.5 rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-950"><FiMapPin /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Starting location</p><p className="mt-1 break-words text-sm font-bold text-slate-900 dark:text-white">{trip.starting_location || "Starting location not recorded"}</p></div></div>
+                  <span className="hidden h-px w-10 bg-slate-300 sm:block dark:bg-slate-600" />
+                  <div className="flex items-start gap-3"><span className="mt-0.5 rounded-xl bg-rose-50 p-2.5 text-rose-600 dark:bg-rose-950"><FiMapPin /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Ending location</p><p className="mt-1 break-words text-sm font-bold text-slate-900 dark:text-white">{trip.destination || "Ending location not recorded"}</p></div></div>
+                </div>
+                {trip.route_geometry?.length > 0 && (
+                  <div className="border-t border-slate-100 p-3 dark:border-slate-700">
+                    <LocationMapPicker
+                      start={routePoint(trip.starting_latitude, trip.starting_longitude)}
+                      end={routePoint(trip.destination_latitude, trip.destination_longitude)}
+                      routeCoordinates={trip.route_geometry}
+                      readOnly
+                    />
+                  </div>
+                )}
+              </div>
+
+              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:grid-cols-2 lg:mr-[21.25rem] lg:grid-cols-3 xl:mr-[25.25rem] dark:bg-slate-800/70">
                 <Detail label="Requester">{trip.requester_name}</Detail>
-                <Detail label="Journey Details">{trip.purpose}</Detail>
-                <Detail label="Destination">{trip.destination}</Detail>
+                <Detail label="Purpose">{trip.purpose}</Detail>
                 <Detail label="Date">{formatDate(trip.departure_at)}</Detail>
                 <Detail label="Time">{formatTime(trip.departure_at)} - {formatTime(trip.expected_return_at)}</Detail>
                 <Detail label="Number of Passengers">{trip.passenger_count}</Detail>
+                <Detail label="Journey Status">{trip.status}</Detail>
                 <Detail label="Vehicle Type">{trip.vehicle?.vehicle_type}</Detail>
                 <Detail label="Vehicle Number">{trip.vehicle?.registration_number}</Detail>
                 <Detail label="Parking Location">{trip.parking_location}</Detail>
@@ -196,10 +233,27 @@ export default function ScheduledJourney() {
               <button type="button" onClick={() => setSelectedTrip(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" aria-label="Close details"><FiX size={22} /></button>
             </div>
             <VehicleImage vehicle={selectedTrip.vehicle} className="h-52 sm:h-64" />
+            {selectedTrip.route_geometry?.length > 0 && (
+              <div className="border-b border-slate-100 p-4 sm:p-6 dark:border-slate-700">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"><FiNavigation className="text-blue-600" /> Saved road route</p>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-200">{routeDistance(selectedTrip.distance_km)}</span>
+                </div>
+                <LocationMapPicker
+                  start={routePoint(selectedTrip.starting_latitude, selectedTrip.starting_longitude)}
+                  end={routePoint(selectedTrip.destination_latitude, selectedTrip.destination_longitude)}
+                  routeCoordinates={selectedTrip.route_geometry}
+                  readOnly
+                />
+              </div>
+            )}
             <dl className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
               <Detail label="Requester">{selectedTrip.requester_name}</Detail>
               <Detail label="Purpose">{selectedTrip.purpose}</Detail>
-              <Detail label="Destination">{selectedTrip.destination}</Detail>
+              <Detail label="Starting Location">{selectedTrip.starting_location}</Detail>
+              <Detail label="Ending Location">{selectedTrip.destination}</Detail>
+              <Detail label="Calculated Distance">{routeDistance(selectedTrip.distance_km)}</Detail>
+              <Detail label="Journey Status">{selectedTrip.status}</Detail>
               <Detail label="Journey Date">{formatDate(selectedTrip.departure_at)}</Detail>
               <Detail label="Departure Time">{formatTime(selectedTrip.departure_at)}</Detail>
               <Detail label="Expected Return">{formatTime(selectedTrip.expected_return_at)}</Detail>
@@ -229,8 +283,9 @@ export default function ScheduledJourney() {
                       <div key={item.id} className="rounded-xl border border-slate-200 p-4 text-sm">
                         <p className="font-bold text-blue-700">{item.reference} — {item.purpose}</p>
                         <p className="mt-2"><b>Passengers:</b> {item.passenger_names || `${item.passenger_count} passenger(s)`}</p>
-                        <p><b>Pickup:</b> {item.pickup_place || "Not recorded"}</p>
-                        <p><b>Drop-off:</b> {item.drop_place || "Not recorded"}</p>
+                        <p><b>Starting location:</b> {item.starting_location || item.pickup_place || "Not recorded"}</p>
+                        <p><b>Ending location:</b> {item.drop_place || "Not recorded"}</p>
+                        <p><b>Distance:</b> {routeDistance(item.distance_km)}</p>
                         <p><b>Requested time:</b> {formatTime(item.departure_at)} - {formatTime(item.expected_return_at)}</p>
                       </div>
                     ))}

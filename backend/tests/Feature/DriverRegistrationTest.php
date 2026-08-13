@@ -442,6 +442,7 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.trips.0.expected_return_at', '2026-08-06T12:45:00.000000Z')
             ->assertJsonPath('data.trips.0.passenger_count', 5)
             ->assertJsonCount(2, 'data.trips.0.requests')
+            ->assertJsonPath('data.trips.0.requests.1.starting_location', $second->starting_location)
             ->assertJsonPath('data.trips.0.requests.1.drop_place', 'Colombo');
 
         $this->actingAs($requester)->getJson("/api/vehicle-requests/{$second->id}")

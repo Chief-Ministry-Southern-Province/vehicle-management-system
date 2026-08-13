@@ -24,7 +24,7 @@ function unproject({ x, y }, zoom) {
   };
 }
 
-export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate }) {
+export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false }) {
   const [center, setCenter] = useState(SRI_LANKA);
   const [zoom, setZoom] = useState(8);
   useEffect(() => {
@@ -74,6 +74,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const routePath = routePoints.map((point) => `${(point.left / WIDTH) * 100},${(point.top / HEIGHT) * 100}`).join(" ");
 
   const selectPoint = (event) => {
+    if (readOnly || !onSelect) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const point = unproject({
       x: centerPixel.x + ((event.clientX - bounds.left) / bounds.width) * WIDTH - WIDTH / 2,
@@ -86,15 +87,15 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
 
   return (
     <div className="md:col-span-2">
-      <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label={translate("Location to select")}> 
+      {!readOnly && <div className="mb-3 flex flex-wrap gap-2" role="group" aria-label={translate("Location to select")}>
         {[["start", "Select starting location"], ["end", "Select ending location"]].map(([value, label]) => (
           <button key={value} type="button" onClick={() => onActivePointChange(value)} className={`rounded-xl px-4 py-2 text-sm font-bold transition ${activePoint === value ? "bg-blue-600 text-white shadow-md" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}>
             {translate(label)}
           </button>
         ))}
         <span className="self-center text-xs text-slate-500">{translate("Click the map to place the selected point.")}</span>
-      </div>
-      <div className="relative h-[360px] w-full cursor-crosshair overflow-hidden rounded-2xl border border-slate-200 bg-slate-100" onClick={selectPoint} role="application" aria-label={translate("Map location selector")}>
+      </div>}
+      <div className={`relative h-[360px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / WIDTH) * 100}%`, height: `${(TILE_SIZE / HEIGHT) * 100}%`, left: `${(tile.left / WIDTH) * 100}%`, top: `${(tile.top / HEIGHT) * 100}%` }} />)}
           {routePath && (

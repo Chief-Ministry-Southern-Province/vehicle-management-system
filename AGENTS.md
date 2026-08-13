@@ -166,7 +166,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 - Senior review: `GET /senior-recommendations/vehicle-requests[/{id}]`; `PATCH /senior-recommendations/vehicle-requests/{id}`.
 - Final decisions: `GET /final-approvals/vehicle-requests[/{id}]`; `PATCH .../{id}/approve|reject`.
 - Operational lists: `GET /approved-journeys`, `/recommended-requests`, `/dashboard/executive-stats` with route-specific roles.
-- Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`.
+- Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`. Scheduled-journey payloads include the saved start/end locations, coordinates, authoritative route distance/geometry, and per-request route data for consolidated journeys.
 - Issue review: `GET /issue-reports`.
 - Fleet: `GET /vehicles`, `/vehicles/id/{id}`, `/vehicles/{registration_number}`, `/drivers`, `/drivers/{driver_id}`; subject officer also has `POST /vehicles`, `POST /vehicles/{registration_number}`, and driver `POST|PUT|DELETE` operations.
 
@@ -182,6 +182,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
 - Vehicle-request location text is resolved through the configurable `VITE_GEOCODING_API_URL` search endpoint with results restricted to Sri Lanka (`countrycodes=lk`). The default is the public OpenStreetMap Nominatim search service; preserve attribution and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
+- The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.
