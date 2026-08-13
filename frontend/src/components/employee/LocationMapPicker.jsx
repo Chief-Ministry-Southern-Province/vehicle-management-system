@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
 
 const TILE_SIZE = 256;
-const WIDTH = 900;
-const HEIGHT = 360;
 const SRI_LANKA = { lat: 7.8731, lng: 80.7718 };
 
 function getRouteViewport(routeCoordinates) {
@@ -41,6 +39,8 @@ function unproject({ x, y }, zoom) {
 }
 
 export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false, heightClass = "h-[360px]" }) {
+  const mapRef = useRef(null);
+  const [mapSize, setMapSize] = useState({ width: 900, height: 360 });
   const [viewport, setViewport] = useState({
     center: SRI_LANKA,
     zoom: 8,
@@ -63,6 +63,19 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   }
 
   const { center, zoom } = viewport;
+  useEffect(() => {
+    const element = mapRef.current;
+    if (!element) return undefined;
+    const updateSize = () => setMapSize({
+      width: Math.max(element.clientWidth, 1),
+      height: Math.max(element.clientHeight, 1),
+    });
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const { width, height } = mapSize;
   const setCenter = (nextCenter) => setViewport((current) => ({
     ...current,
     center: typeof nextCenter === "function" ? nextCenter(current.center) : nextCenter,
@@ -74,11 +87,11 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const centerPixel = project(center, zoom);
 
   const tiles = useMemo(() => {
-    const topLeft = { x: centerPixel.x - WIDTH / 2, y: centerPixel.y - HEIGHT / 2 };
+    const topLeft = { x: centerPixel.x - width / 2, y: centerPixel.y - height / 2 };
     const firstX = Math.floor(topLeft.x / TILE_SIZE);
     const firstY = Math.floor(topLeft.y / TILE_SIZE);
-    const lastX = Math.floor((topLeft.x + WIDTH) / TILE_SIZE);
-    const lastY = Math.floor((topLeft.y + HEIGHT) / TILE_SIZE);
+    const lastX = Math.floor((topLeft.x + width) / TILE_SIZE);
+    const lastY = Math.floor((topLeft.y + height) / TILE_SIZE);
     const count = 2 ** zoom;
     const result = [];
     for (let y = firstY; y <= lastY; y += 1) {
@@ -89,24 +102,24 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       }
     }
     return result;
-  }, [centerPixel.x, centerPixel.y, zoom]);
+  }, [centerPixel.x, centerPixel.y, height, width, zoom]);
 
   const pointPosition = (point) => {
     if (!point) return null;
     const pixel = project(point, zoom);
-    return { left: WIDTH / 2 + pixel.x - centerPixel.x, top: HEIGHT / 2 + pixel.y - centerPixel.y };
+    return { left: width / 2 + pixel.x - centerPixel.x, top: height / 2 + pixel.y - centerPixel.y };
   };
   const startPosition = pointPosition(start);
   const endPosition = pointPosition(end);
   const routePoints = (routeCoordinates || []).map(([lng, lat]) => pointPosition({ lat, lng })).filter(Boolean);
-  const routePath = routePoints.map((point) => `${(point.left / WIDTH) * 100},${(point.top / HEIGHT) * 100}`).join(" ");
+  const routePath = routePoints.map((point) => `${(point.left / width) * 100},${(point.top / height) * 100}`).join(" ");
 
   const selectPoint = (event) => {
     if (readOnly || !onSelect) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const point = unproject({
-      x: centerPixel.x + ((event.clientX - bounds.left) / bounds.width) * WIDTH - WIDTH / 2,
-      y: centerPixel.y + ((event.clientY - bounds.top) / bounds.height) * HEIGHT - HEIGHT / 2,
+      x: centerPixel.x + ((event.clientX - bounds.left) / bounds.width) * width - width / 2,
+      y: centerPixel.y + ((event.clientY - bounds.top) / bounds.height) * height - height / 2,
     }, zoom);
     onSelect(activePoint, { lat: Number(point.lat.toFixed(6)), lng: Number(point.lng.toFixed(6)) });
   };
@@ -123,9 +136,9 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
         ))}
         <span className="self-center text-xs text-slate-500">{translate("Click the map to place the selected point.")}</span>
       </div>}
-      <div className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
+      <div ref={mapRef} className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
-          {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / WIDTH) * 100}%`, height: `${(TILE_SIZE / HEIGHT) * 100}%`, left: `${(tile.left / WIDTH) * 100}%`, top: `${(tile.top / HEIGHT) * 100}%` }} />)}
+          {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / width) * 100}%`, height: `${(TILE_SIZE / height) * 100}%`, left: `${(tile.left / width) * 100}%`, top: `${(tile.top / height) * 100}%` }} />)}
           {routePath && (
             <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full drop-shadow-md" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               <polyline points={routePath} fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
@@ -133,14 +146,14 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
               <polyline points={routePath} fill="none" stroke="#67e8f9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             </svg>
           )}
-          {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / WIDTH) * 100}%`, top: `${(position.top / HEIGHT) * 100}%` }}>{label}</span>)}
+          {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / width) * 100}%`, top: `${(position.top / height) * 100}%` }}>{label}</span>)}
         </div>
-        <div className="absolute right-3 top-3 flex flex-col gap-1" onClick={(event) => event.stopPropagation()}>
-          <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-2 shadow"><FiPlus /></button>
-          <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(3, value - 1))} className="rounded-lg bg-white p-2 shadow"><FiMinus /></button>
-          <button type="button" aria-label={translate("Center on Sri Lanka")} onClick={() => setCenter(SRI_LANKA)} className="rounded-lg bg-white p-2 shadow"><FiCrosshair /></button>
+        <div className="absolute right-2 top-2 flex flex-col gap-1 sm:right-3 sm:top-3" onClick={(event) => event.stopPropagation()}>
+          <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiPlus /></button>
+          <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(3, value - 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiMinus /></button>
+          <button type="button" aria-label={translate("Center saved route")} onClick={() => routeCoordinates?.length ? setViewport((current) => ({ ...current, ...getRouteViewport(routeCoordinates) })) : setCenter(SRI_LANKA)} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiCrosshair /></button>
         </div>
-        <div className="absolute bottom-7 left-3 grid grid-cols-3 gap-1" onClick={(event) => event.stopPropagation()}>
+        <div className="absolute bottom-7 left-3 hidden grid-cols-3 gap-1 sm:grid" onClick={(event) => event.stopPropagation()}>
           <span /><button type="button" aria-label={translate("Pan north")} onClick={() => pan(0, -160)} className="rounded bg-white/95 px-2 py-1 shadow">↑</button><span />
           <button type="button" aria-label={translate("Pan west")} onClick={() => pan(-220, 0)} className="rounded bg-white/95 px-2 py-1 shadow">←</button><span /><button type="button" aria-label={translate("Pan east")} onClick={() => pan(220, 0)} className="rounded bg-white/95 px-2 py-1 shadow">→</button>
           <span /><button type="button" aria-label={translate("Pan south")} onClick={() => pan(0, 160)} className="rounded bg-white/95 px-2 py-1 shadow">↓</button><span />
