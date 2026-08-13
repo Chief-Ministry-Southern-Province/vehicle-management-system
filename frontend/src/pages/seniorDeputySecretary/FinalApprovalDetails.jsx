@@ -212,23 +212,32 @@ export default function FinalApprovalDetails() {
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 px-4 py-5 sm:px-6">
         <div className="mx-auto max-w-7xl space-y-5">
-        <header className="overflow-hidden rounded-2xl bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-lg shadow-blue-900/10">
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
-          <div>
+        <header className="relative overflow-hidden rounded-2xl border border-blue-900/40 bg-linear-to-r from-slate-950 via-blue-950 to-indigo-900 text-white shadow-[0_16px_40px_-24px_rgba(30,64,175,0.75)]">
+          <div className="pointer-events-none absolute -right-10 -top-20 h-44 w-44 rounded-full bg-blue-400/15 blur-3xl" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-cyan-300/60 to-transparent" />
+          <div className="relative flex flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-5">
+          <div className="min-w-0">
             <button
               type="button"
               onClick={() => navigate("/pendingfinalapprovals")}
-              className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-blue-200 transition hover:text-white"
+              className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-200/80 transition hover:text-white"
             >
               <FiArrowLeft />
               Back to pending approvals
             </button>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
-              Final approval review
-            </p>
-            <h1 className="mt-0.5 text-xl font-bold sm:text-2xl">
-              {requestNumber(request.id)}
-            </h1>
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-cyan-200 ring-1 ring-inset ring-white/15"><FiShield size={17} /></span>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-cyan-200">Final approval review</p>
+                  <span className="rounded-full bg-amber-300/15 px-2 py-0.5 text-[9px] font-bold capitalize text-amber-200 ring-1 ring-inset ring-amber-200/20">{request.status?.replaceAll("_", " ")}</span>
+                </div>
+                <div className="mt-0.5 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{requestNumber(request.id)}</h1>
+                  <p className="max-w-md truncate text-xs text-blue-100/70">{request.purpose}</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
             <button
@@ -240,7 +249,7 @@ export default function FinalApprovalDetails() {
                 !awaitingDecision ||
                 !hasAllocation
               }
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:bg-slate-500 disabled:opacity-80"
+              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:-translate-y-0.5 hover:bg-emerald-400 disabled:translate-y-0 disabled:bg-slate-500 disabled:opacity-80"
             >
               <FiCheckCircle />
               {approved
@@ -255,7 +264,7 @@ export default function FinalApprovalDetails() {
               type="button"
               onClick={reject}
               disabled={approving || rejecting || !awaitingDecision}
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-300/40 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:border-white/10 disabled:text-slate-400 disabled:opacity-80"
+              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-rose-200/25 bg-white/5 px-4 py-2 text-sm font-bold text-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-400/15 disabled:translate-y-0 disabled:border-white/10 disabled:text-slate-400 disabled:opacity-80"
             >
               <FiXCircle />
               {rejected
