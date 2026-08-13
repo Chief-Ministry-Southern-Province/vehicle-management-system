@@ -295,6 +295,9 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 
 ## 11. Engineering conventions and guardrails
 
+- Treat `AGENTS.md` synchronization as an automatic final step after every code, configuration, schema, route, workflow, script, dependency, test-command, deployment, or documentation change. Before handing off any change, inspect the complete diff, compare it with this file, and update every affected section in the same change without waiting for a separate request.
+- If a change does not alter any durable project fact documented here, explicitly complete the synchronization check but do not create a timestamp-only, formatting-only, or other no-op edit to `AGENTS.md`.
+- An agent must not report a change as complete until this synchronization check has been performed. Any newly discovered durable constraint, workflow, command, convention, or recurring task must be added here as part of the change that introduces or reveals it.
 - Prefer focused changes that follow existing Laravel/React organization.
 - Controllers currently own most domain orchestration; do not introduce a new architecture for a small change. Extract a service only when it clarifies shared or complex transactional logic.
 - Use Eloquent relationships and route-model binding; avoid duplicating lookup logic.
@@ -323,7 +326,7 @@ A task is complete only when, as applicable:
 - relevant automated tests pass;
 - frontend lint and production build pass for frontend changes;
 - sensitive data, uploads, concurrency, and timezone implications were checked;
-- README and this file were updated if project behavior, commands, roles, architecture, or workflows changed;
+- the mandatory `AGENTS.md` synchronization check was completed, and README plus this file were updated wherever project behavior, commands, roles, architecture, workflows, or other durable facts changed;
 - the final diff contains no secrets, generated output, debug statements, or unrelated edits.
 
 ## 13. Known implementation notes and current gaps
