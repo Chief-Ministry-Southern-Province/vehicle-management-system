@@ -212,25 +212,25 @@ export default function FinalApprovalDetails() {
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 px-4 py-5 sm:px-6">
         <div className="mx-auto max-w-7xl space-y-5">
-        <header className="overflow-hidden rounded-3xl bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-xl shadow-blue-900/10">
-          <div className="flex flex-wrap items-start justify-between gap-6 p-6 sm:p-8">
+        <header className="overflow-hidden rounded-2xl bg-linear-to-r from-slate-900 via-blue-950 to-blue-800 text-white shadow-lg shadow-blue-900/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
           <div>
             <button
               type="button"
               onClick={() => navigate("/pendingfinalapprovals")}
-              className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-blue-100 transition hover:bg-white/20 hover:text-white"
+              className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-blue-200 transition hover:text-white"
             >
               <FiArrowLeft />
               Back to pending approvals
             </button>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-300">
               Final approval review
             </p>
-            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
+            <h1 className="mt-0.5 text-xl font-bold sm:text-2xl">
               {requestNumber(request.id)}
             </h1>
           </div>
-          <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-2">
+          <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
             <button
               type="button"
               onClick={approve}
@@ -240,7 +240,7 @@ export default function FinalApprovalDetails() {
                 !awaitingDecision ||
                 !hasAllocation
               }
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 disabled:bg-slate-500 disabled:opacity-80"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:bg-slate-500 disabled:opacity-80"
             >
               <FiCheckCircle />
               {approved
@@ -255,7 +255,7 @@ export default function FinalApprovalDetails() {
               type="button"
               onClick={reject}
               disabled={approving || rejecting || !awaitingDecision}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-rose-300/40 bg-rose-400/10 px-6 py-3 font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:border-white/10 disabled:text-slate-400 disabled:opacity-80"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-rose-300/40 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:border-white/10 disabled:text-slate-400 disabled:opacity-80"
             >
               <FiXCircle />
               {rejected
