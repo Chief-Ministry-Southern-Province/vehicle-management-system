@@ -1,78 +1,45 @@
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, CheckCircle2, Clock3, MapPin, Route, Search, UsersRound, XCircle } from "lucide-react";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { useEffect, useState } from "react";
 import { getDriverTripHistory } from "../../api/authApi";
-import { formatLocalDateTime as formatDate } from "../../utils/dateTime";
+import { formatLocalDate, formatLocalTime } from "../../utils/dateTime";
+
+const statusStyle = { completed: "border-emerald-100 bg-emerald-50 text-emerald-700", cancelled: "border-slate-200 bg-slate-100 text-slate-600" };
+const getStatusKey = (trip) => (trip.status || trip.journey_status || "completed").toLowerCase();
+
+function JourneyCard({ trip }) {
+  const status = getStatusKey(trip);
+  const isCancelled = status === "cancelled";
+  const vehicleName = [trip.vehicle?.make, trip.vehicle?.model].filter(Boolean).join(" ");
+  const distance = trip.distance_km ? `${Number(trip.distance_km).toLocaleString("en-LK", { maximumFractionDigits: 1 })} km` : "Not recorded";
+
+  return <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-slate-200/70">
+    <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-sm font-bold text-white shadow-sm shadow-blue-200">{trip.reference?.replace("REQ-", "#") || "#"}</span><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{trip.purpose || "Official journey"}</p><p className="mt-0.5 text-xs font-medium text-slate-500">{trip.reference || "Journey record"}</p></div></div>
+      <span className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold ${statusStyle[status] || statusStyle.completed}`}>{isCancelled ? <XCircle size={14} /> : <CheckCircle2 size={14} />}{isCancelled ? "Cancelled" : "Completed"}</span>
+    </div>
+    <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_13rem]">
+      <div><div className="relative space-y-4 before:absolute before:bottom-4 before:left-[7px] before:top-4 before:w-px before:bg-slate-200"><div className="relative flex gap-3"><span className="mt-1.5 h-4 w-4 shrink-0 rounded-full border-4 border-blue-100 bg-blue-600" /><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">From</p><p className="truncate text-sm font-semibold text-slate-700">{trip.starting_location || "Starting location not recorded"}</p></div></div><div className="relative flex gap-3"><span className="mt-1.5 h-4 w-4 shrink-0 rounded-full border-4 border-emerald-100 bg-emerald-600" /><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">To</p><p className="truncate text-sm font-semibold text-slate-700">{trip.destination || "Destination not recorded"}</p></div></div></div>
+        <div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-3"><Fact icon={CalendarDays} label="Journey date" value={formatLocalDate(trip.departure_at)} /><Fact icon={Clock3} label={isCancelled ? "Cancelled" : "Completed"} value={formatLocalTime(isCancelled ? trip.cancelled_at : trip.journey_completed_at)} /><Fact icon={Route} label="Distance" value={distance} extra="col-span-2 sm:col-span-1" /></div>
+      </div>
+      <aside className="rounded-xl bg-slate-50 p-4 lg:border-l lg:border-slate-100 lg:bg-transparent lg:pl-5"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Assignment</p><p className="mt-2 text-sm font-bold text-slate-800">{trip.vehicle?.registration_number || "Vehicle not assigned"}</p>{vehicleName && <p className="mt-0.5 text-xs text-slate-500">{vehicleName}</p>}<div className="mt-4 flex items-center gap-2 text-sm text-slate-600"><UsersRound size={16} className="text-slate-400" />{trip.passenger_count || 0} passenger{Number(trip.passenger_count) === 1 ? "" : "s"}</div>{trip.parking_location && <div className="mt-2 flex items-start gap-2 text-sm text-slate-600"><MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" /><span>{trip.parking_location}</span></div>}</aside>
+    </div>
+  </article>;
+}
+
+function Fact({ icon: Icon, label, value, extra = "" }) { return <div className={`flex items-start gap-2 ${extra}`}><Icon className="mt-0.5 shrink-0 text-blue-600" size={17} /><div><p className="text-xs text-slate-400">{label}</p><p className="mt-0.5 text-sm font-semibold text-slate-700">{value}</p></div></div>; }
 
 export default function TripsHistory() {
-  const [trips, setTrips] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-
-    getDriverTripHistory()
-      .then((response) => {
-        if (active) setTrips(response?.data?.trips || []);
-      })
-      .catch((requestError) => {
-        if (active) setError(requestError?.message || "Unable to load trip history.");
-      })
-      .finally(() => active && setLoading(false));
-
-    return () => { active = false; };
-  }, []);
-
-  return (
-    <DashboardLayout>
-      <div className="bg-slate-50 min-h-screen p-6">
-        <div className="bg-white border rounded-2xl overflow-hidden">
-          <div className="p-5 border-b">
-            <h2 className="text-2xl font-bold">Recent Trip History</h2>
-          </div>
-
-          {loading && <p className="p-10 text-center text-sm text-slate-500">Loading trip history...</p>}
-          {error && <p className="m-5 rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">{error}</p>}
-          {!loading && !error && trips.length === 0 && (
-            <p className="p-10 text-center text-sm text-slate-500">No completed journeys yet.</p>
-          )}
-
-          {!loading && !error && trips.length > 0 && <div className="overflow-x-auto"><table className="w-full min-w-[760px]">
-            <thead className="bg-slate-50">
-              <tr className="text-left text-sm">
-                <th className="p-4">Trip ID</th>
-                <th>Journey Date</th>
-                <th>Destination</th>
-                <th>Purpose</th>
-                <th>Vehicle</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {trips.map((trip) => (
-                <tr key={trip.id} className="border-t">
-                  <td className="p-4 text-blue-600">{trip.reference}</td>
-
-                  <td>{formatDate(trip.departure_at)}</td>
-
-                  <td>{trip.destination}</td>
-
-                  <td>{trip.purpose}</td>
-
-                  <td>{trip.vehicle?.registration_number || "Not assigned"}</td>
-
-                  <td>
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-                      Completed
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table></div>}
-        </div>
-      </div>
-    </DashboardLayout>
-  );
+  const [trips, setTrips] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [search, setSearch] = useState(""); const [filter, setFilter] = useState("all");
+  useEffect(() => { let active = true; getDriverTripHistory().then((response) => active && setTrips(response?.data?.trips || [])).catch((requestError) => active && setError(requestError?.message || "Unable to load trip history.")).finally(() => active && setLoading(false)); return () => { active = false; }; }, []);
+  const completedTrips = trips.filter((trip) => getStatusKey(trip) !== "cancelled");
+  const filteredTrips = useMemo(() => { const term = search.trim().toLowerCase(); return trips.filter((trip) => { const matchesFilter = filter === "all" || getStatusKey(trip) === filter; const matchesSearch = !term || [trip.reference, trip.purpose, trip.destination, trip.starting_location, trip.vehicle?.registration_number].some((value) => value?.toLowerCase().includes(term)); return matchesFilter && matchesSearch; }); }, [filter, search, trips]);
+  return <DashboardLayout><main className="mx-auto w-full max-w-7xl space-y-5 sm:space-y-6">
+    <header className="overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-5 py-6 text-white shadow-xl shadow-slate-300 sm:px-7 sm:py-8"><div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-300">Driver workspace</p><h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Your trip history</h1><p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">A clear record of your completed and cancelled official journeys.</p></div><div className="grid grid-cols-2 gap-3"><Stat label="Total records" value={trips.length} /><Stat label="Completed" value={completedTrips.length} /></div></div></header>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-bold text-slate-900">Journey records</h2><p className="mt-1 text-sm text-slate-500">Search by reference, purpose, destination, or vehicle.</p></div><div className="flex rounded-xl bg-slate-100 p-1 text-sm font-semibold"><FilterButton active={filter === "all"} onClick={() => setFilter("all")}>All</FilterButton><FilterButton active={filter === "completed"} onClick={() => setFilter("completed")}>Completed</FilterButton><FilterButton active={filter === "cancelled"} onClick={() => setFilter("cancelled")}>Cancelled</FilterButton></div></div><label className="relative mt-4 block"><Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search journeys" className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100" /></label></section>
+    {loading && <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500">Loading your trip history…</div>}{error && <p className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">{error}</p>}{!loading && !error && filteredTrips.length === 0 && <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-14 text-center"><Route className="mx-auto text-slate-300" size={32} /><h2 className="mt-4 font-bold text-slate-800">{trips.length ? "No matching journeys" : "No journeys recorded yet"}</h2><p className="mt-1 text-sm text-slate-500">{trips.length ? "Try a different search or record filter." : "Completed and cancelled journeys will appear here."}</p></div>}{!loading && !error && filteredTrips.length > 0 && <section className="space-y-4" aria-label="Trip history results">{filteredTrips.map((trip) => <JourneyCard key={trip.id} trip={trip} />)}</section>}
+  </main></DashboardLayout>;
 }
+
+function Stat({ label, value }) { return <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur"><p className="text-xs text-slate-300">{label}</p><p className="mt-1 text-2xl font-bold">{value}</p></div>; }
+function FilterButton({ active, children, onClick }) { return <button onClick={onClick} className={`rounded-lg px-3 py-2 transition ${active ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{children}</button>; }
