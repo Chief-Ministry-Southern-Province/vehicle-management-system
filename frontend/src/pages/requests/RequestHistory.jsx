@@ -14,11 +14,6 @@ const statusColor = {
   rejected: "bg-red-100 text-red-700",
   cancelled: "bg-gray-100 text-gray-700",
 };
-const priorityColor = {
-  high: "bg-rose-50 text-rose-700 ring-rose-200",
-  medium: "bg-amber-50 text-amber-700 ring-amber-200",
-  low: "bg-sky-50 text-sky-700 ring-sky-200",
-};
 export default function RequestHistory({
   title = "Request History",
   description = "View all your vehicle requests, including approved requests.",
@@ -102,7 +97,6 @@ export default function RequestHistory({
                   <th className="p-4">Destination</th>
                   <th className="p-4">Purpose</th>
                   <th className="p-4">Pax</th>
-                  <th className="p-4">Priority</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Actions</th>
                 </tr>
@@ -120,12 +114,6 @@ export default function RequestHistory({
                     <td className="p-4 text-gray-600">{request.purpose}</td>
                     <td className="p-4 text-center">
                       {request.passenger_count}
-                    </td>
-                    <td className="p-4 text-[0] text-transparent">
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase ring-1 ring-inset ${priorityColor[request.department_priority?.toLowerCase()] || "bg-slate-50 text-slate-600 ring-slate-200"}`}>
-                        {request.department_priority || "Not set"}
-                      </span>
-                      â— {request.department_priority || "Not set"}
                     </td>
                     <td className="p-4">
                       <span
@@ -152,7 +140,7 @@ export default function RequestHistory({
                 {loading && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="p-10 text-center text-sm text-gray-500"
                     >
                       Loading request history...
@@ -162,7 +150,7 @@ export default function RequestHistory({
                 {!loading && error && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="bg-red-50 p-5 text-center text-sm text-red-700"
                     >
                       {error}
@@ -172,7 +160,7 @@ export default function RequestHistory({
                 {!loading && !error && visibleRequests.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={7}
                       className="p-10 text-center text-sm text-gray-500"
                     >
                       {status === "approved"
@@ -208,7 +196,6 @@ export default function RequestHistory({
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600"><FiUsers />{request.passenger_count} pax</span>
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ring-inset ${priorityColor[request.department_priority?.toLowerCase()] || "bg-slate-50 text-slate-600 ring-slate-200"}`}>{request.department_priority || "Not set"}</span>
                     </div>
                     <button type="button" onClick={() => navigate(`${detailBasePath}/${request.id}`)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition active:scale-95" aria-label={`View request ${requestCode}`}><FiArrowRight /></button>
                   </div>
