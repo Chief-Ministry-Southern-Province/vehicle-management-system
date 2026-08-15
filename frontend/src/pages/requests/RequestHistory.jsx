@@ -57,6 +57,7 @@ export default function RequestHistory({
           ["approved", "completed"].includes(request.status)) &&
         (!search ||
           String(request.id).includes(search) ||
+          request.starting_location?.toLowerCase().includes(search) ||
           request.destination?.toLowerCase().includes(search) ||
           request.purpose?.toLowerCase().includes(search)),
     );
@@ -94,7 +95,7 @@ export default function RequestHistory({
                 <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
                   <th className="p-4">Request ID</th>
                   <th className="p-4">Date</th>
-                  <th className="p-4">Destination</th>
+                  <th className="p-4">Route</th>
                   <th className="p-4">Purpose</th>
                   <th className="p-4">Pax</th>
                   <th className="p-4">Status</th>
@@ -110,7 +111,13 @@ export default function RequestHistory({
                     <td className="p-4 text-gray-600">
                       {formatLocalDateTime(request.created_at)}
                     </td>
-                    <td className="p-4">{request.destination}</td>
+                    <td className="p-4">
+                      <div className="flex min-w-[13rem] items-center gap-2 text-sm font-medium text-slate-700">
+                        <span className="max-w-36 truncate">{request.starting_location || "Starting location not provided"}</span>
+                        <FiArrowRight className="shrink-0 text-blue-500" aria-hidden="true" />
+                        <span className="max-w-36 truncate">{request.destination || "Destination not provided"}</span>
+                      </div>
+                    </td>
                     <td className="p-4 text-gray-600">{request.purpose}</td>
                     <td className="p-4 text-center">
                       {request.passenger_count}
@@ -189,7 +196,7 @@ export default function RequestHistory({
                   </div>
 
                   <div className="mt-3 rounded-xl bg-slate-50 p-3">
-                    <p className="flex items-start gap-2 text-sm font-semibold text-slate-800"><FiMapPin className="mt-0.5 shrink-0 text-blue-600" /><span className="break-words">{request.destination || "Destination not provided"}</span></p>
+                    <p className="flex items-start gap-2 text-sm font-semibold text-slate-800"><FiMapPin className="mt-0.5 shrink-0 text-blue-600" /><span className="break-words">{request.starting_location || "Starting location not provided"} <span className="mx-1.5 text-blue-500" aria-hidden="true">→</span> {request.destination || "Destination not provided"}</span></p>
                     <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{request.purpose || "Purpose not provided"}</p>
                   </div>
 
