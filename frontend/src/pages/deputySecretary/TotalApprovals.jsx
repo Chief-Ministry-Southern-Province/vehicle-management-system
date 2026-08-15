@@ -97,6 +97,7 @@ export default function TotalApprovals() {
         String(request.id).includes(search) ||
         request.requester_name?.toLowerCase().includes(search) ||
         request.user?.department?.toLowerCase().includes(search) ||
+        request.starting_location?.toLowerCase().includes(search) ||
         request.destination?.toLowerCase().includes(search) ||
         request.purpose?.toLowerCase().includes(search);
       return matchesStatus && matchesSearch;
@@ -190,7 +191,7 @@ export default function TotalApprovals() {
                   <th className="px-5 py-4">Request</th>
                   <th className="px-5 py-4">Requester</th>
                   <th className="px-5 py-4">Department</th>
-                  <th className="px-5 py-4">Purpose / Destination</th>
+                  <th className="px-5 py-4">Purpose / Route</th>
                   <th className="px-5 py-4">Journey</th>
                   <th className="px-5 py-4">Passengers</th>
                   <th className="px-5 py-4">Department Recommendation</th>
@@ -226,8 +227,10 @@ export default function TotalApprovals() {
                       <p className="font-semibold text-slate-800">
                         {request.purpose}
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {request.destination}
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+                        <span className="max-w-28 truncate">{request.starting_location || "Starting location not provided"}</span>
+                        <span className="shrink-0 text-blue-500" aria-hidden="true">→</span>
+                        <span className="max-w-28 truncate">{request.destination || "Destination not provided"}</span>
                       </p>
                     </td>
                     <td className="px-5 py-5 text-sm text-slate-600">
