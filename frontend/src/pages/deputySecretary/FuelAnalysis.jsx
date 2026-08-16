@@ -1,6 +1,6 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-export default function FuleAnalysis() {
+export default function FuelAnalysis() {
   return (
     <div>
         <DashboardLayout>

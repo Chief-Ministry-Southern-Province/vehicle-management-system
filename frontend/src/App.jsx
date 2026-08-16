@@ -49,6 +49,7 @@ import Setting from "./pages/Setting";
 import SystemChanges from './pages/SystemChanges';
 import PendingJourny from './pages/subjectOfficer/PendingJourny';
 import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
+import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -111,6 +112,7 @@ function App() {
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />)} />
+            <Route path="/fuelanalysis" element={withAuth(<FuelAnalysis />)} />
             <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 
