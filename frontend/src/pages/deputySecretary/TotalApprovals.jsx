@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  FiArrowRight,
   FiCheckCircle,
   FiClock,
   FiFileText,
+  FiMapPin,
   FiSearch,
+  FiUsers,
   FiXCircle,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -20,30 +23,28 @@ const statusStyle = {
   completed: "bg-cyan-50 text-cyan-700 ring-1 ring-inset ring-cyan-200",
   cancelled: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
 };
-function StatCard({ icon, label, value, tone }) {
+function StatCard({ icon, label, value, tone, accent }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-white via-white to-slate-50 p-5 shadow-[0_10px_35px_-18px_rgba(15,23,42,0.35)] ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_-20px_rgba(15,23,42,0.4)]">
-      <div
-        className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-60 blur-2xl ${tone}`}
-      />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 sm:text-xs">
             {label}
           </p>
-          <p className="mt-3 text-3xl font-black tracking-tight text-slate-900">
+          <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
             {value}
           </p>
-          <p className="mt-2 text-xs font-medium text-slate-400">
-            Live approval overview
+          <p className="mt-1 text-xs text-slate-400">
+            Approval records
           </p>
         </div>
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl shadow-sm ring-1 ring-inset ring-white/70 transition-transform duration-300 group-hover:scale-110 ${tone}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg ${tone}`}
         >
           {icon}
         </div>
       </div>
+      <div className={`absolute inset-x-0 bottom-0 h-1 ${accent}`} />
     </div>
   );
 }
@@ -105,51 +106,58 @@ export default function TotalApprovals() {
   }, [query, requests, status]);
   return (
     <DashboardLayout>
-      <div className="min-h-screen space-y-6 bg-slate-50 p-6">
-        <header>
-          <p className="text-sm font-semibold text-blue-600">
-            Assistance Secreatry
-          </p>
-          <h1 className="mt-1 text-3xl font-bold text-slate-900">
-            Request Allocation Register
-          </h1>
-          <p className="mt-1 text-slate-500">
-            Vehicle allocation details for requests across all departments.
-          </p>
+      <div className="mx-auto w-full max-w-[1600px] space-y-5 sm:space-y-6">
+        <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-5 py-6 text-white shadow-xl shadow-slate-300 sm:px-7 sm:py-8">
+          <div className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-300">Deputy secretary workspace</p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Approval register</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Review request progress, recommendations, and allocation-ready journeys in one place.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur"><p className="text-xs text-slate-300">Total records</p><p className="mt-1 text-2xl font-bold">{stats.all}</p></div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur"><p className="text-xs text-slate-300">Awaiting action</p><p className="mt-1 text-2xl font-bold">{stats.pending}</p></div>
+            </div>
+          </div>
         </header>
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <StatCard
             icon={<FiFileText />}
             label="Total Requests"
             value={stats.all}
             tone="bg-blue-100 text-blue-600"
+            accent="bg-blue-500"
           />
           <StatCard
             icon={<FiClock />}
             label="Pending"
             value={stats.pending}
             tone="bg-amber-100 text-amber-600"
+            accent="bg-amber-500"
           />
           <StatCard
             icon={<FiCheckCircle />}
             label="Approved"
             value={stats.approved}
             tone="bg-emerald-100 text-emerald-600"
+            accent="bg-emerald-500"
           />
           <StatCard
             icon={<FiXCircle />}
             label="Rejected"
             value={stats.rejected}
             tone="bg-rose-100 text-rose-600"
+            accent="bg-rose-500"
           />
         </div>
-        <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)]">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_55px_-30px_rgba(15,23,42,0.18)]">
           <div className="flex flex-col gap-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/60 p-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-600 ring-1 ring-blue-100">
                 Official Records
               </div>
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">
+              <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
                 Approval Register
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -184,9 +192,24 @@ export default function TotalApprovals() {
               </select>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="divide-y divide-slate-100 lg:hidden">
+            {!loading && !error && visibleRequests.map((request) => (
+              <article key={request.id} className="p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0"><p className="text-xs font-bold tracking-wide text-blue-700">REQ-{String(request.id).padStart(4, "0")}</p><p className="mt-1 truncate text-sm font-bold text-slate-900">{request.requester_name || request.user?.name || "Requester not recorded"}</p><p className="mt-0.5 text-xs text-slate-500">{request.user?.department || "Department not recorded"}</p></div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize ${statusStyle[request.status] || "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200"}`}>{request.status?.replaceAll("_", " ")}</span>
+                </div>
+                <div className="mt-4 rounded-xl bg-slate-50 p-3"><p className="text-sm font-semibold text-slate-800">{request.purpose || "Purpose not provided"}</p><p className="mt-2 flex items-start gap-2 text-xs leading-5 text-slate-600"><FiMapPin className="mt-0.5 shrink-0 text-blue-600" /><span>{request.starting_location || "Starting location not provided"} <span className="mx-1 text-blue-500" aria-hidden="true">→</span> {request.destination || "Destination not provided"}</span></p></div>
+                <div className="mt-4 flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><FiUsers />{request.passenger_count || 0} pax</span><span className="truncate">{formatLocalDateTime(request.departure_at)}</span></div><button type="button" onClick={() => navigate(`/approval/${request.id}`)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition active:scale-95" aria-label={`View request REQ-${String(request.id).padStart(4, "0")}`}><FiArrowRight /></button></div>
+              </article>
+            ))}
+            {loading && <div className="p-10 text-center text-sm text-slate-500"><FiClock className="mx-auto mb-2 animate-pulse text-xl text-blue-500" />Loading approval records...</div>}
+            {!loading && error && <div className="bg-red-50 p-5 text-center text-sm text-red-700">{error}</div>}
+            {!loading && !error && visibleRequests.length === 0 && <div className="p-10 text-center text-sm text-slate-500">No approval records found.</div>}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[1500px]">
-              <thead className="bg-slate-500 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-slate-300">
+              <thead className="bg-slate-900 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-slate-300">
                 <tr>
                   <th className="px-5 py-4">Request</th>
                   <th className="px-5 py-4">Requester</th>
@@ -205,7 +228,7 @@ export default function TotalApprovals() {
                 {visibleRequests.map((request) => (
                   <tr
                     key={request.id}
-                    className="align-top transition-colors hover:bg-blue-50/50"
+                    className="align-top transition-colors odd:bg-white even:bg-slate-50/40 hover:bg-blue-50/70"
                   >
                     <td className="px-5 py-5">
                       <span className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-100">
