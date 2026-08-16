@@ -188,21 +188,20 @@ const menuItems = [
         icon: <FiClipboard />,
         roles: ["department_officer"],
       },
-    ],
-  },
-
-  {
-    title: "VEHICLE REQUESTS",
-    items: [
       {
         name: "Request History",
         path: "/subjectofficer/requesthistory",
         icon: <FiClipboard />,
         roles: ["subject_officer"],
       },
+      {
+        name: "Request History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
     ],
   },
-
 
 
   // ==========================================
@@ -248,20 +247,15 @@ const menuItems = [
         icon: <AiFillSchedule />,
         roles: ["deputy_secretary"],
       },
-    ],
-  },
-
-  {
-    title: "VEHICLE REQUESTS",
-    items: [
       {
-        name: "Request History",
-        path: "/requesthistory",
-        icon: <FiClipboard />,
+        name: "Fuel Analysis",
+        path: "/fuelanalysis",
+        icon: <FiDroplet />,
         roles: ["deputy_secretary"],
       },
     ],
   },
+
 
   // ==========================================
   // SUBJECT OFFICER SECTION
