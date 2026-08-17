@@ -39,7 +39,7 @@ export default function DeputySecretaryDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-[#f4f7fb] px-3 py-4 dark:bg-slate-950 sm:px-5 sm:py-6 lg:px-7">
+      <div className="min-h-screen px-3 py-4 dark:bg-slate-950 sm:px-5 sm:py-6 lg:px-2">
         <div className="mx-auto max-w-[1600px] space-y-5 sm:space-y-7">
           <header className="relative overflow-hidden rounded-[24px] bg-linear-to-br from-slate-950 via-blue-950 to-indigo-900 px-5 py-6 text-white shadow-[0_24px_60px_-30px_rgba(30,64,175,0.8)] sm:px-7 sm:py-8 lg:px-9">
             <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />

@@ -1,6 +1,8 @@
-import { FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
+import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
 import nationalEmblem from "../../assets/national-emblem.png";
 
 const initials = (name) =>
@@ -24,6 +26,57 @@ export default function Topbar({ onMenuToggle }) {
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const notificationMenuRef = useRef(null);
+
+  const loadNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const response = await getNotifications();
+      setNotifications(response.data?.notifications || []);
+      setUnreadCount(response.data?.unread_count || 0);
+    } catch {
+      // The bell remains available if a transient request fails; it will retry on the next open.
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  useEffect(() => { loadNotifications(); }, []);
+  useEffect(() => {
+    const interval = window.setInterval(loadNotifications, 60000);
+    return () => window.clearInterval(interval);
+  }, []);
+  useEffect(() => {
+    const closeOnOutsideClick = (event) => {
+      if (!notificationMenuRef.current?.contains(event.target)) setNotificationsOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, []);
+
+  const toggleNotifications = () => {
+    setNotificationsOpen((isOpen) => !isOpen);
+    if (!notificationsOpen) loadNotifications();
+  };
+  const markRead = async (notification) => {
+    if (notification.read_at) return;
+    try {
+      await markNotificationRead(notification.id);
+      setNotifications((items) => items.map((item) => item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item));
+      setUnreadCount((count) => Math.max(0, count - 1));
+    } catch { /* Keep the unread state when the API update fails. */ }
+  };
+  const markAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications((items) => items.map((item) => ({ ...item, read_at: item.read_at || new Date().toISOString() })));
+      setUnreadCount(0);
+    } catch { /* Keep the unread state when the API update fails. */ }
+  };
 
   return (
     <header
@@ -95,6 +148,37 @@ export default function Topbar({ onMenuToggle }) {
             </select>
             <FiChevronDown className="pointer-events-none absolute right-3 text-xs text-slate-400" />
           </label>
+
+          <div ref={notificationMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={toggleNotifications}
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/75 text-slate-700 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.75)] transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
+              aria-label={t("notifications.title", "Notifications")}
+              aria-expanded={notificationsOpen}
+            >
+              <FiBell size={19} aria-hidden="true" />
+              {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-bold text-white dark:border-slate-950">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+            </button>
+
+            {notificationsOpen && (
+              <section className="absolute right-0 top-[calc(100%+0.65rem)] z-50 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15 dark:border-white/10 dark:bg-slate-900">
+                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
+                  <div><h2 className="font-bold text-slate-900 dark:text-white">{t("notifications.title", "Notifications")}</h2><p className="text-xs text-slate-500 dark:text-slate-400">{unreadCount ? `${unreadCount} unread` : "You're all caught up"}</p></div>
+                  {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">Mark all read</button>}
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No notifications yet.</p> : notifications.map((notification) => (
+                    <button type="button" key={notification.id} onClick={() => markRead(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
+                      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read_at ? "bg-transparent" : "bg-blue-600"}`} />
+                      <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.data?.title}</span><span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-300">{notification.data?.message}</span><span className="mt-1 block text-[11px] text-slate-400">{notification.created_at ? new Date(notification.created_at).toLocaleString() : ""}</span></span>
+                      {!notification.read_at && <FiCheck className="mt-1 shrink-0 text-blue-600 dark:text-blue-300" aria-label="Mark as read" />}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
             <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 sm:h-11 sm:w-11 sm:text-sm">

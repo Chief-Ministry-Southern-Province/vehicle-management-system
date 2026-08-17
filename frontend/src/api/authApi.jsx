@@ -224,6 +224,33 @@ export const createVehicleRequest = async (requestData) => {
   }
 };
 
+export const getNotifications = async () => {
+  try {
+    const response = await API.get("/notifications", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const markNotificationRead = async (notificationId) => {
+  try {
+    const response = await API.patch(`/notifications/${encodeURIComponent(notificationId)}/read`, {}, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const markAllNotificationsRead = async () => {
+  try {
+    const response = await API.patch("/notifications/read-all", {}, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const getMyVehicleRequests = async () => {
   try {
     const response = await API.get("/vehicle-requests", {

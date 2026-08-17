@@ -6,7 +6,7 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#f4f7fb] dark:bg-slate-950">
       <Topbar onMenuToggle={() => setSidebarOpen(true)} />
 
       <div className="flex min-h-0 flex-1">

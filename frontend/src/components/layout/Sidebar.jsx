@@ -98,6 +98,12 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
+        name: "Pending Recommendations",
+        path: "/deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Total Approvals",
         path: "/totalapprovals",
         icon: <FiCheckCircle />,
@@ -116,6 +122,12 @@ const menuItems = [
         name: "Pending Approvals",
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
+        roles: ["senior_deputy_secretary"],
+      },
+      {
+        name: "Pending Recommendation",
+        path: "/senior-deputy/pending-recommendations",
+        icon: <FiClipboard />,
         roles: ["senior_deputy_secretary"],
       },
       {
@@ -207,24 +219,6 @@ const menuItems = [
   // ==========================================
   // SUBJECT OFFICER, Assistance Secreatry SECTION, SENIOR ASSISTANCE SECRETARY SECTION
   // ==========================================
-
-  {
-    title: "RECCOMMENDATIONS",
-    items: [
-      {
-        name: "Pending Recommendations",
-        path: "/deputy/pending-recommendations",
-        icon: <FiClipboard />,
-        roles: ["deputy_secretary"],
-      },
-      {
-        name: "Pending Recommendation",
-        path: "/senior-deputy/pending-recommendations",
-        icon: <FiClipboard />,
-        roles: ["senior_deputy_secretary"],
-      },
-    ],
-  },
 
   {
     title: "FLLET MANAGEMENT",
