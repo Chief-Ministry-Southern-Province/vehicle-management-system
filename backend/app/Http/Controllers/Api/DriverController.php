@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use App\Models\VehicleRequest;
+use App\Services\WorkflowNotificationService;
 
 class DriverController extends Controller
 {
+    public function __construct(private readonly WorkflowNotificationService $notifications)
+    {
+    }
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -287,6 +291,8 @@ class DriverController extends Controller
                 }
             });
         }
+
+        $this->notifications->journeyStatus($vehicleRequest->fresh('user'), $validated['action']);
 
         return response()->json([
             'success' => true,
