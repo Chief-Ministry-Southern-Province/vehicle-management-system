@@ -28,7 +28,7 @@ VMS-GOV is a government Vehicle Management System for the Chief Ministry at Daks
 
 The implemented system supports:
 
-- authenticated employee accounts and role-based dashboards;
+- authenticated employee accounts and role-based dashboards, including per-user in-app workflow notifications;
 - official vehicle requests, attachments, history, details, and cancellation;
 - department, deputy, senior deputy, and secretary review stages;
 - vehicle and driver allocation/reallocation with conflict checks;
@@ -164,7 +164,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 
 Primary domain entities and relationships:
 
-- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens.
+- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens and database-backed in-app notifications.
 - `Department`: unique name and optional creating user.
 - `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
@@ -179,6 +179,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 
 - Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
+- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`. Each authenticated user can read and mark only their own notifications.
 - Deputy administration: `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`.
 - Personal requests: `POST|GET /vehicle-requests`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
 - Department review: `GET /department/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`.
@@ -199,6 +200,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Each role has a dashboard under `frontend/src/pages/dashboard/`.
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
+- `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent database notifications on open and every minute; individual or all notifications can be marked read.
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
 - Vehicle-request location text is resolved through the configurable `VITE_GEOCODING_API_URL` search endpoint with results restricted to Sri Lanka (`countrycodes=lk`). The default is the public OpenStreetMap Nominatim search service; preserve attribution and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
@@ -303,6 +305,11 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 6. Update the API client, page/components, loading/empty/error states, and translations.
 7. Add feature tests for permissions, validation, state transitions, and side effects.
 8. Run backend tests plus frontend lint/build.
+
+### Notification behavior
+
+- Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
+- Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 
 ### Add or change a role/function
 
