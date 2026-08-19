@@ -495,18 +495,21 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
       </div>
       {Array.isArray(driver.previous_journeys) &&
       driver.previous_journeys.length > 0 ? (
-        <div className="divide-y divide-slate-100">
+        <div
+          className="max-h-[29rem] divide-y divide-slate-100 overflow-y-auto overscroll-contain"
+          aria-label="Previous journeys"
+        >
           {driver.previous_journeys.map((journey, index) => (
             <article
               key={`${journey.date}-${journey.destination}-${index}`}
-              className="p-4 text-sm"
+              className="h-[7.25rem] overflow-hidden p-4 text-sm"
             >
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-slate-800">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-800">
                     {journey.origin} → {journey.destination}
                   </p>
-                  <p className="mt-1 text-slate-500">{journey.purpose}</p>
+                  <p className="mt-1 truncate text-slate-500">{journey.purpose}</p>
                 </div>
                 <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold capitalize text-emerald-700">
                   {journey.status}
