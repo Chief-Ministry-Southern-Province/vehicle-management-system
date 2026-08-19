@@ -28,7 +28,7 @@ VMS-GOV is a government Vehicle Management System for the Chief Ministry at Daks
 
 The implemented system supports:
 
-- authenticated employee accounts and role-based dashboards;
+- authenticated employee accounts and role-based dashboards, including per-user in-app workflow notifications;
 - official vehicle requests, attachments, history, details, and cancellation;
 - department, deputy, senior deputy, and secretary review stages;
 - vehicle and driver allocation/reallocation with conflict checks;
@@ -156,7 +156,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 - Executive roles and the subject officer can read vehicle and driver records.
 - Only the subject officer can create/update vehicles and manage driver records.
 - Vehicle records include identity/specification, capacity, fuel configuration and efficiency, compliance expiries, insurance, assignment, status, images, and JSON-backed service/repair/fuel history.
-- Driver records include identity/contact, NIC, licence details/expiry, allocation, duty status, previous journeys, and current assignment.
+- Driver records include identity/contact, NIC, licence details/expiry, allocation, duty status, previous journeys, and current assignment. Allocation-driver responses merge the recent completed `VehicleRequest` records with stored legacy journey history so the deputy allocation workspace can display prior journeys.
 - Drivers can report issues against their active journey/vehicle. Subject officers and deputy secretaries can read issue reports.
 - PDF helpers in `frontend/src/utils/` export directories, detail sheets, approved journeys, fuel, service, repair, and driver issue records. Validate both content and filenames when changing report data.
 
@@ -164,7 +164,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 
 Primary domain entities and relationships:
 
-- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens.
+- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens and database-backed in-app notifications.
 - `Department`: unique name and optional creating user.
 - `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
@@ -179,6 +179,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 
 - Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
+- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`. Each authenticated user can read and mark only their own notifications.
 - Deputy administration: `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`.
 - Personal requests: `POST|GET /vehicle-requests`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
 - Department review: `GET /department/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`.
@@ -199,12 +200,14 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Each role has a dashboard under `frontend/src/pages/dashboard/`.
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
+- `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Individual or all notifications can be marked read.
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
 - Vehicle-request location text is resolved through the configurable `VITE_GEOCODING_API_URL` search endpoint with results restricted to Sri Lanka (`countrycodes=lk`). The default is the public OpenStreetMap Nominatim search service; preserve attribution and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
 - The driver dashboard's Scheduled Journeys cards present the full operational assignment: requester/purpose, schedule, passengers, start/end locations, authoritative distance and road geometry, vehicle, parking location, status, and available trip actions. Consolidated journeys expose route details per member request rather than inventing an inaccurate combined distance.
 - The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data. The shared map renderer measures its actual container dimensions so tiles, route paths, and markers remain geometrically aligned at mobile and desktop sizes; do not restore fixed-canvas scaling. Keep mobile map controls compact and preserve OpenStreetMap attribution.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
+- The daily journey schedule lists the complete driver directory in Driver ID order, including drivers with no approved journey on the selected day, while placing approved journeys on their corresponding driver rows.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.
 
@@ -303,6 +306,11 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 6. Update the API client, page/components, loading/empty/error states, and translations.
 7. Add feature tests for permissions, validation, state transitions, and side effects.
 8. Run backend tests plus frontend lint/build.
+
+### Notification behavior
+
+- Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
+- Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 
 ### Add or change a role/function
 

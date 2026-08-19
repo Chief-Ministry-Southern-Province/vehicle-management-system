@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DashboardStatsController;
 use App\Http\Controllers\Api\VehicleIssueReportController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::post('/profile', [AuthController::class, 'updateProfile']);
     Route::put('/profile/password', [AuthController::class, 'changePassword']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
     Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::post('/vehicle-requests/route', [VehicleRequestController::class, 'route']);

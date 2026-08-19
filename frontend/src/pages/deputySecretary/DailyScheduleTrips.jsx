@@ -9,7 +9,7 @@ import {
   FiTruck,
   FiUser,
 } from "react-icons/fi";
-import { getApprovedJourneys } from "../../api/authApi";
+import { getApprovedJourneys, getDrivers } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 const DAY_START = 6;
@@ -120,6 +120,7 @@ function TripCard({ journey, dayStart }) {
 export default function DailyScheduleTrips() {
   const [selectedDate, setSelectedDate] = useState(() => toDateInput(new Date()));
   const [journeys, setJourneys] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -127,10 +128,15 @@ export default function DailyScheduleTrips() {
     try {
       setLoading(true);
       setError("");
-      const response = await getApprovedJourneys();
-      setJourneys(response?.data?.requests || []);
+      const [journeysResponse, driversResponse] = await Promise.all([
+        getApprovedJourneys(),
+        getDrivers(),
+      ]);
+      setJourneys(journeysResponse?.data?.requests || []);
+      setDrivers(driversResponse?.data?.drivers || []);
     } catch (requestError) {
       setJourneys([]);
+      setDrivers([]);
       setError(requestError?.message || "Unable to load the daily trip schedule.");
     } finally {
       setLoading(false);
@@ -163,23 +169,27 @@ export default function DailyScheduleTrips() {
   );
 
   const driverRows = useMemo(() => {
-    const drivers = new Map();
+    const journeysByDriver = new Map();
     dailyJourneys.forEach((journey) => {
       const key = getDriverKey(journey);
-      if (!drivers.has(key)) {
-        drivers.set(key, { driver: journey.allocated_driver, journeys: [] });
-      }
-      drivers.get(key).journeys.push(journey);
+      if (!journeysByDriver.has(key)) journeysByDriver.set(key, []);
+      journeysByDriver.get(key).push(journey);
     });
-    return [...drivers.values()]
-      .map((row) => ({
-        ...row,
-        journeys: row.journeys.sort(
+
+    return drivers
+      .map((driver) => ({
+        driver,
+        journeys: (journeysByDriver.get(driver.id) || []).sort(
           (a, b) => new Date(a.departure_at) - new Date(b.departure_at),
         ),
       }))
-      .sort((a, b) => (a.driver.full_name || "").localeCompare(b.driver.full_name || ""));
-  }, [dailyJourneys]);
+      .sort((a, b) =>
+        (a.driver.driver_id || "").localeCompare(b.driver.driver_id || "", undefined, {
+          numeric: true,
+          sensitivity: "base",
+        }),
+      );
+  }, [dailyJourneys, drivers]);
 
   const totals = useMemo(
     () =>
@@ -267,7 +277,7 @@ export default function DailyScheduleTrips() {
           {loading ? (
             <div className="p-14 text-center text-sm text-slate-500">Loading approved journeys…</div>
           ) : !error && driverRows.length === 0 ? (
-            <div className="p-14 text-center"><FiCalendar className="mx-auto text-3xl text-slate-300" /><p className="mt-3 font-semibold text-slate-700">No approved trips scheduled</p><p className="mt-1 text-sm text-slate-500">Choose another date to view the driver schedule.</p></div>
+            <div className="p-14 text-center"><FiUser className="mx-auto text-3xl text-slate-300" /><p className="mt-3 font-semibold text-slate-700">No drivers recorded</p><p className="mt-1 text-sm text-slate-500">Add drivers to view the daily schedule.</p></div>
           ) : !error ? (
             <div className="overflow-x-auto">
               <div className="min-w-[1180px]">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\VehicleRequest;
 use App\Models\Driver;
 use App\Models\Vehicle;
+use App\Services\WorkflowNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +18,9 @@ use Throwable;
 
 class VehicleRequestController extends Controller
 {
+    public function __construct(private readonly WorkflowNotificationService $notifications)
+    {
+    }
     /** All requests that have received a positive recommendation. */
     public function recommendedRequestsIndex(): JsonResponse
     {
@@ -216,6 +220,8 @@ class VehicleRequestController extends Controller
             }
         });
 
+        $this->notifications->cancelled($vehicleRequest->fresh(['user', 'allocatedDriver.user']), $user);
+
         return response()->json([
             'success' => true,
             'message' => 'Request cancelled successfully.',
@@ -391,6 +397,8 @@ class VehicleRequestController extends Controller
             ]);
         });
 
+        $this->notifications->allocationSaved($vehicleRequest->fresh(['user', 'allocatedDriver.user']));
+
         return response()->json([
             'success' => true,
             'message' => 'Vehicle allocated and request sent for final approval.',
@@ -531,6 +539,8 @@ class VehicleRequestController extends Controller
             }
         });
 
+        $this->notifications->allocationSaved($vehicleRequest->fresh(['user', 'allocatedDriver.user']), true);
+
         return response()->json([
             'success' => true,
             'message' => 'Allocation updated. Fresh final approval is now required.',
@@ -663,6 +673,8 @@ class VehicleRequestController extends Controller
             ]);
         });
 
+        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user']), true);
+
         return response()->json([
             'success' => true,
             'message' => 'Request finally approved successfully.',
@@ -735,6 +747,8 @@ class VehicleRequestController extends Controller
                 ]);
             }
         });
+
+        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user']), false);
 
         return response()->json([
             'success' => true,
@@ -870,6 +884,11 @@ class VehicleRequestController extends Controller
             'status' => $validated['decision'] === 'recommended' ? 'recommended' : 'rejected',
         ]);
 
+        $this->notifications->recommendationSaved(
+            $vehicleRequest->fresh(['user']),
+            $validated['decision'] === 'recommended',
+        );
+
         return response()->json([
             'success' => true,
             'message' => $validated['decision'] === 'recommended' ? 'Request recommended for allocation.' : 'Request rejected.',
@@ -938,6 +957,8 @@ class VehicleRequestController extends Controller
                 'attachment_original_name' => $attachmentName,
                 'status' => 'submitted',
             ]);
+
+            $this->notifications->requestSubmitted($vehicleRequest->load('user'));
 
             return response()->json([
                 'success' => true,

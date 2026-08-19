@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\VehicleIssueReport;
+use App\Services\WorkflowNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,9 @@ use Illuminate\Validation\Rule;
 
 class VehicleIssueReportController extends Controller
 {
+    public function __construct(private readonly WorkflowNotificationService $notifications)
+    {
+    }
     private const ISSUE_TYPES = [
         'vehicle_breakdown', 'mechanical_issue', 'tyre_issue', 'fuel_issue',
         'accident', 'journey_delay', 'cannot_complete_journey', 'other',
@@ -63,6 +67,8 @@ class VehicleIssueReportController extends Controller
 
             return $report;
         });
+
+        $this->notifications->issueReported($journey->fresh('user'));
 
         return response()->json([
             'success' => true,

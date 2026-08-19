@@ -98,6 +98,12 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
+        name: "Pending Recommendations",
+        path: "/deputy/pending-recommendations",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Total Approvals",
         path: "/totalapprovals",
         icon: <FiCheckCircle />,
@@ -116,6 +122,12 @@ const menuItems = [
         name: "Pending Approvals",
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
+        roles: ["senior_deputy_secretary"],
+      },
+      {
+        name: "Pending Recommendation",
+        path: "/senior-deputy/pending-recommendations",
+        icon: <FiClipboard />,
         roles: ["senior_deputy_secretary"],
       },
       {
@@ -188,44 +200,25 @@ const menuItems = [
         icon: <FiClipboard />,
         roles: ["department_officer"],
       },
-    ],
-  },
-
-  {
-    title: "VEHICLE REQUESTS",
-    items: [
       {
         name: "Request History",
         path: "/subjectofficer/requesthistory",
         icon: <FiClipboard />,
         roles: ["subject_officer"],
       },
+      {
+        name: "Request History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
     ],
   },
-
 
 
   // ==========================================
   // SUBJECT OFFICER, Assistance Secreatry SECTION, SENIOR ASSISTANCE SECRETARY SECTION
   // ==========================================
-
-  {
-    title: "RECCOMMENDATIONS",
-    items: [
-      {
-        name: "Pending Recommendations",
-        path: "/deputy/pending-recommendations",
-        icon: <FiClipboard />,
-        roles: ["deputy_secretary"],
-      },
-      {
-        name: "Pending Recommendation",
-        path: "/senior-deputy/pending-recommendations",
-        icon: <FiClipboard />,
-        roles: ["senior_deputy_secretary"],
-      },
-    ],
-  },
 
   {
     title: "FLLET MANAGEMENT",
@@ -248,20 +241,15 @@ const menuItems = [
         icon: <AiFillSchedule />,
         roles: ["deputy_secretary"],
       },
-    ],
-  },
-
-  {
-    title: "VEHICLE REQUESTS",
-    items: [
       {
-        name: "Request History",
-        path: "/requesthistory",
-        icon: <FiClipboard />,
+        name: "Fuel Analysis",
+        path: "/fuelanalysis",
+        icon: <FiDroplet />,
         roles: ["deputy_secretary"],
       },
     ],
   },
+
 
   // ==========================================
   // SUBJECT OFFICER SECTION
