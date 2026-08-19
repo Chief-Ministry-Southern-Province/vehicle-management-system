@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
+import toast from "react-hot-toast";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -13,6 +14,64 @@ const initials = (name) =>
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+const notificationPopupStorageKey = (userId) => `vms-notification-popups:${userId}`;
+
+const readShownNotificationIds = (userId) => {
+  if (!userId) return new Set();
+
+  try {
+    const notificationIds = JSON.parse(sessionStorage.getItem(notificationPopupStorageKey(userId)) || "[]");
+    return new Set(Array.isArray(notificationIds) ? notificationIds : []);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveShownNotificationIds = (userId, notificationIds) => {
+  if (!userId) return;
+
+  try {
+    sessionStorage.setItem(
+      notificationPopupStorageKey(userId),
+      JSON.stringify([...notificationIds].slice(-100)),
+    );
+  } catch {
+    // Notification pop-ups still work when session storage is unavailable.
+  }
+};
+
+const showNotificationPopup = (notification) => {
+  const title = notification.data?.title || "New notification";
+  const message = notification.data?.message || "You have a new workflow update.";
+
+  toast.custom(
+    (toastItem) => (
+      <div
+        data-no-translate
+        className={`pointer-events-auto flex w-[min(24rem,calc(100vw-2rem))] gap-3 rounded-xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-900/15 transition dark:border-blue-400/20 dark:bg-slate-900 ${toastItem.visible ? "animate-enter" : "animate-leave"}`}
+        role="status"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">
+          <FiBell aria-hidden="true" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-slate-900 dark:text-white">{title}</span>
+          <span className="mt-1 block text-sm leading-5 text-slate-600 dark:text-slate-300">{message}</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => toast.dismiss(toastItem.id)}
+          className="shrink-0 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+          aria-label="Dismiss notification"
+        >
+          Dismiss
+        </button>
+      </div>
+    ),
+    { id: `workflow-notification-${notification.id}`, duration: 8000 },
+  );
+};
 
 export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
@@ -31,25 +90,40 @@ export default function Topbar({ onMenuToggle }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const notificationMenuRef = useRef(null);
+  const shownNotificationIdsRef = useRef(new Set());
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     setLoadingNotifications(true);
     try {
       const response = await getNotifications();
-      setNotifications(response.data?.notifications || []);
+      const nextNotifications = response.data?.notifications || [];
+      const newUnreadNotifications = [...nextNotifications]
+        .filter((notification) => !notification.read_at && !shownNotificationIdsRef.current.has(notification.id))
+        .reverse();
+
+      newUnreadNotifications.forEach((notification) => {
+        shownNotificationIdsRef.current.add(notification.id);
+        showNotificationPopup(notification);
+      });
+      saveShownNotificationIds(user?.id, shownNotificationIdsRef.current);
+
+      setNotifications(nextNotifications);
       setUnreadCount(response.data?.unread_count || 0);
     } catch {
       // The bell remains available if a transient request fails; it will retry on the next open.
     } finally {
       setLoadingNotifications(false);
     }
-  };
+  }, [user?.id]);
 
-  useEffect(() => { loadNotifications(); }, []);
+  useEffect(() => {
+    shownNotificationIdsRef.current = readShownNotificationIds(user?.id);
+    loadNotifications();
+  }, [loadNotifications, user?.id]);
   useEffect(() => {
     const interval = window.setInterval(loadNotifications, 60000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [loadNotifications]);
   useEffect(() => {
     const closeOnOutsideClick = (event) => {
       if (!notificationMenuRef.current?.contains(event.target)) setNotificationsOpen(false);
