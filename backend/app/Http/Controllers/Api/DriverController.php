@@ -25,9 +25,47 @@ class DriverController extends Controller
             'expected_return_at' => ['nullable', 'date', 'after:departure_at', 'required_with:departure_at'],
             'ignore_request_id' => ['nullable', 'integer', 'exists:vehicle_requests,id'],
         ]);
-        $drivers = Driver::with('user:id,employee_id,email,department,profile_picture_path')
+        $drivers = Driver::with([
+            'user:id,employee_id,email,department,profile_picture_path',
+            'vehicleRequests' => fn ($query) => $query
+                ->where(fn ($history) => $history
+                    ->where('status', 'completed')
+                    ->orWhere('journey_status', 'completed'))
+                ->with('allocatedVehicle')
+                ->orderByDesc('journey_completed_at'),
+        ])
             ->orderBy('driver_id')
             ->get();
+
+        $drivers->each(function (Driver $driver): void {
+            $recordedJourneys = collect($driver->getAttribute('previous_journeys') ?? []);
+            $completedJourneys = $driver->vehicleRequests->map(fn (VehicleRequest $journey): array => [
+                'id' => $journey->id,
+                'date' => ($journey->journey_completed_at ?? $journey->departure_at)?->toISOString(),
+                'origin' => $journey->starting_location ?: 'Not recorded',
+                'destination' => $journey->destination ?: 'Not recorded',
+                'purpose' => $journey->purpose ?: 'Not specified',
+                'vehicle_registration' => $journey->allocatedVehicle?->registration_number,
+                'status' => 'completed',
+            ]);
+
+            $driver->setAttribute(
+                'previous_journeys',
+                $completedJourneys
+                    ->concat($recordedJourneys)
+                    ->unique(fn (array $journey) => $journey['id'] ?? implode('|', [
+                        $journey['date'] ?? '',
+                        $journey['origin'] ?? '',
+                        $journey['destination'] ?? '',
+                        $journey['purpose'] ?? '',
+                    ]))
+                    ->sortByDesc(fn (array $journey) => $journey['date'] ?? '')
+                    ->take(10)
+                    ->values()
+                    ->all(),
+            );
+            $driver->unsetRelation('vehicleRequests');
+        });
 
         if (isset($validated['departure_at'], $validated['expected_return_at'])) {
             $startsAt = Carbon::parse($validated['departure_at']);

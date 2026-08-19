@@ -242,6 +242,67 @@ class DriverRegistrationTest extends TestCase
         }
     }
 
+    public function test_driver_list_includes_completed_vehicle_requests_in_previous_journeys(): void
+    {
+        $deputySecretary = User::factory()->create([
+            'role' => 'deputy_secretary',
+            'status' => 'active',
+        ]);
+        $requester = User::factory()->create();
+        $driver = Driver::create([
+            'driver_id' => 'DRV-HISTORY-1',
+            'full_name' => 'History Driver',
+            'date_of_birth' => '1988-01-01',
+            'nic' => '881234567V',
+            'address' => 'Galle',
+            'contact_number' => '0712345678',
+            'licence_number' => 'HISTORY-1',
+            'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01',
+            'status' => 'active',
+            'previous_journeys' => [[
+                'date' => '2026-06-01',
+                'origin' => 'Legacy origin',
+                'destination' => 'Legacy destination',
+                'purpose' => 'Legacy journey',
+                'status' => 'completed',
+            ]],
+        ]);
+        $vehicle = Vehicle::create([
+            'registration_number' => 'HISTORY-1001',
+            'vehicle_type' => 'Van',
+            'make' => 'Toyota',
+            'model' => 'Hiace',
+            'seat_capacity' => 12,
+            'status' => 'available',
+        ]);
+        VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Completed field visit',
+            'starting_location' => 'Dakshinapaya',
+            'destination' => 'Colombo',
+            'departure_at' => '2026-07-10 08:00:00',
+            'expected_return_at' => '2026-07-10 16:00:00',
+            'passenger_count' => 2,
+            'status' => 'completed',
+            'journey_status' => 'completed',
+            'journey_completed_at' => '2026-07-10 16:15:00',
+            'allocated_driver_id' => $driver->id,
+            'allocated_vehicle_id' => $vehicle->id,
+        ]);
+
+        $this->actingAs($deputySecretary)
+            ->getJson('/api/drivers')
+            ->assertOk()
+            ->assertJsonPath('data.drivers.0.driver_id', 'DRV-HISTORY-1')
+            ->assertJsonPath('data.drivers.0.previous_journeys.0.origin', 'Dakshinapaya')
+            ->assertJsonPath('data.drivers.0.previous_journeys.0.destination', 'Colombo')
+            ->assertJsonPath('data.drivers.0.previous_journeys.0.purpose', 'Completed field visit')
+            ->assertJsonPath('data.drivers.0.previous_journeys.0.vehicle_registration', 'HISTORY-1001')
+            ->assertJsonFragment(['purpose' => 'Legacy journey']);
+    }
+
     public function test_driver_can_start_complete_and_report_the_vehicle_for_a_journey(): void
     {
         Carbon::setTestNow('2026-07-24 12:00:00');
