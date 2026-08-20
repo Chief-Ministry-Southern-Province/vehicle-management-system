@@ -46,7 +46,7 @@ export default function DeputySecretaryDashboard() {
             <div className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-indigo-400/20 blur-3xl" />
             <div className="relative">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-cyan-300 sm:text-xs">Executive command centre</p>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-[34px]">Deputy Secretary Dashboard</h1>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-[34px]">Assistance Secretary Dashboard</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100/80 sm:text-base">Monitor fleet readiness, approvals and operational spending from one place.</p>
             </div>
           </header>
