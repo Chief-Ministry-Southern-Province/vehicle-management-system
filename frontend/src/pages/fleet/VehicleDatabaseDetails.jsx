@@ -46,6 +46,7 @@ export default function VehicleDatabaseDetails() {
   const [vehicle, setVehicle] = useState(null);
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [removedImagePaths, setRemovedImagePaths] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function VehicleDatabaseDetails() {
             ? record.fuel_details
             : [],
         });
+        setRemovedImagePaths([]);
       } catch (error) {
         toast.error(error?.message || "Vehicle not found.");
         setVehicle(false);
@@ -115,6 +117,10 @@ export default function VehicleDatabaseDetails() {
     setImages((current) => current.filter((_, imageIndex) => imageIndex !== index));
     setPreviews((current) => current.filter((_, imageIndex) => imageIndex !== index));
   };
+  const removeSavedImage = (path) => {
+    setSaveMessage("");
+    setRemovedImagePaths((current) => [...current, path]);
+  };
   const save = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -144,6 +150,9 @@ export default function VehicleDatabaseDetails() {
           );
       });
       images.forEach((file) => data.append("images[]", file));
+      removedImagePaths.forEach((path) =>
+        data.append("removed_image_paths[]", path),
+      );
       const response = await persistVehicle(registration, data);
       const updatedVehicle = response?.data?.vehicle;
       if (!updatedVehicle)
@@ -162,6 +171,7 @@ export default function VehicleDatabaseDetails() {
       previews.forEach((url) => URL.revokeObjectURL(url));
       setImages([]);
       setPreviews([]);
+      setRemovedImagePaths([]);
       setSaveMessage("Vehicle details saved successfully.");
       toast.success(response?.message || "Vehicle updated.");
       navigate("/vehicledirectory", {
@@ -259,7 +269,17 @@ export default function VehicleDatabaseDetails() {
     : vehicle.image_url
       ? [vehicle.image_url]
       : [];
-  const allImageUrls = [...savedImageUrls, ...previews];
+  const savedImagePaths = [
+    vehicle.image_path,
+    ...(Array.isArray(vehicle.image_paths) ? vehicle.image_paths : []),
+  ].filter((path, index, paths) => path && paths.indexOf(path) === index);
+  const savedImages = savedImagePaths
+    .map((path, index) => ({ path, url: savedImageUrls[index] }))
+    .filter(({ path, url }) => url && !removedImagePaths.includes(path));
+  const allImages = [
+    ...savedImages.map((image) => ({ ...image, saved: true })),
+    ...previews.map((url, index) => ({ url, index, saved: false })),
+  ];
   return (
     <DashboardLayout>
       <form onSubmit={save} className="min-h-screen space-y-6 bg-slate-50 p-6">
@@ -295,14 +315,21 @@ export default function VehicleDatabaseDetails() {
         <div className="grid gap-6 xl:grid-cols-3">
           <aside className="rounded-2xl border bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold">Vehicle image</h2>
-            {allImageUrls.length ? (
+            {allImages.length ? (
               <div className="mt-4 grid grid-cols-2 gap-3">
-                {allImageUrls.map((url, index) => (
-                  <div key={`${url}-${index}`} className="group relative overflow-hidden rounded-xl">
-                    <img src={url} alt={`${vehicle.model || "Vehicle"} ${index + 1}`} className="h-32 w-full object-cover" />
-                    {index >= savedImageUrls.length && (
-                      <button type="button" onClick={() => removeNewImage(index - savedImageUrls.length)} aria-label={`Remove new vehicle image ${index - savedImageUrls.length + 1}`} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white opacity-90 hover:bg-red-700"><FiTrash2 /></button>
-                    )}
+                {allImages.map((image, index) => (
+                  <div key={`${image.url}-${index}`} className="group relative overflow-hidden rounded-xl">
+                    <img src={image.url} alt={`${vehicle.model || "Vehicle"} ${index + 1}`} className="h-32 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => image.saved
+                        ? removeSavedImage(image.path)
+                        : removeNewImage(image.index)}
+                      aria-label={`Delete vehicle image ${index + 1}`}
+                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white opacity-90 hover:bg-red-700"
+                    >
+                      <FiTrash2 />
+                    </button>
                   </div>
                 ))}
               </div>

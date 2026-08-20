@@ -155,7 +155,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 
 - Executive roles and the subject officer can read vehicle and driver records.
 - Only the subject officer can create/update vehicles and manage driver records.
-- Vehicle records include identity/specification, capacity, fuel configuration and efficiency, compliance expiries, insurance, assignment, status, images, and JSON-backed service/repair/fuel history.
+- Vehicle records include identity/specification, capacity, fuel configuration and efficiency, compliance expiries, insurance, assignment, status, images, and JSON-backed service/repair/fuel history. Subject officers can add or delete persisted vehicle images from the vehicle details editor; deletion is applied when the vehicle update is saved and removes both the database reference and stored public image file.
 - Driver records include identity/contact, NIC, licence details/expiry, allocation, duty status, previous journeys, and current assignment. Allocation-driver responses merge the recent completed `VehicleRequest` records with stored legacy journey history so the deputy allocation workspace can display prior journeys.
 - Drivers can report issues against their active journey/vehicle. Subject officers and deputy secretaries can read issue reports.
 - PDF helpers in `frontend/src/utils/` export directories, detail sheets, approved journeys, fuel, service, repair, and driver issue records. Validate both content and filenames when changing report data.
