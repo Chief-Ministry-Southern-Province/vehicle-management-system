@@ -75,6 +75,7 @@ const showNotificationPopup = (notification) => {
 
 export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
+  const userId = user?.id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
     import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
@@ -105,7 +106,7 @@ export default function Topbar({ onMenuToggle }) {
         shownNotificationIdsRef.current.add(notification.id);
         showNotificationPopup(notification);
       });
-      saveShownNotificationIds(user?.id, shownNotificationIdsRef.current);
+      saveShownNotificationIds(userId, shownNotificationIdsRef.current);
 
       setNotifications(nextNotifications);
       setUnreadCount(response.data?.unread_count || 0);
@@ -114,12 +115,14 @@ export default function Topbar({ onMenuToggle }) {
     } finally {
       setLoadingNotifications(false);
     }
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
-    shownNotificationIdsRef.current = readShownNotificationIds(user?.id);
-    loadNotifications();
-  }, [loadNotifications, user?.id]);
+    shownNotificationIdsRef.current = readShownNotificationIds(userId);
+    const initialLoad = window.setTimeout(loadNotifications, 0);
+
+    return () => window.clearTimeout(initialLoad);
+  }, [loadNotifications, userId]);
   useEffect(() => {
     const interval = window.setInterval(loadNotifications, 60000);
     return () => window.clearInterval(interval);
