@@ -623,7 +623,13 @@ export const getVehicleById = async (vehicleId) => {
   try {
     const response = await API.get(
       `/vehicles/id/${encodeURIComponent(vehicleId)}`,
-      { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
+      {
+        params: { _ts: Date.now() },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Cache-Control": "no-cache",
+        },
+      },
     );
     return response.data;
   } catch (error) {

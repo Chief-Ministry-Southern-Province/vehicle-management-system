@@ -49,6 +49,17 @@ class VehicleImageDeletionTest extends TestCase
         $this->assertTrue(File::exists(public_path($keptPath)));
         $this->assertFalse(File::exists(public_path($deletedPath)));
         $this->assertSame([$keptPath], $vehicle->fresh()->image_paths);
+
+        $deputySecretary = User::factory()->create([
+            'role' => 'deputy_secretary',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($deputySecretary)
+            ->getJson("/api/vehicles/id/{$vehicle->id}")
+            ->assertOk()
+            ->assertJsonCount(1, 'data.vehicle.image_urls')
+            ->assertJsonPath('data.vehicle.image_urls.0', url('/'.$keptPath));
     }
 
     public function test_non_subject_officer_cannot_delete_a_vehicle_image(): void

@@ -52,23 +52,48 @@ export default function DeputyVehicleDetails() {
   const [selectedImage, setSelectedImage] = useState("");
   useEffect(() => {
     let active = true;
+    let requestSequence = 0;
+
     const loadVehicle = async () => {
+      const requestId = ++requestSequence;
       try {
         const response = await getVehicleById(id);
         const selected = response?.data?.vehicle;
         if (!selected) throw new Error("Vehicle not found.");
-        if (active) {
+        if (active && requestId === requestSequence) {
+          const nextImageUrls = Array.isArray(selected.image_urls)
+            ? selected.image_urls
+            : selected.image_url
+              ? [selected.image_url]
+              : [];
           setVehicle(selected);
-          setSelectedImage(selected.image_urls?.[0] || selected.image_url || "");
+          setSelectedImage((currentImage) =>
+            nextImageUrls.includes(currentImage)
+              ? currentImage
+              : nextImageUrls[0] || "",
+          );
+          setError("");
         }
       } catch (loadError) {
-        if (active)
+        if (active && requestId === requestSequence)
           setError(loadError?.message || "Unable to load vehicle details.");
       }
     };
-    loadVehicle();
+
+    const refreshVisibleVehicle = () => {
+      if (document.visibilityState === "visible") loadVehicle();
+    };
+    const initialLoad = window.setTimeout(loadVehicle, 0);
+    const refreshInterval = window.setInterval(loadVehicle, 60000);
+    window.addEventListener("focus", refreshVisibleVehicle);
+    document.addEventListener("visibilitychange", refreshVisibleVehicle);
+
     return () => {
       active = false;
+      window.clearTimeout(initialLoad);
+      window.clearInterval(refreshInterval);
+      window.removeEventListener("focus", refreshVisibleVehicle);
+      document.removeEventListener("visibilitychange", refreshVisibleVehicle);
     };
   }, [id]);
   if (error) {
