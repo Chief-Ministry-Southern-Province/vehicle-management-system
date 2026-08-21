@@ -60,7 +60,7 @@ Important locations:
 - `frontend/src/App.jsx`: client route registry.
 - `frontend/src/pages/`: page-level screens, mostly grouped by role/domain.
 - `frontend/src/components/`: reusable and role-specific UI.
-- `frontend/src/api/authApi.jsx`: shared API client/functions. Its current local API base is `http://127.0.0.1:8000/api`.
+- `frontend/src/api/authApi.jsx`: shared API client/functions. Its API base comes from `VITE_API_URL` and falls back locally to `http://127.0.0.1:8000/api`.
 - `frontend/src/context/`: authentication, role, and language state.
 - `frontend/src/i18n/`: English/Sinhala/Tamil dictionaries and page-text translation.
 - `frontend/src/utils/`: date/time, driver mapping, and PDF exports.
@@ -386,7 +386,7 @@ A task is complete only when, as applicable:
 ## 13. Known implementation notes and current gaps
 
 - CI currently validates only frontend lint/build; backend CI is present but commented out. Run backend tests locally until it is enabled.
-- The frontend API base URL is hard-coded in `frontend/src/api/authApi.jsx`; deployment should move this to a Vite environment variable.
+- Configure `VITE_API_URL` per frontend environment. Local development normally uses `http://127.0.0.1:8000/api`; deployed frontends must use the public HTTPS API origin.
 - The root README describes MySQL/Linux/Nginx as deployment targets, while Laravel defaults locally to SQLite and no production infrastructure is stored here.
 - Some pages are role-specific by navigation but call `withAuth` without an explicit role list. Tighten client guards when touching those routes; the API middleware remains authoritative.
 - Root `README.md` includes planned claims such as Excel/CSV reporting that may not have a complete implementation. Verify code before promising a feature.
