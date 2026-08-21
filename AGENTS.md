@@ -311,6 +311,7 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 ### Notification behavior
 
 - Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
+- Vehicle-request creation and its submission notifications are committed in one database transaction. A notification persistence failure rolls back the request instead of leaving a partially completed submission.
 - Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 
 ### Add or change a role/function

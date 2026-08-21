@@ -6,9 +6,10 @@ use App\Models\Driver;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
+use App\Services\WorkflowNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class DriverRegistrationTest extends TestCase
@@ -179,6 +180,36 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.route.distance_km', 104.5)
             ->assertJsonPath('data.route.duration_seconds', 7200)
             ->assertJsonCount(3, 'data.route.geometry');
+    }
+
+    public function test_notification_failure_rolls_back_vehicle_request_and_is_not_reported_as_a_route_error(): void
+    {
+        $employee = User::factory()->create([
+            'role' => 'employee',
+            'status' => 'active',
+        ]);
+
+        $this->mock(WorkflowNotificationService::class, function ($mock): void {
+            $mock->shouldReceive('requestSubmitted')
+                ->once()
+                ->andThrow(new \RuntimeException('Notifications table is unavailable.'));
+        });
+
+        $this->actingAs($employee)->postJson('/api/vehicle-requests', [
+            'purpose' => 'Official meeting',
+            'starting_location' => 'Dakshinapaya, Labuduwa',
+            'starting_latitude' => 6.0535,
+            'starting_longitude' => 80.2200,
+            'destination' => 'Chief Secretary office',
+            'destination_latitude' => 6.9271,
+            'destination_longitude' => 79.8612,
+            'departure_at' => '2026-09-01T10:00',
+            'expected_return_at' => '2026-09-01T14:00',
+            'passenger_count' => 4,
+        ])->assertInternalServerError()
+            ->assertJsonPath('message', 'Unable to submit the vehicle request. Please try again.');
+
+        $this->assertDatabaseCount('vehicle_requests', 0);
     }
 
     public function test_active_driver_status_reflects_the_journey_state_for_its_time_slot(): void

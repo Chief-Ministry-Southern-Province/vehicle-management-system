@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\VehicleRequest;
 use App\Models\Driver;
 use App\Models\Vehicle;
+use App\Models\VehicleRequest;
 use App\Services\WorkflowNotificationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class VehicleRequestController extends Controller
 {
-    public function __construct(private readonly WorkflowNotificationService $notifications)
-    {
-    }
+    public function __construct(private readonly WorkflowNotificationService $notifications) {}
+
     /** All requests that have received a positive recommendation. */
     public function recommendedRequestsIndex(): JsonResponse
     {
@@ -915,7 +915,28 @@ class VehicleRequestController extends Controller
         ]);
 
         try {
-            $attachmentPath = null;
+            // Route data is authoritative server data. Never accept client-supplied values.
+            $route = $this->fetchDrivingRoute(
+                (float) $validated['starting_latitude'],
+                (float) $validated['starting_longitude'],
+                (float) $validated['destination_latitude'],
+                (float) $validated['destination_longitude'],
+            );
+        } catch (Throwable $e) {
+            Log::warning('Unable to calculate a driving route while creating a request.', [
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'A feasible driving route could not be calculated for these locations.',
+            ], 422);
+        }
+
+        $attachmentPath = null;
+
+        try {
             $attachmentName = null;
 
             if ($request->hasFile('attachment')) {
@@ -927,13 +948,6 @@ class VehicleRequestController extends Controller
             // The uploaded file itself is not a database column; store only its metadata.
             unset($validated['attachment']);
 
-            // Route data is authoritative server data. Never accept client-supplied values.
-            $route = $this->fetchDrivingRoute(
-                (float) $validated['starting_latitude'],
-                (float) $validated['starting_longitude'],
-                (float) $validated['destination_latitude'],
-                (float) $validated['destination_longitude'],
-            );
             $validated['distance_km'] = $route['distance_km'];
             $validated['route_duration_seconds'] = $route['duration_seconds'];
             $validated['route_geometry'] = $route['geometry'];
@@ -949,30 +963,31 @@ class VehicleRequestController extends Controller
                 config('app.local_timezone'),
             )->utc();
 
-            $vehicleRequest = VehicleRequest::create([
-                ...$validated,
-                'user_id' => $request->user()->id,
-                'requester_name' => $request->user()->name,
-                'attachment_path' => $attachmentPath,
-                'attachment_original_name' => $attachmentName,
-                'status' => 'submitted',
-            ]);
+            $vehicleRequest = DB::transaction(function () use ($validated, $request, $attachmentPath, $attachmentName): VehicleRequest {
+                $vehicleRequest = VehicleRequest::create([
+                    ...$validated,
+                    'user_id' => $request->user()->id,
+                    'requester_name' => $request->user()->name,
+                    'attachment_path' => $attachmentPath,
+                    'attachment_original_name' => $attachmentName,
+                    'status' => 'submitted',
+                ]);
 
-            $this->notifications->requestSubmitted($vehicleRequest->load('user'));
+                $this->notifications->requestSubmitted($vehicleRequest->load('user'));
+
+                return $vehicleRequest;
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Vehicle request submitted successfully.',
                 'data' => ['vehicle_request' => $vehicleRequest->load('user:id,name')],
             ], 201);
-        } catch (\RuntimeException $e) {
-            Log::warning('Unable to calculate a driving route while creating a request.', ['message' => $e->getMessage()]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'A feasible driving route could not be calculated for these locations.',
-            ], 422);
         } catch (Throwable $e) {
+            if ($attachmentPath !== null) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
             Log::error('Unable to create vehicle request.', ['exception' => $e::class, 'message' => $e->getMessage()]);
 
             return response()->json([
