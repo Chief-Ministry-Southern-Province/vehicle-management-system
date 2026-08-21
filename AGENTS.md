@@ -60,7 +60,7 @@ Important locations:
 - `frontend/src/App.jsx`: client route registry.
 - `frontend/src/pages/`: page-level screens, mostly grouped by role/domain.
 - `frontend/src/components/`: reusable and role-specific UI.
-- `frontend/src/api/authApi.jsx`: shared API client/functions. Its current local API base is `http://127.0.0.1:8000/api`.
+- `frontend/src/api/authApi.jsx`: shared API client/functions. Its API base comes from `VITE_API_URL` and falls back locally to `http://127.0.0.1:8000/api`.
 - `frontend/src/context/`: authentication, role, and language state.
 - `frontend/src/i18n/`: English/Sinhala/Tamil dictionaries and page-text translation.
 - `frontend/src/utils/`: date/time, driver mapping, and PDF exports.
@@ -155,7 +155,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 
 - Executive roles and the subject officer can read vehicle and driver records.
 - Only the subject officer can create/update vehicles and manage driver records.
-- Vehicle records include identity/specification, capacity, fuel configuration and efficiency, compliance expiries, insurance, assignment, status, images, and JSON-backed service/repair/fuel history.
+- Vehicle records include identity/specification, capacity, fuel configuration and efficiency, compliance expiries, insurance, assignment, status, images, and JSON-backed service/repair/fuel history. Subject officers can add or delete persisted vehicle images from the vehicle details editor; deletion is applied when the vehicle update is saved and removes both the database reference and stored public image file.
 - Driver records include identity/contact, NIC, licence details/expiry, allocation, duty status, previous journeys, and current assignment. Allocation-driver responses merge the recent completed `VehicleRequest` records with stored legacy journey history so the deputy allocation workspace can display prior journeys.
 - Drivers can report issues against their active journey/vehicle. Subject officers and deputy secretaries can read issue reports.
 - PDF helpers in `frontend/src/utils/` export directories, detail sheets, approved journeys, fuel, service, repair, and driver issue records. Validate both content and filenames when changing report data.
@@ -208,6 +208,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data. The shared map renderer measures its actual container dimensions so tiles, route paths, and markers remain geometrically aligned at mobile and desktop sizes; do not restore fixed-canvas scaling. Keep mobile map controls compact and preserve OpenStreetMap attribution.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - The daily journey schedule lists the complete driver directory in Driver ID order, including drivers with no approved journey on the selected day, while placing approved journeys on their corresponding driver rows.
+- The deputy secretary vehicle-details screen revalidates vehicle data when opened, every minute, and whenever the page regains focus or visibility. Its selected image must always be reconciled with the latest `image_urls` response so deleted fleet images disappear from both the gallery and header preview.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.
 
@@ -385,7 +386,7 @@ A task is complete only when, as applicable:
 ## 13. Known implementation notes and current gaps
 
 - CI currently validates only frontend lint/build; backend CI is present but commented out. Run backend tests locally until it is enabled.
-- The frontend API base URL is hard-coded in `frontend/src/api/authApi.jsx`; deployment should move this to a Vite environment variable.
+- Configure `VITE_API_URL` per frontend environment. Local development normally uses `http://127.0.0.1:8000/api`; deployed frontends must use the public HTTPS API origin.
 - The root README describes MySQL/Linux/Nginx as deployment targets, while Laravel defaults locally to SQLite and no production infrastructure is stored here.
 - Some pages are role-specific by navigation but call `withAuth` without an explicit role list. Tighten client guards when touching those routes; the API middleware remains authoritative.
 - Root `README.md` includes planned claims such as Excel/CSV reporting that may not have a complete implementation. Verify code before promising a feature.

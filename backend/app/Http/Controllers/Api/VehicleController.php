@@ -58,12 +58,21 @@ class VehicleController extends Controller
 
     public function update(Request $request, Vehicle $vehicle): JsonResponse
     {
-        $previousImage = $vehicle->image_path;
+        $previousImages = collect([
+            $vehicle->image_path,
+            ...($vehicle->image_paths ?? []),
+        ])->filter()->unique();
+
         $vehicle->update($this->payload($request, $vehicle));
 
-        if ($previousImage && $previousImage !== $vehicle->image_path) {
-            File::delete(public_path($previousImage));
-        }
+        $currentImages = collect([
+            $vehicle->image_path,
+            ...($vehicle->image_paths ?? []),
+        ])->filter()->unique();
+
+        $previousImages->diff($currentImages)->each(
+            fn (string $path) => File::delete(public_path($path)),
+        );
 
         return response()->json(['success' => true, 'message' => 'Vehicle updated successfully.', 'data' => ['vehicle' => $vehicle->fresh()]]);
     }
@@ -116,7 +125,25 @@ class VehicleController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'removed_image_paths' => ['nullable', 'array', 'max:100'],
+            'removed_image_paths.*' => ['string', 'max:2048', 'distinct'],
         ]);
+
+        $existingPaths = collect([
+            $vehicle?->image_path,
+            ...($vehicle?->image_paths ?? []),
+        ])->filter()->unique();
+        $removedPaths = collect($validated['removed_image_paths'] ?? [])
+            ->intersect($existingPaths);
+
+        if ($removedPaths->contains($vehicle?->image_path)) {
+            $validated['image_path'] = null;
+        }
+
+        $remainingImagePaths = collect($vehicle?->image_paths ?? [])
+            ->reject(fn (string $path): bool => $removedPaths->contains($path))
+            ->values()
+            ->all();
 
         if ($request->hasFile('image')) {
             $validated['image_path'] = $this->storePublicImage($request->file('image'));
@@ -126,11 +153,13 @@ class VehicleController extends Controller
                 ->map(fn ($image): string => $this->storePublicImage($image))
                 ->all();
             $validated['image_paths'] = [
-                ...($vehicle?->image_paths ?? []),
+                ...$remainingImagePaths,
                 ...$newPaths,
             ];
+        } elseif ($removedPaths->isNotEmpty()) {
+            $validated['image_paths'] = $remainingImagePaths;
         }
-        unset($validated['image'], $validated['images']);
+        unset($validated['image'], $validated['images'], $validated['removed_image_paths']);
 
         return $validated;
     }

@@ -48,7 +48,7 @@ export default function SeniorDeputySecretaryDashboard() {
             <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-violet-400/20 blur-3xl" />
             <div className="relative">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-violet-300 sm:text-xs">Executive oversight</p>
-              <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-[34px]">Senior Deputy Secretary Dashboard</h1>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-[34px]">Senior Assistance Secretary Dashboard</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-indigo-100/80 sm:text-base">Review final approvals, fleet capacity and annual operational expenditure.</p>
             </div>
           </header>
