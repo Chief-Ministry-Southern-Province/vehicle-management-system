@@ -10,7 +10,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $notifications = $request->user()->notifications()->latest()->limit(30)->get()->map(fn ($notification) => [
+        $notifications = $request->user()->unreadNotifications()->latest()->limit(30)->get()->map(fn ($notification) => [
             'id' => $notification->id,
             'type' => $notification->type,
             'data' => $notification->data,
@@ -28,12 +28,14 @@ class NotificationController extends Controller
     {
         $record = $request->user()->notifications()->findOrFail($notification);
         $record->markAsRead();
+
         return response()->json(['success' => true, 'data' => ['notification' => $record->fresh()]]);
     }
 
     public function markAllRead(Request $request): JsonResponse
     {
         $request->user()->unreadNotifications()->update(['read_at' => now()]);
+
         return response()->json(['success' => true]);
     }
 }

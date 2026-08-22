@@ -34,6 +34,12 @@ class NotificationApiTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
 
         $this->actingAs($user)
+            ->getJson('/api/notifications')
+            ->assertOk()
+            ->assertJsonPath('data.unread_count', 0)
+            ->assertJsonCount(0, 'data.notifications');
+
+        $this->actingAs($user)
             ->patchJson("/api/notifications/{$otherNotification->id}/read")
             ->assertNotFound();
     }
