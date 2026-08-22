@@ -143,14 +143,14 @@ export default function Topbar({ onMenuToggle }) {
     if (notification.read_at) return;
     try {
       await markNotificationRead(notification.id);
-      setNotifications((items) => items.map((item) => item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item));
+      setNotifications((items) => items.filter((item) => item.id !== notification.id));
       setUnreadCount((count) => Math.max(0, count - 1));
     } catch { /* Keep the unread state when the API update fails. */ }
   };
   const markAllRead = async () => {
     try {
       await markAllNotificationsRead();
-      setNotifications((items) => items.map((item) => ({ ...item, read_at: item.read_at || new Date().toISOString() })));
+      setNotifications([]);
       setUnreadCount(0);
     } catch { /* Keep the unread state when the API update fails. */ }
   };
@@ -245,7 +245,7 @@ export default function Topbar({ onMenuToggle }) {
                   {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">Mark all read</button>}
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No notifications yet.</p> : notifications.map((notification) => (
+                  {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No unread notifications.</p> : notifications.map((notification) => (
                     <button type="button" key={notification.id} onClick={() => markRead(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
                       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read_at ? "bg-transparent" : "bg-blue-600"}`} />
                       <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.data?.title}</span><span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-300">{notification.data?.message}</span><span className="mt-1 block text-[11px] text-slate-400">{notification.created_at ? new Date(notification.created_at).toLocaleString() : ""}</span></span>
