@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiArrowRight, FiLock, FiUser } from "react-icons/fi";
+import { FiArrowRight, FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
 import nationalEmblem from "../../assets/national-emblem.png";
@@ -11,6 +11,7 @@ export default function Login() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({ employee_id: "", password: "", role: "employee" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const handleChange = (event) => setFormData({ ...formData, [event.target.name]: event.target.value });
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -35,7 +36,7 @@ export default function Login() {
     } finally { setIsLoading(false); }
   };
 
-  const inputClass = "w-full rounded-xl border border-slate-300 bg-slate-50 py-3.5 pl-12 pr-4 text-slate-800 outline-none transition focus:border-blue-700 focus:bg-white focus:ring-4 focus:ring-blue-100";
+  const inputClass = "w-full rounded-xl border border-slate-300 bg-slate-50 py-3.5 pl-12 pr-12 text-slate-800 outline-none transition focus:border-blue-700 focus:bg-white focus:ring-4 focus:ring-blue-100";
   return (
     <main className="grid min-h-screen bg-white lg:grid-cols-[42%_58%]">
       <section className="relative hidden min-h-screen overflow-hidden bg-gradient-to-br from-[#061a3a] via-[#0b3474] to-[#062452] p-12 text-white lg:flex lg:flex-col lg:justify-between xl:p-16">
@@ -62,7 +63,7 @@ export default function Login() {
           </div>
           <form onSubmit={handleLogin} className="mt-10 space-y-6">
             <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Employee ID</span><div className="relative"><FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input type="text" name="employee_id" value={formData.employee_id} onChange={handleChange} required autoComplete="username" placeholder="Enter your Employee ID" className={inputClass} /></div></label>
-            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Password</span><div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="••••••••" className={inputClass} /></div></label>
+            <label className="block"><span className="mb-2 block text-sm font-semibold text-slate-700">Password</span><div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} required autoComplete="current-password" placeholder="••••••••" className={inputClass} /><button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-500 transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2">{showPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}</button></div></label>
             <button type="submit" disabled={isLoading} className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#0b3474] px-6 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-[#08285b] disabled:cursor-not-allowed disabled:opacity-60">{isLoading ? "Signing In..." : <>Sign In <FiArrowRight className="transition group-hover:translate-x-1" /></>}</button>
             <div className="flex justify-between text-sm"><Link to="/forgot-password" className="font-medium text-blue-700 hover:text-blue-900">Forgot Password?</Link></div>
           </form>
