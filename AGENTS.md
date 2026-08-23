@@ -51,9 +51,9 @@ Browser
   -> SQL database (SQLite by default; MySQL configuration is available)
 ```
 
-Frontend technologies: React Router 7, Axios, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, and browser-side PDF helpers.
+Frontend technologies: React Router 7, Axios, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, Web Push/PWA service-worker APIs, and browser-side PDF helpers.
 
-Backend technologies: Laravel 12, Sanctum 4, Eloquent, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
+Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
 
 Important locations:
 
@@ -164,7 +164,7 @@ There are multiple state fields on a vehicle request (general status, recommenda
 
 Primary domain entities and relationships:
 
-- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens and database-backed in-app notifications.
+- `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens, database-backed in-app notifications, and per-device Web Push subscriptions.
 - `Department`: unique name and optional creating user.
 - `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
@@ -179,7 +179,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 
 - Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
-- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`. Each authenticated user can read and mark only their own notifications.
+- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`. Each authenticated user can read and mark only their own notifications and manage only their current browser subscription.
 - Deputy administration: `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`.
 - Personal requests: `POST|GET /vehicle-requests`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
 - Department review: `GET /department/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`.
@@ -201,6 +201,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
 - `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
+- The notification menu lets users grant device-notification permission. Once granted, `push-sw.js` and the browser Push API receive workflow notifications even when the SPA is closed; an incoming push refreshes any open notification menu without a page reload, and clicking a device notification focuses or opens the recipient's role dashboard. Subscriptions are synchronized when an authenticated app session opens and removed from the current browser on logout. Web Push requires HTTPS in production; on iOS/iPadOS the site must be installed to the Home Screen.
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
 - Vehicle-request location text is resolved through the configurable `VITE_GEOCODING_API_URL` search endpoint with results restricted to Sri Lanka (`countrycodes=lk`). The default is the public OpenStreetMap Nominatim search service; preserve attribution and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
@@ -245,11 +246,12 @@ Backend setup (from `backend/`):
 composer install
 copy .env.example .env
 php artisan key:generate
+php artisan webpush:vapid
 php artisan migrate --seed
 php artisan serve
 ```
 
-On Unix-like shells, use `cp` instead of `copy`. Default API URL is `http://127.0.0.1:8000`. Relevant environment settings include `APP_URL`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, mail/password-reset settings, filesystem, cache, session, and queue configuration. Never commit `.env` or real secrets.
+On Unix-like shells, use `cp` instead of `copy`. Default API URL is `http://127.0.0.1:8000`. Relevant environment settings include `APP_URL`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, mail/password-reset settings, filesystem, cache, session, and queue configuration. VAPID keys must be stable per environment; expose only the public key and never commit `.env` or the private key. If XAMPP PHP cannot generate an EC key on Windows, set `OPENSSL_CONF` to its `apache/conf/openssl.cnf` while running `php artisan webpush:vapid`.
 
 Frontend setup (from `frontend/`):
 
@@ -311,6 +313,7 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 ### Notification behavior
 
 - Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
+- When VAPID keys and a browser subscription are present, the same workflow notification is also delivered through Web Push. Push payloads contain only the existing non-sensitive title/message, internal IDs, and a role-dashboard path; expired subscriptions are removed by the Web Push channel.
 - Vehicle-request creation and its submission notifications are committed in one database transaction. A notification persistence failure rolls back the request instead of leaving a partially completed submission.
 - Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 

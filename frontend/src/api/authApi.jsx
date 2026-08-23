@@ -251,6 +251,34 @@ export const markAllNotificationsRead = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getPushPublicKey = async () => {
+  try {
+    const response = await API.get("/push-subscriptions/public-key", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const savePushSubscription = async (subscription) => {
+  try {
+    const response = await API.post("/push-subscriptions", subscription, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const deletePushSubscription = async (endpoint) => {
+  try {
+    const response = await API.delete("/push-subscriptions", {
+      data: { endpoint },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const getMyVehicleRequests = async () => {
   try {
     const response = await API.get("/vehicle-requests", {
