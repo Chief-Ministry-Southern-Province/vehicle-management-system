@@ -1,0 +1,17 @@
+{
+  "name": "Vehicle Management System",
+  "short_name": "VMS-GOV",
+  "description": "Government vehicle request and fleet management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b3474",
+  "icons": [
+    {
+      "src": "/vms_logo2.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

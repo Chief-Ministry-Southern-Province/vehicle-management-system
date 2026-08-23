@@ -20,6 +20,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
+import { disablePushNotifications } from "../../utils/pushNotifications";
 import { AiFillSchedule } from "react-icons/ai";
 
 const menuItems = [
@@ -399,9 +400,13 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     };
   }, [isOpen, onClose]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await disablePushNotifications();
+    } finally {
+      logout();
+      navigate("/");
+    }
   };
 
   // Small helpers for the profile footer — purely cosmetic, no logic change

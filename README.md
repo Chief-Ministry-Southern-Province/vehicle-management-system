@@ -12,6 +12,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 - Maintain vehicle and driver directories, compliance data, images, service, repair, and fuel records.
 - Provide role-specific and executive dashboards, analytics, and PDF exports.
 - Manage users, departments, profiles, passwords, and account status.
+- Deliver opt-in workflow alerts through Web Push even when the browser app is closed.
 - Present the interface in English, Sinhala, and Tamil.
 
 ## Roles
@@ -53,12 +54,13 @@ Frontend:
 
 - React 19, React Router 7, and Vite 8
 - Tailwind CSS 4
-- Axios, Recharts, Lucide/React Icons, and react-hot-toast
+- Axios, Recharts, Lucide/React Icons, react-hot-toast, and Web Push/PWA service-worker APIs
 
 Backend:
 
 - PHP 8.2+ and Laravel 12
 - Laravel Sanctum bearer-token authentication
+- Laravel Web Push notification channel with VAPID authentication
 - Eloquent ORM and REST-style JSON APIs
 - PHPUnit 11 and Laravel Pint
 
@@ -145,6 +147,7 @@ From `backend/`:
 composer install
 cp .env.example .env
 php artisan key:generate
+php artisan webpush:vapid
 php artisan migrate --seed
 php artisan serve
 ```
@@ -172,9 +175,12 @@ Useful settings include:
 APP_URL=http://127.0.0.1:8000
 APP_LOCAL_TIMEZONE=Asia/Colombo
 FRONTEND_URL=http://localhost:5173
+VAPID_SUBJECT=mailto:admin@example.gov.lk
+VAPID_PUBLIC_KEY=<generated-public-key>
+VAPID_PRIVATE_KEY=<generated-private-key>
 ```
 
-Do not commit `.env` or real credentials.
+Keep the generated VAPID pair stable for each environment; changing it invalidates existing browser subscriptions. Never expose the private key or commit `.env`. Production Web Push requires HTTPS. On iOS/iPadOS, users must install the site to the Home Screen before enabling notifications.
 
 ### 3. Frontend
 
@@ -241,6 +247,7 @@ The API is mounted under `/api` and provides:
 - fleet and driver directory/detail operations;
 - driver statistics, schedule, history, assigned vehicle, journey actions, and issue reports;
 - approved journeys, issue review, and executive statistics.
+- unread in-app notifications and authenticated Web Push subscription management.
 
 See `backend/routes/api.php` for exact routes and role middleware. Responses generally use `{ success, message, data }`.
 

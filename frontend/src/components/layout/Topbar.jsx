@@ -5,6 +5,7 @@ import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
 import nationalEmblem from "../../assets/national-emblem.png";
+import { enablePushNotifications, supportsPushNotifications } from "../../utils/pushNotifications";
 
 const initials = (name) =>
   String(name || "User")
@@ -16,6 +17,13 @@ const initials = (name) =>
     .toUpperCase();
 
 const notificationPopupStorageKey = (userId) => `vms-notification-popups:${userId}`;
+
+const initialPushStatus = () => {
+  if (!supportsPushNotifications()) return "unsupported";
+  if (Notification.permission === "denied") return "denied";
+
+  return Notification.permission === "granted" ? "checking" : "prompt";
+};
 
 const readShownNotificationIds = (userId) => {
   if (!userId) return new Set();
@@ -75,7 +83,7 @@ const showNotificationPopup = (notification) => {
 
 export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
-  const userId = user?.id;
+  const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
     import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
@@ -90,6 +98,7 @@ export default function Topbar({ onMenuToggle }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [pushStatus, setPushStatus] = useState(initialPushStatus);
   const notificationMenuRef = useRef(null);
   const shownNotificationIdsRef = useRef(new Set());
 
@@ -128,6 +137,25 @@ export default function Topbar({ onMenuToggle }) {
     return () => window.clearInterval(interval);
   }, [loadNotifications]);
   useEffect(() => {
+    const refreshOnPush = (event) => {
+      if (event.data?.type === "VMS_PUSH_NOTIFICATION") loadNotifications();
+    };
+
+    navigator.serviceWorker?.addEventListener("message", refreshOnPush);
+    return () => navigator.serviceWorker?.removeEventListener("message", refreshOnPush);
+  }, [loadNotifications]);
+  useEffect(() => {
+    let active = true;
+
+    if (!supportsPushNotifications() || Notification.permission !== "granted") return undefined;
+
+    enablePushNotifications()
+      .then((status) => active && setPushStatus(status))
+      .catch(() => active && setPushStatus("error"));
+
+    return () => { active = false; };
+  }, [userId]);
+  useEffect(() => {
     const closeOnOutsideClick = (event) => {
       if (!notificationMenuRef.current?.contains(event.target)) setNotificationsOpen(false);
     };
@@ -153,6 +181,17 @@ export default function Topbar({ onMenuToggle }) {
       setNotifications([]);
       setUnreadCount(0);
     } catch { /* Keep the unread state when the API update fails. */ }
+  };
+  const enableDeviceAlerts = async () => {
+    setPushStatus("enabling");
+    try {
+      const status = await enablePushNotifications({ requestPermission: true });
+      setPushStatus(status);
+      if (status === "enabled") toast.success(t("notifications.deviceAlertsEnabled", "Device alerts enabled"));
+    } catch (error) {
+      setPushStatus("error");
+      toast.error(error?.message || t("notifications.deviceAlertsError", "Unable to enable device alerts."));
+    }
   };
 
   return (
@@ -244,6 +283,11 @@ export default function Topbar({ onMenuToggle }) {
                   <div><h2 className="font-bold text-slate-900 dark:text-white">{t("notifications.title", "Notifications")}</h2><p className="text-xs text-slate-500 dark:text-slate-400">{unreadCount ? `${unreadCount} unread` : "You're all caught up"}</p></div>
                   {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">Mark all read</button>}
                 </div>
+                {pushStatus === "enabled" && <p className="border-b border-emerald-100 bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300">{t("notifications.deviceAlertsEnabled", "Device alerts enabled")}</p>}
+                {(pushStatus === "prompt" || pushStatus === "error") && <button type="button" onClick={enableDeviceAlerts} className="flex w-full items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-2.5 text-left text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-400/20 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"><span>{t("notifications.enableDeviceAlerts", "Enable alerts when the app is closed")}</span><FiBell aria-hidden="true" /></button>}
+                {pushStatus === "enabling" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.enablingDeviceAlerts", "Enabling device alerts…")}</p>}
+                {pushStatus === "denied" && <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-300">{t("notifications.deviceAlertsDenied", "Device alerts are blocked in your browser settings.")}</p>}
+                {pushStatus === "unsupported" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.deviceAlertsUnsupported", "This browser does not support device alerts.")}</p>}
                 <div className="max-h-96 overflow-y-auto">
                   {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No unread notifications.</p> : notifications.map((notification) => (
                     <button type="button" key={notification.id} onClick={() => markRead(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
