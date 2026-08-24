@@ -6,7 +6,6 @@ import { useLanguage } from "../../context/useLanguage";
 import { generateVehicleDirectoryPdf } from "../../utils/vehicleDirectoryPdf";
 import {
   FiFilter,
-  FiChevronRight,
   FiSearch,
   FiRefreshCw,
   FiDownload,
@@ -80,17 +79,6 @@ function formatDate(dateStr) {
 /* ------------------------------------------------------------------ */
 /*  Small building blocks                                             */
 /* ------------------------------------------------------------------ */
-function Breadcrumb() {
-  return (
-    <nav className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
-      <span className="hover:text-slate-700 cursor-default">Dashboard</span>
-      <FiChevronRight className="h-3.5 w-3.5 text-slate-300" />
-      <span className="hover:text-slate-700 cursor-default">Vehicles</span>
-      <FiChevronRight className="h-3.5 w-3.5 text-slate-300" />
-      <span className="text-slate-800 font-medium">Total Vehicles</span>
-    </nav>
-  );
-}
 function SummaryCard({ icon, tone, label, value, sub }) {
   const tones = {
     indigo: {
@@ -118,10 +106,10 @@ function SummaryCard({ icon, tone, label, value, sub }) {
 
   return (
     <div
-      className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg sm:p-5"
+      className="group relative min-w-0 overflow-hidden rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_-24px_rgba(15,23,42,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_45px_-25px_rgba(15,23,42,0.4)] sm:p-6"
     >
       <div
-        className={`absolute inset-x-0 top-0 h-1 ${style.accent}`}
+        className={`absolute inset-x-0 top-0 h-0.5 ${style.accent}`}
       />
       <div
         className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-40 blur-3xl transition-transform duration-300 group-hover:scale-125 ${style.glow}`}
@@ -137,7 +125,7 @@ function SummaryCard({ icon, tone, label, value, sub }) {
           </p>
         </div>
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110 ${style.icon}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110 ${style.icon}`}
         >
           {icon}
         </div>
@@ -357,84 +345,87 @@ export default function TotalVehicles() {
   };
   return (
     <DashboardLayout>
-      <div className="bg-slate-50 min-h-screen p-6">
-        <Breadcrumb />
+      <div className="min-h-screen bg-[#f6f8fc] px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+        <div className="mx-auto w-full max-w-[1600px] space-y-6">
+          {/* Page header */}
+          <header className="flex flex-col gap-5 px-1 py-1 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                Fleet operations
+              </p>
+              <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Total Vehicles
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                Explore the complete government fleet, vehicle availability,
+                and operational specifications.
+              </p>
+            </div>
 
-        {/* Page header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Total Vehicles
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Full fleet inventory and specifications
-            </p>
-          </div>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <button
+                onClick={handleRefresh}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50"
+              >
+                <FiRefreshCw className={loading ? "animate-spin" : ""} />
+                Refresh
+              </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRefresh}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              <FiRefreshCw className={loading ? "animate-spin" : ""} />
-              Refresh
-            </button>
+              <button
+                type="button"
+                onClick={handleGeneratePdf}
+                disabled={loading || filtered.length === 0}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_-12px_rgba(37,99,235,0.9)] transition-all hover:bg-blue-700 hover:shadow-[0_14px_28px_-12px_rgba(37,99,235,0.85)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FiDownload />
+                Generate PDF
+              </button>
+            </div>
+          </header>
 
-            <button
-              type="button"
-              onClick={handleGeneratePdf}
-              disabled={loading || filtered.length === 0}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <FiDownload />
-              Generate PDF
-            </button>
-          </div>
-        </div>
+          {/* Summary cards */}
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <SummaryCard
+              icon={<FiTruck />}
+              tone="indigo"
+              label="Total Vehicles"
+              value={summary.total}
+              sub="Entire registered fleet"
+            />
+            <SummaryCard
+              icon={<FiCheckSquare />}
+              tone="emerald"
+              label="Available"
+              value={summary.available}
+              sub="Ready for allocation"
+            />
+            <SummaryCard
+              icon={<FiSlash />}
+              tone="red"
+              label="Unavailable"
+              value={summary.unavailable}
+              sub="Currently in use / offline"
+            />
+            <SummaryCard
+              icon={<FiTool />}
+              tone="amber"
+              label="Maintenance"
+              value={summary.maintenance}
+              sub="Under service"
+            />
+          </section>
 
-        {/* Summary cards */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SummaryCard
-            icon={<FiTruck />}
-            tone="indigo"
-            label="Total Vehicles"
-            value={summary.total}
-            sub="Entire registered fleet"
-          />
-          <SummaryCard
-            icon={<FiCheckSquare />}
-            tone="emerald"
-            label="Available"
-            value={summary.available}
-            sub="Ready for allocation"
-          />
-          <SummaryCard
-            icon={<FiSlash />}
-            tone="red"
-            label="Unavailable"
-            value={summary.unavailable}
-            sub="Currently in use / offline"
-          />
-          <SummaryCard
-            icon={<FiTool />}
-            tone="amber"
-            label="Maintenance"
-            value={summary.maintenance}
-            sub="Under service"
-          />
-        </div>
-
-        {/* Table card */}
-        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+          {/* Table card */}
+          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
           {loadError && (
             <div className="m-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {loadError}
             </div>
           )}
           {/* Toolbar */}
-          <div className="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center gap-3 lg:justify-between">
+          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-800">
+              <h2 className="text-xl font-bold tracking-tight text-slate-900">
                 Fleet Inventory
               </h2>
               <p className="text-slate-400 text-sm">
@@ -449,7 +440,7 @@ export default function TotalVehicles() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search vehicle or register number..."
-                  className="pl-9 pr-8 py-2 w-full sm:w-72 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-9 pr-8 text-sm transition-colors placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100/70 sm:w-72"
                 />
                 {query && (
                   <button
@@ -464,7 +455,7 @@ export default function TotalVehicles() {
               <div className="relative">
                 <button
                   onClick={() => setFiltersOpen((v) => !v)}
-                  className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors w-full sm:w-auto justify-center"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
                 >
                   <FiFilter />
                   Filters
@@ -616,7 +607,7 @@ export default function TotalVehicles() {
                             `/deputy/vehicles/${encodeURIComponent(v.id)}`,
                           )
                         }
-                        className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                        className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-blue-50/40"
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
@@ -716,6 +707,7 @@ export default function TotalVehicles() {
               </p>
             </div>
           )}
+          </section>
         </div>
       </div>
     </DashboardLayout>
