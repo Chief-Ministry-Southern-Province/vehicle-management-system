@@ -29,9 +29,9 @@ const formatNumber = (value, decimals = 0) =>
 
 function MetricCard({ icon, label, value, detail, accent }) {
   const accents = {
-    blue: "from-blue-600 to-indigo-700 shadow-blue-900/20",
-    cyan: "from-cyan-500 to-teal-600 shadow-cyan-900/20",
-    amber: "from-amber-400 to-orange-600 shadow-orange-900/20",
+    blue: "from-blue-600 to-indigo-900 shadow-blue-900/20",
+    cyan: "from-cyan-500 to-teal-900 shadow-cyan-900/20",
+    amber: "from-amber-400 to-orange-900 shadow-orange-900/20",
     slate: "from-slate-700 to-slate-900 shadow-slate-900/20",
   };
 
@@ -281,7 +281,7 @@ export default function FuelManagement() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Fuel Operations Center</p>
-                <h1 className="mt-1.5 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Fuel Management</h1>
+                <h1 className="mt-1.5 text-2xl font-black tracking-tight text-slate-800 sm:text-3xl">Fuel Management</h1>
                 <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">Monitor monthly fuel costs, consumption, and vehicle fuel records.</p>
               </div>
             </div>
