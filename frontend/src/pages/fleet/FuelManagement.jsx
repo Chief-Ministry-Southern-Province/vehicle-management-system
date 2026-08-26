@@ -62,10 +62,12 @@ function MetricCard({ icon, label, value, detail, accent }) {
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${style.icon}`}>
           {icon}
         </span>
-        <p className="text-right text-2xl font-extrabold leading-none tracking-tight text-slate-900 sm:text-3xl">{value}</p>
+        <div className="min-w-0 flex-1 text-right">
+          <p className={`text-[11px] font-bold uppercase tracking-[0.08em] ${style.label}`}>{label}</p>
+          <p className="mt-2 text-2xl font-extrabold leading-none tracking-tight text-slate-900 sm:text-3xl">{value}</p>
+        </div>
       </div>
-      <p className={`mt-4 text-[11px] font-bold uppercase tracking-[0.08em] ${style.label}`}>{label}</p>
-      <p className="mt-1 text-xs text-slate-500">{detail}</p>
+      <p className="mt-3 text-xs text-slate-500">{detail}</p>
       <div className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
     </article>
   );
