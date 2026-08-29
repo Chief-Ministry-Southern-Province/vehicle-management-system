@@ -232,7 +232,7 @@ export default function VehicleRequest() {
 
         {/* Trip Information */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50/80 to-white p-5 sm:p-6">
+          <div className="border-b border-slate-100 bg-linear-to-r from-blue-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-xl text-white shadow-md">
                 <FiMapPin />
@@ -337,7 +337,7 @@ export default function VehicleRequest() {
 
         {/* Passenger Details */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-50/80 to-white p-5 sm:p-6">
+          <div className="border-b border-slate-100 bg-linear-to-r from-indigo-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-xl text-white shadow-md">
                 <FiUsers />
@@ -394,7 +394,7 @@ export default function VehicleRequest() {
 
         {/* Attachments */}
         <div className="mb-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-gradient-to-r from-cyan-50/80 to-white p-5 sm:p-6">
+          <div className="border-b border-slate-100 bg-linear-to-r from-cyan-50/80 to-white p-5 sm:p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-600 text-xl text-white shadow-md">
                 <FiPaperclip />
