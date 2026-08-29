@@ -50,6 +50,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const mapRef = useRef(null);
   const activePointersRef = useRef(new Map());
   const gestureRef = useRef({ moved: false, suppressTap: false, movement: 0, pinchDistance: null });
+  const wheelDeltaRef = useRef(0);
   const [mapSize, setMapSize] = useState({ width: 900, height: 360 });
   const [viewport, setViewport] = useState({
     center: SRI_LANKA,
@@ -84,6 +85,22 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
     const observer = new ResizeObserver(updateSize);
     observer.observe(element);
     return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const element = mapRef.current;
+    if (!element) return undefined;
+    const handleNativeWheel = (event) => {
+      event.preventDefault();
+      wheelDeltaRef.current += event.deltaY;
+      if (Math.abs(wheelDeltaRef.current) < 40) return;
+      setViewport((current) => ({
+        ...current,
+        zoom: Math.max(3, Math.min(16, current.zoom + (wheelDeltaRef.current < 0 ? 1 : -1))),
+      }));
+      wheelDeltaRef.current = 0;
+    };
+    element.addEventListener("wheel", handleNativeWheel, { passive: false });
+    return () => element.removeEventListener("wheel", handleNativeWheel);
   }, []);
   const { width, height } = mapSize;
   const setCenter = (nextCenter) => setViewport((current) => ({
@@ -144,6 +161,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
 
   const handlePointerDown = (event) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
@@ -160,6 +178,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
 
   const handlePointerMove = (event) => {
     if (!activePointersRef.current.has(event.pointerId)) return;
+    event.preventDefault();
     const previousPointers = new Map(activePointersRef.current);
     activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
@@ -172,10 +191,10 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
 
       const distance = pointerDistance(currentPoints);
       const baseline = gestureRef.current.pinchDistance || pointerDistance(previousPoints);
-      if (distance >= baseline * 1.2) {
+      if (distance >= baseline * 1.06) {
         setZoom((value) => Math.min(16, value + 1));
         gestureRef.current.pinchDistance = distance;
-      } else if (distance <= baseline / 1.2) {
+      } else if (distance <= baseline / 1.06) {
         setZoom((value) => Math.max(3, value - 1));
         gestureRef.current.pinchDistance = distance;
       }
@@ -222,11 +241,13 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       <div
         ref={mapRef}
         className={`relative w-full touch-none select-none overflow-hidden overscroll-contain rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"}`}
+        style={{ touchAction: "none", WebkitUserSelect: "none" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={(event) => finishPointer(event)}
         onPointerCancel={(event) => finishPointer(event, true)}
         onLostPointerCapture={(event) => finishPointer(event, true)}
+        onContextMenu={(event) => event.preventDefault()}
         role="application"
         aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}
       >
