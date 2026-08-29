@@ -234,7 +234,7 @@ Required behavior:
 - Detail, recommendation, final-approval, and driver screens must display `starting_location` and `destination` explicitly. When a label is absent but valid coordinates exist, display a coordinate fallback; never coerce null coordinates into `0.000000`.
 - The driver scheduled-journey API must include the canonical route fields for a normal journey. Consolidated payloads must include route fields for each member request and must not claim a fabricated combined distance or geometry.
 - Driver maps are read-only. Zooming, panning, or recentering must never mutate request data.
-- `LocationMapPicker` uses the rendered container width and height for Web Mercator tile, path, and marker projection. Fixed desktop canvas dimensions must not be used for responsive percentage scaling because they distort tiles and misalign routes on mobile.
+- `LocationMapPicker` uses the rendered container width and height for Web Mercator tile, path, and marker projection. Fixed desktop canvas dimensions must not be used for responsive percentage scaling because they distort tiles and misalign routes on mobile. Pointer gestures are shared across editable and read-only maps: one-finger or mouse dragging pans, two-finger pinching zooms, and a stationary tap selects a point only on editable maps; directional pan buttons are not required.
 - Keep OpenStreetMap attribution visible. Keep mobile controls compact, hide nonessential directional controls on small screens, and make route recentering fit the saved route.
 
 ## 8. Local setup and commands

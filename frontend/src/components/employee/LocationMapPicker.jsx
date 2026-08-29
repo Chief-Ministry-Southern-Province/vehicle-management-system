@@ -38,8 +38,18 @@ function unproject({ x, y }, zoom) {
   };
 }
 
+function pointerDistance([first, second]) {
+  return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function pointerMidpoint([first, second]) {
+  return { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+}
+
 export default function LocationMapPicker({ start, end, routeCoordinates, focusPoint, activePoint, onActivePointChange, onSelect, translate = (text) => text, readOnly = false, heightClass = "h-[360px]" }) {
   const mapRef = useRef(null);
+  const activePointersRef = useRef(new Map());
+  const gestureRef = useRef({ moved: false, suppressTap: false, movement: 0, pinchDistance: null });
   const [mapSize, setMapSize] = useState({ width: 900, height: 360 });
   const [viewport, setViewport] = useState({
     center: SRI_LANKA,
@@ -84,6 +94,13 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
     ...current,
     zoom: typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom,
   }));
+  const panBy = (x, y) => setViewport((current) => {
+    const currentCenterPixel = project(current.center, current.zoom);
+    return {
+      ...current,
+      center: unproject({ x: currentCenterPixel.x - x, y: currentCenterPixel.y - y }, current.zoom),
+    };
+  });
   const centerPixel = project(center, zoom);
 
   const tiles = useMemo(() => {
@@ -114,17 +131,83 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const routePoints = (routeCoordinates || []).map(([lng, lat]) => pointPosition({ lat, lng })).filter(Boolean);
   const routePath = routePoints.map((point) => `${(point.left / width) * 100},${(point.top / height) * 100}`).join(" ");
 
-  const selectPoint = (event) => {
+  const selectPoint = (clientX, clientY) => {
     if (readOnly || !onSelect) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
+    const bounds = mapRef.current?.getBoundingClientRect();
+    if (!bounds) return;
     const point = unproject({
-      x: centerPixel.x + ((event.clientX - bounds.left) / bounds.width) * width - width / 2,
-      y: centerPixel.y + ((event.clientY - bounds.top) / bounds.height) * height - height / 2,
+      x: centerPixel.x + ((clientX - bounds.left) / bounds.width) * width - width / 2,
+      y: centerPixel.y + ((clientY - bounds.top) / bounds.height) * height - height / 2,
     }, zoom);
     onSelect(activePoint, { lat: Number(point.lat.toFixed(6)), lng: Number(point.lng.toFixed(6)) });
   };
 
-  const pan = (x, y) => setCenter(unproject({ x: centerPixel.x + x, y: centerPixel.y + y }, zoom));
+  const handlePointerDown = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (activePointersRef.current.size === 1) {
+      gestureRef.current = { moved: false, suppressTap: false, movement: 0, pinchDistance: null };
+      return;
+    }
+
+    const points = [...activePointersRef.current.values()].slice(0, 2);
+    gestureRef.current.moved = true;
+    gestureRef.current.suppressTap = true;
+    gestureRef.current.pinchDistance = pointerDistance(points);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!activePointersRef.current.has(event.pointerId)) return;
+    const previousPointers = new Map(activePointersRef.current);
+    activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (activePointersRef.current.size >= 2) {
+      const previousPoints = [...previousPointers.values()].slice(0, 2);
+      const currentPoints = [...activePointersRef.current.values()].slice(0, 2);
+      const previousMidpoint = pointerMidpoint(previousPoints);
+      const currentMidpoint = pointerMidpoint(currentPoints);
+      panBy(currentMidpoint.x - previousMidpoint.x, currentMidpoint.y - previousMidpoint.y);
+
+      const distance = pointerDistance(currentPoints);
+      const baseline = gestureRef.current.pinchDistance || pointerDistance(previousPoints);
+      if (distance >= baseline * 1.2) {
+        setZoom((value) => Math.min(16, value + 1));
+        gestureRef.current.pinchDistance = distance;
+      } else if (distance <= baseline / 1.2) {
+        setZoom((value) => Math.max(3, value - 1));
+        gestureRef.current.pinchDistance = distance;
+      }
+      gestureRef.current.moved = true;
+      gestureRef.current.suppressTap = true;
+      return;
+    }
+
+    const previous = previousPointers.get(event.pointerId);
+    const x = event.clientX - previous.x;
+    const y = event.clientY - previous.y;
+    gestureRef.current.movement += Math.hypot(x, y);
+    if (gestureRef.current.movement > 4) gestureRef.current.moved = true;
+    if (gestureRef.current.moved) panBy(x, y);
+  };
+
+  const finishPointer = (event, cancelled = false) => {
+    if (!activePointersRef.current.has(event.pointerId)) return;
+    const shouldSelect = !cancelled
+      && activePointersRef.current.size === 1
+      && !gestureRef.current.moved
+      && !gestureRef.current.suppressTap;
+
+    activePointersRef.current.delete(event.pointerId);
+    if (activePointersRef.current.size > 0) {
+      gestureRef.current.moved = true;
+      gestureRef.current.suppressTap = true;
+      gestureRef.current.pinchDistance = null;
+    }
+
+    if (shouldSelect) selectPoint(event.clientX, event.clientY);
+  };
 
   return (
     <div className="md:col-span-2">
@@ -134,9 +217,19 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
             {translate(label)}
           </button>
         ))}
-        <span className="self-center text-xs text-slate-500">{translate("Click the map to place the selected point.")}</span>
+        <span className="self-center text-xs text-slate-500">{translate("Tap or click the map to place the selected point.")}</span>
       </div>}
-      <div ref={mapRef} className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab" : "cursor-crosshair"}`} onClick={selectPoint} role={readOnly ? "img" : "application"} aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}>
+      <div
+        ref={mapRef}
+        className={`relative w-full touch-none select-none overflow-hidden overscroll-contain rounded-2xl border border-slate-200 bg-slate-100 ${heightClass} ${readOnly ? "cursor-grab active:cursor-grabbing" : "cursor-crosshair"}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={(event) => finishPointer(event)}
+        onPointerCancel={(event) => finishPointer(event, true)}
+        onLostPointerCapture={(event) => finishPointer(event, true)}
+        role="application"
+        aria-label={readOnly ? translate("Saved driving route map") : translate("Map location selector")}
+      >
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / width) * 100}%`, height: `${(TILE_SIZE / height) * 100}%`, left: `${(tile.left / width) * 100}%`, top: `${(tile.top / height) * 100}%` }} />)}
           {routePath && (
@@ -148,17 +241,12 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
           )}
           {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / width) * 100}%`, top: `${(position.top / height) * 100}%` }}>{label}</span>)}
         </div>
-        <div className="absolute right-2 top-2 flex flex-col gap-1 sm:right-3 sm:top-3" onClick={(event) => event.stopPropagation()}>
+        <div className="absolute right-2 top-2 flex flex-col gap-1 sm:right-3 sm:top-3" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
           <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiPlus /></button>
           <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(3, value - 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiMinus /></button>
           <button type="button" aria-label={translate("Center saved route")} onClick={() => routeCoordinates?.length ? setViewport((current) => ({ ...current, ...getRouteViewport(routeCoordinates) })) : setCenter(SRI_LANKA)} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiCrosshair /></button>
         </div>
-        <div className="absolute bottom-7 left-3 hidden grid-cols-3 gap-1 sm:grid" onClick={(event) => event.stopPropagation()}>
-          <span /><button type="button" aria-label={translate("Pan north")} onClick={() => pan(0, -160)} className="rounded bg-white/95 px-2 py-1 shadow">↑</button><span />
-          <button type="button" aria-label={translate("Pan west")} onClick={() => pan(-220, 0)} className="rounded bg-white/95 px-2 py-1 shadow">←</button><span /><button type="button" aria-label={translate("Pan east")} onClick={() => pan(220, 0)} className="rounded bg-white/95 px-2 py-1 shadow">→</button>
-          <span /><button type="button" aria-label={translate("Pan south")} onClick={() => pan(0, 160)} className="rounded bg-white/95 px-2 py-1 shadow">↓</button><span />
-        </div>
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()} className="absolute bottom-0 right-0 bg-white/80 px-1 text-[10px] text-slate-600">© OpenStreetMap contributors</a>
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="absolute bottom-0 right-0 bg-white/80 px-1 text-[10px] text-slate-600">© OpenStreetMap contributors</a>
       </div>
     </div>
   );
