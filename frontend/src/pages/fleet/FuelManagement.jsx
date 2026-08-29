@@ -29,25 +29,46 @@ const formatNumber = (value, decimals = 0) =>
 
 function MetricCard({ icon, label, value, detail, accent }) {
   const accents = {
-    blue: "from-blue-600 to-indigo-900 shadow-blue-900/20",
-    cyan: "from-cyan-500 to-teal-900 shadow-cyan-900/20",
-    amber: "from-amber-400 to-orange-900 shadow-orange-900/20",
-    slate: "from-slate-700 to-slate-900 shadow-slate-900/20",
+    blue: {
+      border: "border-blue-100 bg-linear-to-br from-white to-blue-50",
+      icon: "bg-blue-600 text-white shadow-blue-200",
+      line: "bg-blue-500",
+      label: "text-blue-700",
+    },
+    cyan: {
+      border: "border-cyan-100 bg-linear-to-br from-white to-cyan-50/70",
+      icon: "bg-cyan-100 text-cyan-700 shadow-cyan-100",
+      line: "bg-cyan-500",
+      label: "text-cyan-700",
+    },
+    amber: {
+      border: "border-amber-100 bg-linear-to-br from-white to-amber-50/70",
+      icon: "bg-amber-100 text-amber-700 shadow-amber-100",
+      line: "bg-amber-500",
+      label: "text-amber-700",
+    },
+    slate: {
+      border: "border-slate-200 bg-white",
+      icon: "bg-slate-100 text-slate-700 shadow-slate-100",
+      line: "bg-slate-700",
+      label: "text-slate-600",
+    },
   };
+  const style = accents[accent];
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white p-5 shadow-[0_12px_40px_-20px_rgba(15,23,42,0.35)] transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${accents[accent]}`} />
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
-          <p className="mt-3 text-2xl font-black tracking-tight text-slate-900">{value}</p>
-          <p className="mt-2 text-xs font-medium text-slate-500">{detail}</p>
-        </div>
-        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg ${accents[accent]}`}>
+    <article className={`relative overflow-hidden rounded-2xl border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${style.border}`}>
+      <div className="flex items-start justify-between gap-3">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${style.icon}`}>
           {icon}
         </span>
+        <div className="min-w-0 flex-1 text-right">
+          <p className={`text-[11px] font-bold uppercase tracking-[0.08em] ${style.label}`}>{label}</p>
+          <p className="mt-2 text-2xl font-extrabold leading-none tracking-tight text-slate-900 sm:text-3xl">{value}</p>
+        </div>
       </div>
+      <p className="mt-3 text-xs text-slate-500">{detail}</p>
+      <div className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
     </article>
   );
 }
@@ -59,13 +80,13 @@ function FuelChartTooltip({ active, payload, label }) {
   const liters = payload.find((item) => item.dataKey === "liters")?.value || 0;
 
   return (
-    <div className="min-w-52 rounded-2xl border border-slate-700 bg-slate-950/95 p-4 text-white shadow-2xl backdrop-blur-xl">
-      <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
+    <div className="min-w-52 rounded-xl border border-slate-200 bg-white p-4 text-slate-900 shadow-xl">
+      <p className="text-xs font-bold uppercase tracking-widest text-blue-600">{label}</p>
       <div className="mt-3 space-y-2">
-        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-blue-300">Total cost</span><strong>{formatCurrency(cost, 2)}</strong></div>
-        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-cyan-300">Consumption</span><strong>{formatNumber(liters, 2)} L</strong></div>
+        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">Total cost</span><strong>{formatCurrency(cost, 2)}</strong></div>
+        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">Consumption</span><strong>{formatNumber(liters, 2)} L</strong></div>
       </div>
-      <p className="mt-3 border-t border-slate-700 pt-3 text-[11px] text-slate-400">Click to filter records for this month</p>
+      <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] text-slate-400">Click to filter records for this month</p>
     </div>
   );
 }
@@ -270,57 +291,50 @@ export default function FuelManagement() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 pb-8">
-        <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)] sm:px-7">
-          <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-blue-600 to-cyan-400" />
-          <div className="absolute -right-12 -top-16 h-40 w-40 rounded-full bg-blue-50" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100">
-                <FiDroplet size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Fuel Operations Center</p>
-                <h1 className="mt-1.5 text-2xl font-black tracking-tight text-slate-800 sm:text-3xl">Fuel Management</h1>
-                <p className="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">Monitor monthly fuel costs, consumption, and vehicle fuel records.</p>
-              </div>
-            </div>
-            <div className="flex w-fit shrink-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm ring-1 ring-slate-200"><FiCalendar /></div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Reporting year</p>
-                <p className="mt-0.5 text-lg font-black leading-none text-slate-900">{selectedYear}</p>
-              </div>
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-8">
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">Fleet operations</p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">Fuel Management</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-500">Monitor monthly fuel costs, consumption, and vehicle fuel records.</p>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <FiCalendar />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Reporting year</p>
+              <p className="text-sm font-bold text-slate-800">{selectedYear}</p>
             </div>
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Fuel performance summary">
+        <section className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4" aria-label="Fuel performance summary">
           <MetricCard icon={<FiDollarSign size={20} />} label="Annual spend" value={formatCurrency(yearlySummary.totalCost)} detail={`${yearLogs.length} fuel transactions`} accent="blue" />
           <MetricCard icon={<FiDroplet size={20} />} label="Fuel consumed" value={`${formatNumber(yearlySummary.totalLiters, 1)} L`} detail={`Across ${selectedYear}`} accent="cyan" />
           <MetricCard icon={<FiActivity size={20} />} label="Average refill" value={formatCurrency(yearlySummary.averageCost)} detail="Average cost per transaction" accent="amber" />
           <MetricCard icon={<FiTruck size={20} />} label="Active vehicles" value={formatNumber(yearlySummary.activeVehicles)} detail="Vehicles with fuel activity" accent="slate" />
         </section>
 
-        <section className="overflow-hidden rounded-4xl border border-slate-200/80 bg-white shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)]">
-          <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
                 <FiBarChart2 size={20} />
               </div>
               <div>
-                <h2 className="text-lg font-black text-slate-900">Monthly Fuel Intelligence</h2>
-                <p className="text-sm text-slate-500">
+                <h2 className="font-bold text-slate-900">Monthly Fuel Overview</h2>
+                <p className="mt-0.5 text-xs text-slate-500">
                   Monthly fuel cost and liters consumed
                 </p>
               </div>
             </div>
-            <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-1.5 pl-4 text-sm font-semibold text-slate-600">
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-1 pl-3 text-sm font-semibold text-slate-600 shadow-sm">
               <FiCalendar className="text-blue-600" /> Year
               <select
                 value={selectedYear}
                 onChange={(event) => changeYear(event.target.value)}
-                className="rounded-xl border-0 bg-white px-4 py-2 font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:ring-2 focus:ring-blue-500"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-slate-900 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               >
                 {YEAR_OPTIONS.map((year) => (
                   <option key={year} value={year}>
@@ -344,7 +358,7 @@ export default function FuelManagement() {
               No fuel data is available for {selectedYear}.
             </div>
           ) : (
-            <div className="h-[380px] w-full px-2 pb-5 pt-4 sm:px-6">
+            <div className="h-[360px] w-full px-2 pb-5 pt-4 sm:px-5">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
                   data={monthlyData}
@@ -406,28 +420,28 @@ export default function FuelManagement() {
           )}
         </section>
 
-        <section className="grid gap-4 rounded-2xl border border-amber-200/70 bg-gradient-to-r from-amber-50 via-white to-blue-50 p-5 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-lg shadow-orange-200">
-            <FiTrendingUp size={22} />
+        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            <FiTrendingUp size={20} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Peak spending insight</p>
-            <p className="mt-1 text-lg font-black text-slate-900">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">Peak spending insight</p>
+            <p className="mt-1 text-base font-bold text-slate-900">
               {yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}
             </p>
-            <p className="mt-1 text-sm text-slate-500">{formatNumber(yearlySummary.peakMonth.liters, 1)} liters consumed during the highest-cost month.</p>
+            <p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.liters, 1)} liters consumed during the highest-cost month.</p>
           </div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40">
+          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40">
             View records <FiArrowUpRight />
           </button>
         </section>
 
-        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_55px_-30px_rgba(15,23,42,0.45)]">
-          <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-5 sm:px-7">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white"><FiDroplet /></div>
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><FiDroplet /></div>
             <div>
-              <h2 className="font-black text-slate-900">Fuel Records Ledger</h2>
-              <p className="text-sm text-slate-500">Search, filter, select, and export transaction records.</p>
+              <h2 className="font-bold text-slate-900">Fuel Records Ledger</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Search, filter, select, and export transaction records.</p>
             </div>
           </div>
           <FuelFilters
@@ -441,7 +455,7 @@ export default function FuelManagement() {
             }}
           />
           {selectedMonthLabel && (
-            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-5 py-3 text-sm text-blue-700">
+            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50/70 px-5 py-3 text-sm text-blue-700">
               <span>
                 Showing fuel records for <strong>{selectedMonthLabel}</strong>
               </span>
@@ -455,12 +469,12 @@ export default function FuelManagement() {
             </div>
           )}
           {!selectedMonthLabel && !loading && !error && (
-            <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm text-slate-600">
+            <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
               Showing all fuel records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
             </div>
           )}
           {!loading && !error && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
               <p className="text-sm text-slate-600">
                 <strong className="text-slate-900">{selectedRecords.length}</strong>{" "}
                 fuel {selectedRecords.length === 1 ? "record" : "records"} selected
@@ -469,7 +483,7 @@ export default function FuelManagement() {
                 type="button"
                 onClick={exportSelectedRecords}
                 disabled={selectedRecords.length === 0}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiDownload /> Export Selected PDF
               </button>
