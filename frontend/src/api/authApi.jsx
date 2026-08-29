@@ -224,6 +224,18 @@ export const createVehicleRequest = async (requestData) => {
   }
 };
 
+export const reverseGeocodeLocation = async (latitude, longitude, language = "en") => {
+  try {
+    const response = await API.get("/vehicle-requests/reverse-geocode", {
+      params: { latitude, longitude, language },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getNotifications = async () => {
   try {
     const response = await API.get("/notifications", {

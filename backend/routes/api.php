@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::post('/vehicle-requests/route', [VehicleRequestController::class, 'route']);
+    Route::get('/vehicle-requests/reverse-geocode', [VehicleRequestController::class, 'reverseGeocode']);
     Route::get('/vehicle-requests', [VehicleRequestController::class, 'personalIndex']);
     Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'personalShow']);
     Route::patch('/vehicle-requests/{vehicleRequest}/cancel', [VehicleRequestController::class, 'cancel']);

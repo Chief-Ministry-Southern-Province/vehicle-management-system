@@ -1,7 +1,7 @@
 import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave, FiTruck } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { createVehicleRequest } from "../../api/authApi";
+import { createVehicleRequest, reverseGeocodeLocation } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
 import LocationMapPicker from "./LocationMapPicker";
@@ -9,7 +9,7 @@ import LocationMapPicker from "./LocationMapPicker";
 const formatPoint = (point) => point ? `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}` : "";
 
 export default function VehicleRequest() {
-  const { translate } = useLanguage();
+  const { language, translate } = useLanguage();
   const { user } = useAuth();
   const [form, setForm] = useState({
     purpose: "",
@@ -29,10 +29,12 @@ export default function VehicleRequest() {
   const [activePoint, setActivePoint] = useState("start");
   const [focusPoint, setFocusPoint] = useState(null);
   const [searching, setSearching] = useState(null);
+  const [resolvingAddress, setResolvingAddress] = useState({ start: false, end: false });
   const [routeResult, setRouteResult] = useState({ key: null, route: null });
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
   const fileInputRef = useRef(null);
+  const reverseLookupRequestRef = useRef({ start: 0, end: 0 });
   const startPoint = form.starting_latitude === "" ? null : { lat: Number(form.starting_latitude), lng: Number(form.starting_longitude) };
   const endPoint = form.destination_latitude === "" ? null : { lat: Number(form.destination_latitude), lng: Number(form.destination_longitude) };
   const startLat = startPoint?.lat;
@@ -43,6 +45,7 @@ export default function VehicleRequest() {
   const route = routeResult.key === routeKey ? routeResult.route : null;
   const visibleRouteError = routeResult.key === routeKey ? routeError : "";
   const distanceKm = route?.distance_km ?? null;
+  const addressLookupInProgress = resolvingAddress.start || resolvingAddress.end;
 
   useEffect(() => {
     if (!routeKey) return undefined;
@@ -74,24 +77,58 @@ export default function VehicleRequest() {
     return () => { cancelled = true; clearTimeout(timer); };
   }, [routeKey, translate]);
 
-  const selectLocation = (type, point, label = null, shouldFocus = false) => {
-    const formatted = label || formatPoint(point);
+  const setSelectedLocation = (type, point, label) => {
     setForm((current) => type === "start" ? {
       ...current,
-      starting_location: formatted,
+      starting_location: label,
       starting_latitude: point.lat,
       starting_longitude: point.lng,
     } : {
       ...current,
-      destination: formatted,
+      destination: label,
       destination_latitude: point.lat,
       destination_longitude: point.lng,
     });
+  };
+
+  const selectLocation = async (type, point, label = null, shouldFocus = false) => {
+    const requestId = reverseLookupRequestRef.current[type] + 1;
+    reverseLookupRequestRef.current[type] = requestId;
+
+    if (label) {
+      setSelectedLocation(type, point, label);
+      setResolvingAddress((current) => ({ ...current, [type]: false }));
+    } else {
+      setSelectedLocation(type, point, translate("Finding location..."));
+      setResolvingAddress((current) => ({ ...current, [type]: true }));
+
+      try {
+        const result = await reverseGeocodeLocation(point.lat, point.lng, language);
+        const address = result?.data?.address?.trim();
+        if (!address) throw new Error("No address was returned for this point");
+
+        if (reverseLookupRequestRef.current[type] === requestId) {
+          setSelectedLocation(type, point, address);
+        }
+      } catch {
+        if (reverseLookupRequestRef.current[type] === requestId) {
+          setSelectedLocation(type, point, formatPoint(point));
+          toast.error(translate("Unable to find that location. Please select it on the map."));
+        }
+      } finally {
+        if (reverseLookupRequestRef.current[type] === requestId) {
+          setResolvingAddress((current) => ({ ...current, [type]: false }));
+        }
+      }
+    }
+
     if (shouldFocus) setFocusPoint(point);
     setActivePoint(type === "start" ? "end" : "start");
   };
 
   const updateLocationText = (type, value) => {
+    reverseLookupRequestRef.current[type] += 1;
+    setResolvingAddress((current) => ({ ...current, [type]: false }));
     setForm((current) => type === "start" ? {
       ...current,
       starting_location: value,
@@ -144,6 +181,10 @@ export default function VehicleRequest() {
     event.preventDefault();
     if (!startPoint || !endPoint) {
       toast.error(translate("Select both locations to calculate distance"));
+      return;
+    }
+    if (addressLookupInProgress) {
+      toast.error(translate("Finding location..."));
       return;
     }
     if (routeLoading || !route || distanceKm === null) {
@@ -285,12 +326,14 @@ export default function VehicleRequest() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
               <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("start")} disabled={searching !== null || form.starting_location.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "start" ? translate("Finding location...") : translate("Find on map")}</button>
+              {resolvingAddress.start && <p className="mt-2 text-xs font-medium text-blue-600">{translate("Finding location...")}</p>}
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">{translate("Ending Location")}</label>
               <input type="text" name="destination" value={form.destination} onChange={(event) => updateLocationText("end", event.target.value)} onKeyDown={(event) => handleLocationKeyDown(event, "end")} onBlur={() => findLocation("end")} required placeholder={translate("Type or select the ending point on the map")} className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50" />
               <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("end")} disabled={searching !== null || form.destination.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "end" ? translate("Finding location...") : translate("Find on map")}</button>
+              {resolvingAddress.end && <p className="mt-2 text-xs font-medium text-blue-600">{translate("Finding location...")}</p>}
             </div>
 
             <div className="md:col-span-2">
@@ -459,7 +502,7 @@ export default function VehicleRequest() {
 
           <button
             type="submit"
-            disabled={submitting || routeLoading || !route}
+            disabled={submitting || routeLoading || addressLookupInProgress || !route}
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FiSend />
