@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -16,6 +16,16 @@ const initials = (name) =>
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+const roleDashboardPaths = {
+  employee: "/userdashboard",
+  department_officer: "/departmentofficerdashboard",
+  subject_officer: "/subjectofficerdashboard",
+  deputy_secretary: "/deputysecretarydashboard",
+  senior_deputy_secretary: "/seniordeputysecretarydashboard",
+  secretary: "/secretarydashboard",
+  driver: "/driverdashboard",
+};
 
 const notificationPopupStorageKey = (userId) => `vms-notification-popups:${userId}`;
 
@@ -84,6 +94,7 @@ const showNotificationPopup = (notification) => {
 
 export default function Topbar({ onMenuToggle }) {
   const { user } = useAuth();
+  const location = useLocation();
   const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
@@ -95,6 +106,16 @@ export default function Topbar({ onMenuToggle }) {
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
+  const isSettingsPage = location.pathname === "/setting";
+  const dashboardPath = roleDashboardPaths[user?.role] || "/userdashboard";
+  const storedReturnPath = location.state?.profileReturnPath;
+  const returnPath = typeof storedReturnPath === "string"
+    && storedReturnPath.startsWith("/")
+    && !storedReturnPath.startsWith("//")
+    && storedReturnPath !== "/setting"
+    ? storedReturnPath
+    : dashboardPath;
+  const currentPath = `${location.pathname}${location.search}${location.hash}`;
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -304,9 +325,11 @@ export default function Topbar({ onMenuToggle }) {
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
             <Link
-              to="/setting"
-              aria-label={t("nav.user_settings")}
-              title={t("nav.user_settings")}
+              to={isSettingsPage ? returnPath : "/setting"}
+              state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
+              replace={isSettingsPage}
+              aria-label={isSettingsPage ? t("nav.dashboard") : t("nav.user_settings")}
+              title={isSettingsPage ? t("nav.dashboard") : t("nav.user_settings")}
               className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}

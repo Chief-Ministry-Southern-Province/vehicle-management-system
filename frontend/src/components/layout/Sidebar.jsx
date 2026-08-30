@@ -3,7 +3,6 @@ import {
   FiTruck,
   FiDroplet,
   FiTool,
-  FiSettings,
   FiUsers,
   FiBarChart2,
   FiLogOut,
@@ -372,11 +371,6 @@ const menuItems = [
         roles: ["subject_officer"],
       },
 
-      {
-        name: "User Settings",
-        path: "/setting",
-        icon: <FiSettings />,
-      },
     ],
   },
 ];
