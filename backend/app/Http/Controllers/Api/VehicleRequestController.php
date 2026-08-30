@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class VehicleRequestController extends Controller
@@ -1017,6 +1018,53 @@ class VehicleRequestController extends Controller
             Log::warning('Directions service could not calculate a route.', ['message' => $e->getMessage()]);
 
             return response()->json(['success' => false, 'message' => 'A feasible driving route could not be calculated for these locations.'], 422);
+        }
+    }
+
+    /** Resolve a deliberately selected Sri Lankan map point to a readable address. */
+    public function reverseGeocode(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'latitude' => ['required', 'numeric', 'between:5.7,10'],
+            'longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'language' => ['nullable', 'in:en,si,ta'],
+        ]);
+
+        try {
+            $response = Http::acceptJson()
+                ->withHeaders([
+                    'Accept-Language' => ($validated['language'] ?? 'en').',en',
+                    'User-Agent' => (string) config('services.geocoding.user_agent'),
+                ])
+                ->timeout(config('services.geocoding.timeout', 10))
+                ->get((string) config('services.geocoding.reverse_url'), [
+                    'lat' => $validated['latitude'],
+                    'lon' => $validated['longitude'],
+                    'format' => 'jsonv2',
+                    'zoom' => 18,
+                    'addressdetails' => 1,
+                ])
+                ->throw()
+                ->json();
+
+            $address = trim((string) ($response['display_name'] ?? ''));
+            if ($address === '') {
+                throw new \RuntimeException('Reverse geocoding returned no address.');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => ['address' => Str::limit($address, 255, '')],
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Reverse geocoding could not resolve a selected map point.', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'A readable address could not be found for the selected location.',
+            ], 422);
         }
     }
 

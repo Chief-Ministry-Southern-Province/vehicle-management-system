@@ -41,4 +41,10 @@ return [
         'timeout' => (int) env('DIRECTIONS_TIMEOUT', 15),
     ],
 
+    'geocoding' => [
+        'reverse_url' => env('GEOCODING_REVERSE_API_URL', 'https://nominatim.openstreetmap.org/reverse'),
+        'timeout' => (int) env('GEOCODING_TIMEOUT', 10),
+        'user_agent' => env('GEOCODING_USER_AGENT', 'VMS-GOV/1.0 ('.env('APP_URL', 'http://localhost').')'),
+    ],
+
 ];
