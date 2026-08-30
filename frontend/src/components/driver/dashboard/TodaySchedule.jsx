@@ -152,7 +152,9 @@ export default function ScheduledJourney() {
               <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mx-5 sm:mt-5 lg:mr-[17.25rem] xl:mr-[19.25rem] dark:border-slate-700 dark:bg-slate-900">
                 <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-linear-to-r from-blue-50 to-indigo-50/70 px-4 py-3 dark:border-slate-700 dark:from-blue-950/50 dark:to-indigo-950/30">
                   <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300"><FiNavigation /> Journey route</p>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-200">{routeDistance(trip.distance_km)}</span>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-200">
+                    Journey kilometers: {trip.is_consolidated ? "See each request" : routeDistance(trip.round_trip_distance_km)}
+                  </span>
                 </div>
                 <div className="grid gap-4 p-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
                   <div className="flex items-start gap-3"><span className="mt-0.5 rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-950"><FiMapPin /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Starting location</p><p className="mt-1 break-words text-sm font-bold text-slate-900 dark:text-white">{trip.starting_location || "Starting location not recorded"}</p></div></div>
@@ -258,6 +260,7 @@ export default function ScheduledJourney() {
               <Detail label="Starting Location">{selectedTrip.starting_location}</Detail>
               <Detail label="Ending Location">{selectedTrip.destination}</Detail>
               <Detail label="Calculated Distance">{routeDistance(selectedTrip.distance_km)}</Detail>
+              <Detail label="Journey Kilometers (Round Trip)">{selectedTrip.is_consolidated ? "See each request below" : routeDistance(selectedTrip.round_trip_distance_km)}</Detail>
               <Detail label="Journey Status">{selectedTrip.status}</Detail>
               <Detail label="Journey Date">{formatDate(selectedTrip.departure_at)}</Detail>
               <Detail label="Departure Time">{formatTime(selectedTrip.departure_at)}</Detail>
@@ -291,6 +294,7 @@ export default function ScheduledJourney() {
                         <p><b>Starting location:</b> {item.starting_location || item.pickup_place || "Not recorded"}</p>
                         <p><b>Ending location:</b> {item.drop_place || "Not recorded"}</p>
                         <p><b>Distance:</b> {routeDistance(item.distance_km)}</p>
+                        <p><b>Journey kilometers (round trip):</b> {routeDistance(item.round_trip_distance_km)}</p>
                         <p><b>Requested time:</b> {formatTime(item.departure_at)} - {formatTime(item.expected_return_at)}</p>
                       </div>
                     ))}

@@ -373,6 +373,7 @@ class DriverRegistrationTest extends TestCase
                 'requester_name' => $requester->name,
                 'purpose' => $purpose,
                 'destination' => 'Colombo',
+                'distance_km' => 42.75,
                 'departure_at' => $departure,
                 'expected_return_at' => $return,
                 'passenger_count' => 2,
@@ -406,6 +407,8 @@ class DriverRegistrationTest extends TestCase
                 ->assertJsonPath('data.trips.0.purpose', 'Ongoing journey')
                 ->assertJsonPath('data.trips.0.status', 'Ongoing')
                 ->assertJsonPath('data.trips.0.passenger_count', 2)
+                ->assertJsonPath('data.trips.0.distance_km', 42.75)
+                ->assertJsonPath('data.trips.0.round_trip_distance_km', 85.5)
                 ->assertJsonPath('data.trips.0.vehicle.registration_number', 'TEST-1001')
                 ->assertJsonPath('data.trips.1.purpose', 'Future journey')
                 ->assertJsonMissing(['purpose' => 'Completed journey']);
@@ -523,17 +526,21 @@ class DriverRegistrationTest extends TestCase
         ];
         $first = VehicleRequest::create([...$common, 'purpose' => 'Meeting', 'destination' => 'Nugegoda',
             'departure_at' => '2026-08-06 09:00:00', 'expected_return_at' => '2026-08-06 12:45:00',
-            'passenger_count' => 1, 'passenger_names' => 'Yasith']);
+            'passenger_count' => 1, 'passenger_names' => 'Yasith', 'distance_km' => 12.5]);
         $second = VehicleRequest::create([...$common, 'purpose' => 'Site inspection', 'destination' => 'Colombo',
             'departure_at' => '2026-08-06 09:30:00', 'expected_return_at' => '2026-08-06 12:30:00',
-            'passenger_count' => 4, 'passenger_names' => 'Thisara, Chathura, Anupama, Gunathilaka']);
+            'passenger_count' => 4, 'passenger_names' => 'Thisara, Chathura, Anupama, Gunathilaka',
+            'distance_km' => 20]);
 
         $this->actingAs($driverUser)->getJson('/api/driver/scheduled-journeys')
             ->assertOk()->assertJsonCount(1, 'data.trips')
             ->assertJsonPath('data.trips.0.departure_at', '2026-08-06T09:00:00.000000Z')
             ->assertJsonPath('data.trips.0.expected_return_at', '2026-08-06T12:45:00.000000Z')
             ->assertJsonPath('data.trips.0.passenger_count', 5)
+            ->assertJsonPath('data.trips.0.round_trip_distance_km', null)
             ->assertJsonCount(2, 'data.trips.0.requests')
+            ->assertJsonPath('data.trips.0.requests.0.round_trip_distance_km', 25)
+            ->assertJsonPath('data.trips.0.requests.1.round_trip_distance_km', 40)
             ->assertJsonPath('data.trips.0.requests.1.starting_location', $second->starting_location)
             ->assertJsonPath('data.trips.0.requests.1.drop_place', 'Colombo');
 
