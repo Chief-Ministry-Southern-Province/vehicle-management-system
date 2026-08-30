@@ -328,8 +328,8 @@ export default function Topbar({ onMenuToggle }) {
               to={isSettingsPage ? returnPath : "/setting"}
               state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
               replace={isSettingsPage}
-              aria-label={isSettingsPage ? t("nav.dashboard") : t("nav.user_settings")}
-              title={isSettingsPage ? t("nav.dashboard") : t("nav.user_settings")}
+              aria-label={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+              title={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
               className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
