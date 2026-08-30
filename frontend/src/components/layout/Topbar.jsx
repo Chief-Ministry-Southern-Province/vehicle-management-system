@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -302,7 +303,12 @@ export default function Topbar({ onMenuToggle }) {
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 sm:h-11 sm:w-11 sm:text-sm">
+            <Link
+              to="/setting"
+              aria-label={t("nav.user_settings")}
+              title={t("nav.user_settings")}
+              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
+            >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
               {profilePictureUrl && (
                 <img
@@ -315,7 +321,7 @@ export default function Topbar({ onMenuToggle }) {
                 />
               )}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
-            </div>
+            </Link>
 
             <div className="hidden min-w-0 sm:block">
               <p className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
