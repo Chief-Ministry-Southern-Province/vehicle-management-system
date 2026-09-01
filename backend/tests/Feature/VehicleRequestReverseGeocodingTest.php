@@ -45,6 +45,10 @@ class VehicleRequestReverseGeocodingTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['latitude', 'longitude']);
 
+        $this->actingAs($employee)->getJson('/api/vehicle-requests/reverse-geocode?latitude=9.5&longitude=81.5')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['longitude']);
+
         Http::assertNothingSent();
     }
 

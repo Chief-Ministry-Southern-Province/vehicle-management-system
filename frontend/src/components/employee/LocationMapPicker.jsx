@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
+import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_BOUNDARY, SRI_LANKA_CENTER } from "../../utils/sriLankaBoundary";
 
 const TILE_SIZE = 256;
-const SRI_LANKA = { lat: 7.8731, lng: 80.7718 };
+const MIN_ZOOM = 7;
 
 function getRouteViewport(routeCoordinates) {
   const longitudes = routeCoordinates.map(([lng]) => lng);
@@ -16,7 +17,7 @@ function getRouteViewport(routeCoordinates) {
       lat: (Math.min(...latitudes) + Math.max(...latitudes)) / 2,
       lng: (Math.min(...longitudes) + Math.max(...longitudes)) / 2,
     },
-    zoom: Math.max(7, Math.min(15, Math.floor(Math.log2(3.2 / span)) + 7)),
+    zoom: Math.max(MIN_ZOOM, Math.min(15, Math.floor(Math.log2(3.2 / span)) + 7)),
   };
 }
 
@@ -52,16 +53,17 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const gestureRef = useRef({ moved: false, suppressTap: false, movement: 0, pinchDistance: null });
   const wheelDeltaRef = useRef(0);
   const [mapSize, setMapSize] = useState({ width: 900, height: 360 });
+  const [selectionError, setSelectionError] = useState("");
   const [viewport, setViewport] = useState({
-    center: SRI_LANKA,
-    zoom: 8,
+    center: SRI_LANKA_CENTER,
+    zoom: MIN_ZOOM,
     focusPoint,
     routeCoordinates,
   });
 
   if (focusPoint !== viewport.focusPoint) {
     setViewport({
-      center: focusPoint || viewport.center,
+      center: clampToSriLankaView(focusPoint || viewport.center),
       zoom: focusPoint ? Math.max(viewport.zoom, 13) : viewport.zoom,
       focusPoint,
       routeCoordinates,
@@ -95,7 +97,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       if (Math.abs(wheelDeltaRef.current) < 40) return;
       setViewport((current) => ({
         ...current,
-        zoom: Math.max(3, Math.min(16, current.zoom + (wheelDeltaRef.current < 0 ? 1 : -1))),
+        zoom: Math.max(MIN_ZOOM, Math.min(16, current.zoom + (wheelDeltaRef.current < 0 ? 1 : -1))),
       }));
       wheelDeltaRef.current = 0;
     };
@@ -105,17 +107,17 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const { width, height } = mapSize;
   const setCenter = (nextCenter) => setViewport((current) => ({
     ...current,
-    center: typeof nextCenter === "function" ? nextCenter(current.center) : nextCenter,
+    center: clampToSriLankaView(typeof nextCenter === "function" ? nextCenter(current.center) : nextCenter),
   }));
   const setZoom = (nextZoom) => setViewport((current) => ({
     ...current,
-    zoom: typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom,
+    zoom: Math.max(MIN_ZOOM, typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom),
   }));
   const panBy = (x, y) => setViewport((current) => {
     const currentCenterPixel = project(current.center, current.zoom);
     return {
       ...current,
-      center: unproject({ x: currentCenterPixel.x - x, y: currentCenterPixel.y - y }, current.zoom),
+      center: clampToSriLankaView(unproject({ x: currentCenterPixel.x - x, y: currentCenterPixel.y - y }, current.zoom)),
     };
   });
   const centerPixel = project(center, zoom);
@@ -147,6 +149,10 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const endPosition = pointPosition(end);
   const routePoints = (routeCoordinates || []).map(([lng, lat]) => pointPosition({ lat, lng })).filter(Boolean);
   const routePath = routePoints.map((point) => `${(point.left / width) * 100},${(point.top / height) * 100}`).join(" ");
+  const boundaryPath = SRI_LANKA_BOUNDARY.map(([lng, lat], index) => {
+    const position = pointPosition({ lat, lng });
+    return `${index === 0 ? "M" : "L"}${position.left} ${position.top}`;
+  }).join(" ") + " Z";
 
   const selectPoint = (clientX, clientY) => {
     if (readOnly || !onSelect) return;
@@ -156,6 +162,11 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       x: centerPixel.x + ((clientX - bounds.left) / bounds.width) * width - width / 2,
       y: centerPixel.y + ((clientY - bounds.top) / bounds.height) * height - height / 2,
     }, zoom);
+    if (!isWithinSriLanka(point)) {
+      setSelectionError(translate("Locations can only be selected within Sri Lanka."));
+      return;
+    }
+    setSelectionError("");
     onSelect(activePoint, { lat: Number(point.lat.toFixed(6)), lng: Number(point.lng.toFixed(6)) });
   };
 
@@ -195,7 +206,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
         setZoom((value) => Math.min(16, value + 1));
         gestureRef.current.pinchDistance = distance;
       } else if (distance <= baseline / 1.06) {
-        setZoom((value) => Math.max(3, value - 1));
+        setZoom((value) => Math.max(MIN_ZOOM, value - 1));
         gestureRef.current.pinchDistance = distance;
       }
       gestureRef.current.moved = true;
@@ -253,6 +264,10 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       >
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / width) * 100}%`, height: `${(TILE_SIZE / height) * 100}%`, left: `${(tile.left / width) * 100}%`, top: `${(tile.top / height) * 100}%` }} />)}
+          <svg className="pointer-events-none absolute inset-0 z-[5] h-full w-full" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+            <path d={`M0 0 H${width} V${height} H0 Z ${boundaryPath}`} fill="rgba(15, 23, 42, 0.28)" fillRule="evenodd" />
+            <path d={boundaryPath} fill="rgba(37, 99, 235, 0.05)" stroke="#1d4ed8" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+          </svg>
           {routePath && (
             <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full drop-shadow-md" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               <polyline points={routePath} fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
@@ -264,11 +279,12 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
         </div>
         <div className="absolute right-2 top-2 flex flex-col gap-1 sm:right-3 sm:top-3" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
           <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiPlus /></button>
-          <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(3, value - 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiMinus /></button>
-          <button type="button" aria-label={translate("Center saved route")} onClick={() => routeCoordinates?.length ? setViewport((current) => ({ ...current, ...getRouteViewport(routeCoordinates) })) : setCenter(SRI_LANKA)} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiCrosshair /></button>
+          <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(MIN_ZOOM, value - 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiMinus /></button>
+          <button type="button" aria-label={translate("Center saved route")} onClick={() => routeCoordinates?.length ? setViewport((current) => ({ ...current, ...getRouteViewport(routeCoordinates) })) : setCenter(SRI_LANKA_CENTER)} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiCrosshair /></button>
         </div>
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="absolute bottom-0 right-0 bg-white/80 px-1 text-[10px] text-slate-600">© OpenStreetMap contributors</a>
       </div>
+      {selectionError && <p className="mt-2 text-sm font-semibold text-rose-600" role="alert">{selectionError}</p>}
     </div>
   );
 }

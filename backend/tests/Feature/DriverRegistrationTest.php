@@ -182,6 +182,40 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonCount(3, 'data.route.geometry');
     }
 
+    public function test_route_coordinates_must_be_inside_sri_lankan_territory(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee', 'status' => 'active']);
+
+        $this->actingAs($employee)->postJson('/api/vehicle-requests/route', [
+            'starting_latitude' => 9.5,
+            'starting_longitude' => 81.5,
+            'destination_latitude' => 6.9271,
+            'destination_longitude' => 79.8612,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['starting_longitude']);
+    }
+
+    public function test_vehicle_request_coordinates_must_be_inside_sri_lankan_territory(): void
+    {
+        $employee = User::factory()->create(['role' => 'employee', 'status' => 'active']);
+
+        $this->actingAs($employee)->postJson('/api/vehicle-requests', [
+            'purpose' => 'Official meeting',
+            'starting_location' => 'Invalid offshore point',
+            'starting_latitude' => 9.5,
+            'starting_longitude' => 81.5,
+            'destination' => 'Colombo',
+            'destination_latitude' => 6.9271,
+            'destination_longitude' => 79.8612,
+            'departure_at' => '2026-09-02T10:00',
+            'expected_return_at' => '2026-09-02T14:00',
+            'passenger_count' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['starting_longitude']);
+
+        $this->assertDatabaseCount('vehicle_requests', 0);
+    }
+
     public function test_notification_failure_rolls_back_vehicle_request_and_is_not_reported_as_a_route_error(): void
     {
         $employee = User::factory()->create([

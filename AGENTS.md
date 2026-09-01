@@ -232,6 +232,7 @@ Treat these as one end-to-end data contract. If any field changes, inspect the m
 Required behavior:
 
 - The client may preview a route, but request submission sends location labels/coordinates only; the backend independently calculates and persists distance, duration, and geometry.
+- The shared map displays Sri Lanka's territorial outline, shades the surrounding area, constrains navigation to the Sri Lanka view, and accepts selectable points only inside the local boundary polygon. The backend applies the same territorial check to request submission, route preview, and reverse-geocoding coordinates; the latitude/longitude bounding box alone is not sufficient.
 - Detail, recommendation, final-approval, and driver screens must display `starting_location` and `destination` explicitly. When a label is absent but valid coordinates exist, display a coordinate fallback; never coerce null coordinates into `0.000000`.
 - The driver scheduled-journey API must include the canonical route fields for a normal journey. Consolidated payloads must include route fields for each member request and must not claim a fabricated combined distance or geometry.
 - Driver maps are read-only. Zooming, panning, or recentering must never mutate request data.
