@@ -378,7 +378,204 @@ The project was maintained in Git. Source code, migrations, tests, configuration
 
 # 6. System analysis and design
 
-## 6.1 High-level architecture
+## 6.1 Use-case diagram
+
+The following use-case diagram presents the principal interactions between the seven organizational roles, the VMS-GOV system boundary, and its external mapping and notification services. Mermaid does not provide a dedicated UML use-case syntax, so the diagram uses flowchart notation with rounded nodes to represent use cases.
+
+```mermaid
+flowchart LR
+    %% Organizational actors
+    EMP["Employee"]:::actor
+    DEPT["Department Officer"]:::actor
+    SUBJECT["Subject Officer"]:::actor
+    DEPUTY["Deputy Secretary"]:::actor
+    SENIOR["Senior Deputy Secretary"]:::actor
+    SECRETARY["Secretary"]:::actor
+    DRIVER["Driver"]:::actor
+
+    %% External service actors
+    MAPS["Mapping and<br/>Routing Services"]:::external
+    PUSH["Web Push<br/>Service"]:::external
+
+    %% VMS-GOV system boundary
+    subgraph VMS["Vehicle Management System — VMS-GOV"]
+        direction TB
+
+        subgraph ACCESS["Authentication and Personal Services"]
+            LOGIN(["Log in and log out"])
+            PROFILE(["Manage profile and password"])
+            NOTIFICATIONS(["View and manage notifications"])
+        end
+
+        subgraph REQUESTS["Vehicle Request Management"]
+            CREATE_REQUEST(["Create vehicle request"])
+            SELECT_LOCATION(["Select Sri Lankan locations"])
+            CALCULATE_ROUTE(["Calculate driving route"])
+            TRACK_REQUEST(["Track personal requests"])
+            CANCEL_REQUEST(["Cancel eligible request"])
+            ATTACH_FILE(["Upload request attachment"])
+        end
+
+        subgraph REVIEWS["Recommendation and Approval Workflow"]
+            DEPT_REVIEW(["Review department requests"])
+            DEPT_RECOMMEND(["Recommend or reject<br/>department request"])
+            DEPUTY_RECOMMEND(["Review and submit<br/>deputy recommendation"])
+            SENIOR_RECOMMEND(["Review and submit<br/>senior recommendation"])
+            FINAL_DECISION(["Give final approval<br/>or rejection"])
+        end
+
+        subgraph ALLOCATION["Resource Allocation"]
+            VIEW_RESOURCES(["View eligible vehicles<br/>and drivers"])
+            ALLOCATE(["Allocate vehicle and driver"])
+            REALLOCATE(["Reallocate vehicle and driver"])
+            CHECK_CONFLICTS(["Check capacity, availability,<br/>and schedule conflicts"])
+        end
+
+        subgraph OPERATIONS["Driver Operations"]
+            VIEW_SCHEDULE(["View journey schedule"])
+            VIEW_ASSIGNED_VEHICLE(["View assigned vehicle"])
+            START_JOURNEY(["Start journey"])
+            COMPLETE_JOURNEY(["Complete journey"])
+            VIEW_HISTORY(["View trip history"])
+            REPORT_ISSUE(["Report vehicle issue"])
+        end
+
+        subgraph FLEET["Fleet Management"]
+            MANAGE_VEHICLES(["Register and update vehicles"])
+            MANAGE_IMAGES(["Manage vehicle images"])
+            MANAGE_DRIVERS(["Manage driver records"])
+            MANAGE_FUEL(["Manage fuel records"])
+            MANAGE_SERVICE(["Manage service records"])
+            MANAGE_REPAIRS(["Manage repair records"])
+            REVIEW_ISSUES(["Review vehicle issue reports"])
+            VIEW_FLEET(["View fleet and driver records"])
+        end
+
+        subgraph ADMIN["System Administration"]
+            MANAGE_USERS(["Register and manage users"])
+            MANAGE_DEPARTMENTS(["Manage departments"])
+        end
+
+        subgraph REPORTING["Reporting and Monitoring"]
+            EXECUTIVE_DASHBOARD(["View executive dashboard"])
+            VIEW_ANALYTICS(["View fleet analytics"])
+            EXPORT_REPORTS(["Generate PDF reports"])
+            VIEW_APPROVED(["View approved journeys"])
+        end
+    end
+
+    %% Employee interactions
+    EMP --> LOGIN
+    EMP --> PROFILE
+    EMP --> NOTIFICATIONS
+    EMP --> CREATE_REQUEST
+    EMP --> TRACK_REQUEST
+    EMP --> CANCEL_REQUEST
+
+    %% Department Officer interactions
+    DEPT --> LOGIN
+    DEPT --> PROFILE
+    DEPT --> NOTIFICATIONS
+    DEPT --> CREATE_REQUEST
+    DEPT --> TRACK_REQUEST
+    DEPT --> DEPT_REVIEW
+    DEPT --> DEPT_RECOMMEND
+
+    %% Subject Officer interactions
+    SUBJECT --> LOGIN
+    SUBJECT --> PROFILE
+    SUBJECT --> NOTIFICATIONS
+    SUBJECT --> MANAGE_VEHICLES
+    SUBJECT --> MANAGE_IMAGES
+    SUBJECT --> MANAGE_DRIVERS
+    SUBJECT --> MANAGE_FUEL
+    SUBJECT --> MANAGE_SERVICE
+    SUBJECT --> MANAGE_REPAIRS
+    SUBJECT --> REVIEW_ISSUES
+    SUBJECT --> VIEW_ANALYTICS
+    SUBJECT --> EXPORT_REPORTS
+    SUBJECT --> VIEW_APPROVED
+
+    %% Deputy Secretary interactions
+    DEPUTY --> LOGIN
+    DEPUTY --> PROFILE
+    DEPUTY --> NOTIFICATIONS
+    DEPUTY --> CREATE_REQUEST
+    DEPUTY --> DEPUTY_RECOMMEND
+    DEPUTY --> VIEW_RESOURCES
+    DEPUTY --> ALLOCATE
+    DEPUTY --> REALLOCATE
+    DEPUTY --> REVIEW_ISSUES
+    DEPUTY --> VIEW_FLEET
+    DEPUTY --> MANAGE_USERS
+    DEPUTY --> MANAGE_DEPARTMENTS
+    DEPUTY --> EXECUTIVE_DASHBOARD
+    DEPUTY --> VIEW_APPROVED
+
+    %% Senior Deputy Secretary interactions
+    SENIOR --> LOGIN
+    SENIOR --> PROFILE
+    SENIOR --> NOTIFICATIONS
+    SENIOR --> SENIOR_RECOMMEND
+    SENIOR --> FINAL_DECISION
+    SENIOR --> VIEW_FLEET
+    SENIOR --> EXECUTIVE_DASHBOARD
+
+    %% Secretary interactions
+    SECRETARY --> LOGIN
+    SECRETARY --> PROFILE
+    SECRETARY --> NOTIFICATIONS
+    SECRETARY --> FINAL_DECISION
+    SECRETARY --> VIEW_FLEET
+    SECRETARY --> EXECUTIVE_DASHBOARD
+
+    %% Driver interactions
+    DRIVER --> LOGIN
+    DRIVER --> PROFILE
+    DRIVER --> NOTIFICATIONS
+    DRIVER --> CREATE_REQUEST
+    DRIVER --> TRACK_REQUEST
+    DRIVER --> VIEW_SCHEDULE
+    DRIVER --> VIEW_ASSIGNED_VEHICLE
+    DRIVER --> START_JOURNEY
+    DRIVER --> COMPLETE_JOURNEY
+    DRIVER --> VIEW_HISTORY
+    DRIVER --> REPORT_ISSUE
+
+    %% Include and extend relationships
+    CREATE_REQUEST -. includes .-> SELECT_LOCATION
+    CREATE_REQUEST -. includes .-> CALCULATE_ROUTE
+    CREATE_REQUEST -. optionally includes .-> ATTACH_FILE
+    ALLOCATE -. includes .-> VIEW_RESOURCES
+    ALLOCATE -. includes .-> CHECK_CONFLICTS
+    REALLOCATE -. includes .-> CHECK_CONFLICTS
+    START_JOURNEY -. uses .-> VIEW_SCHEDULE
+    COMPLETE_JOURNEY -. uses .-> VIEW_SCHEDULE
+    REPORT_ISSUE -. extends active journey .-> START_JOURNEY
+
+    %% External integrations
+    SELECT_LOCATION --> MAPS
+    CALCULATE_ROUTE --> MAPS
+    NOTIFICATIONS --> PUSH
+
+    %% Diagram styling
+    classDef actor fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#0c4a6e;
+    classDef external fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+
+    style VMS fill:#f8fafc,stroke:#1e3a8a,stroke-width:3px
+    style ACCESS fill:#eff6ff,stroke:#60a5fa
+    style REQUESTS fill:#ecfdf5,stroke:#34d399
+    style REVIEWS fill:#fefce8,stroke:#eab308
+    style ALLOCATION fill:#fff7ed,stroke:#f97316
+    style OPERATIONS fill:#f5f3ff,stroke:#8b5cf6
+    style FLEET fill:#f0fdfa,stroke:#14b8a6
+    style ADMIN fill:#fdf2f8,stroke:#ec4899
+    style REPORTING fill:#f8fafc,stroke:#64748b
+```
+
+**Figure 6.1: Use-case diagram for the VMS-GOV system.**
+
+## 6.2 High-level architecture
 
 ```mermaid
 flowchart LR
@@ -394,7 +591,7 @@ flowchart LR
 
 The browser is responsible for presentation and user interaction. The Laravel API is authoritative for validation, authorization, workflow transitions, route calculation, and persistence. This prevents a user from gaining permission merely by changing frontend state or navigating to a hidden page.
 
-## 6.2 Request workflow design
+## 6.3 Request workflow design
 
 The recommendation stage has alternative branches rather than a single sequence for every requester.
 
@@ -416,7 +613,7 @@ flowchart TD
     J -->|Vehicle issue| L[Issue state and report]
 ```
 
-## 6.3 Data model
+## 6.4 Data model
 
 The principal entities are:
 
@@ -443,7 +640,7 @@ erDiagram
 
 Some relationships, such as department membership, are represented by the implemented schema and application conventions rather than every line in this conceptual diagram.
 
-## 6.4 API design
+## 6.5 API design
 
 The API is organized by domain and role:
 
@@ -461,7 +658,7 @@ The API is organized by domain and role:
 
 Responses generally use a consistent structure containing `success`, `message`, and `data`. HTTP status codes distinguish authentication failure, authorization failure, hidden resources, validation/state errors, and successful operations.
 
-## 6.5 UI and navigation design
+## 6.6 UI and navigation design
 
 The UI uses shared layout components with role-aware sidebars and protected routes. Each role receives only the navigation required for its work. Forms use labels, validation feedback, loading indicators, empty states, and confirmation feedback. Shared utilities provide date/time formatting, driver mapping, PDF export, and Sri Lankan map-boundary behavior.
 
