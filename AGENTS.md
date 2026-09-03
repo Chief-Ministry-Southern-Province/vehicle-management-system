@@ -73,6 +73,7 @@ Important locations:
 - `backend/tests/Feature/`: workflow and authorization regression tests.
 - `.github/workflows/ci.yml`: CI; currently lints/builds the frontend on pushes and PRs to `main`/`develop`. The backend job is currently commented out.
 - `SYSTEM_ARCHITECTURE.md`: complete implemented system architecture, including diagrams, layer boundaries, data flows, deployment topology, and representative code patterns.
+- `ROLE_DEPENDENT_VEHICLE_REQUEST_WORKFLOW.md`: role-routing matrix and end-to-end request, recommendation, allocation, final-decision, driver, cancellation, issue, and notification workflow reference.
 
 Do not confuse `backend/resources/js` and `backend/vite.config.js` (Laravel scaffold assets) with the production React SPA in `frontend/`.
 
