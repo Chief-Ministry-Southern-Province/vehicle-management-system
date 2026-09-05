@@ -112,7 +112,7 @@ function App() {
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
             <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
             <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />)} />
-            <Route path="/fuelanalysis" element={withAuth(<FuelAnalysis />)} />
+            <Route path="/fuelanalysis" element={withAuth(<FuelAnalysis />, ["deputy_secretary"])} />
             <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 
