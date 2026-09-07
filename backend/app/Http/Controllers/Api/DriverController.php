@@ -216,6 +216,9 @@ class DriverController extends Controller
             'destination_latitude' => $group->count() === 1 ? $trip->destination_latitude : null,
             'destination_longitude' => $group->count() === 1 ? $trip->destination_longitude : null,
             'distance_km' => $group->count() === 1 ? $trip->distance_km : null,
+            'round_trip_distance_km' => $group->count() === 1 && $trip->distance_km !== null
+                ? round((float) $trip->distance_km * 2, 2)
+                : null,
             'route_geometry' => $group->count() === 1 ? $trip->route_geometry : null,
             'requester_name' => $trip->requester_name,
             'passenger_count' => $consolidated['passenger_count'],

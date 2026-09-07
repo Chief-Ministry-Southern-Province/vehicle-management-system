@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Driver;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
+use App\Rules\WithinSriLanka;
 use App\Services\WorkflowNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -904,10 +905,10 @@ class VehicleRequestController extends Controller
             'purpose' => ['required', 'string', 'max:255'],
             'starting_location' => ['required', 'string', 'max:255'],
             'starting_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'starting_longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'starting_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('starting_latitude'))],
             'destination' => ['required', 'string', 'max:255'],
             'destination_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'destination_longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'destination_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('destination_latitude'))],
             'departure_at' => ['required', 'date'],
             'expected_return_at' => ['required', 'date', 'after:departure_at'],
             'passenger_count' => ['required', 'integer', 'min:1', 'max:100'],
@@ -1002,9 +1003,9 @@ class VehicleRequestController extends Controller
     {
         $validated = $request->validate([
             'starting_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'starting_longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'starting_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('starting_latitude'))],
             'destination_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'destination_longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'destination_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('destination_latitude'))],
         ]);
 
         try {
@@ -1026,7 +1027,7 @@ class VehicleRequestController extends Controller
     {
         $validated = $request->validate([
             'latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'longitude' => ['required', 'numeric', 'between:79.5,82'],
+            'longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('latitude'))],
             'language' => ['nullable', 'in:en,si,ta'],
         ]);
 

@@ -72,6 +72,8 @@ Important locations:
 - `backend/database/seeders/`: demo users, vehicles, and drivers.
 - `backend/tests/Feature/`: workflow and authorization regression tests.
 - `.github/workflows/ci.yml`: CI; currently lints/builds the frontend on pushes and PRs to `main`/`develop`. The backend job is currently commented out.
+- `SYSTEM_ARCHITECTURE.md`: complete implemented system architecture, including diagrams, layer boundaries, data flows, deployment topology, and representative code patterns.
+- `ROLE_DEPENDENT_VEHICLE_REQUEST_WORKFLOW.md`: role-routing matrix and end-to-end request, recommendation, allocation, final-decision, driver, cancellation, issue, and notification workflow reference.
 
 Do not confuse `backend/resources/js` and `backend/vite.config.js` (Laravel scaffold assets) with the production React SPA in `frontend/`.
 
@@ -187,7 +189,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 - Senior review: `GET /senior-recommendations/vehicle-requests[/{id}]`; `PATCH /senior-recommendations/vehicle-requests/{id}`.
 - Final decisions: `GET /final-approvals/vehicle-requests[/{id}]`; `PATCH .../{id}/approve|reject`.
 - Operational lists: `GET /approved-journeys`, `/recommended-requests`, `/dashboard/executive-stats` with route-specific roles.
-- Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`. Scheduled-journey payloads include the saved start/end locations, coordinates, authoritative route distance/geometry, and per-request route data for consolidated journeys.
+- Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`. Scheduled-journey payloads include the saved start/end locations, coordinates, authoritative route distance/geometry, a derived `round_trip_distance_km` equal to twice the authoritative one-way distance, and per-request route data for consolidated journeys.
 - Issue review: `GET /issue-reports`.
 - Fleet: `GET /vehicles`, `/vehicles/id/{id}`, `/vehicles/{registration_number}`, `/drivers`, `/drivers/{driver_id}`; subject officer also has `POST /vehicles`, `POST /vehicles/{registration_number}`, and driver `POST|PUT|DELETE` operations.
 
@@ -206,10 +208,11 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
 - Vehicle-request text searches use the configurable client-side `VITE_GEOCODING_API_URL` endpoint with results restricted to Sri Lanka (`countrycodes=lk`). Deliberate map selections call the authenticated `GET /vehicle-requests/reverse-geocode` endpoint, which uses the server-side `GEOCODING_REVERSE_API_URL` service to return a readable address without browser CORS restrictions; coordinates remain the fallback when reverse geocoding fails. The defaults are the public OpenStreetMap Nominatim search and reverse endpoints; configure an identifying `GEOCODING_USER_AGENT`, preserve attribution, and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
-- The driver dashboard's Scheduled Journeys cards present the full operational assignment: requester/purpose, schedule, passengers, start/end locations, authoritative distance and road geometry, vehicle, parking location, status, and available trip actions. Consolidated journeys expose route details per member request rather than inventing an inaccurate combined distance.
+- The driver dashboard's Scheduled Journeys cards present the full operational assignment: requester/purpose, schedule, passengers, start/end locations, authoritative distance and road geometry, vehicle, parking location, status, and available trip actions. Each normal journey also shows journey kilometers as the derived round-trip distance (`distance_km * 2`). Consolidated journeys expose route and round-trip distance details per member request rather than inventing an inaccurate combined distance.
 - The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data. The shared map renderer measures its actual container dimensions so tiles, route paths, and markers remain geometrically aligned at mobile and desktop sizes; do not restore fixed-canvas scaling. Keep mobile map controls compact and preserve OpenStreetMap attribution.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - The daily journey schedule lists the complete driver directory in Driver ID order, including drivers with no approved journey on the selected day, while placing approved journeys on their corresponding driver rows.
+- The deputy secretary Fuel Analysis screen lists completed trips with their vehicle request number, vehicle registration number, driver number, requester, purpose, route, completion time, and an estimated completed journey distance calculated as twice the authoritative one-way `distance_km`.
 - The deputy secretary vehicle-details screen revalidates vehicle data when opened, every minute, and whenever the page regains focus or visibility. Its selected image must always be reconciled with the latest `image_urls` response so deleted fleet images disappear from both the gallery and header preview.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Laravel applies the configured CORS policy to ordinary API responses and reapplies it to API errors rendered from failures raised before the normal CORS middleware can run. This lets allowed frontend origins read the real HTTP error status/body. Production `FRONTEND_URL` must exactly match the deployed SPA origin, without a trailing slash.
@@ -232,6 +235,7 @@ Treat these as one end-to-end data contract. If any field changes, inspect the m
 Required behavior:
 
 - The client may preview a route, but request submission sends location labels/coordinates only; the backend independently calculates and persists distance, duration, and geometry.
+- The shared map displays Sri Lanka's territorial outline, shades the surrounding area, constrains navigation to the Sri Lanka view, and accepts selectable points only inside the local boundary polygon. The backend applies the same territorial check to request submission, route preview, and reverse-geocoding coordinates; the latitude/longitude bounding box alone is not sufficient.
 - Detail, recommendation, final-approval, and driver screens must display `starting_location` and `destination` explicitly. When a label is absent but valid coordinates exist, display a coordinate fallback; never coerce null coordinates into `0.000000`.
 - The driver scheduled-journey API must include the canonical route fields for a normal journey. Consolidated payloads must include route fields for each member request and must not claim a fabricated combined distance or geometry.
 - Driver maps are read-only. Zooming, panning, or recentering must never mutate request data.

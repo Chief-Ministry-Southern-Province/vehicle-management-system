@@ -63,6 +63,9 @@ class VehicleRequest extends Model
                 'destination_latitude' => $request->destination_latitude,
                 'destination_longitude' => $request->destination_longitude,
                 'distance_km' => $request->distance_km,
+                'round_trip_distance_km' => $request->distance_km === null
+                    ? null
+                    : round((float) $request->distance_km * 2, 2),
                 'route_geometry' => $request->route_geometry,
                 'departure_at' => $request->departure_at->toISOString(),
                 'expected_return_at' => $request->expected_return_at->toISOString(),
