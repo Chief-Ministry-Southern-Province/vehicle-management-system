@@ -14,6 +14,7 @@ function JourneyCard({ trip }) {
   const isCancelled = status === "cancelled";
   const vehicleName = [trip.vehicle?.make, trip.vehicle?.model].filter(Boolean).join(" ");
   const distance = trip.actual_distance_km != null ? `${Number(trip.actual_distance_km).toFixed(2)} km` : t("odometer.notRecorded");
+  const allocatedDistance = trip.round_trip_distance_km != null ? `${Number(trip.round_trip_distance_km).toFixed(2)} km` : t("odometer.notRecorded");
 
   return <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-slate-200/70">
     <div className="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -23,7 +24,12 @@ function JourneyCard({ trip }) {
     <dl className="grid gap-3 px-5 pt-4 text-sm sm:grid-cols-2">{["start", "end"].map((stage) => <div key={stage}><dt className="text-slate-500">{t(`odometer.${stage}`)}</dt><dd className="font-semibold text-slate-800">{trip[`${stage}_odometer_km`] == null ? t("odometer.notRecorded") : `${Number(trip[`${stage}_odometer_km`]).toFixed(2)} km`}</dd></div>)}</dl>
     <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_13rem]">
       <div><div className="relative space-y-4 before:absolute before:bottom-4 before:left-[7px] before:top-4 before:w-px before:bg-slate-200"><div className="relative flex gap-3"><span className="mt-1.5 h-4 w-4 shrink-0 rounded-full border-4 border-blue-100 bg-blue-600" /><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">From</p><p className="truncate text-sm font-semibold text-slate-700">{trip.starting_location || "Starting location not recorded"}</p></div></div><div className="relative flex gap-3"><span className="mt-1.5 h-4 w-4 shrink-0 rounded-full border-4 border-emerald-100 bg-emerald-600" /><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">To</p><p className="truncate text-sm font-semibold text-slate-700">{trip.destination || "Destination not recorded"}</p></div></div></div>
-        <div className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 sm:grid-cols-3"><Fact icon={CalendarDays} label="Journey date" value={formatLocalDate(trip.departure_at)} /><Fact icon={Clock3} label={isCancelled ? "Cancelled" : "Completed"} value={formatLocalTime(isCancelled ? trip.cancelled_at : trip.journey_completed_at)} /><Fact icon={Route} label={t("odometer.actual")} value={distance} extra="col-span-2 sm:col-span-1" /></div>
+        <div className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 xl:grid-cols-4">
+          <Fact icon={CalendarDays} label="Journey date" value={formatLocalDate(trip.departure_at)} />
+          <Fact icon={Clock3} label={isCancelled ? "Cancelled" : "Completed"} value={formatLocalTime(isCancelled ? trip.cancelled_at : trip.journey_completed_at)} />
+          <Fact icon={Route} label={t("odometer.allocated")} value={allocatedDistance} />
+          <Fact icon={Route} label={t("odometer.actual")} value={distance} />
+        </div>
       </div>
       <aside className="rounded-xl bg-slate-50 p-4 lg:border-l lg:border-slate-100 lg:bg-transparent lg:pl-5"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Assignment</p><p className="mt-2 text-sm font-bold text-slate-800">{trip.vehicle?.registration_number || "Vehicle not assigned"}</p>{vehicleName && <p className="mt-0.5 text-xs text-slate-500">{vehicleName}</p>}<div className="mt-4 flex items-center gap-2 text-sm text-slate-600"><UsersRound size={16} className="text-slate-400" />{trip.passenger_count || 0} passenger{Number(trip.passenger_count) === 1 ? "" : "s"}</div>{trip.parking_location && <div className="mt-2 flex items-start gap-2 text-sm text-slate-600"><MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" /><span>{trip.parking_location}</span></div>}</aside>
     </div>

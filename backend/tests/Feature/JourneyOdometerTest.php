@@ -82,4 +82,22 @@ class JourneyOdometerTest extends TestCase
         $this->actingAs($user)->patchJson($url, $payload)->assertForbidden();
         $this->assertNull($trip->fresh()->start_odometer_km);
     }
+
+    public function test_fuel_analysis_receives_the_same_actual_distance_as_driver_history(): void
+    {
+        [$driver, $trip] = $this->assignment();
+        $trip->update([
+            'approved_at' => now(), 'status' => 'completed', 'journey_status' => 'completed',
+            'journey_completed_at' => now(), 'start_odometer_km' => 125000, 'end_odometer_km' => 125100,
+        ]);
+        $this->actingAs($driver)->getJson('/api/driver/trip-history')->assertOk()
+            ->assertJsonPath('data.trips.0.actual_distance_km', 100);
+        $deputy = User::factory()->create(['role' => 'deputy_secretary']);
+        $this->actingAs($deputy)->getJson('/api/approved-journeys')->assertOk()
+            ->assertJsonPath('data.requests.0.actual_distance_km', 100)
+            ->assertJsonPath('data.requests.0.distance_km', 10);
+        $trip->update(['start_odometer_km' => null, 'end_odometer_km' => null]);
+        $this->getJson('/api/approved-journeys')->assertOk()
+            ->assertJsonPath('data.requests.0.actual_distance_km', null);
+    }
 }

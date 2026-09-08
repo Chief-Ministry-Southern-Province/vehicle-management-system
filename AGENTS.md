@@ -215,8 +215,9 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data. The shared map renderer measures its actual container dimensions so tiles, route paths, and markers remain geometrically aligned at mobile and desktop sizes; do not restore fixed-canvas scaling. Keep mobile map controls compact and preserve OpenStreetMap attribution.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
 - Driver dashboard journey cards require meter readings before submitting start/completion and show the saved starting reading during travel. Completion displays actual distance traveled; trip history shows both readings and actual distance, with missing legacy readings shown as not recorded. `/driverdashboard` and `/tripshistory` explicitly restrict client access to the driver role.
+- Driver trip history also displays allocated distance (round trip) from the API's `round_trip_distance_km` beside actual distance traveled. This is twice the request's authoritative one-way route distance, not its odometer distance; missing allocated distances display as not recorded.
 - The daily journey schedule lists the complete driver directory in Driver ID order, including drivers with no approved journey on the selected day, while placing approved journeys on their corresponding driver rows.
-- The deputy secretary Fuel Analysis screen lists completed trips with their vehicle request number, vehicle registration number, driver number, requester, purpose, route, completion time, and an estimated completed journey distance calculated as twice the authoritative one-way `distance_km`.
+- The deputy secretary Fuel Analysis screen lists completed trips with their vehicle request number, vehicle registration number, driver number, requester, purpose, route, completion time, and the server-derived `actual_distance_km`, matching driver trip history. Missing meter readings display as not recorded and are excluded from the distance total; zero distances remain valid. The total counts consolidated requests with the same vehicle, driver, start/completion timestamps, and meter readings once. Planned `distance_km` is preserved and is not substituted for actual mileage.
 - The deputy secretary vehicle-details screen revalidates vehicle data when opened, every minute, and whenever the page regains focus or visibility. Its selected image must always be reconciled with the latest `image_urls` response so deleted fleet images disappear from both the gallery and header preview.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
 - Laravel applies the configured CORS policy to ordinary API responses and reapplies it to API errors rendered from failures raised before the normal CORS middleware can run. This lets allowed frontend origins read the real HTTP error status/body. Production `FRONTEND_URL` must exactly match the deployed SPA origin, without a trailing slash.
@@ -278,6 +279,7 @@ Quality commands:
 # frontend/
 npm run lint
 npm run build
+node --test tests/journeyDistance.test.js
 
 # backend/
 composer test
