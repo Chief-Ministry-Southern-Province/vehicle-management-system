@@ -227,7 +227,7 @@ export default function FuelAnalysis() {
                           {vehicle?.registration_number || "Not assigned"}
                         </td>
                         <td className="px-5 py-4 font-semibold">{driver?.full_name || t("odometer.notRecorded")}</td>
-                        <td className="min-w-64 px-5 py-4">{locationLabel(journey, "starting", t)} - {locationLabel(journey, "destination", t)}</td>
+                        <td className="min-w-64 px-5 py-4">{locationLabel(journey, "starting", t, true)} - {locationLabel(journey, "destination", t, true)}</td>
                         <td className="whitespace-nowrap px-5 py-4 text-right font-bold text-blue-700">{formatDistance(allocatedJourneyDistance(journey))}</td>
                         <td className="whitespace-nowrap px-5 py-4 text-right">
                           <p className="font-bold text-emerald-700">
@@ -259,9 +259,9 @@ export default function FuelAnalysis() {
   );
 }
 
-function locationLabel(journey, prefix, t) {
+function locationLabel(journey, prefix, t, short = false) {
   const label = prefix === "starting" ? journey.starting_location : journey.destination;
-  if (label) return label;
+  if (label) return short ? label.split(",")[0].trim() : label;
   const lat = journey[`${prefix}_latitude`], lng = journey[`${prefix}_longitude`];
   return lat != null && lng != null && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
     ? `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}` : t("odometer.notRecorded");
