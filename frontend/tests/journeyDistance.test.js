@@ -1,0 +1,22 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { actualJourneyDistance, totalActualJourneyDistance } from "../src/utils/journeyDistance.js";
+
+test("completed journey uses actual distance without doubling the planned route", () => {
+  assert.equal(actualJourneyDistance({ actual_distance_km: 100, distance_km: 42 }), 100);
+  assert.equal(actualJourneyDistance({ actual_distance_km: 0, distance_km: 42 }), 0);
+  assert.equal(actualJourneyDistance({ actual_distance_km: null, distance_km: 42 }), null);
+  assert.equal(actualJourneyDistance({ distance_km: 42 }), null);
+});
+
+test("total counts a consolidated vehicle journey once and preserves missing readings", () => {
+  const shared = { allocated_vehicle_id: 1, allocated_driver_id: 2,
+    journey_started_at: "2026-09-08T09:00:00Z", journey_completed_at: "2026-09-08T10:00:00Z",
+    start_odometer_km: 125000, end_odometer_km: 125100, actual_distance_km: 100 };
+  assert.equal(totalActualJourneyDistance([{ ...shared, id: 1 }, { ...shared, id: 2 },
+    { ...shared, id: 3, allocated_vehicle_id: 3 }, { id: 4, distance_km: 20 }]), 200);
+  assert.equal(totalActualJourneyDistance([{ id: 1, actual_distance_km: 0 }]), 0);
+  assert.equal(totalActualJourneyDistance([{ id: 1, distance_km: 20 }]), null);
+  assert.equal(totalActualJourneyDistance([{ id: 1, actual_distance_km: 0.1 },
+    { id: 2, actual_distance_km: 0.2 }]), 0.3);
+});

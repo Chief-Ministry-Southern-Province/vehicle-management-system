@@ -9,20 +9,10 @@ import {
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { formatLocalDateTime } from "../../utils/dateTime";
+import { actualJourneyDistance, totalActualJourneyDistance } from "../../utils/journeyDistance";
+import { useLanguage } from "../../context/useLanguage";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-
-const estimatedCompletedDistance = (journey) => {
-  const oneWayDistance = Number(journey.distance_km);
-  return journey.distance_km == null || !Number.isFinite(oneWayDistance)
-    ? null
-    : oneWayDistance * 2;
-};
-
-const formatDistance = (distance) =>
-  distance == null
-    ? "Not available"
-    : `${distance.toLocaleString(undefined, { maximumFractionDigits: 2 })} km`;
 
 function SummaryCard({ icon, label, value, detail }) {
   return (
@@ -44,6 +34,10 @@ function SummaryCard({ icon, label, value, detail }) {
 }
 
 export default function FuelAnalysis() {
+  const { t } = useLanguage();
+  const formatDistance = (distance) => distance == null
+    ? t("odometer.notRecorded")
+    : `${distance.toFixed(2)} km`;
   const [journeys, setJourneys] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -103,14 +97,8 @@ export default function FuelAnalysis() {
   }, [journeys, search]);
 
   const summary = useMemo(() => {
-    const distances = journeys
-      .map(estimatedCompletedDistance)
-      .filter((distance) => distance != null);
-
     return {
-      totalDistance: distances.length
-        ? distances.reduce((total, distance) => total + distance, 0)
-        : null,
+      totalDistance: totalActualJourneyDistance(journeys),
       vehicles: new Set(
         journeys
           .map((journey) => journey.allocated_vehicle?.registration_number)
@@ -135,7 +123,7 @@ export default function FuelAnalysis() {
             Fuel Analysis
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Review completed trips and their estimated round-trip distances.
+            {t("odometer.reviewCompleted")}
           </p>
         </header>
 
@@ -151,9 +139,9 @@ export default function FuelAnalysis() {
           />
           <SummaryCard
             icon={<FiMapPin size={21} />}
-            label="Total estimated distance"
+            label={t("odometer.totalActual")}
             value={formatDistance(summary.totalDistance)}
-            detail="Estimated round-trip kilometers"
+            detail={t("odometer.totalDetail")}
           />
           <SummaryCard
             icon={<FiTruck size={21} />}
@@ -220,7 +208,7 @@ export default function FuelAnalysis() {
                     <th className="px-5 py-3 font-semibold">Journey Route</th>
                     <th className="px-5 py-3 font-semibold">Completed At</th>
                     <th className="px-5 py-3 text-right font-semibold">
-                      Estimated Completed Journey Distance
+                      {t("odometer.actual")}
                     </th>
                   </tr>
                 </thead>
@@ -262,10 +250,10 @@ export default function FuelAnalysis() {
                         </td>
                         <td className="whitespace-nowrap px-5 py-4 text-right">
                           <p className="font-bold text-emerald-700">
-                            {formatDistance(estimatedCompletedDistance(journey))}
+                            {formatDistance(actualJourneyDistance(journey))}
                           </p>
                           <p className="mt-1 text-xs text-slate-500">
-                            Estimated round trip from saved one-way route distance
+                            {t("odometer.calculation")}
                           </p>
                         </td>
                       </tr>

@@ -366,7 +366,8 @@ Final rejection records `status = rejected`, `rejected_by`, and `rejected_at`. W
 
 ```json
 {
-  "action": "start"
+  "action": "start",
+  "start_odometer_km": 12500.25
 }
 ```
 
@@ -414,17 +415,21 @@ The request must be assigned to that driver, be finally approved, not be complet
 
 ```json
 {
-  "action": "complete"
+  "action": "complete",
+  "end_odometer_km": 12542.75
 }
 ```
 
 Every request in the consolidated group must currently be `ongoing` or `issue`. Completion atomically sets:
+
+Meter readings are required in kilometers, nonnegative, and limited to two decimal places. The ending reading must be at least the saved starting reading. The starting reading cannot be edited after start; a legacy ongoing/issue journey without one must supply `start_odometer_km` at completion. `actual_distance_km` is calculated on the server as end minus start (42.50 km in this example), independently of the planned route distance. Consolidated requests share the whole journey's readings; their actual distances must not be summed as separate vehicle journeys. Driver trip history displays the readings and actual distance, or not recorded for older records without readings.
 
 | Field | Value |
 | --- | --- |
 | Request `status` | `completed` |
 | Request `journey_status` | `completed` |
 | `journey_completed_at` | Current UTC timestamp |
+| `end_odometer_km` | Submitted final meter reading |
 
 The driver's allocation is cleared only if no other active journey needs it. The vehicle becomes `unavailable`, `scheduled_trip`, or `available` according to its remaining journeys.
 

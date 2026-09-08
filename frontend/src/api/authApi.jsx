@@ -168,9 +168,9 @@ export const getDriverTripHistory = async () => {
   } catch (error) { throw error.response?.data || error.message; }
 };
 
-export const updateDriverJourneyStatus = async (journeyId, action) => {
+export const updateDriverJourneyStatus = async (journeyId, action, readings = {}) => {
   try {
-    const response = await API.patch(`/driver/journeys/${journeyId}/status`, { action }, {
+    const response = await API.patch(`/driver/journeys/${journeyId}/status`, { action, ...readings }, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

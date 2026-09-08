@@ -488,7 +488,7 @@ class DriverRegistrationTest extends TestCase
                 ->assertJsonPath('data.trips.0.status', 'Issue');
 
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$ongoing->id}/status", [
-                'action' => 'complete',
+                'action' => 'complete', 'start_odometer_km' => 1000, 'end_odometer_km' => 1042.75,
             ])->assertOk()
                 ->assertJsonPath('data.trip.status', 'Completed')
                 ->assertJsonPath('data.driver_status', 'available');
@@ -499,7 +499,7 @@ class DriverRegistrationTest extends TestCase
             ]);
 
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
-                'action' => 'start',
+                'action' => 'start', 'start_odometer_km' => 1000,
             ])->assertOk()
                 ->assertJsonPath('data.trip.status', 'Ongoing')
                 ->assertJsonPath('data.driver_status', 'ongoing_trip');
@@ -510,7 +510,7 @@ class DriverRegistrationTest extends TestCase
             ]);
 
             $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$future->id}/status", [
-                'action' => 'complete',
+                'action' => 'complete', 'start_odometer_km' => 1000, 'end_odometer_km' => 1042.75,
             ])->assertOk()
                 ->assertJsonPath('data.trip.status', 'Completed')
                 ->assertJsonPath('data.driver_status', 'available');
@@ -584,12 +584,18 @@ class DriverRegistrationTest extends TestCase
             ->assertJsonPath('data.vehicle_request.consolidated_journey.expected_return_at', '2026-08-06T12:45:00.000000Z')
             ->assertJsonCount(2, 'data.vehicle_request.consolidated_journey.requests');
 
-        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'start'])->assertOk();
+        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'start', 'start_odometer_km' => 1000])->assertOk()
+            ->assertJsonPath('data.trip.is_consolidated', true)->assertJsonCount(2, 'data.trip.requests');
         $this->assertDatabaseHas('vehicle_requests', ['id' => $first->id, 'journey_status' => 'ongoing']);
         $this->assertDatabaseHas('vehicle_requests', ['id' => $second->id, 'journey_status' => 'ongoing']);
 
-        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'complete'])->assertOk();
+        $this->actingAs($driverUser)->patchJson("/api/driver/journeys/{$first->id}/status", ['action' => 'complete', 'end_odometer_km' => 1042.75])->assertOk();
         $this->assertDatabaseHas('vehicle_requests', ['id' => $first->id, 'status' => 'completed', 'journey_status' => 'completed']);
         $this->assertDatabaseHas('vehicle_requests', ['id' => $second->id, 'status' => 'completed', 'journey_status' => 'completed']);
+        foreach ([$first, $second] as $member) {
+            $this->assertSame(1000.0, $member->fresh()->start_odometer_km);
+            $this->assertSame(1042.75, $member->fresh()->end_odometer_km);
+            $this->assertSame(42.75, $member->fresh()->actual_distance_km);
+        }
     }
 }

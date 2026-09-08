@@ -11,6 +11,46 @@ export const translations = {
 };
 
 Object.assign(translations.en, {
+  "odometer.reviewCompleted": "Review completed trips and their actual distance traveled.",
+  "odometer.totalActual": "Total actual distance",
+  "odometer.totalDetail": "Recorded journeys only; shared journeys counted once",
+  "odometer.calculation": "Ending meter reading minus starting meter reading",
+  "odometer.start": "Starting meter reading (km)",
+  "odometer.end": "Ending meter reading (km)",
+  "odometer.actual": "Actual distance traveled",
+  "odometer.allocated": "Allocated distance (round trip)",
+  "odometer.notRecorded": "Not recorded",
+  "odometer.missingStart": "This journey has no starting reading. Enter the reading recorded before departure to complete it.",
+  "odometer.shared": "These readings apply to the whole consolidated journey and are saved for each included request.",
+});
+Object.assign(translations.si, {
+  "odometer.reviewCompleted": "අවසන් කළ ගමන් සහ ගමන් කළ සැබෑ දුර සමාලෝචනය කරන්න.",
+  "odometer.totalActual": "මුළු සැබෑ දුර",
+  "odometer.totalDetail": "කියවීම් ඇති ගමන් පමණි; ඒකාබද්ධ ගමන් එක් වරක් ගණනය කෙරේ",
+  "odometer.calculation": "අවසාන මීටර් කියවීමෙන් ආරම්භක මීටර් කියවීම අඩු කිරීම",
+  "odometer.start": "ආරම්භක මීටර් කියවීම (කි.මී.)",
+  "odometer.end": "අවසාන මීටර් කියවීම (කි.මී.)",
+  "odometer.actual": "ගමන් කළ සැබෑ දුර",
+  "odometer.allocated": "වෙන් කළ දුර (යාම සහ ආපසු ඒම)",
+  "odometer.notRecorded": "සටහන් කර නැත",
+  "odometer.missingStart": "මෙම ගමනේ ආරම්භක කියවීමක් නැත. ගමන අවසන් කිරීමට පිටත් වීමට පෙර සටහන් කළ කියවීම ඇතුළත් කරන්න.",
+  "odometer.shared": "මෙම කියවීම් සම්පූර්ණ ඒකාබද්ධ ගමනට අදාළ වන අතර ඇතුළත් සෑම ඉල්ලීමකටම සුරැකේ.",
+});
+Object.assign(translations.ta, {
+  "odometer.reviewCompleted": "முடிக்கப்பட்ட பயணங்களையும் பயணித்த உண்மையான தூரத்தையும் பார்வையிடவும்.",
+  "odometer.totalActual": "மொத்த உண்மையான தூரம்",
+  "odometer.totalDetail": "அளவீடுள்ள பயணங்கள் மட்டும்; இணைந்த பயணங்கள் ஒருமுறை கணக்கிடப்படும்",
+  "odometer.calculation": "இறுதி மீட்டர் அளவீட்டிலிருந்து தொடக்க மீட்டர் அளவீட்டைக் கழித்தல்",
+  "odometer.start": "தொடக்க மீட்டர் அளவீடு (கி.மீ.)",
+  "odometer.end": "இறுதி மீட்டர் அளவீடு (கி.மீ.)",
+  "odometer.actual": "பயணித்த உண்மையான தூரம்",
+  "odometer.allocated": "ஒதுக்கப்பட்ட தூரம் (இருவழிப் பயணம்)",
+  "odometer.notRecorded": "பதிவு செய்யப்படவில்லை",
+  "odometer.missingStart": "இந்தப் பயணத்தின் தொடக்க அளவீடு இல்லை. பயணத்தை முடிக்க புறப்படுவதற்கு முன் பதிவு செய்த அளவீட்டை உள்ளிடவும்.",
+  "odometer.shared": "இந்த அளவீடுகள் முழு இணைந்த பயணத்திற்கும் பொருந்தும். சேர்க்கப்பட்ட ஒவ்வொரு கோரிக்கைக்கும் சேமிக்கப்படும்.",
+});
+
+Object.assign(translations.en, {
   "notifications.title": "Notifications",
   "notifications.deviceAlertsEnabled": "Device alerts enabled",
   "notifications.enableDeviceAlerts": "Enable alerts when the app is closed",
