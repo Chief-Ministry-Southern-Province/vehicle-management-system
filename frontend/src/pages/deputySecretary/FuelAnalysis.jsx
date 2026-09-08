@@ -233,9 +233,6 @@ export default function FuelAnalysis() {
                           <p className="font-bold text-emerald-700">
                             {formatDistance(actualJourneyDistance(journey))}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {t("odometer.calculation")}
-                          </p>
                         </td>
                         <td className="px-5 py-4"><button type="button" onClick={() => setSelectedJourney(journey)}
                           className="whitespace-nowrap rounded-lg border border-blue-200 px-3 py-2 font-semibold text-blue-700 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">
