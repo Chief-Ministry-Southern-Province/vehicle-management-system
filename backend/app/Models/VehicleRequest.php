@@ -83,7 +83,7 @@ class VehicleRequest extends Model
     }
     use HasFactory;
 
-    protected $appends = ['attachment_url'];
+    protected $appends = ['attachment_url', 'actual_distance_km'];
 
     protected $fillable = [
         'user_id',
@@ -107,6 +107,8 @@ class VehicleRequest extends Model
         'status',
         'journey_status',
         'journey_started_at',
+        'start_odometer_km',
+        'end_odometer_km',
         'journey_completed_at',
         'cancelled_at',
         'cancelled_by',
@@ -140,6 +142,8 @@ class VehicleRequest extends Model
             'destination_latitude' => 'float',
             'destination_longitude' => 'float',
             'distance_km' => 'float',
+            'start_odometer_km' => 'float',
+            'end_odometer_km' => 'float',
             'route_duration_seconds' => 'integer',
             'route_geometry' => 'array',
             'departure_at' => 'datetime',
@@ -204,6 +208,13 @@ class VehicleRequest extends Model
     public function rejector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    public function getActualDistanceKmAttribute(): ?float
+    {
+        return $this->start_odometer_km !== null && $this->end_odometer_km !== null
+            ? round($this->end_odometer_km - $this->start_odometer_km, 2)
+            : null;
     }
 
     public function getAttachmentUrlAttribute(): ?string

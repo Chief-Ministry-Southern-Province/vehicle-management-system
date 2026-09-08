@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use App\Models\VehicleRequest;
 use App\Services\WorkflowNotificationService;
 
@@ -226,6 +227,9 @@ class DriverController extends Controller
             'parking_location' => $trip->parking_location,
             'status' => $status,
             'journey_status' => $trip->journey_status,
+            'start_odometer_km' => $trip->start_odometer_km,
+            'end_odometer_km' => $trip->end_odometer_km,
+            'actual_distance_km' => $trip->actual_distance_km,
             'journey_started_at' => $trip->journey_started_at?->toISOString(),
             'journey_completed_at' => $trip->journey_completed_at?->toISOString(),
             'cancelled_at' => $trip->cancelled_at?->toISOString(),
@@ -249,6 +253,8 @@ class DriverController extends Controller
 
         $validated = $request->validate([
             'action' => ['required', Rule::in(['start', 'complete'])],
+            'start_odometer_km' => [Rule::requiredIf($request->input('action') === 'start' || $vehicleRequest->start_odometer_km === null), 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'end_odometer_km' => ['required_if:action,complete', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
         ]);
 
         if ($validated['action'] === 'start') {
@@ -257,7 +263,8 @@ class DriverController extends Controller
                 return response()->json(['success' => false, 'message' => 'Only a scheduled journey can be started.'], 422);
             }
 
-            DB::transaction(function () use ($vehicleRequest): void {
+            DB::transaction(function () use ($vehicleRequest, $driver, $validated): void {
+                Driver::query()->lockForUpdate()->findOrFail($driver->id);
                 $lockedRequest = VehicleRequest::query()
                     ->lockForUpdate()
                     ->findOrFail($vehicleRequest->id);
@@ -266,9 +273,14 @@ class DriverController extends Controller
                     : null;
 
                 $group = $lockedRequest->consolidatedRequests();
+                if ($lockedRequest->status !== 'approved' || $lockedRequest->allocated_driver_id !== $driver->id ||
+                    $group->contains(fn (VehicleRequest $trip) => $trip->journey_status !== 'scheduled')) {
+                    throw ValidationException::withMessages(['action' => 'Only a scheduled journey can be started.']);
+                }
                 VehicleRequest::query()->whereKey($group->pluck('id'))->update([
                     'journey_status' => 'ongoing',
                     'journey_started_at' => now(),
+                    'start_odometer_km' => $validated['start_odometer_km'],
                 ]);
 
                 $vehicle?->update(['status' => 'unavailable']);
@@ -279,20 +291,33 @@ class DriverController extends Controller
                 return response()->json(['success' => false, 'message' => 'Start the journey before completing it.'], 422);
             }
 
-            DB::transaction(function () use ($vehicleRequest, $driver): void {
+            DB::transaction(function () use ($vehicleRequest, $driver, $validated): void {
+                $lockedDriver = Driver::query()->lockForUpdate()->findOrFail($driver->id);
                 $lockedRequest = VehicleRequest::query()
                     ->lockForUpdate()
                     ->findOrFail($vehicleRequest->id);
-                $lockedDriver = Driver::query()->lockForUpdate()->findOrFail($driver->id);
                 $vehicle = $lockedRequest->allocated_vehicle_id
                     ? Vehicle::query()->lockForUpdate()->find($lockedRequest->allocated_vehicle_id)
                     : null;
 
                 $group = $lockedRequest->consolidatedRequests();
+                if ($lockedRequest->status !== 'approved' || $lockedRequest->allocated_driver_id !== $driver->id ||
+                    $group->contains(fn (VehicleRequest $trip) => ! in_array($trip->journey_status, ['ongoing', 'issue'], true))) {
+                    throw ValidationException::withMessages(['action' => 'Start the journey before completing it.']);
+                }
+                $startReading = $lockedRequest->start_odometer_km ?? $validated['start_odometer_km'];
+                if (isset($validated['start_odometer_km']) && (float) $validated['start_odometer_km'] !== (float) $startReading) {
+                    throw ValidationException::withMessages(['start_odometer_km' => 'The starting meter reading cannot be changed.']);
+                }
+                if ($validated['end_odometer_km'] < $startReading) {
+                    throw ValidationException::withMessages(['end_odometer_km' => 'The ending meter reading must be at least the starting reading.']);
+                }
                 VehicleRequest::query()->whereKey($group->pluck('id'))->update([
                     'status' => 'completed',
                     'journey_status' => 'completed',
                     'journey_completed_at' => now(),
+                    'start_odometer_km' => $startReading,
+                    'end_odometer_km' => $validated['end_odometer_km'],
                 ]);
 
                 $driverHasAnotherJourney = VehicleRequest::query()
@@ -339,7 +364,7 @@ class DriverController extends Controller
             'success' => true,
             'message' => $validated['action'] === 'start' ? 'Trip started.' : 'Trip completed.',
             'data' => [
-                'trip' => $this->tripPayload($vehicleRequest->fresh()->load('allocatedVehicle')),
+                'trip' => $this->tripPayload($vehicleRequest->fresh()->load('allocatedVehicle'), $vehicleRequest->fresh()->consolidatedRequests()),
                 'driver_status' => $driver->fresh()->status,
             ],
         ]);

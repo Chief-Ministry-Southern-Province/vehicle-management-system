@@ -125,8 +125,8 @@ function App() {
             <Route path="/secretarydashboard" element={withAuth(<SecretaryDashboard />)} />
 
             
-            <Route path="/driverdashboard" element={withAuth(<DriverDashboard />)} />
-            <Route path="/tripshistory" element={withAuth(<TripsHistory />)} />
+            <Route path="/driverdashboard" element={withAuth(<DriverDashboard />, ["driver"])} />
+            <Route path="/tripshistory" element={withAuth(<TripsHistory />, ["driver"])} />
             <Route path="/reportvehicle" element={withAuth(<ReportVehicle />, ["driver"])} />
 
 

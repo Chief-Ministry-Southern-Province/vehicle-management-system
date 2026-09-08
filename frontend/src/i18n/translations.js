@@ -11,6 +11,31 @@ export const translations = {
 };
 
 Object.assign(translations.en, {
+  "odometer.start": "Starting meter reading (km)",
+  "odometer.end": "Ending meter reading (km)",
+  "odometer.actual": "Actual distance traveled",
+  "odometer.notRecorded": "Not recorded",
+  "odometer.missingStart": "This journey has no starting reading. Enter the reading recorded before departure to complete it.",
+  "odometer.shared": "These readings apply to the whole consolidated journey and are saved for each included request.",
+});
+Object.assign(translations.si, {
+  "odometer.start": "ආරම්භක මීටර් කියවීම (කි.මී.)",
+  "odometer.end": "අවසාන මීටර් කියවීම (කි.මී.)",
+  "odometer.actual": "ගමන් කළ සැබෑ දුර",
+  "odometer.notRecorded": "සටහන් කර නැත",
+  "odometer.missingStart": "මෙම ගමනේ ආරම්භක කියවීමක් නැත. ගමන අවසන් කිරීමට පිටත් වීමට පෙර සටහන් කළ කියවීම ඇතුළත් කරන්න.",
+  "odometer.shared": "මෙම කියවීම් සම්පූර්ණ ඒකාබද්ධ ගමනට අදාළ වන අතර ඇතුළත් සෑම ඉල්ලීමකටම සුරැකේ.",
+});
+Object.assign(translations.ta, {
+  "odometer.start": "தொடக்க மீட்டர் அளவீடு (கி.மீ.)",
+  "odometer.end": "இறுதி மீட்டர் அளவீடு (கி.மீ.)",
+  "odometer.actual": "பயணித்த உண்மையான தூரம்",
+  "odometer.notRecorded": "பதிவு செய்யப்படவில்லை",
+  "odometer.missingStart": "இந்தப் பயணத்தின் தொடக்க அளவீடு இல்லை. பயணத்தை முடிக்க புறப்படுவதற்கு முன் பதிவு செய்த அளவீட்டை உள்ளிடவும்.",
+  "odometer.shared": "இந்த அளவீடுகள் முழு இணைந்த பயணத்திற்கும் பொருந்தும். சேர்க்கப்பட்ட ஒவ்வொரு கோரிக்கைக்கும் சேமிக்கப்படும்.",
+});
+
+Object.assign(translations.en, {
   "notifications.title": "Notifications",
   "notifications.deviceAlertsEnabled": "Device alerts enabled",
   "notifications.enableDeviceAlerts": "Enable alerts when the app is closed",

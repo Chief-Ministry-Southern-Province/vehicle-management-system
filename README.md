@@ -9,6 +9,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 - Allocate or reallocate eligible vehicles and drivers with capacity and schedule-conflict checks.
 - Record final approval or rejection with actor and timestamp auditing.
 - Give drivers schedules, journey controls, trip history, assigned-vehicle details, and issue reporting.
+- Record vehicle meter readings in kilometers at journey start and completion, and calculate actual distance traveled as the ending reading minus the starting reading. Trip history retains both readings; consolidated requests share the whole journey's readings.
 - Maintain vehicle and driver directories, compliance data, images, service, repair, and fuel records.
 - Provide role-specific and executive dashboards, analytics, and PDF exports.
 - Manage users, departments, profiles, passwords, and account status.

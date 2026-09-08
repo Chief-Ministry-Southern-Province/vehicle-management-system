@@ -138,6 +138,7 @@ Key workflow rules enforced by the backend and covered by tests include:
 - trip departure and expected-return timestamps are immutable after creation;
 - operational times are stored in UTC and displayed using the configured local timezone (`Asia/Colombo` by default);
 - completed trips release/update vehicle and driver operational state;
+- starting a scheduled journey requires `start_odometer_km`; completing an ongoing or issue journey requires `end_odometer_km` at least equal to its saved start. Readings are nonnegative kilometers with up to two decimal places (maximum 99,999,999.99). Saved starting readings cannot be changed; legacy ongoing/issue trips without a starting reading must supply it at completion. State and readings are saved together under transaction locks;
 - issue reporting moves an active journey into the issue state and creates an auditable report.
 
 ### 4.3 State vocabulary
@@ -170,6 +171,7 @@ Primary domain entities and relationships:
 - `Department`: unique name and optional creating user.
 - `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
+- `VehicleRequest` also stores nullable `start_odometer_km` and `end_odometer_km`. Its server-derived `actual_distance_km` is the ending minus starting reading, or null when either is missing; `distance_km` remains the authoritative planned one-way route distance. Consolidated requests share the whole journey's readings and actual distance, which must not be summed across those member requests.
 - `Driver`: may be assigned to many requests and has JSON current/previous assignment data.
 - `VehicleIssueReport`: belongs to a driver and optionally a vehicle and vehicle request.
 
@@ -191,6 +193,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 - Operational lists: `GET /approved-journeys`, `/recommended-requests`, `/dashboard/executive-stats` with route-specific roles.
 - Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`. Scheduled-journey payloads include the saved start/end locations, coordinates, authoritative route distance/geometry, a derived `round_trip_distance_km` equal to twice the authoritative one-way distance, and per-request route data for consolidated journeys.
 - Issue review: `GET /issue-reports`.
+- Driver journey status actions accept `start_odometer_km` on start and `end_odometer_km` on completion (plus the missing start for legacy trips). Scheduled, status-action, and trip-history payloads expose both readings and `actual_distance_km`.
 - Fleet: `GET /vehicles`, `/vehicles/id/{id}`, `/vehicles/{registration_number}`, `/drivers`, `/drivers/{driver_id}`; subject officer also has `POST /vehicles`, `POST /vehicles/{registration_number}`, and driver `POST|PUT|DELETE` operations.
 
 Use route-model binding keys exactly as declared: vehicle registration number and driver ID are public lookup keys, while some vehicle endpoints accept the numeric ID. Vehicle updates use `POST` to support PHP multipart parsing.
@@ -211,6 +214,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - The driver dashboard's Scheduled Journeys cards present the full operational assignment: requester/purpose, schedule, passengers, start/end locations, authoritative distance and road geometry, vehicle, parking location, status, and available trip actions. Each normal journey also shows journey kilometers as the derived round-trip distance (`distance_km * 2`). Consolidated journeys expose route and round-trip distance details per member request rather than inventing an inaccurate combined distance.
 - The driver dashboard renders persisted route geometry on a read-only OpenStreetMap view; driver map interaction may pan or zoom but must never alter request locations or route data. The shared map renderer measures its actual container dimensions so tiles, route paths, and markers remain geometrically aligned at mobile and desktop sizes; do not restore fixed-canvas scaling. Keep mobile map controls compact and preserve OpenStreetMap attribution.
 - Date/time display should use the shared utilities and `en-LK`/`si-LK`/`ta-LK` locale rather than ad hoc parsing.
+- Driver dashboard journey cards require meter readings before submitting start/completion and show the saved starting reading during travel. Completion displays actual distance traveled; trip history shows both readings and actual distance, with missing legacy readings shown as not recorded. `/driverdashboard` and `/tripshistory` explicitly restrict client access to the driver role.
 - The daily journey schedule lists the complete driver directory in Driver ID order, including drivers with no approved journey on the selected day, while placing approved journeys on their corresponding driver rows.
 - The deputy secretary Fuel Analysis screen lists completed trips with their vehicle request number, vehicle registration number, driver number, requester, purpose, route, completion time, and an estimated completed journey distance calculated as twice the authoritative one-way `distance_km`.
 - The deputy secretary vehicle-details screen revalidates vehicle data when opened, every minute, and whenever the page regains focus or visibility. Its selected image must always be reconciled with the latest `image_urls` response so deleted fleet images disappear from both the gallery and header preview.
