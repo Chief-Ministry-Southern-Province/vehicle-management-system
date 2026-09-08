@@ -86,6 +86,7 @@ const fuelLabels = {
   allocatedDetail: ["Sum of each request's planned round trip", "එක් එක් ඉල්ලීමේ යාම සහ ඒම සඳහා සැලසුම් කළ දුර එකතුව", "ஒவ்வொரு கோரிக்கையின் திட்டமிட்ட இருவழித் தூரத்தின் கூட்டுத்தொகை"],
   filteredTotals: ["Totals for displayed requests", "පෙන්වන ඉල්ලීම්වල එකතුව", "காட்டப்படும் கோரிக்கைகளின் மொத்தம்"],
   driverName: ["Driver Name", "රියදුරු නම", "சாரதி பெயர்"],
+  extraFuel: ["Extra Fuel (L)", "අමතර ඉන්ධන (L)", "கூடுதல் எரிபொருள் (L)"],
   view: ["View more", "තවත් බලන්න", "மேலும் பார்க்க"],
   close: ["Close", "වසන්න", "மூடு"],
   requester: ["Requester", "ඉල්ලුම්කරු", "கோரிக்கையாளர்"],

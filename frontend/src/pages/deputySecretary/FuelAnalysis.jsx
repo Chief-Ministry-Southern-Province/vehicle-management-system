@@ -10,7 +10,7 @@ import {
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance } from "../../utils/journeyDistance";
+import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel } from "../../utils/journeyDistance";
 import { useLanguage } from "../../context/useLanguage";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
@@ -211,6 +211,7 @@ export default function FuelAnalysis() {
                     <th className="px-5 py-3 font-semibold">Journey Route</th>
                     <th className="px-5 py-3 text-right font-semibold">{t("odometer.allocated")}</th>
                     <th className="px-5 py-3 text-right font-semibold">{t("odometer.actual")}</th>
+                    <th className="px-5 py-3 text-right font-semibold">{t("fuel.extraFuel")}</th>
                     <th className="px-5 py-3 font-semibold">{t("nav.details")}</th>
                   </tr>
                 </thead>
@@ -218,6 +219,7 @@ export default function FuelAnalysis() {
                   {filteredJourneys.map((journey) => {
                     const vehicle = journey.allocated_vehicle;
                     const driver = journey.allocated_driver;
+                    const extraFuel = extraJourneyFuel(journey);
                     return (
                       <tr key={journey.id} className="align-top hover:bg-blue-50/40">
                         <td className="whitespace-nowrap px-5 py-4 font-bold text-blue-700">
@@ -234,6 +236,9 @@ export default function FuelAnalysis() {
                             {formatDistance(actualJourneyDistance(journey))}
                           </p>
                         </td>
+                        <td className="whitespace-nowrap px-5 py-4 text-right font-semibold">
+                          {extraFuel == null ? t("odometer.notRecorded") : `${extraFuel.toFixed(2)} L`}
+                        </td>
                         <td className="px-5 py-4"><button type="button" onClick={() => setSelectedJourney(journey)}
                           className="whitespace-nowrap rounded-lg border border-blue-200 px-3 py-2 font-semibold text-blue-700 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">
                           {t("fuel.view")}</button></td>
@@ -244,7 +249,7 @@ export default function FuelAnalysis() {
                 <tfoot className="border-t border-slate-200 bg-blue-50 font-bold"><tr>
                   <th colSpan={4} className="px-5 py-4">{t("fuel.filteredTotals")}</th>
                   <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalAllocatedJourneyDistance(filteredJourneys))}</td>
-                  <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalActualJourneyDistance(filteredJourneys))}</td><td />
+                  <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalActualJourneyDistance(filteredJourneys))}</td><td /><td />
                 </tr></tfoot>
               </table>
             </div>

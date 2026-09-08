@@ -32,6 +32,16 @@ export const allocatedJourneyDistance = (journey) => {
   return Number.isFinite(distance) && distance >= 0 ? Math.round(distance * 200) / 100 : null;
 };
 
+// Fuel Analysis uses the requested distance difference times stored efficiency.
+export const extraJourneyFuel = (journey) => {
+  const actual = actualJourneyDistance(journey);
+  const allocated = allocatedJourneyDistance(journey);
+  const efficiency = Number(journey.allocated_vehicle?.fuel_efficiency);
+  if (actual == null || allocated == null || !Number.isFinite(efficiency) || efficiency <= 0) return null;
+  const fuel = (actual - allocated) * efficiency;
+  return Number.isFinite(fuel) ? fuel : null;
+};
+
 // Each request retains its own planned round trip, including consolidated members.
 export const totalAllocatedJourneyDistance = (journeys) => {
   const distances = journeys.map(allocatedJourneyDistance).filter(value => value != null);
