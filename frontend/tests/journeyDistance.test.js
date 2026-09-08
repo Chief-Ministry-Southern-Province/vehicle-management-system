@@ -20,3 +20,17 @@ test("total counts a consolidated vehicle journey once and preserves missing rea
   assert.equal(totalActualJourneyDistance([{ id: 1, actual_distance_km: 0.1 },
     { id: 2, actual_distance_km: 0.2 }]), 0.3);
 });
+
+import { allocatedJourneyDistance, totalAllocatedJourneyDistance } from "../src/utils/journeyDistance.js";
+
+test("allocated mileage doubles planned routes, preserves zero, and excludes missing values", () => {
+  assert.equal(allocatedJourneyDistance({ distance_km: "42.75", actual_distance_km: 100 }), 85.5);
+  assert.equal(allocatedJourneyDistance({ distance_km: 0 }), 0);
+  for (const value of [null, undefined, "", -1, "invalid"]) {
+    assert.equal(allocatedJourneyDistance({ distance_km: value }), null);
+  }
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 0.1 }, { distance_km: 0.2 }, { distance_km: null }]), 0.6);
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 0 }]), 0);
+  assert.equal(totalAllocatedJourneyDistance([]), null);
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 20 }, { distance_km: 30 }]), 100);
+});

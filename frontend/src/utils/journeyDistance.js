@@ -24,3 +24,16 @@ export const totalActualJourneyDistance = (journeys) => {
   }
   return total == null ? null : total / 100;
 };
+
+export const allocatedJourneyDistance = (journey) => {
+  const value = journey.distance_km;
+  if (value == null || value === "") return null;
+  const distance = Number(value);
+  return Number.isFinite(distance) && distance >= 0 ? Math.round(distance * 200) / 100 : null;
+};
+
+// Each request retains its own planned round trip, including consolidated members.
+export const totalAllocatedJourneyDistance = (journeys) => {
+  const distances = journeys.map(allocatedJourneyDistance).filter(value => value != null);
+  return distances.length ? distances.reduce((sum, value) => sum + Math.round(value * 100), 0) / 100 : null;
+};

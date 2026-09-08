@@ -79,3 +79,40 @@ Object.assign(translations.ta, {
   "notifications.deviceAlertsUnsupported": "இந்த உலாவி சாதன அறிவிப்புகளை ஆதரிக்கவில்லை.",
   "notifications.deviceAlertsError": "சாதன அறிவிப்புகளை இயக்க முடியவில்லை.",
 });
+
+// Fuel Analysis table and journey detail labels.
+const fuelLabels = {
+  totalAllocated: ["Total allocated distance", "මුළු වෙන් කළ දුර", "மொத்த ஒதுக்கப்பட்ட தூரம்"],
+  allocatedDetail: ["Sum of each request's planned round trip", "එක් එක් ඉල්ලීමේ යාම සහ ඒම සඳහා සැලසුම් කළ දුර එකතුව", "ஒவ்வொரு கோரிக்கையின் திட்டமிட்ட இருவழித் தூரத்தின் கூட்டுத்தொகை"],
+  filteredTotals: ["Totals for displayed requests", "පෙන්වන ඉල්ලීම්වල එකතුව", "காட்டப்படும் கோரிக்கைகளின் மொத்தம்"],
+  driverName: ["Driver Name", "රියදුරු නම", "சாரதி பெயர்"],
+  view: ["View more", "තවත් බලන්න", "மேலும் பார்க்க"],
+  close: ["Close", "වසන්න", "மூடு"],
+  requester: ["Requester", "ඉල්ලුම්කරු", "கோரிக்கையாளர்"],
+  department: ["Department", "දෙපාර්තමේන්තුව", "திணைக்களம்"],
+  purpose: ["Purpose", "අරමුණ", "நோக்கம்"],
+  starting: ["Starting location", "ආරම්භක ස්ථානය", "தொடக்க இடம்"],
+  destination: ["Destination", "ගමනාන්තය", "சேருமிடம்"],
+  passengers: ["Passenger count", "මගීන් ගණන", "பயணிகள் எண்ணிக்கை"],
+  passengerNames: ["Passenger names", "මගීන්ගේ නම්", "பயணிகள் பெயர்கள்"],
+  driverId: ["Driver number", "රියදුරු අංකය", "சாரதி எண்"],
+  vehicle: ["Vehicle registration number", "වාහන ලියාපදිංචි අංකය", "வாகனப் பதிவு எண்"],
+  parking: ["Parking location", "නවතා තබන ස්ථානය", "நிறுத்துமிடம்"],
+  recommender: ["Recommended by", "නිර්දේශ කළේ", "பரிந்துரைத்தவர்"],
+  notes: ["Recommendation notes", "නිර්දේශ සටහන්", "பரிந்துரைக் குறிப்புகள்"],
+  allocator: ["Allocated by", "වෙන් කළේ", "ஒதுக்கியவர்"],
+  approver: ["Approved by", "අනුමත කළේ", "அனுமதித்தவர்"],
+  departure_at: ["Departure", "පිටත්වීම", "புறப்பாடு"],
+  expected_return_at: ["Expected return", "අපේක්ෂිත ආපසු පැමිණීම", "எதிர்பார்க்கப்படும் திரும்புதல்"],
+  journey_started_at: ["Journey started", "ගමන ආරම්භ කළ වේලාව", "பயணம் தொடங்கிய நேரம்"],
+  journey_completed_at: ["Journey completed", "ගමන අවසන් කළ වේලාව", "பயணம் முடிந்த நேரம்"],
+  recommended_at: ["Recommended at", "නිර්දේශ කළ වේලාව", "பரிந்துரைத்த நேரம்"],
+  allocated_at: ["Allocated at", "වෙන් කළ වේලාව", "ஒதுக்கிய நேரம்"],
+  approved_at: ["Approved at", "අනුමත කළ වේලාව", "அனுமதித்த நேரம்"],
+  reallocated_at: ["Reallocated at", "නැවත වෙන් කළ වේලාව", "மீண்டும் ஒதுக்கிய நேரம்"],
+  reallocation: ["Reallocation reason", "නැවත වෙන් කිරීමට හේතුව", "மீண்டும் ஒதுக்கிய காரணம்"],
+  attachment: ["View attachment", "ඇමුණුම බලන්න", "இணைப்பைப் பார்க்க"],
+};
+for (const [key, labels] of Object.entries(fuelLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`fuel.${key}`] = labels[index]; });
+}
