@@ -42,6 +42,13 @@ export const extraJourneyFuel = (journey) => {
   return Number.isFinite(fuel) ? fuel : null;
 };
 
+// Total the Extra Fuel column for the supplied request rows.
+export const totalExtraJourneyFuel = (journeys) => {
+  const values = journeys.map(extraJourneyFuel).filter(value => value != null);
+  // Sum the displayed two-decimal row values, including negative differences.
+  return values.length ? values.reduce((sum, value) => sum + Math.round(Number(value.toFixed(2)) * 100), 0) / 100 : null;
+};
+
 // Each request retains its own planned round trip, including consolidated members.
 export const totalAllocatedJourneyDistance = (journeys) => {
   const distances = journeys.map(allocatedJourneyDistance).filter(value => value != null);

@@ -9,7 +9,7 @@ import {
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
-import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel } from "../../utils/journeyDistance";
+import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel, totalExtraJourneyFuel } from "../../utils/journeyDistance";
 import { useLanguage } from "../../context/useLanguage";
 import { filterFuelJourneys } from "../../utils/fuelJourneyFilters";
 
@@ -102,6 +102,8 @@ export default function FuelAnalysis() {
       ).size,
     };
   }, [journeys]);
+
+  const totalExtraFuel = totalExtraJourneyFuel(filteredJourneys);
 
   return (
     <DashboardLayout>
@@ -249,7 +251,8 @@ export default function FuelAnalysis() {
                 <tfoot className="border-t border-slate-200 bg-blue-50 font-bold"><tr>
                   <th colSpan={4} className="px-5 py-4">{t("fuel.filteredTotals")}</th>
                   <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalAllocatedJourneyDistance(filteredJourneys))}</td>
-                  <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalActualJourneyDistance(filteredJourneys))}</td><td /><td />
+                  <td className="whitespace-nowrap px-5 py-4 text-right">{formatDistance(totalActualJourneyDistance(filteredJourneys))}</td>
+                  <td className="whitespace-nowrap px-5 py-4 text-right">{totalExtraFuel == null ? t("odometer.notRecorded") : `${totalExtraFuel.toFixed(2)} L`}</td><td />
                 </tr></tfoot>
               </table>
             </div>

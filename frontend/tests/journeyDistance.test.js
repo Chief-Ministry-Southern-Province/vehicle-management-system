@@ -21,7 +21,17 @@ test("total counts a consolidated vehicle journey once and preserves missing rea
     { id: 2, actual_distance_km: 0.2 }]), 0.3);
 });
 
-import { allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel } from "../src/utils/journeyDistance.js";
+import { allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel, totalExtraJourneyFuel } from "../src/utils/journeyDistance.js";
+
+test("extra fuel totals sum displayed values and preserve negatives, zero, and missing data", () => {
+  const row = (actual) => ({ distance_km: 5, actual_distance_km: actual, allocated_vehicle: { fuel_efficiency: 0.25 } });
+  assert.equal(totalExtraJourneyFuel([row(20), row(8), row(null)]), 2);
+  assert.equal(totalExtraJourneyFuel([row(10)]), 0);
+  assert.equal(totalExtraJourneyFuel([row(8)]), -0.5);
+  assert.equal(totalExtraJourneyFuel([row(10.03), row(10.03)]), 0.02);
+  assert.equal(totalExtraJourneyFuel([row(null), {}]), null);
+  assert.equal(totalExtraJourneyFuel([]), null);
+});
 
 test("extra fuel uses the assigned vehicle efficiency and allocated round trip", () => {
   const journey = { distance_km: "40", actual_distance_km: "100", allocated_vehicle: { fuel_efficiency: "0.25" } };
