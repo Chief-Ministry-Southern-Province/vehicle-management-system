@@ -1,17 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  FiArrowRight,
   FiCheckCircle,
   FiClock,
   FiFileText,
-  FiMapPin,
   FiSearch,
-  FiUsers,
   FiXCircle,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../context/useLanguage";
+import RequestOverview from "../../components/deputySecretary/approvalWorkspace/RequestOverview";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { getApprovalVehicleRequests } from "../../api/authApi";
+import { getApprovalVehicleRequest, getApprovalVehicleRequests } from "../../api/authApi";
 import { formatLocalDateTime } from "../../utils/dateTime";
 const statusStyle = {
   approved: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
@@ -23,6 +21,68 @@ const statusStyle = {
   completed: "bg-cyan-50 text-cyan-700 ring-1 ring-inset ring-cyan-200",
   cancelled: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
 };
+
+function recordLocation(request, prefix, t) {
+  const label = prefix === "starting" ? request.starting_location : request.destination;
+  if (label) return label;
+  const lat = request[`${prefix}_latitude`], lng = request[`${prefix}_longitude`];
+  return lat != null && lng != null && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
+    ? `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}` : t("odometer.notRecorded");
+}
+
+function ApprovalRecordDetails({ id, onClose }) {
+  const { t } = useLanguage();
+  const dialog = useRef(null);
+  const [request, setRequest] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const element = dialog.current;
+    element.showModal();
+    let active = true;
+    getApprovalVehicleRequest(id).then(response => {
+      if (!response?.data?.vehicle_request) throw new Error(t("approvalRecords.loadError"));
+      if (active) setRequest(response.data.vehicle_request);
+    }).catch(err => { if (active) setError(err?.message || t("approvalRecords.loadError")); });
+    return () => { active = false; element.close(); };
+  }, [id, t]);
+  const r = request;
+  const fields = r ? [
+    [t("fuel.requester"), r.requester_name || r.user?.name],
+    [t("approvalRecords.employeeId"), r.user?.employee_id],
+    [t("fuel.department"), r.user?.department],
+    [t("approvalRecords.status"), r.status],
+    ...["recommendation_status", "department_priority", "journey_status", "rejected_by", "cancelled_by"]
+      .map(key => [t(`approvalRecords.${key}`), r[key]]),
+    [t("fuel.recommender"), r.recommender?.name], [t("fuel.notes"), r.recommendation_notes],
+    [t("fuel.vehicle"), r.allocated_vehicle?.registration_number],
+    [t("approvalRecords.vehicleModel"), [r.allocated_vehicle?.make, r.allocated_vehicle?.model].filter(Boolean).join(" ")],
+    [t("fuel.driverName"), r.allocated_driver?.full_name], [t("fuel.driverId"), r.allocated_driver?.driver_id],
+    [t("approvalRecords.driverContact"), r.allocated_driver?.contact_number],
+    [t("fuel.parking"), r.parking_location], [t("fuel.allocator"), r.allocator?.name], [t("fuel.approver"), r.approver?.name],
+    [t("fuel.reallocation"), r.reallocation_reason], [t("approvalRecords.reallocator"), r.reallocator?.name],
+    [t("approvalRecords.previousVehicle"), r.previous_allocated_vehicle?.registration_number],
+    [t("approvalRecords.previousDriver"), r.previous_allocated_driver?.full_name],
+    ...["created_at", "updated_at", "cancelled_at", "rejected_at"].map(key => [t(`approvalRecords.${key}`), formatLocalDateTime(r[key], t("odometer.notRecorded"))]),
+    ...["recommended_at", "allocated_at", "approved_at", "reallocated_at", "journey_started_at", "journey_completed_at"]
+      .map(key => [t(`fuel.${key}`), formatLocalDateTime(r[key], t("odometer.notRecorded"))]),
+    ...[["start", r.start_odometer_km], ["end", r.end_odometer_km], ["actual", r.actual_distance_km]]
+      .map(([key, value]) => [t(`odometer.${key}`), value == null ? null : `${Number(value).toFixed(2)} km`]),
+  ] : [];
+  return <dialog ref={dialog} onCancel={onClose} aria-labelledby="approval-record-title"
+    className="fixed inset-0 m-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-5xl overflow-y-auto rounded-2xl bg-white p-5 shadow-xl backdrop:bg-slate-950/50">
+    <header className="mb-5 flex items-center justify-between gap-3">
+      <h2 id="approval-record-title" className="text-lg font-bold">REQ-{String(id).padStart(4, "0")} — {t("nav.details")}</h2>
+      <button type="button" onClick={onClose} className="rounded-lg border px-4 py-2 focus-visible:ring-2">{t("fuel.close")}</button>
+    </header>
+    {error ? <p role="alert" className="p-5 text-red-700">{error}</p> : !r ? <p role="status">{t("approvalRecords.loading")}</p> : <>
+      <RequestOverview request={r} />
+      <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{fields.map(([label, value]) => <div key={label} className="min-w-0">
+        <dt className="text-xs font-semibold text-slate-500">{label}</dt>
+        <dd className="mt-1 break-words whitespace-pre-wrap text-sm">{value == null || value === "" ? t("odometer.notRecorded") : String(value)}</dd>
+      </div>)}</dl>
+    </>}
+  </dialog>;
+}
 function StatCard({ icon, label, value, tone, accent }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -47,7 +107,8 @@ function StatCard({ icon, label, value, tone, accent }) {
   );
 }
 export default function TotalApprovals() {
-  const navigate = useNavigate();
+  const { t } = useLanguage();
+  const [selectedRequest, setSelectedRequest] = useState(null);
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({
     all: 0,
@@ -189,150 +250,37 @@ export default function TotalApprovals() {
               </select>
             </div>
           </div>
-          <div className="divide-y divide-slate-100 lg:hidden">
-            {!loading && !error && visibleRequests.map((request) => (
-              <article key={request.id} className="p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0"><p className="text-xs font-bold tracking-wide text-blue-700">REQ-{String(request.id).padStart(4, "0")}</p><p className="mt-1 truncate text-sm font-bold text-slate-900">{request.requester_name || request.user?.name || "Requester not recorded"}</p><p className="mt-0.5 text-xs text-slate-500">{request.user?.department || "Department not recorded"}</p></div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize ${statusStyle[request.status] || "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200"}`}>{request.status?.replaceAll("_", " ")}</span>
-                </div>
-                <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3"><p className="text-sm font-semibold text-slate-800">{request.purpose || "Purpose not provided"}</p><p className="mt-2 flex items-start gap-2 text-xs leading-5 text-slate-600"><FiMapPin className="mt-0.5 shrink-0 text-blue-600" /><span>{request.starting_location || "Starting location not provided"} <span className="mx-1 text-blue-500" aria-hidden="true">→</span> {request.destination || "Destination not provided"}</span></p></div>
-                <div className="mt-4 flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3 text-xs text-slate-500"><span className="inline-flex items-center gap-1"><FiUsers />{request.passenger_count || 0} pax</span><span className="truncate">{formatLocalDateTime(request.departure_at)}</span></div><button type="button" onClick={() => navigate(`/approval/${request.id}`)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition active:scale-95" aria-label={`View request REQ-${String(request.id).padStart(4, "0")}`}><FiArrowRight /></button></div>
-              </article>
-            ))}
-            {loading && <div className="p-10 text-center text-sm text-slate-500"><FiClock className="mx-auto mb-2 animate-pulse text-xl text-blue-500" />Loading approval records...</div>}
-            {!loading && error && <div className="bg-red-50 p-5 text-center text-sm text-red-700">{error}</div>}
-            {!loading && !error && visibleRequests.length === 0 && <div className="p-10 text-center text-sm text-slate-500">No approval records found.</div>}
-          </div>
-          <div className="hidden overflow-x-auto lg:block">
-            <table className="w-full min-w-[1500px]">
-              <thead className="border-b border-slate-200 bg-slate-50 text-left text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500">
-                <tr>
-                  <th className="px-5 py-4">Request</th>
-                  <th className="px-5 py-4">Requester</th>
-                  <th className="px-5 py-4">Department</th>
-                  <th className="px-5 py-4">Purpose / Route</th>
-                  <th className="px-5 py-4">Journey</th>
-                  <th className="px-5 py-4">Passengers</th>
-                  <th className="px-5 py-4">Department Recommendation</th>
-                  <th className="px-5 py-4">Priority</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4">Submitted</th>
-                  <th className="px-5 py-4">Action</th>
-                </tr>
-              </thead>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[850px] text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr>
+                {["requestNumber", "requester", "department", "purposeRouteTime", "status", "view"].map(key =>
+                  <th key={key} className="px-5 py-4">{t(`approvalRecords.${key}`)}</th>)}
+              </tr></thead>
               <tbody className="divide-y divide-slate-100">
-                {visibleRequests.map((request) => (
-                  <tr
-                    key={request.id}
-                    className="align-top transition-colors odd:bg-white even:bg-slate-50/40 hover:bg-blue-50/70"
-                  >
-                    <td className="px-5 py-5">
-                      <span className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-100">
-                        REQ-{String(request.id).padStart(4, "0")}
-                      </span>
-                    </td>
-                    <td className="px-5 py-5">
-                      <p className="font-semibold text-slate-900">
-                        {request.requester_name || request.user?.name}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        {request.user?.employee_id || "—"}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 text-sm text-slate-600">
-                      {request.user?.department || "—"}
-                    </td>
-                    <td className="max-w-[260px] px-5 py-5">
-                      <p className="font-semibold text-slate-800">
-                        {request.purpose}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
-                        <span className="max-w-28 truncate">{request.starting_location || "Starting location not provided"}</span>
-                        <span className="shrink-0 text-blue-500" aria-hidden="true">→</span>
-                        <span className="max-w-28 truncate">{request.destination || "Destination not provided"}</span>
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 text-sm text-slate-600">
-                      <p>{formatLocalDateTime(request.departure_at)}</p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        to{" "}
-                        {formatLocalDateTime(request.expected_return_at)}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 text-center text-sm font-bold text-slate-700">
-                      {request.passenger_count}
-                    </td>
-                    <td className="max-w-[260px] px-5 py-5">
-                      <p className="text-sm font-semibold capitalize text-slate-800">
-                        {request.recommendation_status || "pending"}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-                        {request.recommendation_notes || "No notes"}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        {request.recommender?.name || "Not reviewed"}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 text-sm font-semibold capitalize text-slate-700">
-                      {request.department_priority || "Not set"}
-                    </td>
-                    <td className="px-5 py-5">
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold capitalize ${statusStyle[request.status] || "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200"}`}
-                      >
-                        {request.status?.replaceAll("_", " ")}
-                      </span>
-                    </td>
-                    <td className="px-5 py-5 text-sm text-slate-600">
-                      {formatLocalDateTime(request.created_at)}
-                    </td>
-                    <td className="px-5 py-5">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/approval/${request.id}`)}
-                        className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700"
-                      >
-                        View details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {loading && (
-                  <tr>
-                    <td
-                      colSpan={11}
-                      className="p-10 text-center text-sm text-slate-500"
-                    >
-                      Loading approval records...
-                    </td>
-                  </tr>
-                )}
-                {!loading && error && (
-                  <tr>
-                    <td
-                      colSpan={11}
-                      className="bg-red-50 p-5 text-center text-sm text-red-700"
-                    >
-                      {error}
-                    </td>
-                  </tr>
-                )}
-                {!loading && !error && visibleRequests.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={11}
-                      className="p-10 text-center text-sm text-slate-500"
-                    >
-                      No approval records found.
-                    </td>
-                  </tr>
-                )}
+                {!loading && !error && visibleRequests.map(request => <tr key={request.id} className="align-top hover:bg-blue-50/70">
+                  <td className="whitespace-nowrap px-5 py-5 font-bold text-blue-700">REQ-{String(request.id).padStart(4, "0")}</td>
+                  <td className="px-5 py-5 font-semibold">{request.requester_name || request.user?.name || t("odometer.notRecorded")}</td>
+                  <td className="px-5 py-5">{request.user?.department || t("odometer.notRecorded")}</td>
+                  <td className="min-w-72 px-5 py-5">
+                    <p className="font-semibold">{request.purpose || t("odometer.notRecorded")}</p>
+                    <p className="mt-2 text-slate-600">{recordLocation(request, "starting", t)} → {recordLocation(request, "destination", t)}</p>
+                    <p className="mt-2 text-xs text-slate-500">{t("fuel.departure_at")}: {formatLocalDateTime(request.departure_at)}</p>
+                    <p className="mt-1 text-xs text-slate-500">{t("fuel.expected_return_at")}: {formatLocalDateTime(request.expected_return_at)}</p>
+                  </td>
+                  <td className="px-5 py-5"><span className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold capitalize ${statusStyle[request.status] || "bg-slate-100 text-slate-600"}`}>{request.status?.replaceAll("_", " ")}</span></td>
+                  <td className="px-5 py-5"><button type="button" onClick={() => setSelectedRequest(request.id)}
+                    className="rounded-xl bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500">
+                    {t("approvalRecords.view")}</button></td>
+                </tr>)}
+                {loading && <tr><td colSpan={6} className="p-10 text-center text-slate-500">Loading approval records...</td></tr>}
+                {!loading && error && <tr><td colSpan={6} className="p-5 text-center text-red-700">{error}</td></tr>}
+                {!loading && !error && !visibleRequests.length && <tr><td colSpan={6} className="p-10 text-center text-slate-500">No approval records found.</td></tr>}
               </tbody>
             </table>
           </div>
         </section>
       </div>
+      {selectedRequest != null && <ApprovalRecordDetails id={selectedRequest} onClose={() => setSelectedRequest(null)} />}
     </DashboardLayout>
   );
 }

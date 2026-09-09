@@ -125,6 +125,34 @@ const fuelLabels = {
   reallocation: ["Reallocation reason", "නැවත වෙන් කිරීමට හේතුව", "மீண்டும் ஒதுக்கிய காரணம்"],
   attachment: ["View attachment", "ඇමුණුම බලන්න", "இணைப்பைப் பார்க்க"],
 };
+const approvalRecordLabels = {
+  requestNumber: ["Request Number", "ඉල්ලීම් අංකය", "கோரிக்கை எண்"],
+  requester: ["Requester", "ඉල්ලුම්කරු", "கோரிக்கையாளர்"],
+  department: ["Department", "දෙපාර්තමේන්තුව", "திணைக்களம்"],
+  purposeRouteTime: ["Purpose / Route / Date and Time", "අරමුණ / මාර්ගය / දිනය සහ වේලාව", "நோக்கம் / பாதை / திகதி மற்றும் நேரம்"],
+  status: ["Status", "තත්ත්වය", "நிலை"],
+  view: ["View", "බලන්න", "பார்"],
+  employeeId: ["Employee ID", "සේවක අංකය", "பணியாளர் எண்"],
+  loading: ["Loading request details…", "ඉල්ලීම් විස්තර පූරණය වෙමින්…", "கோரிக்கை விவரங்கள் ஏற்றப்படுகின்றன…"],
+  loadError: ["Unable to load request details.", "ඉල්ලීම් විස්තර පූරණය කළ නොහැක.", "கோரிக்கை விவரங்களை ஏற்ற முடியவில்லை."],
+  recommendation_status: ["Recommendation status", "නිර්දේශ තත්ත්වය", "பரிந்துரை நிலை"],
+  department_priority: ["Department priority", "දෙපාර්තමේන්තු ප්‍රමුඛතාව", "திணைக்கள முன்னுரிமை"],
+  journey_status: ["Journey status", "ගමන් තත්ත්වය", "பயண நிலை"],
+  rejected_by: ["Rejected by (user ID)", "ප්‍රතික්ෂේප කළ පරිශීලක අංකය", "நிராகரித்த பயனர் எண்"],
+  cancelled_by: ["Cancelled by (user ID)", "අවලංගු කළ පරිශීලක අංකය", "இரத்துச் செய்த பயனர் எண்"],
+  vehicleModel: ["Vehicle make / model", "වාහන නිෂ්පාදකයා / මාදිලිය", "வாகன தயாரிப்பு / மாதிரி"],
+  driverContact: ["Driver contact", "රියදුරු දුරකථනය", "சாரதி தொடர்பு எண்"],
+  reallocator: ["Reallocated by", "නැවත වෙන් කළේ", "மீண்டும் ஒதுக்கியவர்"],
+  previousVehicle: ["Previous vehicle", "පෙර වාහනය", "முந்தைய வாகனம்"],
+  previousDriver: ["Previous driver", "පෙර රියදුරු", "முந்தைய சாரதி"],
+  created_at: ["Submitted at", "ඉදිරිපත් කළ වේලාව", "சமர்ப்பித்த நேரம்"],
+  updated_at: ["Updated at", "යාවත්කාලීන කළ වේලාව", "புதுப்பித்த நேரம்"],
+  cancelled_at: ["Cancelled at", "අවලංගු කළ වේලාව", "இரத்துச் செய்த நேரம்"],
+  rejected_at: ["Rejected at", "ප්‍රතික්ෂේප කළ වේලාව", "நிராகரித்த நேரம்"],
+};
+for (const [key, labels] of Object.entries(approvalRecordLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`approvalRecords.${key}`] = labels[index]; });
+}
 for (const [key, labels] of Object.entries(fuelLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`fuel.${key}`] = labels[index]; });
 }
