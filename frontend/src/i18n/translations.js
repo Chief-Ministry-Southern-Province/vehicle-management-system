@@ -82,6 +82,9 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  quantityLiters: ["Fuel quantity (L)", "ඉන්ධන ප්‍රමාණය (L)", "எரிபொருள் அளவு (L)"],
+  vehicleQuantityDetail: ["Monthly recorded fuel quantity for the selected vehicle", "තෝරාගත් වාහනයේ මාසික වාර්තාගත ඉන්ධන ප්‍රමාණය", "தேர்ந்தெடுத்த வாகனத்தின் மாதாந்திர பதிவுசெய்யப்பட்ட எரிபொருள் அளவு"],
+  noVehicles: ["No vehicles available", "වාහන නොමැත", "வாகனங்கள் இல்லை"],
   monthlyDistance: ["Monthly distance analysis", "මාසික දුර විශ්ලේෂණය", "மாதாந்திர தூரப் பகுப்பாய்வு"],
   monthlyExtraFuel: ["Monthly Extra Fuel", "මාසික අමතර ඉන්ධන", "மாதாந்திர கூடுதல் எரிபொருள்"],
   month: ["Month", "මාසය", "மாதம்"],

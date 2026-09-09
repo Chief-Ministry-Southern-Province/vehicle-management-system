@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, CartesianGrid, Cell, ComposedChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FiActivity, FiArrowUpRight, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTrendingUp, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
 import { getVehicles } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 import { generateFuelRecordsPdf } from "../../utils/fuelRecordsPdf";
 
 const EMPTY_FILTERS = { search: "", fuelType: "" };
@@ -73,18 +74,17 @@ function MetricCard({ icon, label, value, detail, accent }) {
   );
 }
 
-function FuelChartTooltip({ active, payload, label }) {
+function FuelChartTooltip({ active, payload, label, vehicle }) {
+  const { t } = useLanguage();
   if (!active || !payload?.length) return null;
 
-  const cost = payload.find((item) => item.dataKey === "cost")?.value || 0;
   const liters = payload.find((item) => item.dataKey === "liters")?.value || 0;
 
   return (
     <div className="min-w-52 rounded-xl border border-slate-200 bg-white p-4 text-slate-900 shadow-xl">
-      <p className="text-xs font-bold uppercase tracking-widest text-blue-600">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-widest text-blue-600">{label} · {vehicle}</p>
       <div className="mt-3 space-y-2">
-        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">Total cost</span><strong>{formatCurrency(cost, 2)}</strong></div>
-        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">Consumption</span><strong>{formatNumber(liters, 2)} L</strong></div>
+        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">{t("fuel.quantityLiters")}</span><strong>{formatNumber(liters, 2)} L</strong></div>
       </div>
       <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] text-slate-400">Click to filter records for this month</p>
     </div>
@@ -92,6 +92,9 @@ function FuelChartTooltip({ active, payload, label }) {
 }
 
 export default function FuelManagement() {
+  const { t } = useLanguage();
+  const [vehicles, setVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState("");
   const [logs, setLogs] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [selectedYear, setSelectedYear] = useState(
@@ -129,7 +132,12 @@ export default function FuelManagement() {
             new Date(second.date || 0).getTime() -
             new Date(first.date || 0).getTime(),
         );
-        if (active) setLogs(records);
+        if (active) {
+          setLogs(records);
+          const registrations = vehicles.map(vehicle => vehicle.registration_number).filter(Boolean).sort();
+          setVehicles(registrations);
+          setSelectedVehicle(current => registrations.includes(current) ? current : registrations[0] || "");
+        }
       } catch (loadError) {
         if (active) {
           setError(
@@ -157,9 +165,9 @@ export default function FuelManagement() {
           .includes(search);
       const matchesFuelType =
         !filters.fuelType || log.fuel_type === filters.fuelType;
-      return matchesSearch && matchesFuelType;
+      return log.vehicle === selectedVehicle && matchesSearch && matchesFuelType;
     });
-  }, [filters, logs]);
+  }, [filters, logs, selectedVehicle]);
 
   const yearLogs = useMemo(() => {
     return filteredLogs.filter((log) => {
@@ -317,7 +325,7 @@ export default function FuelManagement() {
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col flex-wrap gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
                 <FiBarChart2 size={20} />
@@ -325,10 +333,19 @@ export default function FuelManagement() {
               <div>
                 <h2 className="font-bold text-slate-900">Monthly Fuel Overview</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  Monthly fuel cost and liters consumed
+                  {t("fuel.vehicleQuantityDetail")}
                 </p>
               </div>
             </div>
+            <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
+              {t("fuel.vehicle")}
+              <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); setSelectedIds(new Set()); }}
+                disabled={!vehicles.length}
+                className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-100">
+                {!vehicles.length && <option value="">{t("fuel.noVehicles")}</option>}
+                {vehicles.map(vehicle => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
+              </select>
+            </label>
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-1 pl-3 text-sm font-semibold text-slate-600 shadow-sm">
               <FiCalendar className="text-blue-600" /> Year
               <select
@@ -375,28 +392,20 @@ export default function FuelManagement() {
                   <CartesianGrid strokeDasharray="4 6" stroke="#e2e8f0" vertical={false} />
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11, fontWeight: 600 }} dy={10} />
                   <YAxis
-                    yAxisId="cost"
-                    tick={{ fill: "#64748b", fontSize: 12 }}
-                    tickFormatter={(value) => `LKR ${Number(value).toLocaleString()}`}
-                    width={90}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
                     yAxisId="liters"
-                    orientation="right"
+                    label={{ value: "L", angle: -90, position: "insideLeft" }}
                     tick={{ fill: "#0891b2", fontSize: 12 }}
                     tickFormatter={(value) => `${value} L`}
                     width={60}
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip content={<FuelChartTooltip />} cursor={{ fill: "#eff6ff", opacity: 0.75 }} />
+                  <Tooltip content={<FuelChartTooltip vehicle={selectedVehicle} />} cursor={{ fill: "#eff6ff", opacity: 0.75 }} />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: 20, fontSize: 12 }} />
                   <Bar
-                    yAxisId="cost"
-                    dataKey="cost"
-                    name="Cost (LKR)"
+                    yAxisId="liters"
+                    dataKey="liters"
+                    name={t("fuel.quantityLiters")}
                     fill="url(#fuelCostGradient)"
                     radius={[8, 8, 2, 2]}
                     cursor="pointer"
@@ -405,15 +414,6 @@ export default function FuelManagement() {
                       <Cell key={entry.monthKey} fill={selectedMonth === entry.monthKey ? "#0f172a" : "url(#fuelCostGradient)"} />
                     ))}
                   </Bar>
-                  <Line
-                    yAxisId="liters"
-                    dataKey="liters"
-                    name="Liters"
-                    stroke="#06b6d4"
-                    strokeWidth={3}
-                    dot={{ r: 3.5, fill: "#ffffff", strokeWidth: 2, cursor: "pointer" }}
-                    activeDot={{ r: 6, fill: "#06b6d4", stroke: "#ffffff", strokeWidth: 3, cursor: "pointer" }}
-                  />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
