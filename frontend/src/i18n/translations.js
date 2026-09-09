@@ -82,6 +82,15 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (L)", "நிரப்பிய எரிபொருள் (L)"],
+  consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (L)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (L)"],
+  consumptionDetail: ["Fuel filled versus actual journey distance × vehicle fuel efficiency, by month", "මාසිකව පිරවූ ඉන්ධන සහ සැබෑ ගමන් දුර × වාහන ඉන්ධන කාර්යක්ෂමතාව", "மாதந்தோறும் நிரப்பிய எரிபொருள் மற்றும் உண்மையான பயணத் தூரம் × வாகன எரிபொருள் திறன்"],
+  monthlyOverview: ["Monthly Fuel Overview", "මාසික ඉන්ධන දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் கண்ணோட்டம்"],
+  monthlyCostOverview: ["Monthly Fuel Cost Overview", "මාසික ඉන්ධන වියදම් දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் செலவுக் கண்ணோட்டம்"],
+  costLkr: ["Fuel cost (LKR)", "ඉන්ධන වියදම (LKR)", "எரிபொருள் செலவு (LKR)"],
+  quantityLiters: ["Fuel quantity (L)", "ඉන්ධන ප්‍රමාණය (L)", "எரிபொருள் அளவு (L)"],
+  vehicleMonthlyDetail: ["Recorded fuel quantity and cost for the selected vehicle and year", "තෝරාගත් වාහනය සහ වර්ෂය සඳහා වාර්තාගත ඉන්ධන ප්‍රමාණය සහ වියදම", "தேர்ந்தெடுத்த வாகனம் மற்றும் ஆண்டிற்கான பதிவுசெய்யப்பட்ட எரிபொருள் அளவும் செலவும்"],
+  noVehicles: ["No vehicles available", "වාහන නොමැත", "வாகனங்கள் இல்லை"],
   monthlyDistance: ["Monthly distance analysis", "මාසික දුර විශ්ලේෂණය", "மாதாந்திர தூரப் பகுப்பாய்வு"],
   monthlyExtraFuel: ["Monthly Extra Fuel", "මාසික අමතර ඉන්ධන", "மாதாந்திர கூடுதல் எரிபொருள்"],
   month: ["Month", "මාසය", "மாதம்"],
