@@ -209,7 +209,7 @@ export default function FuelManagement() {
           .includes(search);
       const matchesFuelType =
         !filters.fuelType || log.fuel_type === filters.fuelType;
-      return log.vehicle === selectedVehicle && matchesSearch && matchesFuelType;
+      return (!selectedVehicle || log.vehicle === selectedVehicle) && matchesSearch && matchesFuelType;
     });
   }, [filters, logs, selectedVehicle]);
 
@@ -391,7 +391,7 @@ export default function FuelManagement() {
               {t("fuel.vehicle")}
               <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); setSelectedIds(new Set()); }}
                 disabled={!vehicles.length} className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:ring-2 focus:ring-blue-100">
-                {!vehicles.length && <option value="">{t("fuel.noVehicles")}</option>}
+                <option value="">{t("fuel.allVehicles")}</option>
                 {vehicles.map(vehicle => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
               </select>
             </label>
@@ -411,15 +411,15 @@ export default function FuelManagement() {
             </label>
           </div>
 
-          <MonthlyFuelChart data={overviewData} vehicle={selectedVehicle} selectedMonth={selectedMonth}
+          <MonthlyFuelChart data={overviewData} vehicle={selectedVehicle || t("fuel.allVehicles")} selectedMonth={selectedMonth}
             onMonthClick={selectChartMonth} loading={loading || journeysLoading} error={error || journeysError} empty={!yearLogs.length && !Object.keys(consumption).length} />        </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <header className="border-b border-slate-200 px-5 py-4">
             <h2 className="font-bold text-slate-900">{t("fuel.monthlyCostOverview")}</h2>
-            <p className="mt-1 text-sm text-slate-500">{selectedVehicle} · {selectedYear}</p>
+            <p className="mt-1 text-sm text-slate-500">{selectedVehicle || t("fuel.allVehicles")} · {selectedYear}</p>
           </header>
-          <MonthlyFuelChart data={monthlyData} vehicle={selectedVehicle} selectedMonth={selectedMonth}
+          <MonthlyFuelChart data={monthlyData} vehicle={selectedVehicle || t("fuel.allVehicles")} selectedMonth={selectedMonth}
             onMonthClick={selectChartMonth} loading={loading} error={error} empty={!yearLogs.length} costOnly />
         </section>
         <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">

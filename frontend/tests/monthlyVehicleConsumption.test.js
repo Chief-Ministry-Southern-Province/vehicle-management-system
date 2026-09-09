@@ -21,3 +21,14 @@ test("consumption preserves zero and missing measurements", () => {
   assert.deepEqual(calculate({ ...trip, allocated_vehicle: { ...trip.allocated_vehicle, fuel_efficiency: null } }), { "2026-06": null });
   assert.deepEqual(calculate({ ...trip, journey_completed_at: null }), {});
 });
+
+test("all vehicles sum each vehicle's own efficiency and keep filters and missing data", () => {
+  const other = { ...trip, id: 3, allocated_vehicle_id: 3,
+    allocated_vehicle: { registration_number: "GV-1002", fuel_type: "petrol", fuel_efficiency: "0.5" } };
+  const rows = [trip, { ...trip, id: 2 }, other];
+  assert.deepEqual(monthlyVehicleConsumption(rows, "", "2026"), { "2026-06": 70 });
+  assert.deepEqual(monthlyVehicleConsumption(rows, "", "2026", { fuelType: "diesel" }), { "2026-06": 20 });
+  assert.deepEqual(monthlyVehicleConsumption(rows, "", "2026", { search: "GV-1002" }), { "2026-06": 50 });
+  assert.deepEqual(monthlyVehicleConsumption([trip, { ...other, actual_distance_km: null }], "", "2026"), { "2026-06": null });
+  assert.deepEqual(monthlyVehicleConsumption([], "", "2026"), {});
+});

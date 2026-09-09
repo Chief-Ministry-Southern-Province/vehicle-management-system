@@ -82,6 +82,7 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  allVehicles: ["All Vehicles", "සියලුම වාහන", "அனைத்து வாகனங்களும்"],
   filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (L)", "நிரப்பிய எரிபொருள் (L)"],
   consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (L)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (L)"],
   consumptionDetail: ["Fuel filled versus actual journey distance × vehicle fuel efficiency, by month", "මාසිකව පිරවූ ඉන්ධන සහ සැබෑ ගමන් දුර × වාහන ඉන්ධන කාර්යක්ෂමතාව", "மாதந்தோறும் நிரப்பிய எரிபொருள் மற்றும் உண்மையான பயணத் தூரம் × வாகன எரிபொருள் திறன்"],
