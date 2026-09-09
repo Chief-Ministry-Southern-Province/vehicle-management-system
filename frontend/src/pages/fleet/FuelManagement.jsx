@@ -180,7 +180,7 @@ export default function FuelManagement() {
           setLogs(records);
           const registrations = vehicles.map(vehicle => vehicle.registration_number).filter(Boolean).sort();
           setVehicles(registrations);
-          setSelectedVehicle(current => registrations.includes(current) ? current : registrations[0] || "");
+          setSelectedVehicle(current => registrations.includes(current) ? current : "");
         }
       } catch (loadError) {
         if (active) {
