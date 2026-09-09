@@ -82,8 +82,21 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  partialConsumption: ["Partial total; missing months", "අර්ධ එකතුව; නොමැති මාස", "பகுதி மொத்தம்; விடுபட்ட மாதங்கள்"],
+  annualCost: ["Annual Fuel Cost", "වාර්ෂික ඉන්ධන වියදම", "வருடாந்திர எரிபொருள் செலவு"],
+  annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (L)", "வருடாந்திர நிரப்பிய எரிபொருள் (L)"],
+  annualConsumed: ["Annual Fuel Consumed (L)", "වාර්ෂික ඉන්ධන පරිභෝජනය (L)", "வருடாந்திர எரிபொருள் நுகர்வு (L)"],
+  remainingFuel: ["Remaining Fuel (L)", "ඉතිරි ඉන්ධන (L)", "மீதமுள்ள எரிபொருள் (L)"],
+  remainingFormula: ["Annual fuel filled − calculated fuel consumed", "වාර්ෂිකව පිරවූ ඉන්ධන − ගණනය කළ පරිභෝජනය", "வருடாந்திர நிரப்பிய எரிபொருள் − கணக்கிடப்பட்ட நுகர்வு"],
+  allVehicles: ["All Vehicles", "සියලුම වාහන", "அனைத்து வாகனங்களும்"],
+  filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (L)", "நிரப்பிய எரிபொருள் (L)"],
+  consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (L)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (L)"],
+  consumptionDetail: ["Fuel filled versus actual journey distance × vehicle fuel efficiency, by month", "මාසිකව පිරවූ ඉන්ධන සහ සැබෑ ගමන් දුර × වාහන ඉන්ධන කාර්යක්ෂමතාව", "மாதந்தோறும் நிரப்பிய எரிபொருள் மற்றும் உண்மையான பயணத் தூரம் × வாகன எரிபொருள் திறன்"],
+  monthlyOverview: ["Monthly Fuel Overview", "මාසික ඉන්ධන දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் கண்ணோட்டம்"],
+  monthlyCostOverview: ["Monthly Fuel Cost Overview", "මාසික ඉන්ධන වියදම් දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் செலவுக் கண்ணோட்டம்"],
+  costLkr: ["Fuel cost (LKR)", "ඉන්ධන වියදම (LKR)", "எரிபொருள் செலவு (LKR)"],
   quantityLiters: ["Fuel quantity (L)", "ඉන්ධන ප්‍රමාණය (L)", "எரிபொருள் அளவு (L)"],
-  vehicleQuantityDetail: ["Monthly recorded fuel quantity for the selected vehicle", "තෝරාගත් වාහනයේ මාසික වාර්තාගත ඉන්ධන ප්‍රමාණය", "தேர்ந்தெடுத்த வாகனத்தின் மாதாந்திர பதிவுசெய்யப்பட்ட எரிபொருள் அளவு"],
+  vehicleMonthlyDetail: ["Recorded fuel quantity and cost for the selected vehicle and year", "තෝරාගත් වාහනය සහ වර්ෂය සඳහා වාර්තාගත ඉන්ධන ප්‍රමාණය සහ වියදම", "தேர்ந்தெடுத்த வாகனம் மற்றும் ஆண்டிற்கான பதிவுசெய்யப்பட்ட எரிபொருள் அளவும் செலவும்"],
   noVehicles: ["No vehicles available", "වාහන නොමැත", "வாகனங்கள் இல்லை"],
   monthlyDistance: ["Monthly distance analysis", "මාසික දුර විශ්ලේෂණය", "மாதாந்திர தூரப் பகுப்பாய்வு"],
   monthlyExtraFuel: ["Monthly Extra Fuel", "මාසික අමතර ඉන්ධන", "மாதாந்திர கூடுதல் எரிபொருள்"],
@@ -128,6 +141,34 @@ const fuelLabels = {
   reallocation: ["Reallocation reason", "නැවත වෙන් කිරීමට හේතුව", "மீண்டும் ஒதுக்கிய காரணம்"],
   attachment: ["View attachment", "ඇමුණුම බලන්න", "இணைப்பைப் பார்க்க"],
 };
+const approvalRecordLabels = {
+  requestNumber: ["Request Number", "ඉල්ලීම් අංකය", "கோரிக்கை எண்"],
+  requester: ["Requester", "ඉල්ලුම්කරු", "கோரிக்கையாளர்"],
+  department: ["Department", "දෙපාර්තමේන්තුව", "திணைக்களம்"],
+  purposeRouteTime: ["Purpose / Route / Date and Time", "අරමුණ / මාර්ගය / දිනය සහ වේලාව", "நோக்கம் / பாதை / திகதி மற்றும் நேரம்"],
+  status: ["Status", "තත්ත්වය", "நிலை"],
+  view: ["View", "බලන්න", "பார்"],
+  employeeId: ["Employee ID", "සේවක අංකය", "பணியாளர் எண்"],
+  loading: ["Loading request details…", "ඉල්ලීම් විස්තර පූරණය වෙමින්…", "கோரிக்கை விவரங்கள் ஏற்றப்படுகின்றன…"],
+  loadError: ["Unable to load request details.", "ඉල්ලීම් විස්තර පූරණය කළ නොහැක.", "கோரிக்கை விவரங்களை ஏற்ற முடியவில்லை."],
+  recommendation_status: ["Recommendation status", "නිර්දේශ තත්ත්වය", "பரிந்துரை நிலை"],
+  department_priority: ["Department priority", "දෙපාර්තමේන්තු ප්‍රමුඛතාව", "திணைக்கள முன்னுரிமை"],
+  journey_status: ["Journey status", "ගමන් තත්ත්වය", "பயண நிலை"],
+  rejected_by: ["Rejected by (user ID)", "ප්‍රතික්ෂේප කළ පරිශීලක අංකය", "நிராகரித்த பயனர் எண்"],
+  cancelled_by: ["Cancelled by (user ID)", "අවලංගු කළ පරිශීලක අංකය", "இரத்துச் செய்த பயனர் எண்"],
+  vehicleModel: ["Vehicle make / model", "වාහන නිෂ්පාදකයා / මාදිලිය", "வாகன தயாரிப்பு / மாதிரி"],
+  driverContact: ["Driver contact", "රියදුරු දුරකථනය", "சாரதி தொடர்பு எண்"],
+  reallocator: ["Reallocated by", "නැවත වෙන් කළේ", "மீண்டும் ஒதுக்கியவர்"],
+  previousVehicle: ["Previous vehicle", "පෙර වාහනය", "முந்தைய வாகனம்"],
+  previousDriver: ["Previous driver", "පෙර රියදුරු", "முந்தைய சாரதி"],
+  created_at: ["Submitted at", "ඉදිරිපත් කළ වේලාව", "சமர்ப்பித்த நேரம்"],
+  updated_at: ["Updated at", "යාවත්කාලීන කළ වේලාව", "புதுப்பித்த நேரம்"],
+  cancelled_at: ["Cancelled at", "අවලංගු කළ වේලාව", "இரத்துச் செய்த நேரம்"],
+  rejected_at: ["Rejected at", "ප්‍රතික්ෂේප කළ වේලාව", "நிராகரித்த நேரம்"],
+};
+for (const [key, labels] of Object.entries(approvalRecordLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`approvalRecords.${key}`] = labels[index]; });
+}
 for (const [key, labels] of Object.entries(fuelLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`fuel.${key}`] = labels[index]; });
 }

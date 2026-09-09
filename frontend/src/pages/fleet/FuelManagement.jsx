@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, CartesianGrid, Cell, ComposedChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { FiActivity, FiArrowUpRight, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTrendingUp, FiTruck } from "react-icons/fi";
+import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { FiActivity, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
-import { getVehicles } from "../../api/authApi";
-import { useLanguage } from "../../context/useLanguage";
+import { getApprovedJourneys, getVehicles } from "../../api/authApi";
+import { annualVehicleConsumption, monthlyVehicleConsumption } from "../../utils/monthlyVehicleConsumption";
 import { generateFuelRecordsPdf } from "../../utils/fuelRecordsPdf";
+import { useLanguage } from "../../context/useLanguage";
 
 const EMPTY_FILTERS = { search: "", fuelType: "" };
 const START_YEAR = 2025;
@@ -74,21 +75,50 @@ function MetricCard({ icon, label, value, detail, accent }) {
   );
 }
 
-function FuelChartTooltip({ active, payload, label, vehicle }) {
+function FuelChartTooltip({ active, payload, label, vehicle, costOnly }) {
   const { t } = useLanguage();
   if (!active || !payload?.length) return null;
 
   const liters = payload.find((item) => item.dataKey === "liters")?.value || 0;
+  const consumed = payload[0]?.payload?.consumed;
 
   return (
     <div className="min-w-52 rounded-xl border border-slate-200 bg-white p-4 text-slate-900 shadow-xl">
       <p className="text-xs font-bold uppercase tracking-widest text-blue-600">{label} · {vehicle}</p>
       <div className="mt-3 space-y-2">
-        <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">{t("fuel.quantityLiters")}</span><strong>{formatNumber(liters, 2)} L</strong></div>
+        {costOnly ? <div className="flex items-center justify-between gap-6 text-sm"><span className="text-slate-500">{t("fuel.costLkr")}</span><strong>{formatCurrency(cost, 2)}</strong></div> : <>
+          <div className="flex items-center justify-between gap-6 text-sm"><span>{t("fuel.filled")}</span><strong>{formatNumber(liters, 2)} L</strong></div>
+          <div className="flex items-center justify-between gap-6 text-sm"><span>{t("fuel.consumed")}</span><strong>{consumed == null ? t("odometer.notRecorded") : `${formatNumber(consumed, 2)} L`}</strong></div>
+        </>}
       </div>
       <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] text-slate-400">Click to filter records for this month</p>
     </div>
   );
+}
+
+function MonthlyFuelChart({ data, vehicle, selectedMonth, onMonthClick, loading, error, empty, costOnly = false }) {
+  const { t } = useLanguage();
+  if (loading || error || empty) return <div className="flex h-80 items-center justify-center p-5 text-sm text-slate-500">
+    {loading ? t("fuel.chartLoading") : error || t("fuel.chartEmpty")}
+  </div>;
+  return <div className="overflow-x-auto p-4" role="region" aria-label={t(costOnly ? "fuel.monthlyCostOverview" : "fuel.monthlyOverview")} tabIndex={0}>
+    <div className="h-[360px] min-w-[650px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={data} margin={{ top: 20, right: 18, left: 18, bottom: 15 }} onClick={onMonthClick} accessibilityLayer>
+          <CartesianGrid strokeDasharray="4 6" stroke="#e2e8f0" vertical={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} height={55} label={{ value: t("fuel.month"), position: "insideBottom", offset: 0 }} />
+          <YAxis yAxisId="quantity" width={100} tick={{ fontSize: 11 }} tickFormatter={value => Number(value).toLocaleString()}
+            label={{ value: costOnly ? "LKR" : "L", angle: -90, position: "insideLeft" }} />
+          <Tooltip content={<FuelChartTooltip vehicle={vehicle} costOnly={costOnly} />} />
+          <Legend wrapperStyle={{ paddingTop: 15, fontSize: 12 }} />
+          <Bar yAxisId="quantity" dataKey={costOnly ? "cost" : "liters"} name={t(costOnly ? "fuel.costLkr" : "fuel.filled")} fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={40}>
+            {data.map(entry => <Cell key={entry.monthKey} fill={selectedMonth === entry.monthKey ? "#0f172a" : "#2563eb"} />)}
+          </Bar>
+          {!costOnly && <Line yAxisId="quantity" dataKey="consumed" name={t("fuel.consumed")} stroke="#0891b2" strokeWidth={3} dot={{ r: 4 }} connectNulls={false} />}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  </div>;
 }
 
 export default function FuelManagement() {
@@ -96,6 +126,9 @@ export default function FuelManagement() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [logs, setLogs] = useState([]);
+  const [journeys, setJourneys] = useState([]);
+  const [journeysLoading, setJourneysLoading] = useState(true);
+  const [journeysError, setJourneysError] = useState("");
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [selectedYear, setSelectedYear] = useState(
     String(Math.max(START_YEAR, new Date().getFullYear())),
@@ -104,6 +137,16 @@ export default function FuelManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+
+  useEffect(() => {
+    let active = true;
+    getApprovedJourneys().then(response => {
+      if (!Array.isArray(response?.data?.requests)) throw new Error("Unable to read journey records.");
+      if (active) setJourneys(response.data.requests);
+    }).catch(err => { if (active) setJourneysError(err?.message || "Unable to load journey records."); })
+      .finally(() => { if (active) setJourneysLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -165,7 +208,7 @@ export default function FuelManagement() {
           .includes(search);
       const matchesFuelType =
         !filters.fuelType || log.fuel_type === filters.fuelType;
-      return log.vehicle === selectedVehicle && matchesSearch && matchesFuelType;
+      return (!selectedVehicle || log.vehicle === selectedVehicle) && matchesSearch && matchesFuelType;
     });
   }, [filters, logs, selectedVehicle]);
 
@@ -219,23 +262,35 @@ export default function FuelManagement() {
       });
   }, [selectedYear, yearLogs]);
 
+  const consumption = useMemo(() => monthlyVehicleConsumption(journeys, selectedVehicle, selectedYear, filters),
+    [journeys, selectedVehicle, selectedYear, filters]);
+  const overviewData = useMemo(() => monthlyData.map(row => ({ ...row,
+    consumed: Object.hasOwn(consumption, row.monthKey) ? consumption[row.monthKey] : 0,
+  })), [monthlyData, consumption]);
+
   const yearlySummary = useMemo(() => {
     const totalCost = yearLogs.reduce((sum, log) => sum + (Number(log.cost) || 0), 0);
     const totalLiters = yearLogs.reduce((sum, log) => sum + (Number(log.capacity) || 0), 0);
-    const activeVehicles = new Set(yearLogs.map((log) => log.vehicle).filter(Boolean)).size;
-    const peakMonth = monthlyData.reduce(
-      (peak, month) => (month.cost > peak.cost ? month : peak),
-      { cost: 0, liters: 0, month: "No data", monthKey: "" },
-    );
+    const { total: totalConsumed, missingMonths } = annualVehicleConsumption(consumption);
 
     return {
       totalCost,
       totalLiters,
-      activeVehicles,
-      averageCost: yearLogs.length ? totalCost / yearLogs.length : 0,
-      peakMonth,
+      totalConsumed,
+      missingMonths,
+      remainingLiters: totalConsumed == null ? null : totalLiters - totalConsumed,
     };
-  }, [monthlyData, yearLogs]);
+  }, [yearLogs, consumption]);
+
+  const annualScope = `${selectedYear} · ${selectedVehicle || t("fuel.allVehicles")}`;
+  const partialConsumption = yearlySummary.totalConsumed != null && yearlySummary.missingMonths > 0
+    ? ` · ${t("fuel.partialConsumption")} (${yearlySummary.missingMonths})` : "";
+  const annualValue = (value, needsJourneys = false, currency = false) => {
+    if (loading || (needsJourneys && journeysLoading)) return t("fuel.chartLoading");
+    if (error || (needsJourneys && journeysError)) return t("fuel.chartError");
+    if (value == null) return t("odometer.notRecorded");
+    return currency ? formatCurrency(value, 2) : `${formatNumber(value, 2)} L`;
+  };
 
   const updateFilter = (name, value) => {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -318,10 +373,10 @@ export default function FuelManagement() {
         </header>
 
         <section className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4" aria-label="Fuel performance summary">
-          <MetricCard icon={<FiDollarSign size={20} />} label="Annual spend" value={formatCurrency(yearlySummary.totalCost)} detail={`${yearLogs.length} fuel transactions`} accent="blue" />
-          <MetricCard icon={<FiDroplet size={20} />} label="Fuel consumed" value={`${formatNumber(yearlySummary.totalLiters, 1)} L`} detail={`Across ${selectedYear}`} accent="cyan" />
-          <MetricCard icon={<FiActivity size={20} />} label="Average refill" value={formatCurrency(yearlySummary.averageCost)} detail="Average cost per transaction" accent="amber" />
-          <MetricCard icon={<FiTruck size={20} />} label="Active vehicles" value={formatNumber(yearlySummary.activeVehicles)} detail="Vehicles with fuel activity" accent="slate" />
+          <MetricCard icon={<FiDollarSign size={20} />} label={t("fuel.annualCost")} value={annualValue(yearlySummary.totalCost, false, true)} detail={annualScope} accent="blue" />
+          <MetricCard icon={<FiDroplet size={20} />} label={t("fuel.annualFilled")} value={annualValue(yearlySummary.totalLiters)} detail={annualScope} accent="cyan" />
+          <MetricCard icon={<FiActivity size={20} />} label={t("fuel.annualConsumed")} value={annualValue(yearlySummary.totalConsumed, true)} detail={annualScope + partialConsumption} accent="amber" />
+          <MetricCard icon={<FiTruck size={20} />} label={t("fuel.remainingFuel")} value={annualValue(yearlySummary.remainingLiters, true)} detail={t("fuel.remainingFormula") + partialConsumption} accent="slate" />
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -331,18 +386,17 @@ export default function FuelManagement() {
                 <FiBarChart2 size={20} />
               </div>
               <div>
-                <h2 className="font-bold text-slate-900">Monthly Fuel Overview</h2>
+                <h2 className="font-bold text-slate-900">{t("fuel.monthlyOverview")}</h2>
                 <p className="mt-0.5 text-xs text-slate-500">
-                  {t("fuel.vehicleQuantityDetail")}
+                  {t("fuel.consumptionDetail")}
                 </p>
               </div>
             </div>
             <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
               {t("fuel.vehicle")}
               <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); setSelectedIds(new Set()); }}
-                disabled={!vehicles.length}
-                className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-100">
-                {!vehicles.length && <option value="">{t("fuel.noVehicles")}</option>}
+                disabled={!vehicles.length} className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:ring-2 focus:ring-blue-100">
+                <option value="">{t("fuel.allVehicles")}</option>
                 {vehicles.map(vehicle => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
               </select>
             </label>
@@ -362,79 +416,18 @@ export default function FuelManagement() {
             </label>
           </div>
 
-          {loading ? (
-            <div className="flex h-80 items-center justify-center text-sm text-slate-500">
-              Loading chart…
-            </div>
-          ) : error ? (
-            <div className="flex h-80 items-center justify-center text-sm font-medium text-red-600">
-              {error}
-            </div>
-          ) : yearLogs.length === 0 ? (
-            <div className="flex h-80 items-center justify-center text-sm text-slate-500">
-              No fuel data is available for {selectedYear}.
-            </div>
-          ) : (
-            <div className="h-[360px] w-full px-2 pb-5 pt-4 sm:px-5">
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart
-                  data={monthlyData}
-                  margin={{ top: 16, right: 10, left: 6, bottom: 10 }}
-                  onClick={selectChartMonth}
-                  style={{ cursor: "pointer" }}
-                >
-                  <defs>
-                    <linearGradient id="fuelCostGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2563eb" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="4 6" stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11, fontWeight: 600 }} dy={10} />
-                  <YAxis
-                    yAxisId="liters"
-                    label={{ value: "L", angle: -90, position: "insideLeft" }}
-                    tick={{ fill: "#0891b2", fontSize: 12 }}
-                    tickFormatter={(value) => `${value} L`}
-                    width={60}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip content={<FuelChartTooltip vehicle={selectedVehicle} />} cursor={{ fill: "#eff6ff", opacity: 0.75 }} />
-                  <Legend iconType="circle" wrapperStyle={{ paddingTop: 20, fontSize: 12 }} />
-                  <Bar
-                    yAxisId="liters"
-                    dataKey="liters"
-                    name={t("fuel.quantityLiters")}
-                    fill="url(#fuelCostGradient)"
-                    radius={[8, 8, 2, 2]}
-                    cursor="pointer"
-                  >
-                    {monthlyData.map((entry) => (
-                      <Cell key={entry.monthKey} fill={selectedMonth === entry.monthKey ? "#0f172a" : "url(#fuelCostGradient)"} />
-                    ))}
-                  </Bar>
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          )}
+          <MonthlyFuelChart data={overviewData} vehicle={selectedVehicle || t("fuel.allVehicles")} selectedMonth={selectedMonth}
+            onMonthClick={selectChartMonth} loading={loading || journeysLoading} error={error || journeysError} empty={!yearLogs.length && !Object.keys(consumption).length} />        </section>
+
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <header className="border-b border-slate-200 px-5 py-4">
+            <h2 className="font-bold text-slate-900">{t("fuel.monthlyCostOverview")}</h2>
+            <p className="mt-1 text-sm text-slate-500">{selectedVehicle || t("fuel.allVehicles")} · {selectedYear}</p>
+          </header>
+          <MonthlyFuelChart data={monthlyData} vehicle={selectedVehicle || t("fuel.allVehicles")} selectedMonth={selectedMonth}
+            onMonthClick={selectChartMonth} loading={loading} error={error} empty={!yearLogs.length} costOnly />
         </section>
 
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <FiTrendingUp size={20} />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">Peak spending insight</p>
-            <p className="mt-1 text-base font-bold text-slate-900">
-              {yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.liters, 1)} liters consumed during the highest-cost month.</p>
-          </div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40">
-            View records <FiArrowUpRight />
-          </button>
-        </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">

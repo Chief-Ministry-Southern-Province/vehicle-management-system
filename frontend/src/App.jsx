@@ -101,7 +101,7 @@ function App() {
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
             <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
-            <Route path="/totalapprovals" element={withAuth(<TotalApprovals />)} />
+            <Route path="/totalapprovals" element={withAuth(<TotalApprovals />, ["deputy_secretary"])} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
             <Route path="/deputy/pending-recommendations" element={withAuth(<DeputyPendingRecommendations />, ["deputy_secretary"])} />
             <Route path="/approval/:id" element={withAuth(<ApprovalWorkspace />)} />
