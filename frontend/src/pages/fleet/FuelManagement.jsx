@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { FiActivity, FiArrowUpRight, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTrendingUp, FiTruck } from "react-icons/fi";
+import { FiActivity, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
@@ -273,10 +273,6 @@ export default function FuelManagement() {
     const totalCost = yearLogs.reduce((sum, log) => sum + (Number(log.cost) || 0), 0);
     const totalLiters = yearLogs.reduce((sum, log) => sum + (Number(log.capacity) || 0), 0);
     const { total: totalConsumed, missingMonths } = annualVehicleConsumption(consumption);
-    const peakMonth = monthlyData.reduce(
-      (peak, month) => (month.cost > peak.cost ? month : peak),
-      { cost: 0, liters: 0, month: "No data", monthKey: "" },
-    );
 
     return {
       totalCost,
@@ -284,9 +280,8 @@ export default function FuelManagement() {
       totalConsumed,
       missingMonths,
       remainingLiters: totalConsumed == null ? null : totalLiters - totalConsumed,
-      peakMonth,
     };
-  }, [monthlyData, yearLogs, consumption]);
+  }, [yearLogs, consumption]);
 
   const annualScope = `${selectedYear} · ${selectedVehicle || t("fuel.allVehicles")}`;
   const partialConsumption = yearlySummary.totalConsumed != null && yearlySummary.missingMonths > 0
@@ -433,21 +428,7 @@ export default function FuelManagement() {
           <MonthlyFuelChart data={monthlyData} vehicle={selectedVehicle || t("fuel.allVehicles")} selectedMonth={selectedMonth}
             onMonthClick={selectChartMonth} loading={loading} error={error} empty={!yearLogs.length} costOnly />
         </section>
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <FiTrendingUp size={20} />
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">Peak spending insight</p>
-            <p className="mt-1 text-base font-bold text-slate-900">
-              {yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.liters, 1)} liters consumed during the highest-cost month.</p>
-          </div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40">
-            View records <FiArrowUpRight />
-          </button>
-        </section>
+
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
