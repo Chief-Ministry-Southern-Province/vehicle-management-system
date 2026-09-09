@@ -193,12 +193,15 @@ export default function ScheduledJourney() {
                 <div className="flex items-center gap-3 rounded-2xl bg-violet-50/80 p-3 dark:bg-violet-950/30"><span className="rounded-xl bg-white p-2 text-violet-600 shadow-sm dark:bg-slate-800"><FiUsers /></span><div><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Passengers</p><p className="text-sm font-bold text-slate-900 dark:text-white">{trip.passenger_count} passenger{trip.passenger_count === 1 ? "" : "s"}</p></div></div>
               </div>
 
-              <dl className="mx-4 mt-4 grid gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 sm:grid-cols-2 lg:mr-[17.25rem] lg:grid-cols-3 xl:mr-[19.25rem] dark:bg-slate-800/70">
+              <dl className="mx-4 mt-4 hidden gap-x-5 gap-y-4 rounded-2xl bg-slate-50/70 p-4 sm:mx-5 lg:mr-[17.25rem] lg:grid lg:grid-cols-3 xl:mr-[19.25rem] dark:bg-slate-800/70">
                 <Detail label="Requester">{trip.requester_name}</Detail>
                 <Detail label="Purpose">{trip.purpose}</Detail>
                 <Detail label="Vehicle Type">{trip.vehicle?.vehicle_type}</Detail>
                 <Detail label="Vehicle Number">{trip.vehicle?.registration_number}</Detail>
                 <Detail label="Parking Location">{trip.parking_location}</Detail>
+              </dl>
+              {(trip.start_odometer_km != null || trip.reallocation_reason) && (
+              <dl className="mx-4 mt-4 grid gap-4 sm:mx-5 lg:mr-[17.25rem] xl:mr-[19.25rem]">
                 {trip.start_odometer_km != null && <Detail label={t("odometer.start")}>{routeDistance(trip.start_odometer_km)}</Detail>}
                 {trip.reallocation_reason && (
                   <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/40">
@@ -212,9 +215,10 @@ export default function ScheduledJourney() {
                   </div>
                 )}
               </dl>
+              )}
 
               {trip.is_consolidated && (
-                <div className="mx-4 mt-4 overflow-hidden rounded-2xl border border-blue-100 sm:mx-5 lg:mr-[17.25rem] xl:mr-[19.25rem]">
+                <div className="mx-4 mt-4 hidden overflow-hidden rounded-2xl border border-blue-100 sm:mx-5 lg:mr-[17.25rem] lg:block xl:mr-[19.25rem]">
                   <div className="bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">Passenger pickup and drop details</div>
                   <div className="divide-y divide-slate-100">
                     {trip.requests.map((item) => (
