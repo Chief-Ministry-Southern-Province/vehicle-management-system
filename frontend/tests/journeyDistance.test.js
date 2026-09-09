@@ -20,3 +20,43 @@ test("total counts a consolidated vehicle journey once and preserves missing rea
   assert.equal(totalActualJourneyDistance([{ id: 1, actual_distance_km: 0.1 },
     { id: 2, actual_distance_km: 0.2 }]), 0.3);
 });
+
+import { allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel, totalExtraJourneyFuel } from "../src/utils/journeyDistance.js";
+
+test("extra fuel totals sum displayed values and preserve negatives, zero, and missing data", () => {
+  const row = (actual) => ({ distance_km: 5, actual_distance_km: actual, allocated_vehicle: { fuel_efficiency: 0.25 } });
+  assert.equal(totalExtraJourneyFuel([row(20), row(8), row(null)]), 2);
+  assert.equal(totalExtraJourneyFuel([row(10)]), 0);
+  assert.equal(totalExtraJourneyFuel([row(8)]), -0.5);
+  assert.equal(totalExtraJourneyFuel([row(10.03), row(10.03)]), 0.02);
+  assert.equal(totalExtraJourneyFuel([row(null), {}]), null);
+  assert.equal(totalExtraJourneyFuel([]), null);
+});
+
+test("extra fuel uses the assigned vehicle efficiency and allocated round trip", () => {
+  const journey = { distance_km: "40", actual_distance_km: "100", allocated_vehicle: { fuel_efficiency: "0.25" } };
+  assert.equal(extraJourneyFuel(journey), 5);
+  assert.equal(extraJourneyFuel({ ...journey, actual_distance_km: 80 }), 0);
+  assert.equal(extraJourneyFuel({ ...journey, actual_distance_km: 60 }), -5);
+  assert.equal(extraJourneyFuel({ ...journey, actual_distance_km: 0, distance_km: 0 }), 0);
+  assert.equal(extraJourneyFuel({ ...journey, allocated_vehicle: { fuel_efficiency: "0.5" } }), 10);
+  for (const value of [null, undefined, "", "invalid", -1]) {
+    assert.equal(extraJourneyFuel({ ...journey, distance_km: value }), null);
+    assert.equal(extraJourneyFuel({ ...journey, actual_distance_km: value }), null);
+    assert.equal(extraJourneyFuel({ ...journey, allocated_vehicle: { fuel_efficiency: value } }), null);
+  }
+  assert.equal(extraJourneyFuel({ ...journey, allocated_vehicle: null }), null);
+  assert.equal(extraJourneyFuel({ ...journey, allocated_vehicle: { fuel_efficiency: 0 } }), null);
+});
+
+test("allocated mileage doubles planned routes, preserves zero, and excludes missing values", () => {
+  assert.equal(allocatedJourneyDistance({ distance_km: "42.75", actual_distance_km: 100 }), 85.5);
+  assert.equal(allocatedJourneyDistance({ distance_km: 0 }), 0);
+  for (const value of [null, undefined, "", -1, "invalid"]) {
+    assert.equal(allocatedJourneyDistance({ distance_km: value }), null);
+  }
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 0.1 }, { distance_km: 0.2 }, { distance_km: null }]), 0.6);
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 0 }]), 0);
+  assert.equal(totalAllocatedJourneyDistance([]), null);
+  assert.equal(totalAllocatedJourneyDistance([{ distance_km: 20 }, { distance_km: 30 }]), 100);
+});
