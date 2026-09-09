@@ -82,6 +82,10 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  completedFrom: ["Completed from", "අවසන් කළ දිනය සිට", "முடிவடைந்த திகதி முதல்"],
+  completedTo: ["Completed to", "අවසන් කළ දිනය දක්වා", "முடிவடைந்த திகதி வரை"],
+  clearFilters: ["Clear filters", "පෙරහන් ඉවත් කරන්න", "வடிகட்டிகளை அழி"],
+  invalidRange: ["The end date must be on or after the start date.", "අවසන් දිනය ආරම්භක දිනයට පෙර විය නොහැක.", "இறுதித் திகதி தொடக்கத் திகதிக்கு முந்தையதாக இருக்கக்கூடாது."],
   totalAllocated: ["Total allocated distance", "මුළු වෙන් කළ දුර", "மொத்த ஒதுக்கப்பட்ட தூரம்"],
   allocatedDetail: ["Sum of each request's planned round trip", "එක් එක් ඉල්ලීමේ යාම සහ ඒම සඳහා සැලසුම් කළ දුර එකතුව", "ஒவ்வொரு கோரிக்கையின் திட்டமிட்ட இருவழித் தூரத்தின் கூட்டுத்தொகை"],
   filteredTotals: ["Totals for displayed requests", "පෙන්වන ඉල්ලීම්වල එකතුව", "காட்டப்படும் கோரிக்கைகளின் மொத்தம்"],

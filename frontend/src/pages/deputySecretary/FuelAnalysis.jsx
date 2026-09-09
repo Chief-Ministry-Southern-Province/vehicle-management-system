@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiCheckCircle,
   FiMapPin,
-  FiSearch,
   FiTruck,
   FiUser,
 } from "react-icons/fi";
@@ -12,6 +11,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 
 import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel } from "../../utils/journeyDistance";
 import { useLanguage } from "../../context/useLanguage";
+import { filterFuelJourneys } from "../../utils/fuelJourneyFilters";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 
@@ -41,7 +41,11 @@ export default function FuelAnalysis() {
     : `${distance.toFixed(2)} km`;
   const [journeys, setJourneys] = useState([]);
   const [selectedJourney, setSelectedJourney] = useState(null);
-  const [search, setSearch] = useState("");
+  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [driverName, setDriverName] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const invalidRange = Boolean(from && to && from > to);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -79,24 +83,8 @@ export default function FuelAnalysis() {
     };
   }, []);
 
-  const filteredJourneys = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return journeys;
-
-    return journeys.filter((journey) =>
-      [
-        requestNumber(journey.id),
-        journey.requester_name,
-        journey.user?.name,
-        journey.purpose,
-        journey.starting_location,
-        journey.destination,
-        journey.allocated_vehicle?.registration_number,
-        journey.allocated_driver?.driver_id,
-        journey.allocated_driver?.full_name,
-      ].some((value) => String(value || "").toLowerCase().includes(query)),
-    );
-  }, [journeys, search]);
+  const filteredJourneys = useMemo(() => filterFuelJourneys(journeys, { vehicleNumber, driverName, from, to }),
+    [journeys, vehicleNumber, driverName, from, to]);
 
   const summary = useMemo(() => {
     return {
@@ -162,7 +150,7 @@ export default function FuelAnalysis() {
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-b border-slate-200 p-5">
             <div>
               <h2 className="text-lg font-bold text-slate-900">
                 Completed journey details
@@ -171,17 +159,29 @@ export default function FuelAnalysis() {
                 {filteredJourneys.length} completed trip records
               </p>
             </div>
-            <label className="relative w-full sm:max-w-md">
-              <span className="sr-only">Search completed trips</span>
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="search"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search by request, vehicle, driver, requester, or route"
-                className="w-full rounded-xl border border-slate-200 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </label>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+              {[
+                ["vehicle", "search", vehicleNumber, setVehicleNumber],
+                ["driverName", "search", driverName, setDriverName],
+                ["completedFrom", "date", from, setFrom],
+                ["completedTo", "date", to, setTo],
+              ].map(([key, type, value, setValue]) => (
+                <label key={key} className="min-w-0 text-xs font-semibold text-slate-600">
+                  {t(`fuel.${key}`)}
+                  <input type={type} value={value} onChange={(event) => setValue(event.target.value)}
+                    max={key === "completedFrom" ? to || undefined : undefined}
+                    min={key === "completedTo" ? from || undefined : undefined}
+                    aria-invalid={type === "date" && invalidRange}
+                    aria-describedby={type === "date" && invalidRange ? "fuel-date-error" : undefined}
+                    className="mt-1 w-full min-w-0 rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100" />
+                </label>
+              ))}
+              <button type="button" onClick={() => { setVehicleNumber(""); setDriverName(""); setFrom(""); setTo(""); }}
+                className="self-end rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-500">
+                {t("fuel.clearFilters")}
+              </button>
+            </div>
+            {invalidRange && <p id="fuel-date-error" role="alert" className="text-sm text-red-700">{t("fuel.invalidRange")}</p>}
           </div>
 
           {loading && (
