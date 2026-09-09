@@ -242,7 +242,7 @@ const menuItems = [
         roles: ["deputy_secretary"],
       },
       {
-        name: "Fuel Analysis",
+        name: "Journey Analysis",
         path: "/fuelanalysis",
         icon: <FiDroplet />,
         roles: ["deputy_secretary"],
