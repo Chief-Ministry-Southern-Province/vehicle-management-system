@@ -1,38 +1,15 @@
 import { formatLocalDateTime } from "../../utils/dateTime";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  FiCheckCircle,
-  FiMapPin,
-  FiTruck,
-  FiUser,
-} from "react-icons/fi";
+import { Bar, BarChart, CartesianGrid, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 import { actualJourneyDistance, totalActualJourneyDistance, allocatedJourneyDistance, totalAllocatedJourneyDistance, extraJourneyFuel, totalExtraJourneyFuel } from "../../utils/journeyDistance";
 import { useLanguage } from "../../context/useLanguage";
+import { monthlyFuelAnalysis } from "../../utils/monthlyFuelAnalysis";
 import { filterFuelJourneys } from "../../utils/fuelJourneyFilters";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
-
-function SummaryCard({ icon, label, value, detail }) {
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-            {label}
-          </p>
-          <p className="mt-2 text-2xl font-extrabold text-slate-900">{value}</p>
-          <p className="mt-1 text-xs text-slate-500">{detail}</p>
-        </div>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-          {icon}
-        </span>
-      </div>
-    </article>
-  );
-}
 
 export default function FuelAnalysis() {
   const { t } = useLanguage();
@@ -86,22 +63,7 @@ export default function FuelAnalysis() {
   const filteredJourneys = useMemo(() => filterFuelJourneys(journeys, { vehicleNumber, driverName, from, to }),
     [journeys, vehicleNumber, driverName, from, to]);
 
-  const summary = useMemo(() => {
-    return {
-      totalDistance: totalActualJourneyDistance(journeys),
-      allocatedDistance: totalAllocatedJourneyDistance(journeys),
-      vehicles: new Set(
-        journeys
-          .map((journey) => journey.allocated_vehicle?.registration_number)
-          .filter(Boolean),
-      ).size,
-      drivers: new Set(
-        journeys
-          .map((journey) => journey.allocated_driver?.driver_id)
-          .filter(Boolean),
-      ).size,
-    };
-  }, [journeys]);
+  const monthlyData = useMemo(() => monthlyFuelAnalysis(filteredJourneys), [filteredJourneys]);
 
   const totalExtraFuel = totalExtraJourneyFuel(filteredJourneys);
 
@@ -120,35 +82,9 @@ export default function FuelAnalysis() {
           </p>
         </header>
 
-        <section
-          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
-          aria-label="Completed trip summary"
-        >
-          <SummaryCard
-            icon={<FiCheckCircle size={21} />}
-            label="Total completed trips"
-            value={journeys.length.toLocaleString()}
-            detail="Completed vehicle requests"
-          />
-          <SummaryCard
-            icon={<FiMapPin size={21} />}
-            label={t("odometer.totalActual")}
-            value={formatDistance(summary.totalDistance)}
-            detail={t("odometer.totalDetail")}
-          />
-          <SummaryCard icon={<FiMapPin size={21} />} label={t("fuel.totalAllocated")} value={formatDistance(summary.allocatedDistance)} detail={t("fuel.allocatedDetail")} />
-          <SummaryCard
-            icon={<FiTruck size={21} />}
-            label="Vehicles used"
-            value={summary.vehicles.toLocaleString()}
-            detail="Distinct registration numbers"
-          />
-          <SummaryCard
-            icon={<FiUser size={21} />}
-            label="Drivers assigned"
-            value={summary.drivers.toLocaleString()}
-            detail="Distinct driver numbers"
-          />
+        <section className="grid gap-6 xl:grid-cols-2">
+          <MonthlyChart data={monthlyData} loading={loading} error={error} />
+          <MonthlyChart data={monthlyData} loading={loading} error={error} fuel />
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -262,6 +198,37 @@ export default function FuelAnalysis() {
       {selectedJourney && <JourneyDetails journey={selectedJourney} onClose={() => setSelectedJourney(null)} />}
     </DashboardLayout>
   );
+}
+
+function MonthlyChart({ data, loading, error, fuel = false }) {
+  const { t } = useLanguage();
+  const title = t(fuel ? "fuel.monthlyExtraFuel" : "fuel.monthlyDistance");
+  const hasValues = data.some(row => fuel ? row.extraFuel != null : row.allocated != null || row.actual != null);
+  return <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+    <p className="mt-1 text-xs text-slate-500">{t("fuel.chartDetail")}</p>
+    {loading || error || !hasValues ? <p className="flex h-80 items-center justify-center text-center text-sm text-slate-500">
+      {t(loading ? "fuel.chartLoading" : error ? "fuel.chartError" : "fuel.chartEmpty")}
+    </p> : <div className="mt-4 overflow-x-auto" role="region" aria-label={title} tabIndex={0}>
+      <div style={{ minWidth: Math.max(320, data.length * 90), height: 340 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 16, right: 16, bottom: 20, left: 12 }} accessibilityLayer>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} height={50}
+              label={{ value: t("fuel.month"), position: "insideBottom", offset: 0 }} />
+            <YAxis width={70} tick={{ fontSize: 11 }} label={{ value: fuel ? "L" : "km", angle: -90, position: "insideLeft" }} />
+            <Tooltip formatter={(value, name) => [value == null ? t("odometer.notRecorded") : `${Number(value).toFixed(2)} ${fuel ? "L" : "km"}`, name]} />
+            <Legend />
+            <ReferenceLine y={0} stroke="#94a3b8" />
+            {fuel ? <Bar dataKey="extraFuel" name={t("fuel.extraFuel")} fill="#d97706" maxBarSize={40} /> : <>
+              <Bar dataKey="allocated" name={t("odometer.allocated")} fill="#2563eb" maxBarSize={32} />
+              <Bar dataKey="actual" name={t("odometer.actual")} fill="#059669" maxBarSize={32} />
+            </>}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>}
+  </article>;
 }
 
 function locationLabel(journey, prefix, t, short = false) {

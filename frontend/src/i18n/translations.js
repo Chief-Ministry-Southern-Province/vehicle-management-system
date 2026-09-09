@@ -82,6 +82,13 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  monthlyDistance: ["Monthly distance analysis", "මාසික දුර විශ්ලේෂණය", "மாதாந்திர தூரப் பகுப்பாய்வு"],
+  monthlyExtraFuel: ["Monthly Extra Fuel", "මාසික අමතර ඉන්ධන", "மாதாந்திர கூடுதல் எரிபொருள்"],
+  month: ["Month", "මාසය", "மாதம்"],
+  chartDetail: ["Completion month • Selected filters apply • Missing values are excluded", "අවසන් කළ මාසය • තෝරාගත් පෙරහන් අදාළ වේ • නොමැති අගයන් බැහැර කෙරේ", "முடிவடைந்த மாதம் • தேர்ந்தெடுத்த வடிகட்டிகள் பொருந்தும் • விடுபட்ட மதிப்புகள் விலக்கப்படும்"],
+  chartLoading: ["Loading analysis…", "විශ්ලේෂණය පූරණය වෙමින්…", "பகுப்பாய்வு ஏற்றப்படுகிறது…"],
+  chartError: ["Unable to load analysis.", "විශ්ලේෂණය පූරණය කළ නොහැක.", "பகுப்பாய்வை ஏற்ற முடியவில்லை."],
+  chartEmpty: ["No recorded values for these filters.", "මෙම පෙරහන් සඳහා වාර්තා කළ අගයන් නොමැත.", "இந்த வடிகட்டிகளுக்குப் பதிவுசெய்யப்பட்ட மதிப்புகள் இல்லை."],
   completedFrom: ["Completed from", "අවසන් කළ දිනය සිට", "முடிவடைந்த திகதி முதல்"],
   completedTo: ["Completed to", "අවසන් කළ දිනය දක්වා", "முடிவடைந்த திகதி வரை"],
   clearFilters: ["Clear filters", "පෙරහන් ඉවත් කරන්න", "வடிகட்டிகளை அழி"],
