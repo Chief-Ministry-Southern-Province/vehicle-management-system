@@ -80,6 +80,7 @@ function FuelChartTooltip({ active, payload, label, vehicle, costOnly }) {
   if (!active || !payload?.length) return null;
 
   const liters = payload.find((item) => item.dataKey === "liters")?.value || 0;
+  const cost = payload.find((item) => item.dataKey === "cost")?.value || 0;
   const consumed = payload[0]?.payload?.consumed;
 
   return (
