@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { FiAlertTriangle, FiCalendar, FiCheckCircle, FiClock, FiEye, FiMapPin, FiNavigation, FiPlay, FiTruck, FiUsers, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getDriverScheduledJourneys, updateDriverJourneyStatus } from "../../../api/authApi";
-import { formatLocalDate as formatDate, formatLocalTime as formatTime } from "../../../utils/dateTime";
+import { formatLocalDate as formatDate, formatLocalTime as formatTime, formatLocalDateTime } from "../../../utils/dateTime";
 import LocationMapPicker from "../../employee/LocationMapPicker";
 import { useLanguage } from "../../../context/useLanguage";
 
@@ -14,9 +14,9 @@ const statusStyle = {
 };
 
 const Detail = ({ label, children }) => (
-  <div>
+  <div className="min-w-0 rounded-xl bg-slate-50 p-3 dark:bg-slate-800">
     <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</dt>
-    <dd className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">{children || "Not recorded"}</dd>
+    <dd className="mt-1 break-words whitespace-pre-line text-sm font-semibold leading-6 text-slate-800 dark:text-slate-100">{children == null || children === "" ? "Not recorded" : children}</dd>
   </div>
 );
 
@@ -32,6 +32,12 @@ const routePoint = (latitude, longitude) => {
   return latitude != null && longitude != null && Number.isFinite(lat) && Number.isFinite(lng)
     ? { lat, lng }
     : null;
+};
+
+const tripLocation = (trip, prefix, fallback) => {
+  const label = prefix === "starting" ? trip.starting_location : trip.destination;
+  const point = routePoint(trip[`${prefix}_latitude`], trip[`${prefix}_longitude`]);
+  return label || (point ? `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}` : fallback);
 };
 
 const VehicleImage = ({ vehicle, className = "h-36 sm:h-40", compact = false }) => (
@@ -251,10 +257,10 @@ export default function ScheduledJourney() {
       {selectedTrip && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="journey-details-title" onMouseDown={(event) => event.target === event.currentTarget && setSelectedTrip(null)}>
           <div className="max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-t-[22px] bg-white shadow-2xl sm:max-h-[90vh] sm:rounded-[18px] dark:bg-slate-900">
-            <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">{selectedTrip.reference}</p>
-                <h3 id="journey-details-title" className="text-xl font-bold text-slate-900 dark:text-white">Journey Details</h3>
+                <h3 id="journey-details-title" className="text-xl font-bold text-slate-900 dark:text-white">{t("driverView.details")}</h3>
               </div>
               <button type="button" onClick={() => setSelectedTrip(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" aria-label="Close details"><FiX size={22} /></button>
             </div>
@@ -274,23 +280,48 @@ export default function ScheduledJourney() {
                 />
               </div>
             )}
-            <dl className="grid gap-5 p-4 sm:grid-cols-2 sm:p-6">
-              <Detail label="Requester">{selectedTrip.requester_name}</Detail>
-              <Detail label="Purpose">{selectedTrip.purpose}</Detail>
-              <Detail label="Starting Location">{selectedTrip.starting_location}</Detail>
-              <Detail label="Ending Location">{selectedTrip.destination}</Detail>
-              <Detail label="Calculated Distance">{routeDistance(selectedTrip.distance_km)}</Detail>
-              <Detail label="Journey Kilometers (Round Trip)">{selectedTrip.is_consolidated ? "See each request below" : routeDistance(selectedTrip.round_trip_distance_km)}</Detail>
-              <Detail label="Journey Status">{selectedTrip.status}</Detail>
-              <Detail label="Journey Date">{formatDate(selectedTrip.departure_at)}</Detail>
-              <Detail label="Departure Time">{formatTime(selectedTrip.departure_at)}</Detail>
-              <Detail label="Expected Return">{formatTime(selectedTrip.expected_return_at)}</Detail>
-              <Detail label="Number of Passengers">{selectedTrip.passenger_count}</Detail>
-              <Detail label="Passenger Names">{selectedTrip.passenger_names}</Detail>
-              <Detail label="Vehicle">{selectedTrip.vehicle ? `${selectedTrip.vehicle.make} ${selectedTrip.vehicle.model}` : null}</Detail>
-              <Detail label="Vehicle Type">{selectedTrip.vehicle?.vehicle_type}</Detail>
-              <Detail label="Vehicle Number">{selectedTrip.vehicle?.registration_number}</Detail>
-              <Detail label="Parking Location">{selectedTrip.parking_location}</Detail>
+            <div className="space-y-5 p-4 sm:p-6">
+              <section className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedTrip.purpose || t("driverView.details")}</h3>
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${statusStyle[selectedTrip.status] || "bg-slate-100 text-slate-700"}`}>{selectedTrip.status}</span>
+                </div>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t("fuel.requester")}: {selectedTrip.requester_name || t("odometer.notRecorded")}</p>
+                <div className="mt-4 space-y-4 border-l-2 border-blue-200 pl-4">
+                  <div><p className="text-xs font-bold text-blue-700 dark:text-blue-300">{t("fuel.starting")}</p><p className="mt-1 break-words text-sm font-semibold leading-6 dark:text-white">{tripLocation(selectedTrip, "starting", t("odometer.notRecorded"))}</p></div>
+                  <div><p className="text-xs font-bold text-rose-700 dark:text-rose-300">{t("fuel.destination")}</p><p className="mt-1 break-words text-sm font-semibold leading-6 dark:text-white">{tripLocation(selectedTrip, "destination", t("odometer.notRecorded"))}</p></div>
+                </div>
+                <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <Detail label={t("driverView.oneWay")}>{routeDistance(selectedTrip.distance_km)}</Detail>
+                  <Detail label={t("driverView.roundTrip")}>{selectedTrip.is_consolidated ? t("driverView.perRequest") : routeDistance(selectedTrip.round_trip_distance_km)}</Detail>
+                </dl>
+              </section>
+              <section>
+                <h3 className="mb-3 flex items-center gap-2 font-bold text-slate-900 dark:text-white"><FiClock className="text-blue-600" />{t("driverView.schedule")}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <Detail label={t("fuel.departure_at")}>{formatLocalDateTime(selectedTrip.departure_at)}</Detail>
+                  <Detail label={t("fuel.expected_return_at")}>{formatLocalDateTime(selectedTrip.expected_return_at)}</Detail>
+                </dl>
+              </section>
+              <section>
+                <h3 className="mb-3 flex items-center gap-2 font-bold text-slate-900 dark:text-white"><FiUsers className="text-blue-600" />{t("driverView.passengers")}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <Detail label={t("fuel.passengers")}>{selectedTrip.passenger_count}</Detail>
+                  <Detail label={t("fuel.passengerNames")}>{Array.isArray(selectedTrip.passenger_names) ? selectedTrip.passenger_names.join("\n") : selectedTrip.passenger_names}</Detail>
+                </dl>
+              </section>
+              <section>
+                <h3 className="mb-3 flex items-center gap-2 font-bold text-slate-900 dark:text-white"><FiTruck className="text-blue-600" />{t("driverView.vehicle")}</h3>
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  <Detail label={t("fuel.vehicle")}>{selectedTrip.vehicle?.registration_number}</Detail>
+                  <Detail label={t("fuel.parking")}>{selectedTrip.parking_location}</Detail>
+                  <Detail label={t("approvalRecords.vehicleModel")}>{[selectedTrip.vehicle?.make, selectedTrip.vehicle?.model].filter(Boolean).join(" ")}</Detail>
+                  <Detail label="Vehicle Type">{selectedTrip.vehicle?.vehicle_type}</Detail>
+                </dl>
+              </section>
+              <details className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                <summary className="cursor-pointer font-bold text-slate-900 dark:text-white">{t("driverView.moreVehicle")}</summary>
+                <dl className="mt-4 grid gap-3 sm:grid-cols-2">
               <Detail label="Fuel Type">{selectedTrip.vehicle?.fuel_type}</Detail>
               <Detail label="Fuel Level">{selectedTrip.vehicle ? `${selectedTrip.vehicle.fuel_level ?? 0}%` : null}</Detail>
               <Detail label="Fuel Capacity">{selectedTrip.vehicle?.fuel_capacity ? `${selectedTrip.vehicle.fuel_capacity} L` : null}</Detail>
@@ -303,6 +334,8 @@ export default function ScheduledJourney() {
               <Detail label="Vehicle Re-allocation Reason">{selectedTrip.reallocation_reason}</Detail>
               <Detail label="Previous Vehicle">{selectedTrip.previous_vehicle?.registration_number}</Detail>
               <Detail label="Technical Notes">{selectedTrip.vehicle?.technical_notes}</Detail>
+                </dl>
+              </details>
               {selectedTrip.is_consolidated && (
                 <div className="sm:col-span-2">
                   <p className="mb-3 font-bold text-slate-900">All merged requests</p>
@@ -321,7 +354,7 @@ export default function ScheduledJourney() {
                   </div>
                 </div>
               )}
-            </dl>
+            </div>
           </div>
         </div>
       )}

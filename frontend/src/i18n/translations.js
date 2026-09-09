@@ -172,3 +172,17 @@ for (const [key, labels] of Object.entries(approvalRecordLabels)) {
 for (const [key, labels] of Object.entries(fuelLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`fuel.${key}`] = labels[index]; });
 }
+
+const driverViewLabels = {
+  details: ["Journey details", "ගමන් විස්තර", "பயண விவரங்கள்"],
+  oneWay: ["Planned distance (one way)", "සැලසුම් කළ දුර (එක් දිශාවකට)", "திட்டமிட்ட தூரம் (ஒருவழி)"],
+  roundTrip: ["Planned distance (round trip)", "සැලසුම් කළ දුර (යාම සහ ඒම)", "திட்டமிட்ட தூரம் (இருவழி)"],
+  perRequest: ["See each request below", "පහත එක් එක් ඉල්ලීම බලන්න", "கீழே ஒவ்வொரு கோரிக்கையையும் பார்க்கவும்"],
+  schedule: ["When to travel", "ගමන් කළ යුතු වේලාව", "பயண நேரம்"],
+  passengers: ["Who is travelling", "ගමන් කරන අය", "பயணம் செய்பவர்கள்"],
+  vehicle: ["Your vehicle and parking", "ඔබේ වාහනය සහ නැවතුම", "உங்கள் வாகனமும் நிறுத்துமிடமும்"],
+  moreVehicle: ["More vehicle information", "වැඩිදුර වාහන තොරතුරු", "மேலும் வாகனத் தகவல்கள்"],
+};
+for (const [key, labels] of Object.entries(driverViewLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
+}
