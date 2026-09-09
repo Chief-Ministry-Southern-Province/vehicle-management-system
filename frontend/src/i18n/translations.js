@@ -82,6 +82,12 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  partialConsumption: ["Partial total; missing months", "අර්ධ එකතුව; නොමැති මාස", "பகுதி மொத்தம்; விடுபட்ட மாதங்கள்"],
+  annualCost: ["Annual Fuel Cost", "වාර්ෂික ඉන්ධන වියදම", "வருடாந்திர எரிபொருள் செலவு"],
+  annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (L)", "வருடாந்திர நிரப்பிய எரிபொருள் (L)"],
+  annualConsumed: ["Annual Fuel Consumed (L)", "වාර්ෂික ඉන්ධන පරිභෝජනය (L)", "வருடாந்திர எரிபொருள் நுகர்வு (L)"],
+  remainingFuel: ["Remaining Fuel (L)", "ඉතිරි ඉන්ධන (L)", "மீதமுள்ள எரிபொருள் (L)"],
+  remainingFormula: ["Annual fuel filled − calculated fuel consumed", "වාර්ෂිකව පිරවූ ඉන්ධන − ගණනය කළ පරිභෝජනය", "வருடாந்திர நிரப்பிய எரிபொருள் − கணக்கிடப்பட்ட நுகர்வு"],
   allVehicles: ["All Vehicles", "සියලුම වාහන", "அனைத்து வாகனங்களும்"],
   filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (L)", "நிரப்பிய எரிபொருள் (L)"],
   consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (L)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (L)"],

@@ -1,6 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { monthlyVehicleConsumption } from "../src/utils/monthlyVehicleConsumption.js";
+import { annualVehicleConsumption, monthlyVehicleConsumption } from "../src/utils/monthlyVehicleConsumption.js";
+
+test("annual consumption retains chart values when another month is missing", () => {
+  assert.deepEqual(annualVehicleConsumption({ "2026-08": null, "2026-09": 800 }), { total: 800, missingMonths: 1 });
+  assert.deepEqual(annualVehicleConsumption({ "2026-08": 200, "2026-09": 800 }), { total: 1000, missingMonths: 0 });
+  assert.deepEqual(annualVehicleConsumption({ "2026-08": null }), { total: null, missingMonths: 1 });
+  assert.deepEqual(annualVehicleConsumption({ "2026-08": null, "2026-09": 0 }), { total: 0, missingMonths: 1 });
+  assert.deepEqual(annualVehicleConsumption({}), { total: 0, missingMonths: 0 });
+});
 
 const trip = { id: 1, status: "completed", actual_distance_km: 100, distance_km: 20,
   allocated_vehicle_id: 1, allocated_driver_id: 2, journey_started_at: "2026-05-31T17:00:00Z",

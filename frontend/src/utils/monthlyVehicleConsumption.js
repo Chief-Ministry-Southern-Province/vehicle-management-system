@@ -1,5 +1,14 @@
 import { monthlyFuelAnalysis } from "./monthlyFuelAnalysis.js";
 
+export function annualVehicleConsumption(consumption) {
+  const values = Object.values(consumption);
+  const recorded = values.filter(value => value != null && Number.isFinite(value));
+  return {
+    total: recorded.length ? recorded.reduce((sum, value) => sum + value, 0) : values.length ? null : 0,
+    missingMonths: values.length - recorded.length,
+  };
+}
+
 // Requested estimate: actual kilometers times the stored numeric efficiency.
 export function monthlyVehicleConsumption(journeys, registration, year, filters = {}) {
   if (!registration) {

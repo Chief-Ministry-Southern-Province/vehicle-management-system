@@ -5,7 +5,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import FuelFilters from "../../components/subjectOfficer/fuel/FuelFilters";
 import FuelTable from "../../components/subjectOfficer/fuel/FuelTable";
 import { getApprovedJourneys, getVehicles } from "../../api/authApi";
-import { monthlyVehicleConsumption } from "../../utils/monthlyVehicleConsumption";
+import { annualVehicleConsumption, monthlyVehicleConsumption } from "../../utils/monthlyVehicleConsumption";
 import { generateFuelRecordsPdf } from "../../utils/fuelRecordsPdf";
 import { useLanguage } from "../../context/useLanguage";
 
@@ -272,7 +272,7 @@ export default function FuelManagement() {
   const yearlySummary = useMemo(() => {
     const totalCost = yearLogs.reduce((sum, log) => sum + (Number(log.cost) || 0), 0);
     const totalLiters = yearLogs.reduce((sum, log) => sum + (Number(log.capacity) || 0), 0);
-    const activeVehicles = new Set(yearLogs.map((log) => log.vehicle).filter(Boolean)).size;
+    const { total: totalConsumed, missingMonths } = annualVehicleConsumption(consumption);
     const peakMonth = monthlyData.reduce(
       (peak, month) => (month.cost > peak.cost ? month : peak),
       { cost: 0, liters: 0, month: "No data", monthKey: "" },
@@ -281,11 +281,22 @@ export default function FuelManagement() {
     return {
       totalCost,
       totalLiters,
-      activeVehicles,
-      averageCost: yearLogs.length ? totalCost / yearLogs.length : 0,
+      totalConsumed,
+      missingMonths,
+      remainingLiters: totalConsumed == null ? null : totalLiters - totalConsumed,
       peakMonth,
     };
-  }, [monthlyData, yearLogs]);
+  }, [monthlyData, yearLogs, consumption]);
+
+  const annualScope = `${selectedYear} · ${selectedVehicle || t("fuel.allVehicles")}`;
+  const partialConsumption = yearlySummary.totalConsumed != null && yearlySummary.missingMonths > 0
+    ? ` · ${t("fuel.partialConsumption")} (${yearlySummary.missingMonths})` : "";
+  const annualValue = (value, needsJourneys = false, currency = false) => {
+    if (loading || (needsJourneys && journeysLoading)) return t("fuel.chartLoading");
+    if (error || (needsJourneys && journeysError)) return t("fuel.chartError");
+    if (value == null) return t("odometer.notRecorded");
+    return currency ? formatCurrency(value, 2) : `${formatNumber(value, 2)} L`;
+  };
 
   const updateFilter = (name, value) => {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -368,10 +379,10 @@ export default function FuelManagement() {
         </header>
 
         <section className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4" aria-label="Fuel performance summary">
-          <MetricCard icon={<FiDollarSign size={20} />} label="Annual spend" value={formatCurrency(yearlySummary.totalCost)} detail={`${yearLogs.length} fuel transactions`} accent="blue" />
-          <MetricCard icon={<FiDroplet size={20} />} label="Fuel consumed" value={`${formatNumber(yearlySummary.totalLiters, 1)} L`} detail={`Across ${selectedYear}`} accent="cyan" />
-          <MetricCard icon={<FiActivity size={20} />} label="Average refill" value={formatCurrency(yearlySummary.averageCost)} detail="Average cost per transaction" accent="amber" />
-          <MetricCard icon={<FiTruck size={20} />} label="Active vehicles" value={formatNumber(yearlySummary.activeVehicles)} detail="Vehicles with fuel activity" accent="slate" />
+          <MetricCard icon={<FiDollarSign size={20} />} label={t("fuel.annualCost")} value={annualValue(yearlySummary.totalCost, false, true)} detail={annualScope} accent="blue" />
+          <MetricCard icon={<FiDroplet size={20} />} label={t("fuel.annualFilled")} value={annualValue(yearlySummary.totalLiters)} detail={annualScope} accent="cyan" />
+          <MetricCard icon={<FiActivity size={20} />} label={t("fuel.annualConsumed")} value={annualValue(yearlySummary.totalConsumed, true)} detail={annualScope + partialConsumption} accent="amber" />
+          <MetricCard icon={<FiTruck size={20} />} label={t("fuel.remainingFuel")} value={annualValue(yearlySummary.remainingLiters, true)} detail={t("fuel.remainingFormula") + partialConsumption} accent="slate" />
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
