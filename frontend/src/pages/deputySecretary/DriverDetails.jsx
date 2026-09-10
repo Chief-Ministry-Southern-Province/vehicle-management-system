@@ -18,7 +18,7 @@ import {
 } from "react-icons/fi";
 import { getDrivers } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
-import { formatLocalDate } from "../../utils/dateTime";
+import { formatLocalDate, LOCAL_TIME_ZONE } from "../../utils/dateTime";
 import { normalizeDriver } from "../../utils/driverMapper";
 import { generateDriverDirectoryPdf } from "../../utils/driverDirectoryPdf";
 
@@ -194,6 +194,24 @@ function DriverAvatar({ driver, className, textClassName = "" }) {
   );
 }
 const formatDate = (date) => formatLocalDate(date, "—");
+function LicenceExpiry({ date }) {
+  const expiry = date ? new Date(date) : null;
+  const hasDate = expiry && !Number.isNaN(expiry.getTime());
+  const dateKey = (value) => {
+    const parts = new Intl.DateTimeFormat("en-LK", {
+      timeZone: LOCAL_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(value);
+    return ["year", "month", "day"].map((type) => parts.find((part) => part.type === type).value).join("-");
+  };
+  const expired = hasDate && dateKey(expiry) < dateKey(new Date());
+  const tone = !hasDate
+    ? "bg-slate-100 text-slate-500 ring-slate-200"
+    : expired
+      ? "bg-red-50 text-red-700 ring-red-200"
+      : "bg-green-50 text-green-700 ring-green-200";
+
+  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${tone}`}>{formatDate(date)}</span>;
+}
 function StatusPill({ status }) {
   return (
     <span
@@ -295,7 +313,7 @@ function DriverProfile({ driver, onClose }) {
           <ProfileSection title="Licence & Vehicle Allocation">
             <ProfileItem icon={<FiShield />} label="Licence Number" value={driver.licenceNumber} />
             <ProfileItem icon={<FiShield />} label="Licence Type" value={driver.licenceType} />
-            <ProfileItem icon={<FiCalendar />} label="Licence Expiry" value={formatDate(driver.licenceRenewalDate)} />
+            <ProfileItem icon={<FiCalendar />} label="Licence Expiry" value={<LicenceExpiry date={driver.licenceRenewalDate} />} />
             <ProfileItem icon={<FiTruck />} label="Allocated Vehicle" value={driver.vehicle || "Not allocated"} />
             <ProfileItem icon={<FiTruck />} label="Registration" value={driver.registration || "Not allocated"} />
           </ProfileSection>
@@ -513,7 +531,7 @@ export default function DriverDetails() {
                       <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(driver.id)} onChange={() => toggleDriver(driver.id)} aria-label={`${t("driverTable.select")} ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /></td>
                       <td className="px-4 py-3"><DriverAvatar driver={driver} className="h-11 w-11 rounded-full" textClassName="text-sm" /></td>
                       <th scope="row" className="px-4 py-3 font-semibold text-slate-900">{driver.fullName}<span className="mt-1 block text-xs font-medium text-slate-500">{driver.id}</span></th>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-600">{formatDate(driver.licenceRenewalDate)}</td>
+                      <td className="whitespace-nowrap px-4 py-3"><LicenceExpiry date={driver.licenceRenewalDate} /></td>
                       <td className="whitespace-nowrap px-4 py-3"><StatusPill status={driver.status} /></td>
                       <td className="px-4 py-3"><button type="button" onClick={() => setProfileDriver(driver)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-blue-600"><FiEye />{t("driverTable.details")}<span className="sr-only">: {driver.fullName}</span></button></td>
                     </tr>
