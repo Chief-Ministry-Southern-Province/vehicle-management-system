@@ -187,6 +187,7 @@ for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
 }
 const driverTableLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
   directory: ["Driver Directory", "රියදුරු නාමාවලිය", "சாரதி பட்டியல்"],
   select: ["Select", "තෝරන්න", "தேர்ந்தெடு"],
   photo: ["Profile Picture", "පැතිකඩ ඡායාරූපය", "சுயவிவரப் படம்"],

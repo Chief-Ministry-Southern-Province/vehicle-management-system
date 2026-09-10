@@ -350,7 +350,6 @@ export default function DriverDetails() {
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [profileDriver, setProfileDriver] = useState(null);
   useEffect(() => {
     let active = true;
@@ -402,11 +401,7 @@ export default function DriverDetails() {
     [drivers],
   );
   const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
-  const selectedDrivers = useMemo(() => drivers.filter((driver) => selectedIds.has(driver.id)), [drivers, selectedIds]);
-  const allVisibleSelected = filteredDrivers.length > 0 && filteredDrivers.every((driver) => selectedIds.has(driver.id));
-  const toggleDriver = (driverId) => setSelectedIds((current) => { const next = new Set(current); if (next.has(driverId)) next.delete(driverId); else next.add(driverId); return next; });
-  const toggleVisible = () => setSelectedIds((current) => { const next = new Set(current); filteredDrivers.forEach((driver) => { if (allVisibleSelected) next.delete(driver.id); else next.add(driver.id); }); return next; });
-  const exportSelected = () => { try { generateDriverDirectoryPdf(selectedDrivers); } catch (exportError) { window.alert(exportError.message); } };
+  const exportDrivers = () => { try { generateDriverDirectoryPdf(filteredDrivers); } catch (exportError) { window.alert(exportError.message); } };
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">
@@ -506,7 +501,13 @@ export default function DriverDetails() {
             </div>
           </div>
 
-          {!loading && !loadError && drivers.length > 0 && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"><label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select all visible</label><div className="flex items-center gap-4"><span className="text-sm text-slate-600"><strong className="text-slate-900">{selectedDrivers.length}</strong> selected</span><button type="button" onClick={exportSelected} disabled={selectedDrivers.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button></div></div>}
+          {!loading && !loadError && drivers.length > 0 && (
+            <div className="mt-4 flex justify-end">
+              <button type="button" onClick={exportDrivers} disabled={filteredDrivers.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                <FiDownload /> {t("driverTable.exportAll")} ({filteredDrivers.length})
+              </button>
+            </div>
+          )}
 
           {loading && (
             <p className="py-12 text-center text-sm text-slate-500">
@@ -519,7 +520,6 @@ export default function DriverDetails() {
                 <caption className="sr-only">{t("driverTable.directory")}</caption>
                 <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th scope="col" className="px-4 py-3"><span className="sr-only">{t("driverTable.select")}</span></th>
                     {["photo", "name", "expiry", "status", "details"].map((key) => (
                       <th key={key} scope="col" className="px-4 py-3">{t(`driverTable.${key}`)}</th>
                     ))}
@@ -528,7 +528,6 @@ export default function DriverDetails() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredDrivers.map((driver) => (
                     <tr key={driver.id} className="transition hover:bg-blue-50/40">
-                      <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(driver.id)} onChange={() => toggleDriver(driver.id)} aria-label={`${t("driverTable.select")} ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /></td>
                       <td className="px-4 py-3"><DriverAvatar driver={driver} className="h-11 w-11 rounded-full" textClassName="text-sm" /></td>
                       <th scope="row" className="px-4 py-3 font-semibold text-slate-900">{driver.fullName}<span className="mt-1 block text-xs font-medium text-slate-500">{driver.id}</span></th>
                       <td className="whitespace-nowrap px-4 py-3"><LicenceExpiry date={driver.licenceRenewalDate} /></td>
@@ -536,7 +535,7 @@ export default function DriverDetails() {
                       <td className="px-4 py-3"><button type="button" onClick={() => setProfileDriver(driver)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-blue-600"><FiEye />{t("driverTable.details")}<span className="sr-only">: {driver.fullName}</span></button></td>
                     </tr>
                   ))}
-                  {filteredDrivers.length === 0 && <tr><td colSpan={6} className="px-4 py-12 text-center text-slate-500">{t("driverTable.empty")}</td></tr>}
+                  {filteredDrivers.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-slate-500">{t("driverTable.empty")}</td></tr>}
                 </tbody>
               </table>
             </div>
