@@ -372,10 +372,6 @@ export default function ServiceRecords() {
               <span>Showing service records for <strong>{selectedMonthLabel}</strong></span>
               <button type="button" onClick={() => setSelectedMonth("")} className="font-semibold hover:text-blue-900">Show all months</button>
             </div>
-          ) : !loading && !error ? (
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
-              Showing all service records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
-            </div>
           ) : null}
           {!loading && !error && (
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
