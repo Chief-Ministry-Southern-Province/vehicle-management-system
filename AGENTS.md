@@ -192,6 +192,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 - Senior review: `GET /senior-recommendations/vehicle-requests[/{id}]`; `PATCH /senior-recommendations/vehicle-requests/{id}`.
 - Final decisions: `GET /final-approvals/vehicle-requests[/{id}]`; `PATCH .../{id}/approve|reject`.
 - Operational lists: `GET /approved-journeys`, `/recommended-requests`, `/dashboard/executive-stats` with route-specific roles.
+- `GET /approved-journeys` permits active subject officers, deputy secretaries, and senior deputy secretaries. Senior deputy secretary read access supplies the Fuel Management consumption chart and annual consumed/remaining fuel cards; fleet write permissions remain subject-officer-only.
 - Driver operations: `GET /driver/dashboard-stats`, `/scheduled-journeys`, `/trip-history`, `/assigned-vehicle`; `PATCH /driver/journeys/{id}/status`; `POST /driver/issue-reports`. Scheduled-journey payloads include the saved start/end locations, coordinates, authoritative route distance/geometry, a derived `round_trip_distance_km` equal to twice the authoritative one-way distance, and per-request route data for consolidated journeys.
 - Issue review: `GET /issue-reports`.
 - Driver journey status actions accept `start_odometer_km` on start and `end_odometer_km` on completion (plus the missing start for legacy trips). Scheduled, status-action, and trip-history payloads expose both readings and `actual_distance_km`.
