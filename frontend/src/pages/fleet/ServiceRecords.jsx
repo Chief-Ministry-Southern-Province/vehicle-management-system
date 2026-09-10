@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { FiActivity, FiArrowUpRight, FiBarChart2, FiCalendar, FiCheckCircle, FiDollarSign, FiDownload, FiTool, FiTrendingUp, FiTruck } from "react-icons/fi";
+import { FiActivity, FiBarChart2, FiCalendar, FiCheckCircle, FiDollarSign, FiDownload, FiTool, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import ServiceFilters from "../../components/subjectOfficer/service/ServiceFilters";
 import ServiceScheduleTable from "../../components/subjectOfficer/service/ServiceScheduleTable";
@@ -224,18 +224,13 @@ export default function ServiceRecords() {
   const yearlySummary = useMemo(() => {
     const totalCost = yearRecords.reduce((sum, record) => sum + (Number(record.cost) || 0), 0);
     const activeVehicles = new Set(yearRecords.map((record) => record.vehicle).filter(Boolean)).size;
-    const peakMonth = monthlyData.reduce(
-      (peak, month) => (month.cost > peak.cost ? month : peak),
-      { cost: 0, services: 0, month: "No data", monthKey: "" },
-    );
 
     return {
       totalCost,
       activeVehicles,
       averageCost: yearRecords.length ? totalCost / yearRecords.length : 0,
-      peakMonth,
     };
-  }, [monthlyData, yearRecords]);
+  }, [yearRecords]);
 
   const updateFilter = (name, value) => {
     setFilters((current) => ({ ...current, [name]: value }));
@@ -378,16 +373,6 @@ export default function ServiceRecords() {
               </ResponsiveContainer>
             </div>
           )}
-        </section>
-
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700"><FiTrendingUp size={20} /></div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">Peak maintenance insight</p>
-            <p className="mt-1 text-base font-bold text-slate-900">{yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}</p>
-            <p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.services)} completed services during the highest-cost month.</p>
-          </div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40">View records <FiArrowUpRight /></button>
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
