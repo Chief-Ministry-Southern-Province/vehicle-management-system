@@ -434,11 +434,6 @@ export default function FuelManagement() {
               </button>
             </div>
           )}
-          {!selectedMonthLabel && !loading && !error && (
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
-              Showing all fuel records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
-            </div>
-          )}
           {!loading && !error && (
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
               <p className="text-sm text-slate-600">
