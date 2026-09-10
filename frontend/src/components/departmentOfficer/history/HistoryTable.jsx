@@ -2,7 +2,9 @@ import { FiArrowUpRight, FiEye, FiMapPin } from "react-icons/fi";
 import { formatLocalDateTime as formatDate } from "../../../utils/dateTime";
 
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
+const shortLocation = (location) => String(location || "—").split(",")[0].trim() || "—";
 const statusClasses = {
+  pending: "bg-amber-50 text-amber-700 ring-amber-100",
   submitted: "bg-slate-100 text-slate-700 ring-slate-200",
   recommended: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   vehicle_allocated: "bg-blue-50 text-blue-700 ring-blue-100",
@@ -12,6 +14,7 @@ const statusClasses = {
   cancelled: "bg-slate-100 text-slate-600 ring-slate-200",
 };
 const statusLabels = {
+  pending: "Pending",
   submitted: "Submitted",
   recommended: "Recommended",
   vehicle_allocated: "Allocated Vehicle",
@@ -40,10 +43,10 @@ export default function HistoryTable({ requests, loading, error, onView }) {
             <tr>
               <th className="px-5 py-4">Request</th>
               <th className="px-5 py-4">Requester</th>
-              <th className="px-5 py-4">Destination & purpose</th>
+              <th className="px-5 py-4">Route & purpose</th>
               <th className="px-5 py-4">Submitted</th>
               <th className="px-5 py-4">Recommended by</th>
-              <th className="px-5 py-4">Status</th>
+              <th className="px-5 py-4">Recommendation</th>
               <th className="px-5 py-4">Decision</th>
               <th className="px-5 py-4 text-right">Details</th>
             </tr>
@@ -64,7 +67,7 @@ export default function HistoryTable({ requests, loading, error, onView }) {
                 </td>
                 <td className="px-5 py-4">
                   <p className="flex items-center gap-1.5 font-semibold text-slate-800"><FiMapPin className="shrink-0 text-blue-500" />
-                    {request.destination || "—"}
+                    {shortLocation(request.starting_location)} – {shortLocation(request.destination)}
                   </p>
                   <p className="mt-1 max-w-xs truncate text-xs text-slate-500">
                     {request.purpose || "—"}
@@ -78,9 +81,10 @@ export default function HistoryTable({ requests, loading, error, onView }) {
                 </td>
                 <td className="px-5 py-4">
                   <span
-                    className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${statusClasses[request.status] || "bg-slate-100 text-slate-700 ring-slate-200"}`}
+                    className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${statusClasses[request.recommendation_status || request.status] || "bg-slate-100 text-slate-700 ring-slate-200"}`}
                   >
-                    {statusLabels[request.status] ||
+                    {statusLabels[request.recommendation_status || request.status] ||
+                      request.recommendation_status?.replaceAll("_", " ") ||
                       request.status?.replaceAll("_", " ") ||
                       "—"}
                   </span>
