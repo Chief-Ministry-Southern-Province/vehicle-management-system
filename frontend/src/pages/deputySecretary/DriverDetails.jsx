@@ -1,5 +1,5 @@
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiCalendar,
   FiCheckCircle,
@@ -12,12 +12,13 @@ import {
   FiPhone,
   FiSearch,
   FiShield,
-  FiStar,
   FiTruck,
   FiUsers,
   FiX,
 } from "react-icons/fi";
 import { getDrivers } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
+import { formatLocalDate } from "../../utils/dateTime";
 import { normalizeDriver } from "../../utils/driverMapper";
 import { generateDriverDirectoryPdf } from "../../utils/driverDirectoryPdf";
 
@@ -192,18 +193,7 @@ function DriverAvatar({ driver, className, textClassName = "" }) {
     </div>
   );
 }
-function formatDate(date) {
-  return new Date(date).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-function daysUntil(date) {
-  const today = new Date();
-  const target = new Date(date);
-  return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-}
+const formatDate = (date) => formatLocalDate(date, "—");
 function StatusPill({ status }) {
   return (
     <span
@@ -238,101 +228,20 @@ function SummaryCard({ icon, label, value, sub, tone }) {
     </div>
   );
 }
-function DriverCard({ driver, selected, onToggle, onViewProfile }) {
-  const expiryDays = daysUntil(driver.licenceRenewalDate);
-  const expiringSoon = expiryDays <= 180;
-  return (
-    <article className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-blue-100 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <DriverAvatar
-            driver={driver}
-            className="h-14 w-14 shrink-0 rounded-2xl"
-            textClassName="text-lg"
-          />
-          <div>
-            <h3 className="font-bold text-slate-900">{driver.fullName}</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              {driver.designation || "Government Driver"}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-blue-600">
-              {driver.id}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3"><label className="inline-flex items-center gap-2 text-xs font-medium text-slate-500"><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`Select ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /> Select</label><StatusPill status={driver.status} /></div>
-      </div>
-
-      <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-        <DetailLine icon={<FiShield />} label="NIC" value={driver.nic} />
-        <DetailLine
-          icon={<FiDroplet />}
-          label="Blood"
-          value={driver.bloodGroup}
-        />
-        <DetailLine
-          icon={<FiPhone />}
-          label="Phone"
-          value={driver.contactNumber}
-        />
-        <DetailLine
-          icon={<FiCalendar />}
-          label="DOB"
-          value={formatDate(driver.dateOfBirth)}
-        />
-      </div>
-
-      <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Licence
-            </p>
-            <p className="mt-1 font-bold text-slate-900">
-              {driver.licenceNumber}
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Type {driver.licenceType}
-            </p>
-          </div>
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${expiringSoon ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}
-          >
-            {formatDate(driver.licenceRenewalDate)}
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-        <span className="inline-flex items-center gap-2">
-          <FiTruck className="text-blue-500" />
-          {driver.vehicle}
-        </span>
-        {driver.rating != null && (
-          <span className="inline-flex items-center gap-2">
-            <FiStar className="text-amber-500" />
-            {driver.rating}
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={onViewProfile}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
-        >
-          <FiEye /> View Profile
-        </button>
-      </div>
-    </article>
-  );
-}
-
 function DriverProfile({ driver, onClose }) {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 m-auto max-h-[94vh] w-[calc(100%_-_2rem)] max-w-3xl overflow-visible rounded-3xl bg-transparent p-0 backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
       aria-labelledby="driver-profile-title"
+      onCancel={onClose}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -392,7 +301,7 @@ function DriverProfile({ driver, onClose }) {
           </ProfileSection>
         </div>
       </article>
-    </div>
+    </dialog>
   );
 }
 
@@ -416,20 +325,8 @@ function ProfileItem({ icon, label, value, wide = false }) {
     </div>
   );
 }
-function DetailLine({ icon, label, value }) {
-  return (
-    <div className="flex min-w-0 items-center gap-2 text-slate-600">
-      <span className="shrink-0 text-slate-400">{icon}</span>
-      <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {label}
-      </span>
-      <span className="min-w-0 truncate font-semibold text-slate-800">
-        {value}
-      </span>
-    </div>
-  );
-}
 export default function DriverDetails() {
+  const { t } = useLanguage();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -598,11 +495,34 @@ export default function DriverDetails() {
               Loading drivers from the database…
             </p>
           )}
-          <div className="mt-5 grid gap-4 xl:grid-cols-2">
-            {filteredDrivers.map((driver) => (
-              <DriverCard key={driver.id} driver={driver} selected={selectedIds.has(driver.id)} onToggle={() => toggleDriver(driver.id)} onViewProfile={() => setProfileDriver(driver)} />
-            ))}
-          </div>
+          {!loading && !loadError && (
+            <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full min-w-[720px] text-left text-sm">
+                <caption className="sr-only">{t("driverTable.directory")}</caption>
+                <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th scope="col" className="px-4 py-3"><span className="sr-only">{t("driverTable.select")}</span></th>
+                    {["photo", "name", "expiry", "status", "details"].map((key) => (
+                      <th key={key} scope="col" className="px-4 py-3">{t(`driverTable.${key}`)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredDrivers.map((driver) => (
+                    <tr key={driver.id} className="transition hover:bg-blue-50/40">
+                      <td className="px-4 py-3"><input type="checkbox" checked={selectedIds.has(driver.id)} onChange={() => toggleDriver(driver.id)} aria-label={`${t("driverTable.select")} ${driver.fullName}`} className="h-4 w-4 rounded border-slate-300 accent-blue-600" /></td>
+                      <td className="px-4 py-3"><DriverAvatar driver={driver} className="h-11 w-11 rounded-full" textClassName="text-sm" /></td>
+                      <th scope="row" className="px-4 py-3 font-semibold text-slate-900">{driver.fullName}<span className="mt-1 block text-xs font-medium text-slate-500">{driver.id}</span></th>
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-600">{formatDate(driver.licenceRenewalDate)}</td>
+                      <td className="whitespace-nowrap px-4 py-3"><StatusPill status={driver.status} /></td>
+                      <td className="px-4 py-3"><button type="button" onClick={() => setProfileDriver(driver)} className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-blue-600"><FiEye />{t("driverTable.details")}<span className="sr-only">: {driver.fullName}</span></button></td>
+                    </tr>
+                  ))}
+                  {filteredDrivers.length === 0 && <tr><td colSpan={6} className="px-4 py-12 text-center text-slate-500">{t("driverTable.empty")}</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
       {profileDriver && (

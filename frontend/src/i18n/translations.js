@@ -186,3 +186,16 @@ const driverViewLabels = {
 for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
 }
+const driverTableLabels = {
+  directory: ["Driver Directory", "රියදුරු නාමාවලිය", "சாரதி பட்டியல்"],
+  select: ["Select", "තෝරන්න", "தேர்ந்தெடு"],
+  photo: ["Profile Picture", "පැතිකඩ ඡායාරූපය", "சுயவிவரப் படம்"],
+  name: ["Driver Name", "රියදුරු නම", "சாரதி பெயர்"],
+  expiry: ["Licence Expiry", "බලපත්‍රය කල් ඉකුත් වන දිනය", "உரிமம் காலாவதியாகும் தேதி"],
+  status: ["Status", "තත්ත්වය", "நிலை"],
+  details: ["View Details", "විස්තර බලන්න", "விவரங்களைக் காண்க"],
+  empty: ["No drivers match your filters.", "ඔබගේ පෙරහන්වලට ගැළපෙන රියදුරන් නොමැත.", "உங்கள் வடிகட்டிகளுக்குப் பொருந்தும் சாரதிகள் இல்லை."],
+};
+for (const [key, labels] of Object.entries(driverTableLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverTable.${key}`] = labels[index]; });
+}
