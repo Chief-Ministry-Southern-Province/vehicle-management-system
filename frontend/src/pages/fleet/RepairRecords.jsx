@@ -81,7 +81,6 @@ export default function RepairRecords() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -181,19 +180,8 @@ export default function RepairRecords() {
     if (monthKey) setSelectedMonth((current) => current === monthKey ? "" : monthKey);
   };
   const selectedMonthLabel = monthlyData.find((item) => item.monthKey === selectedMonth)?.month;
-  const selectedRecords = useMemo(() => records.filter((record) => selectedIds.has(record.id)), [records, selectedIds]);
-  const toggleRecord = (recordId) => setSelectedIds((current) => {
-    const next = new Set(current);
-    if (next.has(recordId)) next.delete(recordId); else next.add(recordId);
-    return next;
-  });
-  const toggleAllRecords = (items, selected) => setSelectedIds((current) => {
-    const next = new Set(current);
-    items.forEach((item) => { if (selected) next.add(item.id); else next.delete(item.id); });
-    return next;
-  });
-  const exportSelectedRecords = () => {
-    try { generateRepairRecordsPdf(selectedRecords); }
+  const exportDisplayedRecords = () => {
+    try { generateRepairRecordsPdf(displayedRecords); }
     catch (exportError) { window.alert(exportError.message); }
   };
 
@@ -265,15 +253,15 @@ export default function RepairRecords() {
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><FiTool /></div><div><h2 className="font-bold text-slate-900">Repair Records Ledger</h2><p className="mt-0.5 text-xs text-slate-500">Search, filter, select, and export repair history.</p></div></div>
+          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><FiTool /></div><div><h2 className="font-bold text-slate-900">Repair Records Ledger</h2><p className="mt-0.5 text-xs text-slate-500">Search, filter, and export repair history.</p></div></div>
           <RepairFilters filters={filters} repairTypes={repairTypes} onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value }))} selectedMonth={selectedMonth} onMonthChange={changeMonth} onClear={() => { setFilters(EMPTY_FILTERS); setSelectedMonth(""); }} />
           {selectedMonthLabel ? (
             <div className="flex items-center justify-between border-b border-rose-100 bg-rose-50/70 px-5 py-3 text-sm text-rose-700"><span>Showing repair records for <strong>{selectedMonthLabel}</strong></span><button type="button" onClick={() => setSelectedMonth("")} className="font-semibold hover:text-rose-900">Show all months</button></div>
           ) : !loading && !error ? (
             <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">Showing all repair records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.</div>
           ) : null}
-          {!loading && !error && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3"><p className="text-sm text-slate-600"><strong className="text-slate-900">{selectedRecords.length}</strong> repair {selectedRecords.length === 1 ? "record" : "records"} selected</p><button type="button" onClick={exportSelectedRecords} disabled={selectedRecords.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-200 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button></div>}
-          <RepairTable records={displayedRecords} loading={loading} error={error} selectedIds={selectedIds} onToggle={toggleRecord} onToggleAll={toggleAllRecords} />
+          {!loading && !error && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3"><p className="text-sm text-slate-600"><strong className="text-slate-900">{displayedRecords.length}</strong> repair {displayedRecords.length === 1 ? "record" : "records"} ready to export</p><button type="button" onClick={exportDisplayedRecords} disabled={displayedRecords.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-200 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export All Listed PDF</button></div>}
+          <RepairTable records={displayedRecords} loading={loading} error={error} />
         </section>
       </div>
     </DashboardLayout>
