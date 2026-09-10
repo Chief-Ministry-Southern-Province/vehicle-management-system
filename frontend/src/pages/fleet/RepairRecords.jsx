@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { FiActivity, FiAlertTriangle, FiArrowUpRight, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiTool, FiTrendingUp, FiTruck } from "react-icons/fi";
+import { FiActivity, FiAlertTriangle, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiTool, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import RepairFilters from "../../components/subjectOfficer/repair/RepairFilters";
 import RepairTable from "../../components/subjectOfficer/repair/RepairTable";
@@ -165,14 +165,12 @@ export default function RepairRecords() {
   const yearlySummary = useMemo(() => {
     const totalCost = yearRecords.reduce((sum, record) => sum + (Number(record.cost) || 0), 0);
     const affectedVehicles = new Set(yearRecords.map((record) => record.vehicle).filter(Boolean)).size;
-    const peakMonth = monthlyData.reduce((peak, month) => month.cost > peak.cost ? month : peak, { cost: 0, repairs: 0, month: "No data", monthKey: "" });
     return {
       totalCost,
       affectedVehicles,
       averageCost: yearRecords.length ? totalCost / yearRecords.length : 0,
-      peakMonth,
     };
-  }, [monthlyData, yearRecords]);
+  }, [yearRecords]);
 
   const changeMonth = (month) => {
     setSelectedMonth(month);
@@ -264,12 +262,6 @@ export default function RepairRecords() {
               </ResponsiveContainer>
             </div>
           )}
-        </section>
-
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-100 text-rose-700"><FiTrendingUp size={20} /></div>
-          <div><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-rose-700">Peak repair insight</p><p className="mt-1 text-base font-bold text-slate-900">{yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}</p><p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.repairs)} completed repairs during the highest-cost month.</p></div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-40">View records <FiArrowUpRight /></button>
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
