@@ -203,3 +203,12 @@ const driverTableLabels = {
 for (const [key, labels] of Object.entries(driverTableLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverTable.${key}`] = labels[index]; });
 }
+
+const serviceLedgerLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  ready: ["service records ready to export", "අපනයනයට සූදානම් සේවා වාර්තා", "ஏற்றுமதிக்குத் தயாரான சேவைப் பதிவுகள்"],
+  detail: ["Search, filter, and export service history.", "සේවා ඉතිහාසය සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "சேவை வரலாற்றைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
+};
+for (const [key, labels] of Object.entries(serviceLedgerLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`serviceLedger.${key}`] = labels[index]; });
+}
