@@ -5,6 +5,27 @@ const formatDate = (value) => {
   return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString();
 };
 
+function VehicleImage({ item }) {
+  const fallback = (event) => {
+    event.currentTarget.classList.add("hidden");
+    event.currentTarget.nextElementSibling.classList.remove("hidden");
+  };
+
+  return (
+    <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-blue-50 text-blue-600">
+      {item.imageUrl && (
+        <img
+          src={item.imageUrl}
+          alt={`${item.vehicle || "Vehicle"} image`}
+          className="h-full w-full object-cover"
+          onError={fallback}
+        />
+      )}
+      <FiTool size={18} className={item.imageUrl ? "hidden" : ""} aria-hidden="true" />
+    </div>
+  );
+}
+
 export default function ServiceScheduleTable({ records, loading, error }) {
   return (
     <div>
@@ -21,6 +42,7 @@ export default function ServiceScheduleTable({ records, loading, error }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <th className="px-6 py-4 text-left">Image</th>
               <th className="px-6 py-4 text-left">Vehicle</th>
               <th className="px-6 py-4 text-left">Service Type</th>
               <th className="px-6 py-4 text-left">Cost</th>
@@ -29,16 +51,16 @@ export default function ServiceScheduleTable({ records, loading, error }) {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} className="px-6 py-10 text-center text-sm text-slate-500">Loading service records...</td></tr>
+              <tr><td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">Loading service records...</td></tr>
             ) : error ? (
-              <tr><td colSpan={4} className="px-6 py-10 text-center text-sm font-medium text-red-600">{error}</td></tr>
+              <tr><td colSpan={5} className="px-6 py-10 text-center text-sm font-medium text-red-600">{error}</td></tr>
             ) : records.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-10 text-center text-sm text-slate-500">No service records match the selected filters.</td></tr>
+              <tr><td colSpan={5} className="px-6 py-10 text-center text-sm text-slate-500">No service records match the selected filters.</td></tr>
             ) : records.map((item) => (
               <tr key={item.id} className="border-b border-slate-100 transition hover:bg-slate-50">
+                <td className="px-6 py-4"><VehicleImage item={item} /></td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><FiTool size={18} /></div>
                     <div>
                       <h4 className="font-medium text-slate-900">{item.vehicle || "-"}</h4>
                       <p className="text-xs text-slate-500">{item.model || "Model not specified"}</p>

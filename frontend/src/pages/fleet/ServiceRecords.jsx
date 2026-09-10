@@ -122,6 +122,7 @@ export default function ServiceRecords() {
             id: `${vehicle.id}-${service.service_date || "service"}-${index}`,
             vehicle: vehicle.registration_number,
             model: [vehicle.make, vehicle.model].filter(Boolean).join(" "),
+            imageUrl: vehicle.image_url || vehicle.image_urls?.[0] || "",
           })),
         );
 
