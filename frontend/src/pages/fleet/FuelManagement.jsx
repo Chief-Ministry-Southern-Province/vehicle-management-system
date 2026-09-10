@@ -59,18 +59,16 @@ function MetricCard({ icon, label, value, detail, accent }) {
   const style = accents[accent];
 
   return (
-    <article className={`relative overflow-hidden rounded-2xl border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${style.border}`}>
-      <div className="flex items-start justify-between gap-3">
+    <article className={`relative min-h-[120px] min-w-0 overflow-hidden rounded-[20px] border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:px-5 ${style.border}`}>
+      <div className="flex items-center justify-between gap-3">
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${style.icon}`}>
           {icon}
         </span>
-        <div className="min-w-0 flex-1 text-right">
-          <p className={`text-[11px] font-bold uppercase tracking-[0.08em] ${style.label}`}>{label}</p>
-          <p className="mt-2 text-2xl font-extrabold leading-none tracking-tight text-slate-900 sm:text-3xl">{value}</p>
-        </div>
+        <p className="min-w-0 flex-1 break-words text-right text-xl font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums sm:text-2xl">{value}</p>
       </div>
-      <p className="mt-3 text-xs text-slate-500">{detail}</p>
-      <div className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
+      <p className={`mt-2 text-xs font-bold uppercase leading-5 tracking-wide sm:text-sm ${style.label}`}>{label}</p>
+      <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{detail}</p>
+      <div aria-hidden="true" className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
     </article>
   );
 }
