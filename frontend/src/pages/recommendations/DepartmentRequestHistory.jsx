@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiArchive, FiClock, FiRefreshCw, FiShield } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import HistoryFilters from "../../components/departmentOfficer/history/HistoryFilter";
 import HistoryTable from "../../components/departmentOfficer/history/HistoryTable";
@@ -60,52 +60,59 @@ export default function DepartmentRequestHistory() {
   }, [requests, query, status]);
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Request History
-            </h1>
+      <div className="min-h-screen bg-slate-50 px-3 py-4 sm:px-5 sm:py-6 lg:px-7">
+        <div className="mx-auto max-w-[1600px] space-y-5 sm:space-y-6">
+          <header className="relative overflow-hidden rounded-[24px] bg-linear-to-br from-slate-950 via-blue-950 to-indigo-900 px-5 py-6 text-white shadow-[0_24px_60px_-30px_rgba(30,64,175,0.8)] sm:px-7 sm:py-8">
+            <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-indigo-400/20 blur-3xl" />
+            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-300">Department operations</p>
+                <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Request History</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100/80">Review the complete, department-scoped archive of official vehicle requests and recommendations.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-blue-100 backdrop-blur-sm"><FiArchive className="text-cyan-300" /> {requests.length} archived</div>
+                <div className="flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold text-blue-100 backdrop-blur-sm"><FiClock className="text-cyan-300" /> {filteredRequests.length} displayed</div>
+              </div>
+            </div>
+          </header>
 
-            <p className="text-gray-500 mt-1">
-              Monitor and manage your vehicle allocation requests.
-            </p>
-          </div>
-
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-slate-500"><FiShield className="text-blue-600" /> Department records are visible only to authorized reviewers.</div>
+            <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 border px-4 py-2 rounded-xl hover:bg-gray-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
             >
               <FiRefreshCw /> Refresh
             </button>
             <button
               onClick={() => navigate("/pendingrecommendations")}
-              className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700"
+              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700"
             >
               Review Pending Requests
             </button>
+            </div>
           </div>
+          <HistoryFilters
+            query={query}
+            status={status}
+            onQueryChange={setQuery}
+            onStatusChange={setStatus}
+            onReset={() => {
+              setQuery("");
+              setStatus("all");
+            }}
+          />
+          <HistoryTable
+            requests={filteredRequests}
+            loading={loading}
+            error={error}
+            onView={(id) => navigate(`/employee/recommendations/${id}`)}
+          />
         </div>
-
-        <HistoryFilters
-          query={query}
-          status={status}
-          onQueryChange={setQuery}
-          onStatusChange={setStatus}
-          onReset={() => {
-            setQuery("");
-            setStatus("all");
-          }}
-        />
-        <HistoryTable
-          requests={filteredRequests}
-          loading={loading}
-          error={error}
-          onView={(id) => navigate(`/employee/recommendations/${id}`)}
-        />
       </div>
     </DashboardLayout>
   );
