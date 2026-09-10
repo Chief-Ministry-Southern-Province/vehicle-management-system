@@ -135,7 +135,6 @@ export default function FuelManagement() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -318,34 +317,9 @@ export default function FuelManagement() {
     setSelectedMonth("");
   };
 
-  const toggleRecord = (recordId) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (next.has(recordId)) next.delete(recordId);
-      else next.add(recordId);
-      return next;
-    });
-  };
-
-  const toggleAllRecords = (records, selected) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      records.forEach((record) => {
-        if (selected) next.add(record.id);
-        else next.delete(record.id);
-      });
-      return next;
-    });
-  };
-
-  const selectedRecords = useMemo(
-    () => logs.filter((log) => selectedIds.has(log.id)),
-    [logs, selectedIds],
-  );
-
-  const exportSelectedRecords = () => {
+  const exportDisplayedRecords = () => {
     try {
-      generateFuelRecordsPdf(selectedRecords);
+      generateFuelRecordsPdf(displayedLogs);
     } catch (exportError) {
       window.alert(exportError.message);
     }
@@ -393,7 +367,7 @@ export default function FuelManagement() {
             </div>
             <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
               {t("fuel.vehicle")}
-              <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); setSelectedIds(new Set()); }}
+              <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); }}
                 disabled={!vehicles.length} className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:ring-2 focus:ring-blue-100">
                 <option value="">{t("fuel.allVehicles")}</option>
                 {vehicles.map(vehicle => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
@@ -433,7 +407,7 @@ export default function FuelManagement() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><FiDroplet /></div>
             <div>
               <h2 className="font-bold text-slate-900">Fuel Records Ledger</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Search, filter, select, and export transaction records.</p>
+              <p className="mt-0.5 text-xs text-slate-500">{t("fuel.ledgerDetail")}</p>
             </div>
           </div>
           <FuelFilters
@@ -468,16 +442,16 @@ export default function FuelManagement() {
           {!loading && !error && (
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
               <p className="text-sm text-slate-600">
-                <strong className="text-slate-900">{selectedRecords.length}</strong>{" "}
-                fuel {selectedRecords.length === 1 ? "record" : "records"} selected
+                <strong className="text-slate-900">{displayedLogs.length}</strong>{" "}
+                {t("fuel.readyToExport")}
               </p>
               <button
                 type="button"
-                onClick={exportSelectedRecords}
-                disabled={selectedRecords.length === 0}
+                onClick={exportDisplayedRecords}
+                disabled={displayedLogs.length === 0}
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <FiDownload /> Export Selected PDF
+                <FiDownload /> {t("fuel.exportAll")}
               </button>
             </div>
           )}
@@ -485,9 +459,6 @@ export default function FuelManagement() {
             logs={displayedLogs}
             loading={loading}
             error={error}
-            selectedIds={selectedIds}
-            onToggle={toggleRecord}
-            onToggleAll={toggleAllRecords}
           />
         </section>
       </div>

@@ -82,6 +82,9 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  readyToExport: ["Fuel records ready to export", "අපනයනයට සූදානම් ඉන්ධන වාර්තා", "ஏற்றுமதிக்குத் தயாரான எரிபொருள் பதிவுகள்"],
+  ledgerDetail: ["Search, filter, and export transaction records.", "ගනුදෙනු වාර්තා සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "பரிவர்த்தனைப் பதிவுகளைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
   partialConsumption: ["Partial total; missing months", "අර්ධ එකතුව; නොමැති මාස", "பகுதி மொத்தம்; விடுபட்ட மாதங்கள்"],
   annualCost: ["Annual Fuel Cost", "වාර්ෂික ඉන්ධන වියදම", "வருடாந்திர எரிபொருள் செலவு"],
   annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (L)", "வருடாந்திர நிரப்பிய எரிபொருள் (L)"],
