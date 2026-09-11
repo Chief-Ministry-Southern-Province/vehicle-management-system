@@ -90,7 +90,7 @@ function App() {
             <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
             <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
-            <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
+            <Route path="/fuelmanagement" element={withAuth(<FuelManagement />, ["subject_officer", "deputy_secretary", "secretary", "senior_deputy_secretary"])}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>

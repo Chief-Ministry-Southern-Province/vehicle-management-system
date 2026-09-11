@@ -94,7 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/reject', [VehicleRequestController::class, 'finalReject']);
     });
 
-    Route::middleware('role:subject_officer,deputy_secretary,senior_deputy_secretary')
+    Route::middleware('role:subject_officer,deputy_secretary,secretary,senior_deputy_secretary')
         ->get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
 
     Route::middleware('role:subject_officer')
