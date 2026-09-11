@@ -80,11 +80,6 @@ class User extends Authenticatable
         return $this->role === 'system_admin';
     }
 
-    public function isAdministrationAdmin(): bool
-    {
-        return $this->isDeputySecretary() || $this->isSystemAdmin();
-    }
-
     public function isSeniorDeputySecretary(): bool
     {
         return $this->role === 'senior_deputy_secretary';

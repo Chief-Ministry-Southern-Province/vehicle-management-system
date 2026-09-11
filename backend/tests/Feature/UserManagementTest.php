@@ -35,17 +35,16 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $employee->id]);
     }
 
-    public function test_assistant_secretary_account_cannot_be_removed(): void
+    public function test_assistant_secretary_account_can_be_removed(): void
     {
         $assistantSecretary = User::factory()->create(['role' => 'deputy_secretary']);
         $otherAssistantSecretary = User::factory()->create(['role' => 'deputy_secretary']);
 
         $this->actingAs($assistantSecretary)
             ->deleteJson("/api/users/{$otherAssistantSecretary->id}")
-            ->assertForbidden()
-            ->assertJsonPath('message', 'Administrative accounts cannot be removed.');
+            ->assertOk();
 
-        $this->assertDatabaseHas('users', ['id' => $otherAssistantSecretary->id]);
+        $this->assertDatabaseMissing('users', ['id' => $otherAssistantSecretary->id]);
     }
 
     public function test_non_administrative_user_cannot_manage_users(): void
@@ -100,7 +99,7 @@ class UserManagementTest extends TestCase
         $this->actingAs($assistantSecretary)
             ->deleteJson("/api/users/{$systemAdmin->id}")
             ->assertForbidden()
-            ->assertJsonPath('message', 'Administrative accounts cannot be removed.');
+            ->assertJsonPath('message', 'System Administrator accounts cannot be removed.');
     }
 
     public function test_super_admin_can_add_and_list_departments(): void

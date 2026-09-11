@@ -105,7 +105,7 @@ Notes:
 1. Public users may log in and request/reset a forgotten password.
 2. Login accepts the supported identity fields defined by `LoginRequest` (including employee-ID login) and returns a Sanctum token.
 3. Authenticated users may log out, revoke all tokens, read/update their profile (including multipart profile-picture upload), and change password.
-4. Deputy secretaries and system administrators may register users, list/delete users, and create/delete departments. Only deputy secretaries may perform operational request review and allocation.
+4. Deputy secretaries and system administrators may register users, list/delete users, and create/delete departments. System Administrator accounts themselves cannot be removed; Assistant Secretary accounts can be removed through user management. Only deputy secretaries may perform operational request review and allocation.
 5. A user must be active and have an allowed role to pass privileged API middleware.
 6. The administration-only `system_admin` role is excluded from vehicle-request creation and every request-review, allocation, final-decision, driver, and fleet-management route.
 
@@ -215,7 +215,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - `/departmentrequesthistory` explicitly restricts client access to department officers. Its Request History header, filters, archive table, and View action preserve the department-scoped API records and existing query, status-filter, reset, refresh, pending-review navigation, and details navigation behavior.
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
-- The `Topbar` shows a settings icon beside the profile image. The settings icon opens `/setting` while preserving the current internal page as its return destination. From User Settings, the icon returns to that preserved page; direct settings-page visits fall back to the signed-in role's dashboard.
+- The `Topbar` shows a settings icon beside the profile image. The icon opens User Settings as a right-side overlay above the current dashboard page; the backdrop or close button dismisses it without changing that page. The `/setting` route remains available for direct visits.
 - `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
 - The notification menu lets users grant device-notification permission. Once granted, `push-sw.js` and the browser Push API receive workflow notifications even when the SPA is closed; an incoming push refreshes any open notification menu without a page reload, and clicking a device notification focuses or opens the recipient's role dashboard. Subscriptions are synchronized when an authenticated app session opens and removed from the current browser on logout. Web Push requires HTTPS in production; on iOS/iPadOS the site must be installed to the Home Screen.
 - Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.

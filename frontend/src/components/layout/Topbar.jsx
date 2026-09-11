@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiArrowLeft, FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
+import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -16,17 +15,6 @@ const initials = (name) =>
     .map((part) => part[0])
     .join("")
     .toUpperCase();
-
-const roleDashboardPaths = {
-  employee: "/userdashboard",
-  department_officer: "/departmentofficerdashboard",
-  subject_officer: "/subjectofficerdashboard",
-  deputy_secretary: "/deputysecretarydashboard",
-  system_admin: "/systemadmindashboard",
-  senior_deputy_secretary: "/seniordeputysecretarydashboard",
-  secretary: "/secretarydashboard",
-  driver: "/driverdashboard",
-};
 
 const notificationPopupStorageKey = (userId) => `vms-notification-popups:${userId}`;
 
@@ -93,9 +81,8 @@ const showNotificationPopup = (notification) => {
   );
 };
 
-export default function Topbar({ onMenuToggle }) {
+export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const { user } = useAuth();
-  const location = useLocation();
   const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
@@ -107,16 +94,6 @@ export default function Topbar({ onMenuToggle }) {
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
-  const isSettingsPage = location.pathname === "/setting";
-  const dashboardPath = roleDashboardPaths[user?.role] || "/userdashboard";
-  const storedReturnPath = location.state?.profileReturnPath;
-  const returnPath = typeof storedReturnPath === "string"
-    && storedReturnPath.startsWith("/")
-    && !storedReturnPath.startsWith("//")
-    && storedReturnPath !== "/setting"
-    ? storedReturnPath
-    : dashboardPath;
-  const currentPath = `${location.pathname}${location.search}${location.hash}`;
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -352,16 +329,15 @@ export default function Topbar({ onMenuToggle }) {
               </div>
             </div>
 
-            <Link
-              to={isSettingsPage ? returnPath : "/setting"}
-              state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
-              replace={isSettingsPage}
-              aria-label={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
-              title={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+            <button
+              type="button"
+              onClick={onSettingsOpen}
+              aria-label={t("nav.user_settings")}
+              title={t("nav.user_settings")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-200 sm:h-9 sm:w-9 dark:text-slate-300 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
             >
-              {isSettingsPage ? <FiArrowLeft aria-hidden="true" /> : <FiSettings aria-hidden="true" />}
-            </Link>
+              <FiSettings aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>

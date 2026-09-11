@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FiCamera, FiCheck, FiLock, FiMoon, FiSave, FiSettings, FiShield, FiSun, FiUser } from "react-icons/fi";
+import { FiCamera, FiCheck, FiLock, FiMoon, FiSave, FiSettings, FiShield, FiSun, FiUser, FiX } from "react-icons/fi";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { changePassword, getProfile, updateProfile } from "../api/authApi";
 import { useAuth } from "../context/useAuth";
 
-export default function Setting() {
+export default function Setting({ embedded = false, onClose }) {
   const { user, token, login } = useAuth();
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
   const [profile, setProfile] = useState({
@@ -117,8 +117,7 @@ export default function Setting() {
   };
 
   const field = "mt-2 min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-800 outline-none transition hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:focus:ring-blue-950";
-  return (
-    <DashboardLayout>
+  const content = (
       <div className="mx-auto max-w-6xl space-y-4 sm:space-y-6">
         <header className="relative overflow-hidden rounded-2xl bg-linear-to-br from-slate-950 via-blue-950 to-blue-800 p-5 text-white shadow-[0_20px_55px_-30px_rgba(30,64,175,0.9)] sm:p-7">
           <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-cyan-400/20 blur-3xl" />
@@ -129,6 +128,7 @@ export default function Setting() {
               <h1 className="mt-1 text-xl font-bold sm:text-3xl">User Settings</h1>
               <p className="mt-1 text-xs leading-5 text-blue-100/90 sm:text-sm">Personalize your profile, appearance, and account security.</p>
             </div>
+            {onClose && <button type="button" onClick={onClose} className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/40" aria-label="Close user settings"><FiX size={20} /></button>}
           </div>
         </header>
         <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_12px_35px_-25px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-900 sm:p-6">
@@ -204,6 +204,7 @@ export default function Setting() {
           )}
         </section>
       </div>
-    </DashboardLayout>
   );
+
+  return embedded ? content : <DashboardLayout>{content}</DashboardLayout>;
 }
