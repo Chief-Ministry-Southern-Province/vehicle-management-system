@@ -91,6 +91,18 @@ const menuItems = [
         icon: <FiGrid />,
         roles: ["system_admin"],
       },
+      {
+        name: "Create Employee",
+        path: "/register",
+        icon: <FiBarChart2 />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "System Changes",
+        path: "/systemchanges",
+        icon: <FiUsers />,
+        roles: ["system_admin"],
+      },
 
       // ================= ASSISTANCE SECREATRY =================
 
@@ -336,25 +348,6 @@ const menuItems = [
         path: "/repairrecords",
         icon: <FiTool />,
         roles: ["deputy_secretary", "senior_deputy_secretary", "secretary"],
-      },
-    ],
-  },
-
-  {
-    title: "ADMINISTRATION PANEL",
-    items: [
-      {
-        name: "Create Employee",
-        path: "/register",
-        icon: <FiBarChart2 />,
-        roles: ["system_admin"],
-      },
-
-      {
-        name: "System Changes",
-        path: "/systemchanges",
-        icon: <FiUsers />,
-        roles: ["system_admin"],
       },
     ],
   },
