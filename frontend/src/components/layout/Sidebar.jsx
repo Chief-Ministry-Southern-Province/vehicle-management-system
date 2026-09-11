@@ -350,29 +350,6 @@ const menuItems = [
     ],
   },
 
-  // ==========================================
-  // REPORTS
-  // ==========================================
-
-  {
-    title: "ORGANIZATION",
-    items: [
-      {
-        name: "Reports",
-        path: "/fleetanalytics",
-        icon: <FiBarChart2 />,
-        roles: ["subject_officer"],
-      },
-
-      {
-        name: "Drivers",
-        path: "/driverdirectory",
-        icon: <FiUsers />,
-        roles: ["subject_officer"],
-      },
-
-    ],
-  },
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
