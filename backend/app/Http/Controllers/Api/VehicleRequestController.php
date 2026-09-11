@@ -42,7 +42,7 @@ class VehicleRequestController extends Controller
         ]);
     }
 
-    /** Finally approved journeys visible to the Subject Officer. */
+    /** Finally approved journeys for authorized fleet and executive readers. */
     public function approvedJourneysIndex(): JsonResponse
     {
         $requests = VehicleRequest::query()

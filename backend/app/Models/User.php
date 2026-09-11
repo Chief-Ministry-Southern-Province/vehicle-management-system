@@ -75,12 +75,9 @@ class User extends Authenticatable
         return $this->role === 'deputy_secretary';
     }
 
-    /**
-     * The Assistant Secretary is the system's Super Admin role.
-     */
-    public function isSuperAdmin(): bool
+    public function isSystemAdmin(): bool
     {
-        return $this->isDeputySecretary();
+        return $this->role === 'system_admin';
     }
 
     public function isSeniorDeputySecretary(): bool

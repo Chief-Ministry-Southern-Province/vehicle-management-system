@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardStatsController;
+use App\Http\Controllers\Api\DatabaseBackupController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\NotificationController;
@@ -25,8 +26,9 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // ── Protected routes (valid Sanctum token required) ─────────────────
 Route::middleware('auth:sanctum')->group(function () {
-    Route::middleware('role:deputy_secretary')->post('/register', [AuthController::class, 'register']);
-    Route::middleware('role:deputy_secretary')->group(function () {
+    Route::middleware('role:deputy_secretary,system_admin')->post('/register', [AuthController::class, 'register']);
+    Route::middleware('role:deputy_secretary,system_admin')->group(function () {
+        Route::post('/system/database-backups', [DatabaseBackupController::class, 'store']);
         Route::get('/users', [UserController::class, 'index']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/departments', [DepartmentController::class, 'store']);
@@ -48,7 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store']);
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy']);
 
-    Route::post('/vehicle-requests', [VehicleRequestController::class, 'store']);
+    Route::middleware('role:employee,department_officer,subject_officer,deputy_secretary,senior_deputy_secretary,secretary,driver')
+        ->post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::post('/vehicle-requests/route', [VehicleRequestController::class, 'route']);
     Route::get('/vehicle-requests/reverse-geocode', [VehicleRequestController::class, 'reverseGeocode']);
     Route::get('/vehicle-requests', [VehicleRequestController::class, 'personalIndex']);
@@ -94,7 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/vehicle-requests/{vehicleRequest}/reject', [VehicleRequestController::class, 'finalReject']);
     });
 
-    Route::middleware('role:subject_officer,deputy_secretary')
+    Route::middleware('role:subject_officer,deputy_secretary,secretary,senior_deputy_secretary')
         ->get('/approved-journeys', [VehicleRequestController::class, 'approvedJourneysIndex']);
 
     Route::middleware('role:subject_officer')

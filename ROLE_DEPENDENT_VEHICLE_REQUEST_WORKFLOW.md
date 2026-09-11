@@ -53,7 +53,7 @@ The three recommendation paths are alternatives. They are not consecutive stages
 
 ## 2. Role routing matrix
 
-All authenticated roles can currently call `POST /api/vehicle-requests`, and the SPA exposes the creation page to all seven roles. The backend review queries determine which submissions can progress.
+The seven workflow roles—every persisted role except `system_admin`—can call `POST /api/vehicle-requests`, and the SPA exposes the creation page to those same roles. System administrators are administration-only and cannot create or progress vehicle requests. The backend review queries determine which submissions can progress.
 
 | Requester role | First reviewer selected by notification service | Included in a matching review queue? | Next step after recommendation |
 | --- | --- | --- | --- |

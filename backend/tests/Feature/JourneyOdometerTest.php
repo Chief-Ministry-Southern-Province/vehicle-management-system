@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class JourneyOdometerTest extends TestCase
@@ -99,5 +100,47 @@ class JourneyOdometerTest extends TestCase
         $trip->update(['start_odometer_km' => null, 'end_odometer_km' => null]);
         $this->getJson('/api/approved-journeys')->assertOk()
             ->assertJsonPath('data.requests.0.actual_distance_km', null);
+    }
+
+    #[DataProvider('fuelReaderRoles')]
+    public function test_executives_can_read_completed_journey_measurements_for_fuel_analysis(string $role): void
+    {
+        [, $trip] = $this->assignment();
+        $trip->allocatedVehicle->update(['fuel_efficiency' => 0.2]);
+        $trip->update([
+            'approved_at' => now(), 'status' => 'completed', 'journey_status' => 'completed',
+            'journey_completed_at' => now(), 'start_odometer_km' => 100, 'end_odometer_km' => 125,
+        ]);
+        $reader = User::factory()->create(['role' => $role, 'status' => 'active']);
+
+        $response = $this->actingAs($reader)->getJson('/api/approved-journeys')->assertOk()
+            ->assertJsonPath('data.requests.0.id', $trip->id)
+            ->assertJsonPath('data.requests.0.journey_status', 'completed')
+            ->assertJsonPath('data.requests.0.actual_distance_km', 25)
+            ->assertJsonPath('data.requests.0.allocated_vehicle.registration_number', 'METER-1001');
+        $this->assertNotNull($response->json('data.requests.0.journey_completed_at'));
+        $this->assertEquals(0.2, $response->json('data.requests.0.allocated_vehicle.fuel_efficiency'));
+
+        $this->postJson('/api/vehicles/METER-1001', ['fuel_efficiency' => 999])->assertForbidden();
+        $this->assertEquals(0.2, $trip->allocatedVehicle->fresh()->fuel_efficiency);
+    }
+
+    public static function fuelReaderRoles(): array
+    {
+        return [['senior_deputy_secretary'], ['secretary']];
+    }
+
+    public function test_approved_journeys_reject_guests_unauthorized_roles_and_inactive_executives(): void
+    {
+        $this->getJson('/api/approved-journeys')->assertUnauthorized();
+        foreach (['employee', 'department_officer', 'driver'] as $role) {
+            $this->actingAs(User::factory()->create(['role' => $role, 'status' => 'active']))
+                ->getJson('/api/approved-journeys')->assertForbidden();
+        }
+        foreach (['senior_deputy_secretary', 'secretary'] as $role) {
+            $this->actingAs(User::factory()->create([
+                'role' => $role, 'status' => 'inactive',
+            ]))->getJson('/api/approved-journeys')->assertForbidden();
+        }
     }
 }

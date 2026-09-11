@@ -82,6 +82,9 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  readyToExport: ["Fuel records ready to export", "අපනයනයට සූදානම් ඉන්ධන වාර්තා", "ஏற்றுமதிக்குத் தயாரான எரிபொருள் பதிவுகள்"],
+  ledgerDetail: ["Search, filter, and export transaction records.", "ගනුදෙනු වාර්තා සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "பரிவர்த்தனைப் பதிவுகளைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
   partialConsumption: ["Partial total; missing months", "අර්ධ එකතුව; නොමැති මාස", "பகுதி மொத்தம்; விடுபட்ட மாதங்கள்"],
   annualCost: ["Annual Fuel Cost", "වාර්ෂික ඉන්ධන වියදම", "வருடாந்திர எரிபொருள் செலவு"],
   annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (L)", "வருடாந்திர நிரப்பிய எரிபொருள் (L)"],
@@ -183,6 +186,33 @@ const driverViewLabels = {
   vehicle: ["Your vehicle and parking", "ඔබේ වාහනය සහ නැවතුම", "உங்கள் வாகனமும் நிறுத்துமிடமும்"],
   moreVehicle: ["More vehicle information", "වැඩිදුර වාහන තොරතුරු", "மேலும் வாகனத் தகவல்கள்"],
 };
+
+Object.assign(translations.en, { "role.system_admin": "System Administrator" });
+Object.assign(translations.si, { "role.system_admin": "පද්ධති පරිපාලක" });
+Object.assign(translations.ta, { "role.system_admin": "கணினி நிர்வாகி" });
 for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
+}
+const driverTableLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  directory: ["Driver Directory", "රියදුරු නාමාවලිය", "சாரதி பட்டியல்"],
+  select: ["Select", "තෝරන්න", "தேர்ந்தெடு"],
+  photo: ["Profile Picture", "පැතිකඩ ඡායාරූපය", "சுயவிவரப் படம்"],
+  name: ["Driver Name", "රියදුරු නම", "சாரதி பெயர்"],
+  expiry: ["Licence Expiry", "බලපත්‍රය කල් ඉකුත් වන දිනය", "உரிமம் காலாவதியாகும் தேதி"],
+  status: ["Status", "තත්ත්වය", "நிலை"],
+  details: ["View Details", "විස්තර බලන්න", "விவரங்களைக் காண்க"],
+  empty: ["No drivers match your filters.", "ඔබගේ පෙරහන්වලට ගැළපෙන රියදුරන් නොමැත.", "உங்கள் வடிகட்டிகளுக்குப் பொருந்தும் சாரதிகள் இல்லை."],
+};
+for (const [key, labels] of Object.entries(driverTableLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverTable.${key}`] = labels[index]; });
+}
+
+const serviceLedgerLabels = {
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  ready: ["service records ready to export", "අපනයනයට සූදානම් සේවා වාර්තා", "ஏற்றுமதிக்குத் தயாரான சேவைப் பதிவுகள்"],
+  detail: ["Search, filter, and export service history.", "සේවා ඉතිහාසය සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "சேவை வரலாற்றைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
+};
+for (const [key, labels] of Object.entries(serviceLedgerLabels)) {
+  ["en", "si", "ta"].forEach((language, index) => { translations[language][`serviceLedger.${key}`] = labels[index]; });
 }

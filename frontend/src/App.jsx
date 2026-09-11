@@ -50,6 +50,7 @@ import SystemChanges from './pages/SystemChanges';
 import PendingJourny from './pages/subjectOfficer/PendingJourny';
 import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
+import SystemAdminDashboard from './pages/dashboard/SystemAdminDashboard';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -66,7 +67,7 @@ function App() {
 
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/register" element={withAuth(<Register />, ["deputy_secretary"])} />
+            <Route path="/register" element={withAuth(<Register />, ["deputy_secretary", "system_admin"])} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
 
@@ -79,7 +80,7 @@ function App() {
             <Route path="/createvehiclerequest" element={withAuth(<CreateVehicleRequest />, ["employee", "department_officer", "subject_officer", "deputy_secretary", "senior_deputy_secretary", "secretary", "driver"])} />
             <Route path="/pendingrecommendations" element={withAuth(<PendingRecommendations />)} />
             <Route path="/employee/recommendations/:id" element={withAuth(<RecommendationReview />)} />
-            <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />)} />
+            <Route path="/departmentrequesthistory" element={withAuth(<DepartmentRequestHistory />, ['department_officer'])} />
             
 
             <Route path="/subjectofficerdashboard" element={withAuth(<SubjectOfficerDashboard />)} />
@@ -90,7 +91,7 @@ function App() {
             <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
             <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />)}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
-            <Route path="/fuelmanagement" element={withAuth(<FuelManagement />)}/>
+            <Route path="/fuelmanagement" element={withAuth(<FuelManagement />, ["subject_officer", "deputy_secretary", "secretary", "senior_deputy_secretary"])}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
             <Route path="/repairrecords" element={withAuth(<RepairRecords />)}/>
             <Route path="/fleetanalytics" element={withAuth(<FleetAnalytics />)}/>
@@ -100,6 +101,7 @@ function App() {
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/systemadmindashboard" element={withAuth(<SystemAdminDashboard />, ["system_admin"])} />
             <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />, ["deputy_secretary"])} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />
@@ -110,9 +112,9 @@ function App() {
             <Route path="/senior-deputy/recommendations/:id" element={withAuth(<RecommendationReview />, ["senior_deputy_secretary"])} />
             <Route path="/totalvehicles" element={withAuth(<TotalVehicles />)} />
             <Route path="/deputy/vehicles/:id" element={withAuth(<DeputyVehicleDetails />)} />
-            <Route path="/driverdetails" element={withAuth(<DriverDetails />)} />
+            <Route path="/driverdetails" element={withAuth(<DriverDetails />, ['subject_officer', 'deputy_secretary', 'secretary', 'senior_deputy_secretary'])} />
             <Route path="/ontimeavailability" element={withAuth(<OnTimeAvailability />)} />
-            <Route path="/fuelanalysis" element={withAuth(<FuelAnalysis />, ["deputy_secretary"])} />
+            <Route path="/fuelanalysis" element={withAuth(<FuelAnalysis />, ["subject_officer", "deputy_secretary"])} />
             <Route path="/dailyscheduletrips" element={withAuth(<DailyScheduleTrips />, ["subject_officer", "deputy_secretary"])} />
 
 
@@ -131,7 +133,7 @@ function App() {
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
+            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary", "system_admin"])} />
 
 
           </Routes>

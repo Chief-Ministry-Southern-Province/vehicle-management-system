@@ -83,6 +83,27 @@ const menuItems = [
         roles: ["subject_officer"],
       },
 
+      // ================= SYSTEM ADMINISTRATOR =================
+
+      {
+        name: "Dashboard",
+        path: "/systemadmindashboard",
+        icon: <FiGrid />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Create Employee",
+        path: "/register",
+        icon: <FiBarChart2 />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "System Changes",
+        path: "/systemchanges",
+        icon: <FiUsers />,
+        roles: ["system_admin"],
+      },
+
       // ================= ASSISTANCE SECREATRY =================
 
       {
@@ -221,7 +242,7 @@ const menuItems = [
   // ==========================================
 
   {
-    title: "FLLET MANAGEMENT",
+    title: "FLEET MANAGEMENT",
     items: [
       {
         name: "Driver Issue Reports",
@@ -245,7 +266,7 @@ const menuItems = [
         name: "Journey Analysis",
         path: "/fuelanalysis",
         icon: <FiDroplet />,
-        roles: ["deputy_secretary"],
+        roles: ["subject_officer", "deputy_secretary"],
       },
     ],
   },
@@ -331,48 +352,6 @@ const menuItems = [
     ],
   },
 
-  {
-    title: "ADMINISTRATION PANEL",
-    items: [
-      {
-        name: "Create Employee",
-        path: "/register",
-        icon: <FiBarChart2 />,
-        roles: ["deputy_secretary"],
-      },
-
-      {
-        name: "System Changes",
-        path: "/systemchanges",
-        icon: <FiUsers />,
-        roles: ["deputy_secretary"],
-      },
-    ],
-  },
-
-  // ==========================================
-  // REPORTS
-  // ==========================================
-
-  {
-    title: "ORGANIZATION",
-    items: [
-      {
-        name: "Reports",
-        path: "/fleetanalytics",
-        icon: <FiBarChart2 />,
-        roles: ["subject_officer"],
-      },
-
-      {
-        name: "Drivers",
-        path: "/driverdirectory",
-        icon: <FiUsers />,
-        roles: ["subject_officer"],
-      },
-
-    ],
-  },
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {

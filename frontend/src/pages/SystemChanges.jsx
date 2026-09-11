@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiAlertCircle, FiBarChart2, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiAlertCircle, FiBarChart2, FiDatabase, FiDownload, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { createDepartment, deleteDepartment, deleteUser, getDepartments, getUsers } from "../api/authApi";
+import { createDepartment, deleteDepartment, deleteUser, downloadDatabaseBackup, getDepartments, getUsers } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 const roleLabels = {
@@ -10,6 +10,7 @@ const roleLabels = {
   department_officer: "Department Officer",
   subject_officer: "Subject Officer",
   deputy_secretary: "Assistant Secretary",
+  system_admin: "System Administrator",
   senior_deputy_secretary: "Senior Assistant Secretary",
   secretary: "Secretary",
   driver: "Driver",
@@ -65,6 +66,7 @@ export default function SystemChanges() {
   const [departmentName, setDepartmentName] = useState("");
   const [addingDepartment, setAddingDepartment] = useState(false);
   const [removingDepartmentId, setRemovingDepartmentId] = useState(null);
+  const [creatingBackup, setCreatingBackup] = useState(false);
 
   const availableRoles = useMemo(
     () => [...new Set(users.map((user) => user.role).filter(Boolean))]
@@ -190,9 +192,21 @@ export default function SystemChanges() {
     }
   };
 
+  const createBackup = async () => {
+    setCreatingBackup(true);
+    try {
+      await downloadDatabaseBackup();
+      toast.success("Database backup created and downloaded.");
+    } catch (requestError) {
+      toast.error(requestError.message || "Unable to create the database backup.");
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
   return (
     <DashboardLayout>
-      <section className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white px-5 py-8 shadow-sm md:px-10">
+      <section className="mx-auto min-h-full w-full max-w-7xl rounded-2xl border border-slate-200 bg-white px-5 py-8 shadow-sm md:px-10">
         <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-700">Administration Panel</p>
@@ -204,6 +218,22 @@ export default function SystemChanges() {
             {loading ? "Loading users…" : `${users.length} users`}
           </div>
         </div>
+
+        <section className="mt-8 rounded-2xl border border-blue-200 bg-blue-50/50 p-5" aria-labelledby="database-backup-title">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="rounded-xl bg-white p-3 text-blue-700 shadow-sm"><FiDatabase aria-hidden="true" /></span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-blue-700">System protection</p>
+                <h2 id="database-backup-title" className="mt-1 text-xl font-bold text-slate-900">Database Backup</h2>
+                <p className="mt-1 text-sm text-slate-600">Create and download a complete database backup for secure storage.</p>
+              </div>
+            </div>
+            <button type="button" onClick={createBackup} disabled={creatingBackup} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+              <FiDownload aria-hidden="true" /> {creatingBackup ? "Creating backup..." : "Create backup"}
+            </button>
+          </div>
+        </section>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -336,7 +366,7 @@ export default function SystemChanges() {
                       </td>
                     </tr>
                   ) : filteredUsers.map((user) => {
-                    const protectedUser = user.role === "deputy_secretary";
+                    const protectedUser = user.role === "system_admin";
                     return (
                       <tr key={user.id} className="text-slate-700">
                         <td className="px-5 py-4">
@@ -356,7 +386,7 @@ export default function SystemChanges() {
                           <button
                             type="button"
                             disabled={protectedUser || removingId === user.id}
-                            title={protectedUser ? "Assistant Secretary accounts are protected" : `Remove ${user.name}`}
+                            title={protectedUser ? "System Administrator accounts are protected" : `Remove ${user.name}`}
                             onClick={() => removeUser(user)}
                             className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400"
                           >

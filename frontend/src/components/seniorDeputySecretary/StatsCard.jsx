@@ -4,7 +4,6 @@ import {
   FiClock,
   FiCreditCard,
   FiDollarSign,
-  FiArrowUpRight,
   FiTool,
   FiTruck,
   FiUsers,
@@ -210,9 +209,9 @@ function StatCard({ title, value, icon, path, tone }) {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(path)}
       aria-label={`View ${title} details`}
       className={[
-        "group relative min-h-[150px] cursor-pointer overflow-hidden rounded-[22px]",
-        "border border-white/80 bg-linear-to-br from-white via-white to-slate-50/80 p-4 dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/80 sm:min-h-[176px] sm:p-5",
-        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_14px_35px_-20px_rgba(15,23,42,0.28)]",
+        "group relative min-h-[120px] min-w-0 cursor-pointer overflow-hidden rounded-[20px]",
+        "border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:p-5",
+        "shadow-sm",
         "transition-all duration-300 ease-out",
         "hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_24px_48px_-20px_rgba(15,23,42,0.3)]",
         "active:translate-y-0 active:scale-[0.985]",
@@ -220,19 +219,10 @@ function StatCard({ title, value, icon, path, tone }) {
         palette.ring,
       ].join(" ")}
     >
-      {/* ambient glow */}
-      <div
-        className={[
-          "pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full blur-3xl",
-          "opacity-70 transition-all duration-500 group-hover:scale-125 group-hover:opacity-100",
-          palette.glow,
-        ].join(" ")}
-      />
-
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-3">
         <div
           className={[
-            "flex h-11 w-11 items-center justify-center rounded-[14px] text-lg text-white shadow-lg shadow-slate-900/10 sm:h-12 sm:w-12 sm:text-xl",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg text-white shadow-sm",
             "bg-linear-to-br transition-transform duration-300",
             "group-hover:scale-110 group-hover:rotate-3",
             palette.icon,
@@ -241,21 +231,15 @@ function StatCard({ title, value, icon, path, tone }) {
           {icon}
         </div>
 
-        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 shadow-sm transition-transform duration-300 group-hover:rotate-12 group-hover:scale-105 dark:border-slate-700 dark:bg-slate-800/80">
-          <FiArrowUpRight className={`h-4 w-4 ${palette.text}`} />
-        </span>
+        <h2 className={`min-w-0 break-words text-right font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white ${String(value).startsWith("LKR") ? "text-xl sm:text-2xl" : "text-3xl sm:text-4xl"}`}>
+          {animatedValue}
+        </h2>
       </div>
 
-      <p className="relative mt-4 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400 sm:mt-5 sm:text-[13px]">
+      <p className="relative mt-4 text-xs font-bold uppercase leading-5 tracking-wide text-slate-600 dark:text-slate-400 sm:text-sm">
         {title}
       </p>
-      <h2 className="relative mt-1.5 break-words text-[22px] font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white sm:text-[28px]">
-        {animatedValue}
-      </h2>
-      <p className="relative mt-3 flex items-center gap-2 text-[10px] font-semibold text-slate-400 sm:text-xs">
-        <span className={`h-1.5 w-1.5 rounded-full ${palette.glow}`} />
-        Tap to view details
-      </p>
+      <div aria-hidden="true" className={`absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r ${palette.icon}`} />
     </div>
   );
 }
@@ -265,7 +249,7 @@ function StatCard({ title, value, icon, path, tone }) {
 /* ------------------------------------------------------------------ */
 function StatRow({ label, items }) {
   return (
-    <section className="mb-7 last:mb-0">
+    <section className="mb-5 last:mb-0">
       <div className="mb-3 flex items-center gap-3 sm:mb-4">
         <h3 className="shrink-0 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sm:text-xs">{label}</h3>
         <div className="h-px flex-1 bg-linear-to-r from-slate-200 to-transparent dark:from-slate-700" />

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { FiActivity, FiAlertTriangle, FiArrowUpRight, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiTool, FiTrendingUp, FiTruck } from "react-icons/fi";
+import { FiActivity, FiAlertTriangle, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiTool, FiTruck } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import RepairFilters from "../../components/subjectOfficer/repair/RepairFilters";
 import RepairTable from "../../components/subjectOfficer/repair/RepairTable";
@@ -81,7 +81,6 @@ export default function RepairRecords() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -165,14 +164,12 @@ export default function RepairRecords() {
   const yearlySummary = useMemo(() => {
     const totalCost = yearRecords.reduce((sum, record) => sum + (Number(record.cost) || 0), 0);
     const affectedVehicles = new Set(yearRecords.map((record) => record.vehicle).filter(Boolean)).size;
-    const peakMonth = monthlyData.reduce((peak, month) => month.cost > peak.cost ? month : peak, { cost: 0, repairs: 0, month: "No data", monthKey: "" });
     return {
       totalCost,
       affectedVehicles,
       averageCost: yearRecords.length ? totalCost / yearRecords.length : 0,
-      peakMonth,
     };
-  }, [monthlyData, yearRecords]);
+  }, [yearRecords]);
 
   const changeMonth = (month) => {
     setSelectedMonth(month);
@@ -183,19 +180,8 @@ export default function RepairRecords() {
     if (monthKey) setSelectedMonth((current) => current === monthKey ? "" : monthKey);
   };
   const selectedMonthLabel = monthlyData.find((item) => item.monthKey === selectedMonth)?.month;
-  const selectedRecords = useMemo(() => records.filter((record) => selectedIds.has(record.id)), [records, selectedIds]);
-  const toggleRecord = (recordId) => setSelectedIds((current) => {
-    const next = new Set(current);
-    if (next.has(recordId)) next.delete(recordId); else next.add(recordId);
-    return next;
-  });
-  const toggleAllRecords = (items, selected) => setSelectedIds((current) => {
-    const next = new Set(current);
-    items.forEach((item) => { if (selected) next.add(item.id); else next.delete(item.id); });
-    return next;
-  });
-  const exportSelectedRecords = () => {
-    try { generateRepairRecordsPdf(selectedRecords); }
+  const exportDisplayedRecords = () => {
+    try { generateRepairRecordsPdf(displayedRecords); }
     catch (exportError) { window.alert(exportError.message); }
   };
 
@@ -266,22 +252,16 @@ export default function RepairRecords() {
           )}
         </section>
 
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-100 text-rose-700"><FiTrendingUp size={20} /></div>
-          <div><p className="text-[11px] font-bold uppercase tracking-[0.12em] text-rose-700">Peak repair insight</p><p className="mt-1 text-base font-bold text-slate-900">{yearlySummary.peakMonth.month} · {formatCurrency(yearlySummary.peakMonth.cost)}</p><p className="mt-1 text-xs text-slate-500">{formatNumber(yearlySummary.peakMonth.repairs)} completed repairs during the highest-cost month.</p></div>
-          <button type="button" disabled={!yearlySummary.peakMonth.monthKey} onClick={() => setSelectedMonth(yearlySummary.peakMonth.monthKey)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-40">View records <FiArrowUpRight /></button>
-        </section>
-
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><FiTool /></div><div><h2 className="font-bold text-slate-900">Repair Records Ledger</h2><p className="mt-0.5 text-xs text-slate-500">Search, filter, select, and export repair history.</p></div></div>
+          <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><FiTool /></div><div><h2 className="font-bold text-slate-900">Repair Records Ledger</h2><p className="mt-0.5 text-xs text-slate-500">Search, filter, and export repair history.</p></div></div>
           <RepairFilters filters={filters} repairTypes={repairTypes} onChange={(name, value) => setFilters((current) => ({ ...current, [name]: value }))} selectedMonth={selectedMonth} onMonthChange={changeMonth} onClear={() => { setFilters(EMPTY_FILTERS); setSelectedMonth(""); }} />
           {selectedMonthLabel ? (
             <div className="flex items-center justify-between border-b border-rose-100 bg-rose-50/70 px-5 py-3 text-sm text-rose-700"><span>Showing repair records for <strong>{selectedMonthLabel}</strong></span><button type="button" onClick={() => setSelectedMonth("")} className="font-semibold hover:text-rose-900">Show all months</button></div>
           ) : !loading && !error ? (
             <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">Showing all repair records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.</div>
           ) : null}
-          {!loading && !error && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3"><p className="text-sm text-slate-600"><strong className="text-slate-900">{selectedRecords.length}</strong> repair {selectedRecords.length === 1 ? "record" : "records"} selected</p><button type="button" onClick={exportSelectedRecords} disabled={selectedRecords.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-200 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export Selected PDF</button></div>}
-          <RepairTable records={displayedRecords} loading={loading} error={error} selectedIds={selectedIds} onToggle={toggleRecord} onToggleAll={toggleAllRecords} />
+          {!loading && !error && <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3"><p className="text-sm text-slate-600"><strong className="text-slate-900">{displayedRecords.length}</strong> repair {displayedRecords.length === 1 ? "record" : "records"} ready to export</p><button type="button" onClick={exportDisplayedRecords} disabled={displayedRecords.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-200 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"><FiDownload /> Export All Listed PDF</button></div>}
+          <RepairTable records={displayedRecords} loading={loading} error={error} />
         </section>
       </div>
     </DashboardLayout>

@@ -30,6 +30,11 @@ function recordLocation(request, prefix, t) {
     ? `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}` : t("odometer.notRecorded");
 }
 
+function routeLocationName(request, prefix, t) {
+  const label = prefix === "starting" ? request.starting_location : request.destination;
+  return label ? label.split(",")[0].trim() : recordLocation(request, prefix, t);
+}
+
 function ApprovalRecordDetails({ id, onClose }) {
   const { t } = useLanguage();
   const dialog = useRef(null);
@@ -263,7 +268,7 @@ export default function TotalApprovals() {
                   <td className="px-5 py-5">{request.user?.department || t("odometer.notRecorded")}</td>
                   <td className="min-w-72 px-5 py-5">
                     <p className="font-semibold">{request.purpose || t("odometer.notRecorded")}</p>
-                    <p className="mt-2 text-slate-600">{recordLocation(request, "starting", t)} → {recordLocation(request, "destination", t)}</p>
+                    <p className="mt-2 text-slate-600">{routeLocationName(request, "starting", t)} - {routeLocationName(request, "destination", t)}</p>
                     <p className="mt-2 text-xs text-slate-500">{t("fuel.departure_at")}: {formatLocalDateTime(request.departure_at)}</p>
                     <p className="mt-1 text-xs text-slate-500">{t("fuel.expected_return_at")}: {formatLocalDateTime(request.expected_return_at)}</p>
                   </td>

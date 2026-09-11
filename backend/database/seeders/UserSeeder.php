@@ -10,7 +10,8 @@ class UserSeeder extends Seeder
 {
     /**
      * Creates one login-ready account per role.
-     * Password for every seeded account: Password123
+     * Non-admin demo accounts use Password123. The System Administrator is
+     * configured through config/system_admin.php and SYSTEM_ADMIN_* variables.
      */
     public function run(): void
     {
@@ -38,5 +39,21 @@ class UserSeeder extends Seeder
                 ]
             );
         }
+
+        $systemAdmin = config('system_admin');
+
+        User::updateOrCreate(
+            ['email' => $systemAdmin['email']],
+            [
+                'employee_id' => $systemAdmin['username'],
+                'name' => $systemAdmin['name'],
+                'phone' => $systemAdmin['phone'],
+                'department' => $systemAdmin['department'],
+                'role' => 'system_admin',
+                'password' => Hash::make($systemAdmin['password']),
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }

@@ -59,18 +59,16 @@ function MetricCard({ icon, label, value, detail, accent }) {
   const style = accents[accent];
 
   return (
-    <article className={`relative overflow-hidden rounded-2xl border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${style.border}`}>
-      <div className="flex items-start justify-between gap-3">
+    <article className={`relative min-h-[120px] min-w-0 overflow-hidden rounded-[20px] border p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:px-5 ${style.border}`}>
+      <div className="flex items-center justify-between gap-3">
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${style.icon}`}>
           {icon}
         </span>
-        <div className="min-w-0 flex-1 text-right">
-          <p className={`text-[11px] font-bold uppercase tracking-[0.08em] ${style.label}`}>{label}</p>
-          <p className="mt-2 text-2xl font-extrabold leading-none tracking-tight text-slate-900 sm:text-3xl">{value}</p>
-        </div>
+        <p className="min-w-0 flex-1 break-words text-right text-xl font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums sm:text-2xl">{value}</p>
       </div>
-      <p className="mt-3 text-xs text-slate-500">{detail}</p>
-      <div className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
+      <p className={`mt-2 text-xs font-bold uppercase leading-5 tracking-wide sm:text-sm ${style.label}`}>{label}</p>
+      <p className="mt-0.5 text-[11px] leading-4 text-slate-500">{detail}</p>
+      <div aria-hidden="true" className={`absolute inset-x-0 bottom-0 h-0.5 ${style.line}`} />
     </article>
   );
 }
@@ -137,7 +135,6 @@ export default function FuelManagement() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   useEffect(() => {
     let active = true;
@@ -320,34 +317,9 @@ export default function FuelManagement() {
     setSelectedMonth("");
   };
 
-  const toggleRecord = (recordId) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (next.has(recordId)) next.delete(recordId);
-      else next.add(recordId);
-      return next;
-    });
-  };
-
-  const toggleAllRecords = (records, selected) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      records.forEach((record) => {
-        if (selected) next.add(record.id);
-        else next.delete(record.id);
-      });
-      return next;
-    });
-  };
-
-  const selectedRecords = useMemo(
-    () => logs.filter((log) => selectedIds.has(log.id)),
-    [logs, selectedIds],
-  );
-
-  const exportSelectedRecords = () => {
+  const exportDisplayedRecords = () => {
     try {
-      generateFuelRecordsPdf(selectedRecords);
+      generateFuelRecordsPdf(displayedLogs);
     } catch (exportError) {
       window.alert(exportError.message);
     }
@@ -395,7 +367,7 @@ export default function FuelManagement() {
             </div>
             <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-slate-600">
               {t("fuel.vehicle")}
-              <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); setSelectedIds(new Set()); }}
+              <select value={selectedVehicle} onChange={(event) => { setSelectedVehicle(event.target.value); }}
                 disabled={!vehicles.length} className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:ring-2 focus:ring-blue-100">
                 <option value="">{t("fuel.allVehicles")}</option>
                 {vehicles.map(vehicle => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
@@ -435,7 +407,7 @@ export default function FuelManagement() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><FiDroplet /></div>
             <div>
               <h2 className="font-bold text-slate-900">Fuel Records Ledger</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Search, filter, select, and export transaction records.</p>
+              <p className="mt-0.5 text-xs text-slate-500">{t("fuel.ledgerDetail")}</p>
             </div>
           </div>
           <FuelFilters
@@ -462,24 +434,19 @@ export default function FuelManagement() {
               </button>
             </div>
           )}
-          {!selectedMonthLabel && !loading && !error && (
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
-              Showing all fuel records for <strong>{selectedYear}</strong>. Click a chart month to filter the records.
-            </div>
-          )}
           {!loading && !error && (
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
               <p className="text-sm text-slate-600">
-                <strong className="text-slate-900">{selectedRecords.length}</strong>{" "}
-                fuel {selectedRecords.length === 1 ? "record" : "records"} selected
+                <strong className="text-slate-900">{displayedLogs.length}</strong>{" "}
+                {t("fuel.readyToExport")}
               </p>
               <button
                 type="button"
-                onClick={exportSelectedRecords}
-                disabled={selectedRecords.length === 0}
+                onClick={exportDisplayedRecords}
+                disabled={displayedLogs.length === 0}
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <FiDownload /> Export Selected PDF
+                <FiDownload /> {t("fuel.exportAll")}
               </button>
             </div>
           )}
@@ -487,9 +454,6 @@ export default function FuelManagement() {
             logs={displayedLogs}
             loading={loading}
             error={error}
-            selectedIds={selectedIds}
-            onToggle={toggleRecord}
-            onToggleAll={toggleAllRecords}
           />
         </section>
       </div>

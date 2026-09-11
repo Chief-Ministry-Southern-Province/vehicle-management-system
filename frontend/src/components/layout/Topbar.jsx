@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
+import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
-import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -16,16 +15,6 @@ const initials = (name) =>
     .map((part) => part[0])
     .join("")
     .toUpperCase();
-
-const roleDashboardPaths = {
-  employee: "/userdashboard",
-  department_officer: "/departmentofficerdashboard",
-  subject_officer: "/subjectofficerdashboard",
-  deputy_secretary: "/deputysecretarydashboard",
-  senior_deputy_secretary: "/seniordeputysecretarydashboard",
-  secretary: "/secretarydashboard",
-  driver: "/driverdashboard",
-};
 
 const notificationPopupStorageKey = (userId) => `vms-notification-popups:${userId}`;
 
@@ -92,9 +81,8 @@ const showNotificationPopup = (notification) => {
   );
 };
 
-export default function Topbar({ onMenuToggle }) {
+export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const { user } = useAuth();
-  const location = useLocation();
   const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
@@ -106,16 +94,6 @@ export default function Topbar({ onMenuToggle }) {
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
-  const isSettingsPage = location.pathname === "/setting";
-  const dashboardPath = roleDashboardPaths[user?.role] || "/userdashboard";
-  const storedReturnPath = location.state?.profileReturnPath;
-  const returnPath = typeof storedReturnPath === "string"
-    && storedReturnPath.startsWith("/")
-    && !storedReturnPath.startsWith("//")
-    && storedReturnPath !== "/setting"
-    ? storedReturnPath
-    : dashboardPath;
-  const currentPath = `${location.pathname}${location.search}${location.hash}`;
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -324,12 +302,7 @@ export default function Topbar({ onMenuToggle }) {
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
-            <Link
-              to={isSettingsPage ? returnPath : "/setting"}
-              state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
-              replace={isSettingsPage}
-              aria-label={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
-              title={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+            <div
               className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
@@ -344,7 +317,7 @@ export default function Topbar({ onMenuToggle }) {
                 />
               )}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
-            </Link>
+            </div>
 
             <div className="hidden min-w-0 sm:block">
               <p className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
@@ -355,6 +328,16 @@ export default function Topbar({ onMenuToggle }) {
                 </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={onSettingsOpen}
+              aria-label={t("nav.user_settings")}
+              title={t("nav.user_settings")}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-200 sm:h-9 sm:w-9 dark:text-slate-300 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
+            >
+              <FiSettings aria-hidden="true" />
+            </button>
           </div>
         </div>
       </div>

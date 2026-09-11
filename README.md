@@ -24,11 +24,12 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 | Department Officer | Review requests from their department, recommend or reject them, and set priority/notes. |
 | Subject Officer | Manage vehicles, drivers, fuel, service, repairs, analytics, and approved journeys. |
 | Deputy Secretary | Manage users/departments, review applicable recommendations, allocate/reallocate resources, and view executive data. |
+| System Administrator | Use the System Admin Dashboard and Administration Panel to create users, manage users/departments, and create database backups. This role has no request-review, allocation, or approval authority. |
 | Senior Deputy Secretary | Recommend requests submitted by deputy secretaries and perform permitted final decisions. |
 | Secretary | Give final approval or rejection and monitor organization-wide operations. |
 | Driver | View assignments, start/complete journeys, review history, and report vehicle issues. |
 
-Persisted role identifiers are `employee`, `department_officer`, `subject_officer`, `deputy_secretary`, `senior_deputy_secretary`, `secretary`, and `driver`.
+Persisted role identifiers are `employee`, `department_officer`, `subject_officer`, `deputy_secretary`, `system_admin`, `senior_deputy_secretary`, `secretary`, and `driver`.
 
 ## Request workflow
 
@@ -196,7 +197,7 @@ The client normally starts at `http://localhost:5173`. Its API base is currently
 
 ## Seeded development accounts
 
-`php artisan migrate --seed` creates one demonstration account per role. All currently use the development-only password `Password123`.
+`php artisan migrate --seed` creates one demonstration account per role. Non-admin demo accounts use the development-only password `Password123`. Configure the System Administrator before seeding with `SYSTEM_ADMIN_USERNAME`, `SYSTEM_ADMIN_NAME`, `SYSTEM_ADMIN_EMAIL`, `SYSTEM_ADMIN_PHONE`, `SYSTEM_ADMIN_DEPARTMENT`, and `SYSTEM_ADMIN_PASSWORD` in `backend/.env`; the username is stored as the Employee ID.
 
 | Role | Employee ID | Email |
 | --- | --- | --- |
@@ -204,6 +205,7 @@ The client normally starts at `http://localhost:5173`. Its API base is currently
 | Department Officer | `DEP-001` | `department.officer@vms.gov` |
 | Subject Officer | `SUB-001` | `subject.officer@vms.gov` |
 | Deputy Secretary | `DEP-SEC-001` | `deputy.secretary@vms.gov` |
+| System Administrator | Configured by `SYSTEM_ADMIN_USERNAME` | Configured by `SYSTEM_ADMIN_EMAIL` |
 | Senior Deputy Secretary | `SR-DEP-SEC-001` | `senior.deputy.secretary@vms.gov` |
 | Secretary | `SEC-001` | `secretary@vms.gov` |
 | Driver | `DRV-001` | `driver@vms.gov` |

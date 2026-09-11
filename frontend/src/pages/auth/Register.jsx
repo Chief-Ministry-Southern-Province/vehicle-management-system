@@ -16,6 +16,7 @@ const initialForm = {
 const roleOptions = [
   ["employee", "Employee"], ["department_officer", "Department Officer"],
   ["subject_officer", "Subject Officer"], ["deputy_secretary", "Assistance Secreatry"],
+  ["system_admin", "System Administrator"],
   ["senior_deputy_secretary", "Senior Assistance Secretary"], ["secretary", "Secretary"], ["driver", "Driver"],
 ];
 const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
