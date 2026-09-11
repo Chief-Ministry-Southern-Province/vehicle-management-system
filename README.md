@@ -197,7 +197,7 @@ The client normally starts at `http://localhost:5173`. Its API base is currently
 
 ## Seeded development accounts
 
-`php artisan migrate --seed` creates one demonstration account per role. All currently use the development-only password `Password123`.
+`php artisan migrate --seed` creates one demonstration account per role. Non-admin demo accounts use the development-only password `Password123`. Configure the System Administrator before seeding with `SYSTEM_ADMIN_USERNAME`, `SYSTEM_ADMIN_NAME`, `SYSTEM_ADMIN_EMAIL`, `SYSTEM_ADMIN_PHONE`, `SYSTEM_ADMIN_DEPARTMENT`, and `SYSTEM_ADMIN_PASSWORD` in `backend/.env`; the username is stored as the Employee ID.
 
 | Role | Employee ID | Email |
 | --- | --- | --- |
@@ -205,7 +205,7 @@ The client normally starts at `http://localhost:5173`. Its API base is currently
 | Department Officer | `DEP-001` | `department.officer@vms.gov` |
 | Subject Officer | `SUB-001` | `subject.officer@vms.gov` |
 | Deputy Secretary | `DEP-SEC-001` | `deputy.secretary@vms.gov` |
-| System Administrator | `SYS-ADM-001` | `system.admin@vms.gov` |
+| System Administrator | Configured by `SYSTEM_ADMIN_USERNAME` | Configured by `SYSTEM_ADMIN_EMAIL` |
 | Senior Deputy Secretary | `SR-DEP-SEC-001` | `senior.deputy.secretary@vms.gov` |
 | Secretary | `SEC-001` | `secretary@vms.gov` |
 | Driver | `DRV-001` | `driver@vms.gov` |

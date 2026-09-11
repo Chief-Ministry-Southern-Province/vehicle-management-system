@@ -301,7 +301,7 @@ php artisan test
 
 For targeted backend verification, use `php artisan test --filter=TestOrMethodName`. Tests default to an in-memory SQLite database per `phpunit.xml`, so do not depend on MySQL-only behavior without explicit coverage.
 
-Seeded development users exist for all seven roles. `UserSeeder` documents their employee IDs/emails and currently assigns the shared development password `Password123`. These credentials are demo-only and must never be used in production. `VehicleSeeder` creates representative fleet data; `DriverSeeder` creates representative drivers.
+Seeded development users exist for all eight roles. `UserSeeder` assigns the shared development password `Password123` to non-admin demo accounts. It creates or updates the System Administrator from `SYSTEM_ADMIN_USERNAME`, `SYSTEM_ADMIN_NAME`, `SYSTEM_ADMIN_EMAIL`, `SYSTEM_ADMIN_PHONE`, `SYSTEM_ADMIN_DEPARTMENT`, and `SYSTEM_ADMIN_PASSWORD` through `config/system_admin.php`; the username is stored as `employee_id`. These credentials are demo-only and must never be used in production. `VehicleSeeder` creates representative fleet data; `DriverSeeder` creates representative drivers.
 
 ## 9. Testing expectations
 
