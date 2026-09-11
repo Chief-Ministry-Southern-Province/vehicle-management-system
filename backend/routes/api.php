@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardStatsController;
+use App\Http\Controllers\Api\DatabaseBackupController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\NotificationController;
@@ -27,6 +28,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary')->post('/register', [AuthController::class, 'register']);
     Route::middleware('role:deputy_secretary')->group(function () {
+        Route::post('/system/database-backups', [DatabaseBackupController::class, 'store']);
         Route::get('/users', [UserController::class, 'index']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/departments', [DepartmentController::class, 'store']);

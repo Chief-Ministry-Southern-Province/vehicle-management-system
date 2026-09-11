@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiAlertCircle, FiBarChart2, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiAlertCircle, FiBarChart2, FiDatabase, FiDownload, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { createDepartment, deleteDepartment, deleteUser, getDepartments, getUsers } from "../api/authApi";
+import { createDepartment, deleteDepartment, deleteUser, downloadDatabaseBackup, getDepartments, getUsers } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 const roleLabels = {
@@ -65,6 +65,7 @@ export default function SystemChanges() {
   const [departmentName, setDepartmentName] = useState("");
   const [addingDepartment, setAddingDepartment] = useState(false);
   const [removingDepartmentId, setRemovingDepartmentId] = useState(null);
+  const [creatingBackup, setCreatingBackup] = useState(false);
 
   const availableRoles = useMemo(
     () => [...new Set(users.map((user) => user.role).filter(Boolean))]
@@ -190,6 +191,18 @@ export default function SystemChanges() {
     }
   };
 
+  const createBackup = async () => {
+    setCreatingBackup(true);
+    try {
+      await downloadDatabaseBackup();
+      toast.success("Database backup created and downloaded.");
+    } catch (requestError) {
+      toast.error(requestError.message || "Unable to create the database backup.");
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <section className="mx-auto w-full max-w-7xl rounded-2xl border border-slate-200 bg-white px-5 py-8 shadow-sm md:px-10">
@@ -204,6 +217,22 @@ export default function SystemChanges() {
             {loading ? "Loading users…" : `${users.length} users`}
           </div>
         </div>
+
+        <section className="mt-8 rounded-2xl border border-blue-200 bg-blue-50/50 p-5" aria-labelledby="database-backup-title">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="rounded-xl bg-white p-3 text-blue-700 shadow-sm"><FiDatabase aria-hidden="true" /></span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-blue-700">System protection</p>
+                <h2 id="database-backup-title" className="mt-1 text-xl font-bold text-slate-900">Database Backup</h2>
+                <p className="mt-1 text-sm text-slate-600">Create and download a complete database backup for secure storage.</p>
+              </div>
+            </div>
+            <button type="button" onClick={createBackup} disabled={creatingBackup} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">
+              <FiDownload aria-hidden="true" /> {creatingBackup ? "Creating backup..." : "Create backup"}
+            </button>
+          </div>
+        </section>
 
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

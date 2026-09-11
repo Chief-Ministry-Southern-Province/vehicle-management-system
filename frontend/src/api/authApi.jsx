@@ -635,6 +635,37 @@ export const getRecommendedRequests = async () => {
   }
 };
 
+export const downloadDatabaseBackup = async () => {
+  try {
+    const response = await API.post('/system/database-backups', null, {
+      responseType: 'blob',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+
+    const filename = response.headers['content-disposition']
+      ?.match(/filename="?([^";]+)"?/i)?.[1] || 'vms-gov-backup.sql';
+    const url = URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    if (error.response?.data instanceof Blob) {
+      const body = await error.response.data.text();
+      try {
+        throw JSON.parse(body);
+      } catch (parseError) {
+        if (parseError instanceof SyntaxError) throw new Error(body || 'Unable to create the database backup.');
+        throw parseError;
+      }
+    }
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getVehicles = async (schedule = {}) => {
   try {
     const response = await API.get("/vehicles", {
