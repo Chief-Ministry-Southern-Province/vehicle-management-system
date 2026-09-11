@@ -33,10 +33,10 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
-        if ($user->isDeputySecretary()) {
+        if ($user->isAdministrationAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => 'The Assistant Secretary account cannot be removed.',
+                'message' => 'Administrative accounts cannot be removed.',
             ], 403);
         }
 

@@ -186,6 +186,10 @@ const driverViewLabels = {
   vehicle: ["Your vehicle and parking", "ඔබේ වාහනය සහ නැවතුම", "உங்கள் வாகனமும் நிறுத்துமிடமும்"],
   moreVehicle: ["More vehicle information", "වැඩිදුර වාහන තොරතුරු", "மேலும் வாகனத் தகவல்கள்"],
 };
+
+Object.assign(translations.en, { "role.system_admin": "System Administrator" });
+Object.assign(translations.si, { "role.system_admin": "පද්ධති පරිපාලක" });
+Object.assign(translations.ta, { "role.system_admin": "கணினி நிர்வாகி" });
 for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
 }

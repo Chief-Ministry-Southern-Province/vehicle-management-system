@@ -87,6 +87,7 @@ Role values are persisted as exact snake_case strings. Never rename one in only 
 | `department_officer` | All authenticated requester capabilities; view requests from their own department; recommend or reject pending requests; assign department priority and notes; view department history/dashboard. Department isolation must be enforced server-side. |
 | `subject_officer` | Fleet operator: view recommended/approved journeys and issue reports; register/update vehicles; create/update/delete drivers; maintain fuel, service, repair, analytics, and fleet screens. Fleet writes belong only to this role. |
 | `deputy_secretary` | System administrator and operational approver: manage users and departments; review department recommendations; submit deputy recommendations; allocate/reallocate vehicles and drivers; view issue reports, approved journeys, executive stats, and fleet/driver records. This role is the only role allowed to register app users. |
+| `system_admin` | Administration-only role: create users; manage users and departments; create database backups; and use the Administration Panel. This role cannot review, allocate, recommend, approve, or otherwise alter vehicle-request workflows. |
 | `senior_deputy_secretary` | Review and recommend requests at the senior stage; perform final approval/rejection where permitted; view executive stats and read-only fleet/driver data. |
 | `secretary` | Final approval/rejection authority; executive dashboard and organization-wide read-only fleet/driver visibility. |
 | `driver` | View personal driver dashboard, schedule, trip history, and assigned vehicle; start/complete assigned journeys; report vehicle issues; create personal vehicle requests. The login user's `employee_id` is associated with a driver record by the implemented mapping rules. |
@@ -104,8 +105,9 @@ Notes:
 1. Public users may log in and request/reset a forgotten password.
 2. Login accepts the supported identity fields defined by `LoginRequest` (including employee-ID login) and returns a Sanctum token.
 3. Authenticated users may log out, revoke all tokens, read/update their profile (including multipart profile-picture upload), and change password.
-4. Only a deputy secretary may register users, list/delete users, and create/delete departments.
+4. Deputy secretaries and system administrators may register users, list/delete users, and create/delete departments. Only deputy secretaries may perform operational request review and allocation.
 5. A user must be active and have an allowed role to pass privileged API middleware.
+6. The administration-only `system_admin` role is excluded from vehicle-request creation and every request-review, allocation, final-decision, driver, and fleet-management route.
 
 ### 4.2 Vehicle request and approval lifecycle
 
@@ -187,7 +189,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 - Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
 - Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`. Each authenticated user can read and mark only their own notifications and manage only their current browser subscription.
-- Deputy administration: `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
+- Administration: deputy secretaries and system administrators may use `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
 - Personal requests: `POST|GET /vehicle-requests`; `POST /vehicle-requests/route`; `GET /vehicle-requests/reverse-geocode`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
 - Department review: `GET /department/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`.
 - Deputy workflow: `GET /approvals/recommendations`, `/approvals/department-recommendations`, `/approvals/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`, `/allocate`, `/reallocate`.
@@ -206,6 +208,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 
 - `AuthProvider` owns token/user session state; the token is currently stored in `localStorage` as `token`.
 - `RoleProvider` and `ProtectedRoute` control role-aware navigation. Add explicit `allowedRoles` to every sensitive route; do not rely only on hiding sidebar links.
+- System administrators are routed to `/systemchanges` after login and may access the Administration Panel's Create Employee and System Changes pages. These client checks align with the administration-only backend routes.
 - Each role has a dashboard under `frontend/src/pages/dashboard/`.
 - `/totalapprovals` explicitly restricts client access to deputy secretaries. Its Official Approval Records table has six columns: request number, requester, department, purpose/route/departure and return times, status, and View. View fetches the authorized approval-detail endpoint and opens a read-only native dialog with request/route/schedule/passenger/attachment details, recommendation and priority, current/previous allocation, approval and cancellation/rejection audit fields, and journey odometer readings. The dialog supports Close and Escape; the table scrolls horizontally on narrow screens.
 - The deputy-only System Changes page can create and download a complete database backup. Backup files are created in private server storage for the response and deleted after the download is sent. SQLite backups use a consistent database copy; MySQL and MariaDB backups use the configured `DATABASE_DUMP_BINARY` (default `mysqldump`) and add the configured password through the child process environment while preserving the server's existing environment. On Windows, the default automatically prefers an installed MySQL Server `mysqldump.exe` and uses XAMPP's bundled tool only when no MySQL Server tool is found.

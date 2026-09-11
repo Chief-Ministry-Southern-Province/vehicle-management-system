@@ -66,7 +66,7 @@ function App() {
 
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/register" element={withAuth(<Register />, ["deputy_secretary"])} />
+            <Route path="/register" element={withAuth(<Register />, ["deputy_secretary", "system_admin"])} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
 
@@ -131,7 +131,7 @@ function App() {
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary"])} />
+            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary", "system_admin"])} />
 
 
           </Routes>

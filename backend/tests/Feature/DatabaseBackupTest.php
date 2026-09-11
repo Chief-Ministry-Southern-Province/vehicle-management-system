@@ -5,15 +5,17 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class DatabaseBackupTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_deputy_secretary_can_create_and_download_a_database_backup(): void
+    #[DataProvider('backupAdministrators')]
+    public function test_administrators_can_create_and_download_a_database_backup(string $role): void
     {
-        $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
+        $administrator = User::factory()->create(['role' => $role, 'status' => 'active']);
         $sourcePath = storage_path('app/database-backup-test-source.sqlite');
         File::delete($sourcePath);
         $source = new \PDO('sqlite:'.$sourcePath);
@@ -21,7 +23,7 @@ class DatabaseBackupTest extends TestCase
         $source->exec("INSERT INTO backup_test (name) VALUES ('Vehicle Management System')");
         config(['database.connections.sqlite.database' => $sourcePath]);
 
-        $response = $this->actingAs($deputy)
+        $response = $this->actingAs($administrator)
             ->post('/api/system/database-backups')
             ->assertOk()
             ->assertDownload();
@@ -35,6 +37,11 @@ class DatabaseBackupTest extends TestCase
         $this->assertStringEndsWith('.sqlite', $filename);
         File::delete(storage_path('app/backups'.DIRECTORY_SEPARATOR.$filename));
         File::delete($sourcePath);
+    }
+
+    public static function backupAdministrators(): array
+    {
+        return [['deputy_secretary'], ['system_admin']];
     }
 
     public function test_database_backups_require_an_active_deputy_secretary(): void

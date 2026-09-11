@@ -338,14 +338,14 @@ const menuItems = [
         name: "Create Employee",
         path: "/register",
         icon: <FiBarChart2 />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary", "system_admin"],
       },
 
       {
         name: "System Changes",
         path: "/systemchanges",
         icon: <FiUsers />,
-        roles: ["deputy_secretary"],
+        roles: ["deputy_secretary", "system_admin"],
       },
     ],
   },

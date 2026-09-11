@@ -10,6 +10,7 @@ const roleLabels = {
   department_officer: "Department Officer",
   subject_officer: "Subject Officer",
   deputy_secretary: "Assistant Secretary",
+  system_admin: "System Administrator",
   senior_deputy_secretary: "Senior Assistant Secretary",
   secretary: "Secretary",
   driver: "Driver",
@@ -365,7 +366,7 @@ export default function SystemChanges() {
                       </td>
                     </tr>
                   ) : filteredUsers.map((user) => {
-                    const protectedUser = user.role === "deputy_secretary";
+                    const protectedUser = ["deputy_secretary", "system_admin"].includes(user.role);
                     return (
                       <tr key={user.id} className="text-slate-700">
                         <td className="px-5 py-4">
@@ -385,7 +386,7 @@ export default function SystemChanges() {
                           <button
                             type="button"
                             disabled={protectedUser || removingId === user.id}
-                            title={protectedUser ? "Assistant Secretary accounts are protected" : `Remove ${user.name}`}
+                            title={protectedUser ? "Administrative accounts are protected" : `Remove ${user.name}`}
                             onClick={() => removeUser(user)}
                             className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400"
                           >

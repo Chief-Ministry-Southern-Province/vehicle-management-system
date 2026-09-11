@@ -24,7 +24,7 @@ class RegisterRequest extends FormRequest
 
             // Role is restricted at controller level for non-admin self-registration;
             // kept here so the same Request class can serve an admin "create user" flow too.
-            'role' => ['nullable', 'in:employee,department_officer,subject_officer,deputy_secretary,senior_deputy_secretary,secretary,driver'],
+            'role' => ['nullable', 'in:employee,department_officer,subject_officer,deputy_secretary,system_admin,senior_deputy_secretary,secretary,driver'],
 
             'date_of_birth' => ['nullable', 'required_if:role,driver', 'date', 'before:today'],
             'address' => ['nullable', 'required_if:role,driver', 'string', 'max:500'],
