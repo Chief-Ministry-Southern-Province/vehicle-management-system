@@ -221,7 +221,7 @@ const menuItems = [
   // ==========================================
 
   {
-    title: "FLLET MANAGEMENT",
+    title: "FLEET MANAGEMENT",
     items: [
       {
         name: "Driver Issue Reports",
@@ -245,7 +245,7 @@ const menuItems = [
         name: "Journey Analysis",
         path: "/fuelanalysis",
         icon: <FiDroplet />,
-        roles: ["deputy_secretary"],
+        roles: ["subject_officer", "deputy_secretary"],
       },
     ],
   },
