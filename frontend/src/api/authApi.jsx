@@ -658,7 +658,9 @@ export const downloadDatabaseBackup = async () => {
       try {
         throw JSON.parse(body);
       } catch (parseError) {
-        if (parseError instanceof SyntaxError) throw new Error(body || 'Unable to create the database backup.');
+        if (parseError instanceof SyntaxError) {
+          throw new Error(body || 'Unable to create the database backup.', { cause: parseError });
+        }
         throw parseError;
       }
     }
