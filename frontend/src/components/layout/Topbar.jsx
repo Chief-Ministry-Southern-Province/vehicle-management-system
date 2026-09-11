@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiUser } from "react-icons/fi";
+import { FiArrowLeft, FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
@@ -325,12 +325,7 @@ export default function Topbar({ onMenuToggle }) {
           </div>
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
-            <Link
-              to={isSettingsPage ? returnPath : "/setting"}
-              state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
-              replace={isSettingsPage}
-              aria-label={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
-              title={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+            <div
               className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
@@ -345,7 +340,7 @@ export default function Topbar({ onMenuToggle }) {
                 />
               )}
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
-            </Link>
+            </div>
 
             <div className="hidden min-w-0 sm:block">
               <p className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
@@ -356,6 +351,17 @@ export default function Topbar({ onMenuToggle }) {
                 </p>
               </div>
             </div>
+
+            <Link
+              to={isSettingsPage ? returnPath : "/setting"}
+              state={isSettingsPage ? undefined : { profileReturnPath: currentPath }}
+              replace={isSettingsPage}
+              aria-label={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+              title={isSettingsPage ? t("nav.return_to_previous_page") : t("nav.user_settings")}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-200 sm:h-9 sm:w-9 dark:text-slate-300 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
+            >
+              {isSettingsPage ? <FiArrowLeft aria-hidden="true" /> : <FiSettings aria-hidden="true" />}
+            </Link>
           </div>
         </div>
       </div>
