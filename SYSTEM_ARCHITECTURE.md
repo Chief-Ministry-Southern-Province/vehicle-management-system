@@ -388,7 +388,7 @@ Role values are persisted as exact snake_case strings.
 | `department_officer` | Requester capabilities; review only own department; recommend/reject | Department dashboard/history |
 | `subject_officer` | Create own requests; read recommended/approved requests | Sole fleet/driver writer; maintenance, fuel, repair, analytics; issue review |
 | `deputy_secretary` | Recommend department-officer requests; allocate/reallocate | User/department administration; executive/fleet reads; issue review |
-| `system_admin` | None | Create users; manage users/departments; create database backups; Administration Panel only |
+| `system_admin` | None | System Admin Dashboard; create users; manage users/departments; create database backups; Administration Panel only |
 | `senior_deputy_secretary` | Recommend deputy-secretary requests; final approve/reject | Executive and read-only fleet views |
 | `secretary` | Final approve/reject | Executive and read-only fleet views |
 | `driver` | Create personal requests | Own schedule/history/vehicle; start/complete trips; report issues |

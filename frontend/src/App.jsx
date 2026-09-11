@@ -50,6 +50,7 @@ import SystemChanges from './pages/SystemChanges';
 import PendingJourny from './pages/subjectOfficer/PendingJourny';
 import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
+import SystemAdminDashboard from './pages/dashboard/SystemAdminDashboard';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -100,6 +101,7 @@ function App() {
             
             
             <Route path="/deputysecretarydashboard" element={withAuth(<DeputySecretaryDashboard />)} />
+            <Route path="/systemadmindashboard" element={withAuth(<SystemAdminDashboard />, ["system_admin"])} />
             <Route path="/seniordeputysecretarydashboard" element={withAuth(<SeniorDeputySecretaryDashboard />)} />
             <Route path="/totalapprovals" element={withAuth(<TotalApprovals />, ["deputy_secretary"])} />
             <Route path="/pendingapprovals" element={withAuth(<PendingApprovals />)} />

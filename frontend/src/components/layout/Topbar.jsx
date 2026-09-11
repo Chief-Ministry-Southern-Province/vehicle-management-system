@@ -22,7 +22,7 @@ const roleDashboardPaths = {
   department_officer: "/departmentofficerdashboard",
   subject_officer: "/subjectofficerdashboard",
   deputy_secretary: "/deputysecretarydashboard",
-  system_admin: "/systemchanges",
+  system_admin: "/systemadmindashboard",
   senior_deputy_secretary: "/seniordeputysecretarydashboard",
   secretary: "/secretarydashboard",
   driver: "/driverdashboard",

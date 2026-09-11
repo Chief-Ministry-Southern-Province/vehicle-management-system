@@ -24,7 +24,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 | Department Officer | Review requests from their department, recommend or reject them, and set priority/notes. |
 | Subject Officer | Manage vehicles, drivers, fuel, service, repairs, analytics, and approved journeys. |
 | Deputy Secretary | Manage users/departments, review applicable recommendations, allocate/reallocate resources, and view executive data. |
-| System Administrator | Use the Administration Panel to create users, manage users/departments, and create database backups. This role has no request-review, allocation, or approval authority. |
+| System Administrator | Use the System Admin Dashboard and Administration Panel to create users, manage users/departments, and create database backups. This role has no request-review, allocation, or approval authority. |
 | Senior Deputy Secretary | Recommend requests submitted by deputy secretaries and perform permitted final decisions. |
 | Secretary | Give final approval or rejection and monitor organization-wide operations. |
 | Driver | View assignments, start/complete journeys, review history, and report vehicle issues. |

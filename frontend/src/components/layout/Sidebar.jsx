@@ -83,6 +83,15 @@ const menuItems = [
         roles: ["subject_officer"],
       },
 
+      // ================= SYSTEM ADMINISTRATOR =================
+
+      {
+        name: "Dashboard",
+        path: "/systemadmindashboard",
+        icon: <FiGrid />,
+        roles: ["system_admin"],
+      },
+
       // ================= ASSISTANCE SECREATRY =================
 
       {

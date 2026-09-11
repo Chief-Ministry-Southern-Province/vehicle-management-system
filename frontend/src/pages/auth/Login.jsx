@@ -29,7 +29,7 @@ export default function Login() {
       };
       login(token ? { ...nextUser, token } : nextUser, token);
       toast.success("Login successful");
-      const routes = { employee: "/userdashboard", department_officer: "/departmentofficerdashboard", subject_officer: "/subjectofficerdashboard", deputy_secretary: "/deputysecretarydashboard", system_admin: "/systemchanges", senior_deputy_secretary: "/seniordeputysecretarydashboard", secretary: "/secretarydashboard", driver: "/driverdashboard" };
+      const routes = { employee: "/userdashboard", department_officer: "/departmentofficerdashboard", subject_officer: "/subjectofficerdashboard", deputy_secretary: "/deputysecretarydashboard", system_admin: "/systemadmindashboard", senior_deputy_secretary: "/seniordeputysecretarydashboard", secretary: "/secretarydashboard", driver: "/driverdashboard" };
       navigate(routes[nextUser.role] || "/");
     } catch (error) {
       toast.error(error?.message || error?.error || error?.detail || "Login failed. Please check your credentials.");
