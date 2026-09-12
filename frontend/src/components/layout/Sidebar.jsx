@@ -558,11 +558,13 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
                       <span
                         className={[
-                          "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                          "relative flex h-8 w-8 shrink-0 items-center justify-center text-base",
                           "transition-transform duration-200 group-hover:scale-105",
-                          isActive
-                            ? "bg-linear-to-br from-blue-500 to-teal-400 text-white shadow-sm"
-                            : "bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70 group-hover:bg-white group-hover:text-slate-700 dark:bg-white/7 dark:text-slate-400 dark:ring-transparent dark:group-hover:bg-white/10 dark:group-hover:text-slate-200",
+                          notificationCount > 0
+                            ? "rounded-full bg-linear-to-br from-blue-600 via-blue-500 to-cyan-400 text-white shadow-[0_6px_14px_-5px_rgba(37,99,235,0.8)] ring-2 ring-blue-100 dark:ring-blue-400/20"
+                            : isActive
+                            ? "rounded-lg bg-linear-to-br from-blue-500 to-teal-400 text-white shadow-sm"
+                            : "rounded-lg bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70 group-hover:bg-white group-hover:text-slate-700 dark:bg-white/7 dark:text-slate-400 dark:ring-transparent dark:group-hover:bg-white/10 dark:group-hover:text-slate-200",
                         ].join(" ")}
                       >
                         {item.icon}
@@ -577,7 +579,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
                       {notificationCount > 0 && (
                         <span
                           aria-label={`${notificationCount} unread notification${notificationCount === 1 ? "" : "s"}`}
-                          className="relative inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white shadow-sm"
+                          className="relative inline-flex min-w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 py-1 text-[11px] font-bold leading-none text-white shadow-[0_5px_12px_-5px_rgba(37,99,235,0.8)] ring-2 ring-white dark:ring-slate-900"
                         >
                           {notificationCount > 99 ? "99+" : notificationCount}
                         </span>
