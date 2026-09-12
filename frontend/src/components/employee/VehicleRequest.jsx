@@ -5,6 +5,7 @@ import { createVehicleRequest, getPredefinedJourneys, reverseGeocodeLocation } f
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
 import LocationMapPicker from "./LocationMapPicker";
+import requestBanner from "../../assets/side-bar-1.png";
 
 const formatPoint = (point) => point ? `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}` : "";
 
@@ -264,9 +265,9 @@ export default function VehicleRequest() {
     <section className="rounded-3xl border border-slate-100 bg-slate-50/70 p-4 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)] sm:p-6">
       <form className="mx-auto max-w-6xl" onSubmit={submitRequest}>
         {/* Header */}
-        <div className="relative mb-4 overflow-hidden rounded-2xl border border-blue-400/20 bg-linear-to-br from-slate-950 via-blue-950 to-blue-800 px-3 py-3 text-white shadow-[0_16px_40px_-22px_rgba(30,64,175,0.8)] sm:mb-6 sm:px-6 sm:py-5">
-          <div className="pointer-events-none absolute -right-12 -top-16 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 left-1/3 h-32 w-32 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="relative mb-4 overflow-hidden rounded-2xl border border-blue-400/20 bg-blue-950 px-3 py-3 text-white shadow-[0_16px_40px_-22px_rgba(30,64,175,0.8)] sm:mb-6 sm:px-6 sm:py-5">
+          <img src={requestBanner} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-90" />
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-[#062867]/95 via-[#063d8b]/75 to-[#063d8b]/20" />
 
           <div className="relative flex items-start gap-2.5 sm:gap-4">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-base text-cyan-200 ring-1 ring-inset ring-white/20 backdrop-blur-sm sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl">
@@ -285,8 +286,8 @@ export default function VehicleRequest() {
                     </span>
                   )}
                 </div>
-                <span className="hidden rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-blue-50 ring-1 ring-inset ring-white/15 backdrop-blur-sm sm:inline-flex sm:text-[10px]">
-                  {translate("Draft ID")}: VMS-REQ-PENDING
+                <span className="hidden rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-blue-50 ring-1 ring-inset ring-white/15 backdrop-blur-sm sm:inline-flex sm:text-[10px]">
+                  Safe journeys · stronger service
                 </span>
               </div>
 
