@@ -57,6 +57,7 @@ Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-cha
 
 Important locations:
 
+- `USER_MANUAL.md`: end-user procedures for all eight roles, including request creation, recommendations, allocation, driver operations, fleet records, administration, notifications, reports, troubleshooting, and current implementation limitations. Keep affected user-facing procedures synchronized when these behaviors change.
 - `frontend/src/App.jsx`: client route registry.
 - `frontend/src/pages/`: page-level screens, mostly grouped by role/domain.
 - `frontend/src/components/`: reusable and role-specific UI.
