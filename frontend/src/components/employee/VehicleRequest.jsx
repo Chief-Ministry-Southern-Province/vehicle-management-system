@@ -561,7 +561,7 @@ export default function VehicleRequest() {
 
           <button
             type="submit"
-            disabled={submitting || routeLoading || addressLookupInProgress || !route}
+            disabled={submitting || (journeyMethod === "map" && (routeLoading || addressLookupInProgress || !route)) || (journeyMethod === "predefined" && (journeysLoading || !selectedJourney))}
             className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FiSend />
