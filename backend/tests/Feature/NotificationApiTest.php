@@ -26,6 +26,7 @@ class NotificationApiTest extends TestCase
             ->getJson('/api/notifications')
             ->assertOk()
             ->assertJsonPath('data.unread_count', 1)
+            ->assertJsonPath('data.unread_by_title.Assigned', 1)
             ->assertJsonPath('data.notifications.0.id', $notification->id);
 
         $this->actingAs($user)

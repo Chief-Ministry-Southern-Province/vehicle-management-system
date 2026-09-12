@@ -49,6 +49,22 @@ const saveShownNotificationIds = (userId, notificationIds) => {
   }
 };
 
+const countUnreadNotificationsByTitle = (notifications) =>
+  notifications.reduce((counts, notification) => {
+    if (notification.read_at || !notification.data?.title) return counts;
+
+    counts[notification.data.title] = (counts[notification.data.title] || 0) + 1;
+    return counts;
+  }, {});
+
+const publishNotificationUpdate = (notifications, unreadByTitle) => {
+  window.dispatchEvent(
+    new CustomEvent("vms:notifications-updated", {
+      detail: { notifications, unreadByTitle },
+    }),
+  );
+};
+
 const showNotificationPopup = (notification) => {
   const title = notification.data?.title || "New notification";
   const message = notification.data?.message || "You have a new workflow update.";
@@ -96,6 +112,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     : t("user.government");
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadByTitle, setUnreadByTitle] = useState({});
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [pushStatus, setPushStatus] = useState(initialPushStatus);
@@ -119,6 +136,10 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
 
       setNotifications(nextNotifications);
       setUnreadCount(response.data?.unread_count || 0);
+      const nextUnreadByTitle =
+        response.data?.unread_by_title || countUnreadNotificationsByTitle(nextNotifications);
+      setUnreadByTitle(nextUnreadByTitle);
+      publishNotificationUpdate(nextNotifications, nextUnreadByTitle);
     } catch {
       // The bell remains available if a transient request fails; it will retry on the next open.
     } finally {
@@ -171,8 +192,17 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     if (notification.read_at) return;
     try {
       await markNotificationRead(notification.id);
-      setNotifications((items) => items.filter((item) => item.id !== notification.id));
+      const remainingNotifications = notifications.filter((item) => item.id !== notification.id);
+      const nextUnreadByTitle = { ...unreadByTitle };
+      const notificationTitle = notification.data?.title;
+      if (notificationTitle && nextUnreadByTitle[notificationTitle]) {
+        nextUnreadByTitle[notificationTitle] -= 1;
+        if (nextUnreadByTitle[notificationTitle] === 0) delete nextUnreadByTitle[notificationTitle];
+      }
+      setNotifications(remainingNotifications);
       setUnreadCount((count) => Math.max(0, count - 1));
+      setUnreadByTitle(nextUnreadByTitle);
+      publishNotificationUpdate(remainingNotifications, nextUnreadByTitle);
     } catch { /* Keep the unread state when the API update fails. */ }
   };
   const markAllRead = async () => {
@@ -180,6 +210,8 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
       await markAllNotificationsRead();
       setNotifications([]);
       setUnreadCount(0);
+      setUnreadByTitle({});
+      publishNotificationUpdate([], {});
     } catch { /* Keep the unread state when the API update fails. */ }
   };
   const enableDeviceAlerts = async () => {

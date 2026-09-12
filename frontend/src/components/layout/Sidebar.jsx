@@ -16,8 +16,9 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getNotifications } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
@@ -56,6 +57,7 @@ const menuItems = [
         path: "/departmentrequesthistory",
         icon: <FiClipboard />,
         roles: ["department_officer"],
+        notificationTitles: ["New vehicle request"],
       },
 
       // ================= SUBJECT OFFICER =================
@@ -131,12 +133,14 @@ const menuItems = [
         path: "/pendingapprovals",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
+        notificationTitles: ["Vehicle allocation required"],
       },
       {
         name: "Pending Recommendations",
         path: "/deputy/pending-recommendations",
         icon: <FiClipboard />,
         roles: ["deputy_secretary"],
+        notificationTitles: ["New vehicle request"],
       },
       {
         name: "Total Approvals",
@@ -158,12 +162,14 @@ const menuItems = [
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["senior_deputy_secretary"],
+        notificationTitles: ["Final approval required"],
       },
       {
         name: "Pending Recommendation",
         path: "/senior-deputy/pending-recommendations",
         icon: <FiClipboard />,
         roles: ["senior_deputy_secretary"],
+        notificationTitles: ["New vehicle request"],
       },
       {
         name: "Total Approvals",
@@ -185,6 +191,7 @@ const menuItems = [
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["secretary"],
+        notificationTitles: ["Final approval required"],
       },
       {
         name: "Total Approvals",
@@ -263,6 +270,7 @@ const menuItems = [
         path: "/ontimeavailability",
         icon: <FiAlertTriangle />,
         roles: ["subject_officer", "deputy_secretary"],
+        notificationTitles: ["Vehicle issue reported"],
       },
       {
         name: "Approved Journeys",
@@ -368,6 +376,14 @@ const menuItems = [
 
 ];
 
+const countUnreadNotificationsByTitle = (notifications) =>
+  notifications.reduce((counts, notification) => {
+    if (notification.read_at || !notification.data?.title) return counts;
+
+    counts[notification.data.title] = (counts[notification.data.title] || 0) + 1;
+    return counts;
+  }, {});
+
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -375,6 +391,55 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const { language, languages, setLanguage, t } = useLanguage();
 
   const role = user?.role;
+  const [unreadByTitle, setUnreadByTitle] = useState({});
+
+  const loadNotifications = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await getNotifications();
+      const nextNotifications = response.data?.notifications || [];
+      setUnreadByTitle(
+        response.data?.unread_by_title || countUnreadNotificationsByTitle(nextNotifications),
+      );
+    } catch {
+      // A transient notification request must not prevent sidebar navigation.
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    loadNotifications();
+
+    const interval = window.setInterval(loadNotifications, 60000);
+    const syncNotifications = (event) => {
+      if (Array.isArray(event.detail?.notifications)) {
+        const nextNotifications = event.detail.notifications;
+        setUnreadByTitle(
+          event.detail.unreadByTitle || countUnreadNotificationsByTitle(nextNotifications),
+        );
+      } else {
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener("vms:notifications-updated", syncNotifications);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("vms:notifications-updated", syncNotifications);
+    };
+  }, [loadNotifications]);
+
+  const notificationCounts = useMemo(() => {
+    return menuItems.flatMap((section) => section.items)
+      .filter((item) => item.roles?.includes(role) && item.notificationTitles?.length)
+      .reduce((counts, item) => {
+        counts[item.path] = item.notificationTitles.reduce(
+          (total, title) => total + (unreadByTitle[title] || 0),
+          0,
+        );
+        return counts;
+      }, {});
+  }, [role, unreadByTitle]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -460,6 +525,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               <div className="space-y-1 px-3">
                 {visibleItems.map((item) => {
                   const isActive = location.pathname === item.path;
+                  const notificationCount = notificationCounts[item.path] || 0;
 
                   return (
                     <Link
@@ -502,12 +568,20 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
                         {item.icon}
                       </span>
 
-                      <span className="relative truncate">
+                      <span className="relative min-w-0 flex-1 truncate">
                         {t(
                           `nav.${item.name.toLowerCase().replaceAll(" ", "_")}`,
                           item.name,
                         )}
                       </span>
+                      {notificationCount > 0 && (
+                        <span
+                          aria-label={`${notificationCount} unread notification${notificationCount === 1 ? "" : "s"}`}
+                          className="relative inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white shadow-sm"
+                        >
+                          {notificationCount > 99 ? "99+" : notificationCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
