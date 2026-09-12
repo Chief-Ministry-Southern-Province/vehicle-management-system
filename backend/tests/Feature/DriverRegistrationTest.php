@@ -29,7 +29,7 @@ class DriverRegistrationTest extends TestCase
             $mock->shouldReceive('sendSms')
                 ->once()
                 ->with('0712345678', \Mockery::on(function (string $message) use (&$temporaryPassword): bool {
-                    preg_match('/Temporary password: ([A-Za-z0-9]+)\./', $message, $matches);
+                    preg_match('/Temporary Password: ([A-Za-z0-9]+)\n/', $message, $matches);
                     $temporaryPassword = $matches[1] ?? null;
 
                     return $temporaryPassword !== null;

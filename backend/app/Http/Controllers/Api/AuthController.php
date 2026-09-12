@@ -83,7 +83,7 @@ class AuthController extends Controller
 
                 if (! $this->smsService->sendSms(
                     $user->phone,
-                    "VMS-GOV: Your account has been created. Employee ID: {$user->employee_id}. Temporary password: {$temporaryPassword}. Please change it after signing in."
+                    "VMS | Welcome aboard!\nYour account is now active.\n\nUser ID: {$user->employee_id}\nTemporary Password: {$temporaryPassword}\n\nSign in and change your password immediately for security.\n\nKeep your login details private. Never share your password with anyone.\n\nVehicle Management System\nChief Ministry - Southern Province"
                 )) {
                     throw ValidationException::withMessages([
                         'phone' => ['Unable to deliver the temporary password by SMS. The account was not created.'],

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\VehicleRequest;
 use App\Services\SmsService;
 use App\Services\WorkflowNotificationService;
 use Illuminate\Http\Client\ConnectionException;
@@ -124,6 +125,20 @@ class SmsServiceTest extends TestCase
 
         $this->assertTrue(app(SmsService::class)->sendSms('94768240143', 'Retry this message.'));
         $this->assertSame(2, $requests);
+    }
+
+    public function test_workflow_sms_uses_the_allocation_and_approval_templates(): void
+    {
+        $workflowNotifications = app(WorkflowNotificationService::class);
+        $vehicleRequest = new VehicleRequest();
+        $vehicleRequest->setAttribute('id', 65);
+        $template = (new \ReflectionClass($workflowNotifications))->getMethod('smsMessage');
+
+        $allocation = $template->invoke($workflowNotifications, 'Vehicle allocation required', '', $vehicleRequest);
+        $approval = $template->invoke($workflowNotifications, 'Journey finally approved', '', $vehicleRequest);
+
+        $this->assertSame("VMS | Action Required\n\nVehicle Request REQ-0065 is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province", $allocation);
+        $this->assertSame("VMS | Journey Approved\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province", $approval);
     }
 
     public function test_workflow_notification_is_persisted_when_sms_gateway_delivery_fails(): void

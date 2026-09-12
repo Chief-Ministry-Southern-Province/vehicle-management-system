@@ -28,7 +28,7 @@ class WorkflowNotificationService
 
                 // Gateway delivery is supplementary. A provider outage must not undo
                 // the durable in-app workflow notification or its completed transition.
-                $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message));
+                $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest));
             });
     }
 
@@ -97,8 +97,27 @@ class WorkflowNotificationService
         return 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT);
     }
 
-    private function smsMessage(string $title, string $message): string
+    private function smsMessage(string $title, string $message, ?VehicleRequest $vehicleRequest): string
     {
-        return Str::limit("VMS-GOV: {$title}. {$message}", 160, '...');
+        $reference = $vehicleRequest ? $this->reference($vehicleRequest) : 'your request';
+
+        $sms = match ($title) {
+            'New vehicle request' => "VMS-GOV Update | {$reference} is ready for your review.",
+            'Request recommended' => "VMS-GOV Update | {$reference} was recommended and moves to allocation.",
+            'Request rejected' => "VMS-GOV Update | {$reference} was not approved. Open VMS-GOV for details.",
+            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Vehicle and driver allocated' => "VMS-GOV Update | {$reference} is allocated and awaiting final approval.",
+            'Journey allocation updated' => "VMS-GOV Update | {$reference} has a new allocation and needs final approval.",
+            'Final approval required' => "VMS-GOV Action | Final approval is needed for {$reference}.",
+            'Journey finally approved' => "VMS | Journey Approved\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Journey request rejected' => "VMS-GOV Update | {$reference} was not approved. Open VMS-GOV for details.",
+            'Journey request cancelled' => "VMS-GOV Update | {$reference} has been cancelled.",
+            'Journey started' => "VMS-GOV Update | Your journey for {$reference} has started.",
+            'Journey completed' => "VMS-GOV Complete | Your journey for {$reference} is complete. Thank you.",
+            'Vehicle issue reported' => "VMS-GOV Alert | A vehicle issue was reported for {$reference}. Please review it.",
+            default => Str::limit("VMS-GOV Update | {$title}: {$message}", 120, '...'),
+        };
+
+        return $sms;
     }
 }
