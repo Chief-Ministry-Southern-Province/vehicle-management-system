@@ -23,7 +23,7 @@ class SmsServiceTest extends TestCase
             'services.textit.url' => 'https://textit.test/sendmsg/',
             'services.textit.timeout' => 10,
         ]);
-        Http::fake(['https://textit.test/*' => Http::response('accepted', 200)]);
+        Http::fake(['https://textit.test/*' => Http::response('OK:1-MSG_GSM-17 Uploaded_Successfully', 200)]);
 
         $this->assertTrue(app(SmsService::class)->sendSms('077 123 4567', 'Journey approved.'));
 
@@ -49,6 +49,20 @@ class SmsServiceTest extends TestCase
         $this->assertFalse(app(SmsService::class)->sendSms('+94771234567', 'Journey approved.'));
 
         Http::assertNothingSent();
+    }
+
+    public function test_sms_service_rejects_an_http_success_response_without_textit_ok_acknowledgement(): void
+    {
+        config([
+            'services.textit.enabled' => true,
+            'services.textit.id' => 'gateway-user',
+            'services.textit.pw' => 'gateway-password',
+            'services.textit.url' => 'https://textit.test/sendmsg/',
+        ]);
+        Http::fake(['https://textit.test/*' => Http::response('Err:WrongDestinationDN', 200)]);
+
+        $this->assertFalse(app(SmsService::class)->sendSms('+94771234567', 'Journey approved.'));
+        Http::assertSentCount(1);
     }
 
     public function test_workflow_notification_is_persisted_when_sms_gateway_delivery_fails(): void

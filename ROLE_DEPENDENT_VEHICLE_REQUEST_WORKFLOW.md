@@ -535,7 +535,7 @@ sequenceDiagram
 | Journey started/completed | Requester |
 | Issue reported | Requester, subject officers, deputy secretaries |
 
-Notifications use the database channel and optionally Web Push when stable VAPID keys exist. When `TEXTIT_ENABLED` and the TEXTIT.BIZ credentials are configured, the same workflow event also sends a concise SMS to recipients with a valid phone number. SMS recipients are normalized to the gateway's international numeric form; gateway failures are logged and do not roll back a persisted workflow transition. Payloads contain only non-sensitive titles/messages, internal identifiers, and role-dashboard navigation data.
+Notifications use the database channel and optionally Web Push when stable VAPID keys exist. When `TEXTIT_ENABLED` and the TEXTIT.BIZ credentials are configured, the same workflow event also sends a concise SMS to recipients with a valid phone number. SMS recipients are normalized to the gateway's international numeric form. A TEXTIT.BIZ submission is accepted only when the response body begins with `OK`; an HTTP 200 body beginning with `Err` is logged as a gateway rejection and does not roll back a persisted workflow transition. Payloads contain only non-sensitive titles/messages, internal identifiers, and role-dashboard navigation data.
 
 ## 9. Frontend page and API mapping
 

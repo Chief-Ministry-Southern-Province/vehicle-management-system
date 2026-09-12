@@ -723,7 +723,7 @@ flowchart LR
     USERS --> SMS
 ```
 
-The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, and issue reports. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
+The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, and issue reports. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. It requires the gateway response body to begin with `OK`; an HTTP 200 response beginning with `Err` is a rejected submission and is logged with a sanitized result code. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
 
 The SPA notification menu refreshes on open and every minute. The service worker can display notifications when the SPA is closed. Web Push requires HTTPS in production; iOS/iPadOS users must install the site to the Home Screen.
 

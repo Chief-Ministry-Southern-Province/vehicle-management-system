@@ -37,8 +37,9 @@ class SmsService
                 'to' => $recipient,
                 'text' => $message,
             ]);
+            $gatewayResult = trim($response->body());
 
-            if ($response->successful()) {
+            if ($response->successful() && Str::startsWith($gatewayResult, 'OK')) {
                 Log::info('TEXTIT.BIZ SMS accepted by gateway.', [
                     'recipient' => $this->maskedRecipient($recipient),
                     'status' => $response->status(),
@@ -50,6 +51,7 @@ class SmsService
             Log::warning('TEXTIT.BIZ SMS gateway rejected delivery.', [
                 'recipient' => $this->maskedRecipient($recipient),
                 'status' => $response->status(),
+                'gateway_result' => $this->safeGatewayResult($gatewayResult),
             ]);
         } catch (Throwable $exception) {
             Log::warning('TEXTIT.BIZ SMS gateway could not be reached.', [
@@ -93,5 +95,12 @@ class SmsService
     private function maskedRecipient(string $recipient): string
     {
         return Str::mask($recipient, '*', 0, -4);
+    }
+
+    private function safeGatewayResult(string $result): string
+    {
+        $result = preg_replace('/[^\pL\pN\s:_-]/u', '', $result) ?? '';
+
+        return Str::limit(trim($result), 120, '...');
     }
 }

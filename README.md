@@ -190,7 +190,7 @@ TEXTIT_TIMEOUT=10
 
 Keep the generated VAPID pair stable for each environment; changing it invalidates existing browser subscriptions. Never expose the private key or commit `.env`. Production Web Push requires HTTPS. On iOS/iPadOS, users must install the site to the Home Screen before enabling notifications.
 
-To enable TEXTIT.BIZ SMS notifications, set `TEXTIT_ENABLED=true` and provide the gateway credentials above. The backend sends `id`, `pw`, `to`, and `text` to the configured HTTPS gateway URL. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
+To enable TEXTIT.BIZ SMS notifications, set `TEXTIT_ENABLED=true` and provide the gateway credentials above. The backend sends `id`, `pw`, `to`, and `text` to the configured HTTPS gateway URL. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. TEXTIT.BIZ reports an accepted submission with an `OK` response body; body responses beginning with `Err` are logged as gateway rejections even if the HTTP status is 200. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
 
 ### 3. Frontend
 
