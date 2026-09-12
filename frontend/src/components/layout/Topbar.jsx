@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
@@ -65,6 +66,38 @@ const publishNotificationUpdate = (notifications, unreadByTitle) => {
   );
 };
 
+const notificationDestination = (role, title) => {
+  const workflowDestinations = {
+    "New vehicle request": {
+      department_officer: "/departmentrequesthistory",
+      deputy_secretary: "/deputy/pending-recommendations",
+      senior_deputy_secretary: "/senior-deputy/pending-recommendations",
+    },
+    "Vehicle allocation required": { deputy_secretary: "/pendingapprovals" },
+    "Final approval required": {
+      senior_deputy_secretary: "/pendingfinalapprovals",
+      secretary: "/pendingfinalapprovals",
+    },
+    "Vehicle issue reported": {
+      subject_officer: "/ontimeavailability",
+      deputy_secretary: "/ontimeavailability",
+    },
+  };
+
+  const roleHome = {
+    employee: "/requesthistory",
+    department_officer: "/departmentrequesthistory",
+    subject_officer: "/subjectofficer/requesthistory",
+    deputy_secretary: "/requesthistory",
+    senior_deputy_secretary: "/finalapprovals",
+    secretary: "/finalapprovals",
+    driver: "/driverdashboard",
+    system_admin: "/usermanagement",
+  };
+
+  return workflowDestinations[title]?.[role] || roleHome[role] || "/";
+};
+
 const showNotificationPopup = (notification) => {
   const title = notification.data?.title || "New notification";
   const message = notification.data?.message || "You have a new workflow update.";
@@ -99,6 +132,7 @@ const showNotificationPopup = (notification) => {
 
 export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
@@ -214,6 +248,11 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
       publishNotificationUpdate([], {});
     } catch { /* Keep the unread state when the API update fails. */ }
   };
+  const openNotification = (notification) => {
+    void markRead(notification);
+    setNotificationsOpen(false);
+    navigate(notificationDestination(user?.role, notification.data?.title));
+  };
   const enableDeviceAlerts = async () => {
     setPushStatus("enabling");
     try {
@@ -322,7 +361,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
                 {pushStatus === "unsupported" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.deviceAlertsUnsupported", "This browser does not support device alerts.")}</p>}
                 <div className="max-h-96 overflow-y-auto">
                   {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No unread notifications.</p> : notifications.map((notification) => (
-                    <button type="button" key={notification.id} onClick={() => markRead(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
+                    <button type="button" key={notification.id} onClick={() => openNotification(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
                       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read_at ? "bg-transparent" : "bg-blue-600"}`} />
                       <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.data?.title}</span><span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-300">{notification.data?.message}</span><span className="mt-1 block text-[11px] text-slate-400">{notification.created_at ? new Date(notification.created_at).toLocaleString() : ""}</span></span>
                       {!notification.read_at && <FiCheck className="mt-1 shrink-0 text-blue-600 dark:text-blue-300" aria-label="Mark as read" />}
