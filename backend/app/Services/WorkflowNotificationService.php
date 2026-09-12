@@ -105,11 +105,11 @@ class WorkflowNotificationService
             'New vehicle request' => "VMS - Update: {$reference} is ready for your review.",
             'Request recommended' => "VMS - Update: {$reference} was recommended and moves to allocation.",
             'Request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
-            'Vehicle allocation required' => "VMS - Action Required:\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.",
+            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
             'Vehicle and driver allocated' => "VMS - Update: {$reference} is allocated and awaiting final approval.",
             'Journey allocation updated' => "VMS - Update: {$reference} has a new allocation and needs final approval.",
             'Final approval required' => "VMS - Action Required: Final approval is needed for {$reference}.",
-            'Journey finally approved' => "VMS - Journey Approved:\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.",
+            'Journey finally approved' => $this->approvedJourneySms($reference, $vehicleRequest),
             'Journey request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
             'Journey request cancelled' => "VMS - Update: {$reference} has been cancelled.",
             'Journey started' => "VMS - Update: Your journey for {$reference} has started.",
@@ -119,5 +119,20 @@ class WorkflowNotificationService
         };
 
         return $sms;
+    }
+
+    private function approvedJourneySms(string $reference, ?VehicleRequest $vehicleRequest): string
+    {
+        $driver = $vehicleRequest?->allocatedDriver;
+        $vehicle = $vehicleRequest?->allocatedVehicle;
+        $driverName = $driver?->full_name ?: 'Not assigned';
+        $driverContact = $driver?->contact_number ?: $driver?->user?->phone ?: 'Not available';
+        $vehicleName = trim(collect([$vehicle?->make, $vehicle?->model])->filter()->join(' '));
+        $vehicleName = $vehicleName ?: $vehicle?->vehicle_type ?: 'Not assigned';
+        $vehicleDisplay = $vehicle?->registration_number
+            ? "{$vehicleName} ({$vehicle->registration_number})"
+            : $vehicleName;
+
+        return "VMS | Journey Approved\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: {$driverName}\nDriver Contact Number: {$driverContact}\nVehicle Name: {$vehicleDisplay}\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province";
     }
 }

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Driver;
+use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use App\Services\SmsService;
 use App\Services\WorkflowNotificationService;
@@ -132,6 +134,15 @@ class SmsServiceTest extends TestCase
         $workflowNotifications = app(WorkflowNotificationService::class);
         $vehicleRequest = new VehicleRequest();
         $vehicleRequest->setAttribute('id', 65);
+        $vehicleRequest->setRelation('allocatedDriver', new Driver([
+            'full_name' => 'Nimal Perera',
+            'contact_number' => '0771234567',
+        ]));
+        $vehicleRequest->setRelation('allocatedVehicle', new Vehicle([
+            'make' => 'Toyota',
+            'model' => 'Prius',
+            'registration_number' => 'CAB-1234',
+        ]));
         $template = (new \ReflectionClass($workflowNotifications))->getMethod('smsMessage');
 
         $allocation = $template->invoke($workflowNotifications, 'Vehicle allocation required', '', $vehicleRequest);
@@ -141,7 +152,7 @@ class SmsServiceTest extends TestCase
         $fallback = $template->invoke($workflowNotifications, 'A new workflow event', 'Details', $vehicleRequest);
 
         $this->assertSame("VMS | Action Required\n\nVehicle Request REQ-0065 is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province", $allocation);
-        $this->assertSame("VMS | Journey Approved\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province", $approval);
+        $this->assertSame("VMS | Journey Approved\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: Nimal Perera\nDriver Contact Number: 0771234567\nVehicle Name: Toyota Prius (CAB-1234)\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province", $approval);
         foreach ([$allocation, $approval, $allocated, $finalApproval, $fallback] as $sms) {
             $this->assertStringNotContainsString('VMS-GOV', $sms);
             $this->assertStringStartsWith('VMS', $sms);

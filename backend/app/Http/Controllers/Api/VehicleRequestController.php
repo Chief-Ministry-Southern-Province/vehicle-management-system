@@ -676,7 +676,7 @@ class VehicleRequestController extends Controller
             ]);
         });
 
-        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user']), true);
+        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user', 'allocatedVehicle']), true);
 
         return response()->json([
             'success' => true,
