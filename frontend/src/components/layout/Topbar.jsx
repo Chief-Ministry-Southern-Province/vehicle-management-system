@@ -272,7 +272,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   return (
     <header
       data-no-translate
-      className="relative z-40 mx-0 mt-0 w-auto shrink-0 overflow-hidden rounded-[] border border-white/80 bg-white/90 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
+      className="relative z-40 w-full shrink-0 overflow-hidden border-b border-slate-200/70 bg-white/90 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.5)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={topbarBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-35 dark:opacity-10" />
@@ -282,7 +282,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
         <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-blue-500/45 to-transparent" />
       </div>
 
-      <div className="relative mx-auto flex min-h-17 w-full items-center justify-between gap-2 px-3 py-2.5 sm:min-h-20 sm:gap-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-14 w-full items-center justify-between gap-2 px-2 py-1.5 sm:min-h-15 sm:gap-3 sm:px-4 lg:px-6">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-4">
           <button
             type="button"
@@ -294,7 +294,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
             <FiMenu className="transition-transform duration-200 group-hover:scale-105" />
           </button>
 
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-linear-to-br from-white via-slate-50 to-blue-50 p-1.5 shadow-[0_8px_22px_-12px_rgba(37,99,235,0.6)] ring-1 ring-slate-900/5 sm:h-13 sm:w-13 sm:rounded-2xl sm:p-2 dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950 dark:ring-white/10">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-linear-to-br from-white via-slate-50 to-blue-50 p-1.5 shadow-[0_8px_22px_-12px_rgba(37,99,235,0.6)] ring-1 ring-slate-900/5 sm:h-11 sm:w-11 sm:rounded-xl sm:p-1.5 dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950 dark:ring-white/10">
             <div className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-950" />
             <img
               src={nationalEmblem}
