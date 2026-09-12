@@ -6,6 +6,7 @@ use App\Models\Driver;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
+use App\Services\SmsService;
 use App\Services\WorkflowNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,19 @@ class DriverRegistrationTest extends TestCase
             'status' => 'active',
         ]);
 
+        $temporaryPassword = null;
+        $this->mock(SmsService::class, function ($mock) use (&$temporaryPassword): void {
+            $mock->shouldReceive('sendSms')
+                ->once()
+                ->with('0712345678', \Mockery::on(function (string $message) use (&$temporaryPassword): bool {
+                    preg_match('/Temporary password: ([A-Za-z0-9]+)\./', $message, $matches);
+                    $temporaryPassword = $matches[1] ?? null;
+
+                    return $temporaryPassword !== null;
+                }))
+                ->andReturnTrue();
+        });
+
         $response = $this->actingAs($deputySecretary)->postJson('/api/register', [
             'nic' => '200012345678',
             'name' => 'Test Driver',
@@ -35,8 +49,6 @@ class DriverRegistrationTest extends TestCase
             'licence_type' => 'B, B1',
             'licence_renewal_date' => '2028-01-01',
             'blood_group' => 'O+',
-            'password' => 'Password123',
-            'password_confirmation' => 'Password123',
         ]);
 
         $response->assertCreated()
@@ -51,6 +63,8 @@ class DriverRegistrationTest extends TestCase
         ]);
 
         $driverUser = User::where('email', 'test.driver@example.com')->firstOrFail();
+        $this->assertNotNull($temporaryPassword);
+        $this->assertTrue(Hash::check($temporaryPassword, $driverUser->password));
         $this->actingAs($driverUser)->getJson('/api/profile')
             ->assertOk()
             ->assertJsonPath('data.user.driver.licence_number', 'B1234567')
@@ -79,6 +93,27 @@ class DriverRegistrationTest extends TestCase
             'issue_type' => 'journey_delay',
             'details' => 'Heavy traffic is delaying the journey.',
         ])->assertUnprocessable();
+    }
+
+    public function test_registration_rolls_back_when_temporary_password_sms_cannot_be_sent(): void
+    {
+        $deputySecretary = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
+        $this->mock(SmsService::class, function ($mock): void {
+            $mock->shouldReceive('sendSms')->once()->andReturnFalse();
+        });
+
+        $this->actingAs($deputySecretary)
+            ->postJson('/api/register', [
+                'nic' => '200012345699',
+                'name' => 'Undelivered Password',
+                'email' => 'undelivered.password@example.com',
+                'phone' => '0712345678',
+                'role' => 'employee',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
+
+        $this->assertDatabaseMissing('users', ['email' => 'undelivered.password@example.com']);
     }
 
     public function test_password_changes_only_when_current_password_is_valid(): void

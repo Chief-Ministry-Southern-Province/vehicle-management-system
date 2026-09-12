@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Department;
 use App\Models\Driver;
 use App\Models\User;
+use App\Services\SmsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -146,15 +147,17 @@ class UserManagementTest extends TestCase
     {
         $systemAdmin = User::factory()->create(['role' => 'system_admin', 'status' => 'active']);
         $managedEmployee = User::factory()->create(['role' => 'employee', 'status' => 'active']);
+        $this->mock(SmsService::class, function ($mock): void {
+            $mock->shouldReceive('sendSms')->once()->andReturnTrue();
+        });
 
         $this->actingAs($systemAdmin)
             ->postJson('/api/register', [
                 'nic' => '200012345678',
                 'name' => 'Managed Employee',
                 'email' => 'managed.employee@example.com',
+                'phone' => '0712345678',
                 'role' => 'employee',
-                'password' => 'Password123',
-                'password_confirmation' => 'Password123',
             ])
             ->assertCreated()
             ->assertJsonPath('data.user.role', 'employee');

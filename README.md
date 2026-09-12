@@ -13,6 +13,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 - Maintain vehicle and driver directories, compliance data, images, service, repair, and fuel records.
 - Provide role-specific and executive dashboards, analytics, and PDF exports.
 - Manage users, departments, profiles, passwords, and account status.
+- Generate temporary credentials for newly registered users and deliver them by SMS; administrators never enter or receive the plaintext password.
 - Deliver workflow alerts in-app, through opt-in Web Push, and through optional TEXTIT.BIZ SMS delivery.
 - Present the interface in English, Sinhala, and Tamil.
 
