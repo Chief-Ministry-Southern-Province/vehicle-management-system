@@ -6,6 +6,7 @@ import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
 import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
 import nationalEmblem from "../../assets/national-emblem.png";
+import topbarBackdrop from "../../assets/side-bar-5.png";
 import { enablePushNotifications, supportsPushNotifications } from "../../utils/pushNotifications";
 
 const initials = (name) =>
@@ -271,9 +272,11 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   return (
     <header
       data-no-translate
-      className="relative z-40 w-full shrink-0 border-b border-slate-200/70 bg-white/90 shadow-[0_12px_36px_-28px_rgba(15,23,42,0.7)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
+      className="relative z-40 mx-2 mt-2 w-auto shrink-0 overflow-hidden rounded-[1.65rem] border border-white/80 bg-white/90 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <img src={topbarBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-35 dark:opacity-10" />
+        <div className="absolute inset-0 bg-linear-to-r from-white/75 via-white/45 to-white/75 dark:from-slate-950/90 dark:via-slate-950/70 dark:to-slate-950/90" />
         <div className="absolute -left-20 -top-24 h-52 w-52 rounded-full bg-blue-500/8 blur-3xl dark:bg-blue-500/10" />
         <div className="absolute right-[18%] top-0 h-24 w-64 rounded-full bg-teal-400/8 blur-3xl dark:bg-teal-400/10" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-blue-500/45 to-transparent" />
