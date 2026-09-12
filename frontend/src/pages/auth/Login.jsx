@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -23,9 +23,14 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { language, languages, setLanguage, t } = useLanguage();
+  const loginLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si"].includes(code)), [languages]);
   const [formData, setFormData] = useState({ employee_id: "", password: "", role: "employee" });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (!loginLanguages.some(({ code }) => code === language)) setLanguage("en");
+  }, [language, loginLanguages, setLanguage]);
 
   const handleChange = (event) => setFormData({ ...formData, [event.target.name]: event.target.value });
 
@@ -76,7 +81,7 @@ export default function Login() {
           </div>
 
           <div className="mt-10 max-w-xl rounded-3xl bg-white/66 px-6 py-5 backdrop-blur-[2px] xl:mt-14 xl:px-8 xl:py-6">
-            <p className="text-4xl font-extrabold leading-[1.06] tracking-tight text-[#062961] xl:text-5xl">Vehicle Management<br />System <span className="font-medium">(VMS-GOV)</span></p>
+            <p className="text-4xl font-extrabold leading-[1.06] tracking-tight text-[#062961] xl:text-5xl">Vehicle Management<br />System <span className="font-medium">(VMS)</span></p>
             <p className="mt-3 text-sm font-medium text-[#123a76] xl:text-base">Manage Vehicles | Optimize Resources | Deliver Better Services</p>
             <div className="mt-6 grid grid-cols-4 gap-3 text-center text-[#083d82]">
               {[
@@ -105,7 +110,7 @@ export default function Login() {
           <FiGlobe className="text-lg" aria-hidden="true" />
           <span className="sr-only">{t("language.label", "Language")}</span>
           <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t("language.label", "Language")} className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none">
-            {languages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}
+            {loginLanguages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}
           </select>
           <FiChevronDown className="pointer-events-none absolute right-3.5 text-xs" aria-hidden="true" />
         </label>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -20,9 +20,14 @@ import loginPageBackground from "../../assets/login-page.png";
 
 export default function ForgotPassword() {
   const { language, languages, setLanguage, t } = useLanguage();
+  const recoveryLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si"].includes(code)), [languages]);
   const [form, setForm] = useState({ employee_id: "", phone: "" });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!recoveryLanguages.some(({ code }) => code === language)) setLanguage("en");
+  }, [language, recoveryLanguages, setLanguage]);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -77,7 +82,7 @@ export default function ForgotPassword() {
         <div className="absolute -right-20 bottom-[-7rem] h-80 w-80 rounded-full border-[45px] border-cyan-300/10" />
         <label className="absolute right-5 top-5 z-20 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-[#073978] shadow-lg sm:right-8 sm:top-7">
           <FiGlobe className="text-lg" aria-hidden="true" /><span className="sr-only">{t("language.label", "Language")}</span>
-          <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t("language.label", "Language")} className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none">{languages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}</select>
+          <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t("language.label", "Language")} className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none">{recoveryLanguages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}</select>
           <FiChevronDown className="pointer-events-none absolute right-3.5 text-xs" aria-hidden="true" />
         </label>
 
