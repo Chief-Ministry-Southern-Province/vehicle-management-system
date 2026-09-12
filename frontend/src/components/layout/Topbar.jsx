@@ -272,7 +272,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   return (
     <header
       data-no-translate
-      className="relative z-40 mx-2 mt-2 w-auto shrink-0 overflow-hidden rounded-[1.65rem] border border-white/80 bg-white/90 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
+      className="relative z-40 mx-0 mt-0 w-auto shrink-0 overflow-hidden rounded-[] border border-white/80 bg-white/90 shadow-[0_16px_38px_-26px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={topbarBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-35 dark:opacity-10" />
