@@ -102,20 +102,20 @@ class WorkflowNotificationService
         $reference = $vehicleRequest ? $this->reference($vehicleRequest) : 'your request';
 
         $sms = match ($title) {
-            'New vehicle request' => "VMS | Update: {$reference} is ready for your review.",
-            'Request recommended' => "VMS | Update: {$reference} was recommended and moves to allocation.",
-            'Request rejected' => "VMS | Update: {$reference} was not approved. Open VMS for details.",
-            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
-            'Vehicle and driver allocated' => "VMS | Update: {$reference} is allocated and awaiting final approval.",
-            'Journey allocation updated' => "VMS | Update: {$reference} has a new allocation and needs final approval.",
-            'Final approval required' => "VMS | Action Required: Final approval is needed for {$reference}.",
-            'Journey finally approved' => "VMS | Journey Approved\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province",
-            'Journey request rejected' => "VMS | Update: {$reference} was not approved. Open VMS for details.",
-            'Journey request cancelled' => "VMS | Update: {$reference} has been cancelled.",
-            'Journey started' => "VMS | Update: Your journey for {$reference} has started.",
-            'Journey completed' => "VMS | Complete: Your journey for {$reference} is complete. Thank you.",
-            'Vehicle issue reported' => "VMS | Alert: A vehicle issue was reported for {$reference}. Please review it.",
-            default => Str::limit("VMS | Update: {$title}: {$message}", 120, '...'),
+            'New vehicle request' => "VMS - Update: {$reference} is ready for your review.",
+            'Request recommended' => "VMS - Update: {$reference} was recommended and moves to allocation.",
+            'Request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
+            'Vehicle allocation required' => "VMS - Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Vehicle and driver allocated' => "VMS - Update: {$reference} is allocated and awaiting final approval.",
+            'Journey allocation updated' => "VMS - Update: {$reference} has a new allocation and needs final approval.",
+            'Final approval required' => "VMS - Action Required: Final approval is needed for {$reference}.",
+            'Journey finally approved' => "VMS - Journey Approved\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Journey request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
+            'Journey request cancelled' => "VMS - Update: {$reference} has been cancelled.",
+            'Journey started' => "VMS - Update: Your journey for {$reference} has started.",
+            'Journey completed' => "VMS - Complete: Your journey for {$reference} is complete. Thank you.",
+            'Vehicle issue reported' => "VMS - Alert: A vehicle issue was reported for {$reference}. Please review it.",
+            default => Str::limit("VMS - Update: {$title}: {$message}", 120, '...'),
         };
 
         return $sms;
