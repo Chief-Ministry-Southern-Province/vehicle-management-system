@@ -105,7 +105,7 @@ class WorkflowNotificationService
             'New vehicle request' => "VMS Update, {$reference} is ready for your review.",
             'Request recommended' => "VMS Update, {$reference} was recommended and moves to allocation.",
             'Request rejected' => "VMS Update, {$reference} was not approved. Open VMS for details.",
-            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Vehicle allocation required' => "VMS  Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
             'Vehicle and driver allocated' => "VMS Update, {$reference} is allocated and awaiting final approval.",
             'Journey allocation updated' => "VMS Update, {$reference} has a new allocation and needs final approval.",
             'Final approval required' => "VMS Action, Final approval is needed for {$reference}.",
