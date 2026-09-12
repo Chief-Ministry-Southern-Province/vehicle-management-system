@@ -316,10 +316,9 @@ class AuthController extends Controller
             if (! $user || ! $user->isActive()
                 || ! $enteredPhone
                 || ! hash_equals($this->smsService->normalisePhoneNumber($user->phone) ?? '', $enteredPhone)) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'If the User ID and phone number match an active account, a temporary password has been sent by SMS.',
-                ], 200);
+                throw ValidationException::withMessages([
+                    'phone' => ['The phone number does not match the User ID. Please enter the registered mobile number.'],
+                ]);
             }
 
             // Avoid confirming/denying whether the email exists — return success-shaped
@@ -344,7 +343,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'If the User ID and phone number match an active account, a temporary password has been sent by SMS.',
+                'message' => 'A temporary password has been sent by SMS.',
             ], 200);
         } catch (ValidationException $e) {
             throw $e;

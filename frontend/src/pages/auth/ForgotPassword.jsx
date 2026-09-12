@@ -6,17 +6,25 @@ import { forgotPassword } from "../../api/authApi";
 
 export default function ForgotPassword() {
   const [form, setForm] = useState({ employee_id: "", phone: "" });
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
   const submit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
+    setErrors({});
 
     try {
       const response = await forgotPassword(form);
       toast.success(response.message);
     } catch (error) {
       const messages = error?.errors || {};
+      setErrors(messages);
       const message = Object.values(messages).flat()[0]
         || error?.message
         || "Unable to send a temporary password. Please try again.";
@@ -45,11 +53,14 @@ export default function ForgotPassword() {
               required
               autoComplete="username"
               value={form.employee_id}
-              onChange={(event) => setForm((current) => ({ ...current, employee_id: event.target.value }))}
+              onChange={(event) => updateField("employee_id", event.target.value)}
               placeholder="Enter your User ID"
-              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              aria-invalid={Boolean(errors.employee_id)}
+              aria-describedby={errors.employee_id ? "employee-id-error" : undefined}
+              className={`w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition focus:ring-2 ${errors.employee_id ? "border-rose-500 focus:border-rose-600 focus:ring-rose-100" : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"}`}
             />
           </span>
+          {errors.employee_id && <span id="employee-id-error" role="alert" className="mt-2 block text-xs font-medium text-rose-600">{errors.employee_id[0]}</span>}
         </label>
 
         <label className="mb-6 block text-sm font-semibold text-slate-700">
@@ -61,11 +72,14 @@ export default function ForgotPassword() {
               type="tel"
               autoComplete="tel"
               value={form.phone}
-              onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+              onChange={(event) => updateField("phone", event.target.value)}
               placeholder="077XXXXXXX or 9477XXXXXXX"
-              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              aria-invalid={Boolean(errors.phone)}
+              aria-describedby={errors.phone ? "phone-error" : undefined}
+              className={`w-full rounded-xl border py-3 pl-10 pr-3 outline-none transition focus:ring-2 ${errors.phone ? "border-rose-500 focus:border-rose-600 focus:ring-rose-100" : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"}`}
             />
           </span>
+          {errors.phone && <span id="phone-error" role="alert" className="mt-2 block text-xs font-medium text-rose-600">{errors.phone[0]}</span>}
         </label>
 
         <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-blue-700 py-3 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">

@@ -70,8 +70,9 @@ class ForgotPasswordSmsTest extends TestCase
         $this->postJson('/api/forgot-password', [
             'employee_id' => '200035100509',
             'phone' => '0771111111',
-        ])->assertOk()
-            ->assertJsonPath('success', true);
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('phone')
+            ->assertJsonPath('errors.phone.0', 'The phone number does not match the User ID. Please enter the registered mobile number.');
 
         $user->refresh();
         $this->assertTrue(Hash::check('Previous-password-1', $user->password));
