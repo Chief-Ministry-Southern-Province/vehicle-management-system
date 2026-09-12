@@ -223,7 +223,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     if (!notificationsOpen) loadNotifications();
   };
   const markRead = async (notification) => {
-    if (notification.read_at) return;
+    if (notification.read_at) return true;
     try {
       await markNotificationRead(notification.id);
       const remainingNotifications = notifications.filter((item) => item.id !== notification.id);
@@ -237,7 +237,10 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
       setUnreadCount((count) => Math.max(0, count - 1));
       setUnreadByTitle(nextUnreadByTitle);
       publishNotificationUpdate(remainingNotifications, nextUnreadByTitle);
-    } catch { /* Keep the unread state when the API update fails. */ }
+      return true;
+    } catch {
+      return false;
+    }
   };
   const markAllRead = async () => {
     try {
@@ -248,9 +251,9 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
       publishNotificationUpdate([], {});
     } catch { /* Keep the unread state when the API update fails. */ }
   };
-  const openNotification = (notification) => {
-    void markRead(notification);
+  const openNotification = async (notification) => {
     setNotificationsOpen(false);
+    await markRead(notification);
     navigate(notificationDestination(user?.role, notification.data?.title));
   };
   const enableDeviceAlerts = async () => {
