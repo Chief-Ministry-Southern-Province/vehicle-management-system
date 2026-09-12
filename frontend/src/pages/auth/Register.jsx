@@ -47,7 +47,7 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    try { await registerUser(formData); toast.success("Employee account created. A temporary password was sent by SMS."); setFormData(initialForm); }
+    try { await registerUser(formData); toast.success("Employee account created. The temporary-password SMS was submitted to the gateway."); setFormData(initialForm); }
     catch (error) { toast.error(error?.message || error?.error || error?.detail || "Registration failed. Please check the entered details."); }
     finally { setIsLoading(false); }
   };

@@ -95,7 +95,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registration successful. A temporary password was sent by SMS.',
+                'message' => 'Registration successful. The temporary-password SMS was submitted to the gateway.',
                 'data' => [
                     'user' => $user,
                     'driver' => $driver,

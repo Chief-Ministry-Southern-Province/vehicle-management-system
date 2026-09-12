@@ -183,15 +183,21 @@ VAPID_SUBJECT=mailto:admin@example.gov.lk
 VAPID_PUBLIC_KEY=<generated-public-key>
 VAPID_PRIVATE_KEY=<generated-private-key>
 TEXTIT_ENABLED=false
+TEXTIT_API_KEY=<textit-rest-api-key>
+TEXTIT_ENDPOINT=https://api.textit.biz/
+TEXTIT_API_VERSION=v1
+TEXTIT_TIMEOUT=15
+# Legacy HTTP API fallback only when TEXTIT_API_KEY is blank:
 TEXTIT_USER_ID=<textit-user-id>
 TEXTIT_PASSWORD=<textit-password>
 TEXTIT_URL=https://textit.biz/sendmsg/
-TEXTIT_TIMEOUT=10
+TEXTIT_RETRY_ATTEMPTS=3
+TEXTIT_RETRY_DELAY_MS=500
 ```
 
 Keep the generated VAPID pair stable for each environment; changing it invalidates existing browser subscriptions. Never expose the private key or commit `.env`. Production Web Push requires HTTPS. On iOS/iPadOS, users must install the site to the Home Screen before enabling notifications.
 
-To enable TEXTIT.BIZ SMS notifications, set `TEXTIT_ENABLED=true` and provide the gateway credentials above. The backend sends `id`, `pw`, `to`, and `text` to the configured HTTPS gateway URL. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. TEXTIT.BIZ reports an accepted submission with an `OK` response body; body responses beginning with `Err` are logged as gateway rejections even if the HTTP status is 200. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
+To enable TEXTIT.BIZ transactional SMS notifications, set `TEXTIT_ENABLED=true` and provide `TEXTIT_API_KEY`. The backend POSTs the recipient and message JSON to `TEXTIT_ENDPOINT` with that key in a server-side Basic authorization header and the configured `X-API-VERSION`. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. A successful REST response is accepted. When no REST API key is configured, the legacy HTTP integration sends `id`, `pw`, `to`, and `text` and requires a response body beginning with `OK`; `Err` responses are logged as rejections. Transient connection failures are retried three times by default with a 500 ms delay; gateway rejections are not retried. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
 
 ### 3. Frontend
 

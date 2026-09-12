@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,44 +21,88 @@ class SmsService
     {
         $config = config('services.textit', []);
         $recipient = $this->normaliseRecipient($to);
+        $usesRestApi = filled($config['api_key'] ?? null);
 
         if (! ($config['enabled'] ?? false)
-            || blank($config['id'] ?? null)
-            || blank($config['pw'] ?? null)
-            || blank($config['url'] ?? null)
+            || ($usesRestApi && blank($config['endpoint'] ?? null))
+            || (! $usesRestApi && (blank($config['id'] ?? null)
+                || blank($config['pw'] ?? null)
+                || blank($config['url'] ?? null)))
             || $recipient === null
             || blank($message)) {
             return false;
         }
 
-        try {
-            $response = Http::timeout((int) ($config['timeout'] ?? 10))->get($config['url'], [
-                'id' => $config['id'],
-                'pw' => $config['pw'],
-                'to' => $recipient,
-                'text' => $message,
-            ]);
-            $gatewayResult = trim($response->body());
+        $attempts = max(1, (int) ($config['retry_attempts'] ?? 3));
+        $retryDelayMs = max(0, (int) ($config['retry_delay_ms'] ?? 500));
 
-            if ($response->successful() && Str::startsWith($gatewayResult, 'OK')) {
-                Log::info('TEXTIT.BIZ SMS accepted by gateway.', [
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                $response = $usesRestApi
+                    ? Http::timeout((int) ($config['timeout'] ?? 15))
+                        ->withHeaders([
+                            'Accept' => '*/*',
+                            'X-API-VERSION' => $config['api_version'] ?? 'v1',
+                            'Authorization' => 'Basic '.$config['api_key'],
+                        ])
+                        ->post($config['endpoint'], [
+                            'to' => $recipient,
+                            'text' => $message,
+                        ])
+                    : Http::timeout((int) ($config['timeout'] ?? 10))->get($config['url'], [
+                        'id' => $config['id'],
+                        'pw' => $config['pw'],
+                        'to' => $recipient,
+                        'text' => $message,
+                    ]);
+                $gatewayResult = trim($response->body());
+
+                if ($response->successful() && ($usesRestApi || Str::startsWith($gatewayResult, 'OK'))) {
+                    Log::info('TEXTIT.BIZ SMS accepted by gateway.', [
+                        'recipient' => $this->maskedRecipient($recipient),
+                        'status' => $response->status(),
+                        'attempt' => $attempt,
+                        'api' => $usesRestApi ? 'rest' : 'http',
+                        'gateway_result' => $this->safeGatewayResult($gatewayResult),
+                    ]);
+
+                    return true;
+                }
+
+                Log::warning('TEXTIT.BIZ SMS gateway rejected delivery.', [
                     'recipient' => $this->maskedRecipient($recipient),
                     'status' => $response->status(),
+                    'api' => $usesRestApi ? 'rest' : 'http',
+                    'gateway_result' => $this->safeGatewayResult($gatewayResult),
                 ]);
 
-                return true;
-            }
+                return false;
+            } catch (ConnectionException $exception) {
+                if ($attempt < $attempts) {
+                    Log::notice('TEXTIT.BIZ SMS connection failed; retrying.', [
+                        'recipient' => $this->maskedRecipient($recipient),
+                        'attempt' => $attempt,
+                        'max_attempts' => $attempts,
+                    ]);
 
-            Log::warning('TEXTIT.BIZ SMS gateway rejected delivery.', [
-                'recipient' => $this->maskedRecipient($recipient),
-                'status' => $response->status(),
-                'gateway_result' => $this->safeGatewayResult($gatewayResult),
-            ]);
-        } catch (Throwable $exception) {
-            Log::warning('TEXTIT.BIZ SMS gateway could not be reached.', [
-                'recipient' => $this->maskedRecipient($recipient),
-                'exception' => $exception::class,
-            ]);
+                    if ($retryDelayMs > 0) {
+                        usleep($retryDelayMs * 1000);
+                    }
+
+                    continue;
+                }
+
+                Log::warning('TEXTIT.BIZ SMS gateway could not be reached.', [
+                    'recipient' => $this->maskedRecipient($recipient),
+                    'attempts' => $attempts,
+                    'exception' => $exception::class,
+                ]);
+            } catch (Throwable $exception) {
+                Log::warning('TEXTIT.BIZ SMS gateway could not be reached.', [
+                    'recipient' => $this->maskedRecipient($recipient),
+                    'exception' => $exception::class,
+                ]);
+            }
         }
 
         return false;

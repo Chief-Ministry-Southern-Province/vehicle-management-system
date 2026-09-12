@@ -49,10 +49,15 @@ return [
 
     'textit' => [
         'enabled' => env('TEXTIT_ENABLED', false),
+        'api_key' => env('TEXTIT_API_KEY'),
+        'endpoint' => env('TEXTIT_ENDPOINT', 'https://api.textit.biz/'),
+        'api_version' => env('TEXTIT_API_VERSION', 'v1'),
         'id' => env('TEXTIT_USER_ID'),
         'pw' => env('TEXTIT_PASSWORD'),
         'url' => env('TEXTIT_URL', 'https://textit.biz/sendmsg/'),
-        'timeout' => (int) env('TEXTIT_TIMEOUT', 10),
+        'timeout' => (int) env('TEXTIT_TIMEOUT', 15),
+        'retry_attempts' => (int) env('TEXTIT_RETRY_ATTEMPTS', 3),
+        'retry_delay_ms' => (int) env('TEXTIT_RETRY_DELAY_MS', 500),
     ],
 
 ];
