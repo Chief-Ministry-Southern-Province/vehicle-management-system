@@ -67,10 +67,11 @@ export const logoutUser = async () => {
 // Forgot Password
 // ============================
 
-export const forgotPassword = async (email) => {
+export const forgotPassword = async ({ employee_id, phone }) => {
   try {
     const response = await API.post("/forgot-password", {
-      email,
+      employee_id,
+      phone,
     });
 
     return response.data;

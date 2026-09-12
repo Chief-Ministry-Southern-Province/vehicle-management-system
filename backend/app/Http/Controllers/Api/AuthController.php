@@ -304,28 +304,50 @@ class AuthController extends Controller
 
     /**
      * POST /api/forgot-password
-     * Sends a password reset link/token via Laravel's built-in Password broker.
+     * Sends an SMS temporary password after matching User ID and phone number.
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         try {
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
+            $validated = $request->validated();
+            $enteredPhone = $this->smsService->normalisePhoneNumber($validated['phone']);
+            $user = User::query()->where('employee_id', $validated['employee_id'])->first();
 
-            if ($status === Password::RESET_LINK_SENT) {
+            if (! $user || ! $user->isActive()
+                || ! $enteredPhone
+                || ! hash_equals($this->smsService->normalisePhoneNumber($user->phone) ?? '', $enteredPhone)) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Password reset link sent to your email.',
+                    'message' => 'If the User ID and phone number match an active account, a temporary password has been sent by SMS.',
                 ], 200);
             }
 
             // Avoid confirming/denying whether the email exists — return success-shaped
             // response either way to prevent user enumeration, but log internally if needed.
+            $temporaryPassword = 'Aa'.Str::password(14, true, true, false);
+
+            DB::transaction(function () use ($user, $temporaryPassword): void {
+                $user->forceFill([
+                    'password' => Hash::make($temporaryPassword),
+                ])->save();
+                $user->tokens()->delete();
+
+                if (! $this->smsService->sendSms(
+                    $user->phone,
+                    "VMS | Password Reset\n\nUser ID: {$user->employee_id}\nTemporary Password: {$temporaryPassword}\n\nSign in and change your password immediately for security.\n\nKeep your login details private. Never share your password with anyone.\n\nVehicle Management System\nChief Ministry - Southern Province"
+                )) {
+                    throw ValidationException::withMessages([
+                        'phone' => ['Unable to deliver a temporary password by SMS. Please try again later.'],
+                    ]);
+                }
+            });
+
             return response()->json([
                 'success' => true,
-                'message' => 'If an account exists with that email, a reset link has been sent.',
+                'message' => 'If the User ID and phone number match an active account, a temporary password has been sent by SMS.',
             ], 200);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Throwable $e) {
             return $this->handleException($e, 'forgotPassword');
         }

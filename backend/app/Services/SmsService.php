@@ -20,7 +20,7 @@ class SmsService
     public function sendSms(?string $to, string $message): bool
     {
         $config = config('services.textit', []);
-        $recipient = $this->normaliseRecipient($to);
+        $recipient = $this->normalisePhoneNumber($to);
         $usesRestApi = filled($config['api_key'] ?? null);
 
         if (! ($config['enabled'] ?? false)
@@ -108,7 +108,7 @@ class SmsService
         return false;
     }
 
-    private function normaliseRecipient(?string $phone): ?string
+    public function normalisePhoneNumber(?string $phone): ?string
     {
         if ($phone === null) {
             return null;

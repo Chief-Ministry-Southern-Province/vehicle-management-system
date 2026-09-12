@@ -102,7 +102,7 @@ Notes:
 
 ### 4.1 Authentication and administration
 
-1. Public users may log in and request/reset a forgotten password.
+1. Public users may log in and recover a forgotten password by supplying their User ID and registered phone number. A matching active account receives a new SMS temporary password; the server replaces the stored password and revokes existing tokens only after the gateway accepts the SMS request. The response remains neutral for an unmatched User ID or phone number.
 2. Login accepts the supported identity fields defined by `LoginRequest` (including employee-ID login) and returns a Sanctum token.
 3. Authenticated users may log out, revoke all tokens, read/update their profile (including multipart profile-picture upload), and change password.
 4. Deputy secretaries and system administrators may register, list, update, and delete users, and create/delete departments. Registration requires a mobile number but never accepts or returns a plaintext password: the server generates a mixed-case/numeric temporary password and delivers it through TEXTIT.BIZ SMS. Registration is rolled back when the gateway does not accept that SMS, preventing an account whose owner cannot receive its initial credential. The gateway send retries configured transient connection failures before registration is rejected. User updates support employee ID, name, email, phone, department, and account status; role changes remain in the dedicated registration workflow. Updating a driver user atomically synchronizes its linked driver directory identity/contact and active state. System Administrator accounts themselves cannot be removed; Assistant Secretary accounts can be removed through user management. Only deputy secretaries may perform operational request review and allocation.
@@ -186,7 +186,7 @@ Schema changes must be new reversible migrations. Update model `$fillable`, cast
 
 All paths below are under `/api`. Except login/password recovery, routes require a Sanctum bearer token.
 
-- Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
+- Public auth: `POST /login`, `/forgot-password`, `/reset-password`. The forgotten-password endpoint accepts `employee_id` and `phone`, then issues a replacement temporary password by SMS only when both identify the same active user.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
 - Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`. Each authenticated user can read and mark only their own notifications and manage only their current browser subscription.
 - Administration: deputy secretaries and system administrators may use `POST /register` (the server sends the generated temporary password by SMS); `GET /users`; `PATCH|DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
