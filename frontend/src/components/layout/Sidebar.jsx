@@ -5,6 +5,8 @@ import {
   FiTool,
   FiUsers,
   FiBarChart2,
+  FiDatabase,
+  FiLayers,
   FiLogOut,
   FiCheckCircle,
   FiClipboard,
@@ -98,9 +100,21 @@ const menuItems = [
         roles: ["system_admin"],
       },
       {
-        name: "System Changes",
-        path: "/systemchanges",
+        name: "User Management",
+        path: "/usermanagement",
         icon: <FiUsers />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Department Management",
+        path: "/departmentmanagement",
+        icon: <FiLayers />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Database Management",
+        path: "/databasemanagement",
+        icon: <FiDatabase />,
         roles: ["system_admin"],
       },
 

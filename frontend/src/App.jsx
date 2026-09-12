@@ -1,5 +1,5 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { BrowserRouter, Routes, Route  } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route  } from 'react-router-dom';
 import './App.css';
 import { Toaster } from 'react-hot-toast';
 
@@ -46,7 +46,9 @@ import TripsHistory from './pages/driver/TripsHistory';
 import ReportVehicle from './pages/driver/ReportVehicle';
 import OnTimeAvailability from './pages/deputySecretary/OnTimeAvailability';
 import Setting from "./pages/Setting";
-import SystemChanges from './pages/SystemChanges';
+import DatabaseManagement from './pages/DatabaseManagement';
+import DepartmentManagement from './pages/DepartmentManagement';
+import UserManagement from './pages/UserManagement';
 import PendingJourny from './pages/subjectOfficer/PendingJourny';
 import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
@@ -133,7 +135,10 @@ function App() {
 
 
             <Route path="/setting" element={withAuth(<Setting />)} />
-            <Route path="/systemchanges" element={withAuth(<SystemChanges />, ["deputy_secretary", "system_admin"])} />
+            <Route path="/usermanagement" element={withAuth(<UserManagement />, ["deputy_secretary", "system_admin"])} />
+            <Route path="/departmentmanagement" element={withAuth(<DepartmentManagement />, ["deputy_secretary", "system_admin"])} />
+            <Route path="/databasemanagement" element={withAuth(<DatabaseManagement />, ["deputy_secretary", "system_admin"])} />
+            <Route path="/systemchanges" element={<Navigate to="/usermanagement" replace />} />
 
 
           </Routes>
