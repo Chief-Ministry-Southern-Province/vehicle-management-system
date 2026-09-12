@@ -25,7 +25,6 @@ import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
 import { disablePushNotifications } from "../../utils/pushNotifications";
 import { AiFillSchedule } from "react-icons/ai";
-import employeeSidebarBackdrop from "../../assets/side-bar-2.png";
 
 const menuItems = [
   {
@@ -399,14 +398,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const { language, languages, setLanguage, t } = useLanguage();
 
   const role = user?.role;
-  const sidebarStyle = role === "employee"
-    ? {
-      backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.94), rgba(248,251,255,0.94)), url(${employeeSidebarBackdrop})`,
-      backgroundPosition: "center, center bottom 4rem",
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "auto, auto 13rem",
-    }
-    : undefined;
   const [unreadByTitle, setUnreadByTitle] = useState({});
 
   const loadNotifications = useCallback(async () => {
@@ -489,7 +480,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     <aside
       id="dashboard-sidebar"
       data-no-translate
-      style={sidebarStyle}
       className={`fixed inset-y-0 left-0 z-50 flex h-full w-[min(19rem,86vw)] shrink-0 flex-col border-r border-slate-200/80 bg-linear-to-b from-white via-slate-50/90 to-blue-50/60 shadow-2xl transition-transform duration-300 ease-out dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 lg:relative lg:z-auto lg:w-64 lg:translate-x-0 lg:shadow-[8px_0_28px_-24px_rgba(15,23,42,0.45)] ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4 lg:hidden dark:border-slate-800">
