@@ -13,7 +13,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 - Maintain vehicle and driver directories, compliance data, images, service, repair, and fuel records.
 - Provide role-specific and executive dashboards, analytics, and PDF exports.
 - Manage users, departments, profiles, passwords, and account status.
-- Deliver opt-in workflow alerts through Web Push even when the browser app is closed.
+- Deliver workflow alerts in-app, through opt-in Web Push, and through optional TEXTIT.BIZ SMS delivery.
 - Present the interface in English, Sinhala, and Tamil.
 
 ## Roles
@@ -63,6 +63,7 @@ Backend:
 - PHP 8.2+ and Laravel 12
 - Laravel Sanctum bearer-token authentication
 - Laravel Web Push notification channel with VAPID authentication
+- TEXTIT.BIZ HTTP SMS gateway for optional workflow SMS delivery
 - Eloquent ORM and REST-style JSON APIs
 - PHPUnit 11 and Laravel Pint
 
@@ -180,9 +181,16 @@ FRONTEND_URL=http://localhost:5173
 VAPID_SUBJECT=mailto:admin@example.gov.lk
 VAPID_PUBLIC_KEY=<generated-public-key>
 VAPID_PRIVATE_KEY=<generated-private-key>
+TEXTIT_ENABLED=false
+TEXTIT_USER_ID=<textit-user-id>
+TEXTIT_PASSWORD=<textit-password>
+TEXTIT_URL=https://textit.biz/sendmsg/
+TEXTIT_TIMEOUT=10
 ```
 
 Keep the generated VAPID pair stable for each environment; changing it invalidates existing browser subscriptions. Never expose the private key or commit `.env`. Production Web Push requires HTTPS. On iOS/iPadOS, users must install the site to the Home Screen before enabling notifications.
+
+To enable TEXTIT.BIZ SMS notifications, set `TEXTIT_ENABLED=true` and provide the gateway credentials above. The backend sends `id`, `pw`, `to`, and `text` to the configured HTTPS gateway URL. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
 
 ### 3. Frontend
 

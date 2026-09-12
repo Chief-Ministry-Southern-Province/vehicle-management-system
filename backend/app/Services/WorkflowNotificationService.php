@@ -6,21 +6,30 @@ use App\Models\User;
 use App\Models\VehicleRequest;
 use App\Notifications\WorkflowNotification;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 class WorkflowNotificationService
 {
+    public function __construct(private readonly SmsService $smsService) {}
+
     public function send(iterable|User|null $recipients, string $title, string $message, ?VehicleRequest $vehicleRequest = null): void
     {
         $recipients = $recipients instanceof User ? collect([$recipients]) : collect($recipients);
 
         $recipients->filter(fn ($user) => $user instanceof User && $user->isActive())
             ->unique('id')
-            ->each(fn (User $user) => $user->notify(new WorkflowNotification([
-                'title' => $title,
-                'message' => $message,
-                'vehicle_request_id' => $vehicleRequest?->id,
-                'reference' => $vehicleRequest ? 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT) : null,
-            ])));
+            ->each(function (User $user) use ($title, $message, $vehicleRequest): void {
+                $user->notify(new WorkflowNotification([
+                    'title' => $title,
+                    'message' => $message,
+                    'vehicle_request_id' => $vehicleRequest?->id,
+                    'reference' => $vehicleRequest ? 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT) : null,
+                ]));
+
+                // Gateway delivery is supplementary. A provider outage must not undo
+                // the durable in-app workflow notification or its completed transition.
+                $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message));
+            });
     }
 
     public function requestSubmitted(VehicleRequest $vehicleRequest): void
@@ -86,5 +95,10 @@ class WorkflowNotificationService
     private function reference(VehicleRequest $vehicleRequest): string
     {
         return 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function smsMessage(string $title, string $message): string
+    {
+        return Str::limit("VMS-GOV: {$title}. {$message}", 160, '...');
     }
 }

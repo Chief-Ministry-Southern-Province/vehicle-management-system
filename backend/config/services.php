@@ -47,4 +47,12 @@ return [
         'user_agent' => env('GEOCODING_USER_AGENT', 'VMS-GOV/1.0 ('.env('APP_URL', 'http://localhost').')'),
     ],
 
+    'textit' => [
+        'enabled' => env('TEXTIT_ENABLED', false),
+        'id' => env('TEXTIT_USER_ID'),
+        'pw' => env('TEXTIT_PASSWORD'),
+        'url' => env('TEXTIT_URL', 'https://textit.biz/sendmsg/'),
+        'timeout' => (int) env('TEXTIT_TIMEOUT', 10),
+    ],
+
 ];

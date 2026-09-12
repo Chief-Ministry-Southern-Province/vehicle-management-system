@@ -28,7 +28,7 @@ VMS-GOV is a government Vehicle Management System for the Chief Ministry at Daks
 
 The implemented system supports:
 
-- authenticated employee accounts and role-based dashboards, including per-user in-app workflow notifications;
+- authenticated employee accounts and role-based dashboards, including per-user in-app, Web Push, and optional TEXTIT.BIZ SMS workflow notifications;
 - official vehicle requests, attachments, history, details, and cancellation;
 - department, deputy, senior deputy, and secretary review stages;
 - vehicle and driver allocation/reallocation with conflict checks;
@@ -53,7 +53,7 @@ Browser
 
 Frontend technologies: React Router 7, Axios, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, Web Push/PWA service-worker APIs, and browser-side PDF helpers.
 
-Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
+Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, TEXTIT.BIZ's HTTPS SMS gateway, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
 
 Important locations:
 
@@ -276,6 +276,8 @@ php artisan serve
 
 On Unix-like shells, use `cp` instead of `copy`. Default API URL is `http://127.0.0.1:8000`. Relevant environment settings include `APP_URL`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, `GEOCODING_REVERSE_API_URL`, `GEOCODING_TIMEOUT`, `GEOCODING_USER_AGENT`, `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, mail/password-reset settings, filesystem, cache, session, and queue configuration. VAPID keys must be stable per environment; expose only the public key and never commit `.env` or the private key. If XAMPP PHP cannot generate an EC key on Windows, set `OPENSSL_CONF` to its `apache/conf/openssl.cnf` while running `php artisan webpush:vapid`.
 
+For optional server-side SMS delivery, set `TEXTIT_ENABLED=true` with `TEXTIT_USER_ID`, `TEXTIT_PASSWORD`, `TEXTIT_URL`, and optionally `TEXTIT_TIMEOUT`; these are gateway secrets and must never be exposed to the browser or committed. Leave SMS disabled unless all required TEXTIT.BIZ values are configured.
+
 Frontend setup (from `frontend/`):
 
 ```bash
@@ -338,6 +340,7 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 
 - Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
 - When VAPID keys and a browser subscription are present, the same workflow notification is also delivered through Web Push. Push payloads contain only the existing non-sensitive title/message, internal IDs, and a role-dashboard path; expired subscriptions are removed by the Web Push channel.
+- When `TEXTIT_ENABLED` plus server-side TEXTIT.BIZ credentials are configured, the workflow notification service also sends a concise SMS to each active recipient with a valid phone number. It submits the gateway's `id`, `pw`, `to`, and `text` query parameters over HTTPS; recipient numbers are normalized to international numeric form without `+` or `00` (local Sri Lankan mobile numbers are converted). Gateway failures are logged and never roll back the persisted workflow notification or workflow transition.
 - Vehicle-request creation and its submission notifications are committed in one database transaction. A notification persistence failure rolls back the request instead of leaving a partially completed submission.
 - Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 
