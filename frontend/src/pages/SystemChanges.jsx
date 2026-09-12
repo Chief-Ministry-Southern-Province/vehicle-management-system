@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { FiAlertCircle, FiBarChart2, FiDatabase, FiDownload, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiAlertCircle, FiBarChart2, FiDatabase, FiDownload, FiEdit2, FiFilter, FiLayers, FiPlus, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { createDepartment, deleteDepartment, deleteUser, downloadDatabaseBackup, getDepartments, getUsers } from "../api/authApi";
+import { createDepartment, deleteDepartment, deleteUser, downloadDatabaseBackup, getDepartments, getUsers, updateUser } from "../api/authApi";
 import DashboardLayout from "../layouts/DashboardLayout";
 
 const roleLabels = {
@@ -67,6 +67,9 @@ export default function SystemChanges() {
   const [addingDepartment, setAddingDepartment] = useState(false);
   const [removingDepartmentId, setRemovingDepartmentId] = useState(null);
   const [creatingBackup, setCreatingBackup] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [userForm, setUserForm] = useState({});
+  const [savingUser, setSavingUser] = useState(false);
 
   const availableRoles = useMemo(
     () => [...new Set(users.map((user) => user.role).filter(Boolean))]
@@ -192,6 +195,49 @@ export default function SystemChanges() {
     }
   };
 
+  const openUserEditor = (user) => {
+    setEditingUser(user);
+    setUserForm({
+      employee_id: user.employee_id || "",
+      name: user.name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      department: user.department || "",
+      status: user.status || "active",
+    });
+  };
+
+  const closeUserEditor = () => {
+    if (!savingUser) setEditingUser(null);
+  };
+
+  const saveUser = async (event) => {
+    event.preventDefault();
+    if (!editingUser) return;
+
+    setSavingUser(true);
+    try {
+      const response = await updateUser(editingUser.id, {
+        ...userForm,
+        employee_id: userForm.employee_id.trim(),
+        name: userForm.name.trim(),
+        email: userForm.email.trim(),
+        phone: userForm.phone.trim() || null,
+        department: userForm.department || null,
+      });
+      const updatedUser = response.data?.user;
+      if (updatedUser) {
+        setUsers((current) => current.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
+      }
+      setEditingUser(null);
+      toast.success(response.message || "User updated successfully.");
+    } catch (requestError) {
+      toast.error(requestError.message || "Unable to update this user.");
+    } finally {
+      setSavingUser(false);
+    }
+  };
+
   const createBackup = async () => {
     setCreatingBackup(true);
     try {
@@ -211,7 +257,7 @@ export default function SystemChanges() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-700">Administration Panel</p>
             <h2 className="mt-2 text-3xl font-bold text-slate-900">User Management</h2>
-            <p className="mt-2 text-sm text-slate-500">View and remove registered system users.</p>
+            <p className="mt-2 text-sm text-slate-500">View, update, and remove registered system users.</p>
           </div>
           <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-800">
             <FiUsers aria-hidden="true" />
@@ -290,7 +336,7 @@ export default function SystemChanges() {
 
         <div className="mt-8 border-t border-slate-200 pt-7">
           <h2 className="text-2xl font-bold text-slate-900">Registered Users</h2>
-          <p className="mt-1 text-sm text-slate-500">Filter, review, and remove individual system accounts.</p>
+          <p className="mt-1 text-sm text-slate-500">Filter, review, and update individual system accounts.</p>
         </div>
 
         <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end">
@@ -385,6 +431,14 @@ export default function SystemChanges() {
                         <td className="px-5 py-4 text-right">
                           <button
                             type="button"
+                            disabled={removingId === user.id}
+                            onClick={() => openUserEditor(user)}
+                            className="mr-2 inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <FiEdit2 /> Edit
+                          </button>
+                          <button
+                            type="button"
                             disabled={protectedUser || removingId === user.id}
                             title={protectedUser ? "System Administrator accounts are protected" : `Remove ${user.name}`}
                             onClick={() => removeUser(user)}
@@ -402,6 +456,61 @@ export default function SystemChanges() {
             </div>
           )}
         </div>
+        {editingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={closeUserEditor}>
+            <form onSubmit={saveUser} onMouseDown={(event) => event.stopPropagation()} className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="edit-user-title">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-blue-700">Registered user</p>
+                  <h2 id="edit-user-title" className="mt-1 text-2xl font-bold text-slate-900">Edit {editingUser.name}</h2>
+                  <p className="mt-1 text-sm text-slate-500">Role changes require the dedicated registration workflow; update account details and status here.</p>
+                </div>
+                <button type="button" onClick={closeUserEditor} disabled={savingUser} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50">Close</button>
+              </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Employee ID</span>
+                  <input required value={userForm.employee_id} onChange={(event) => setUserForm((current) => ({ ...current, employee_id: event.target.value }))} maxLength="20" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Role</span>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700">{roleLabels[editingUser.role] || editingUser.role}</div>
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Full name</span>
+                  <input required value={userForm.name} onChange={(event) => setUserForm((current) => ({ ...current, name: event.target.value }))} maxLength="255" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Email</span>
+                  <input required type="email" value={userForm.email} onChange={(event) => setUserForm((current) => ({ ...current, email: event.target.value }))} maxLength="255" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Phone {editingUser.role === "driver" ? "(required)" : "(optional)"}</span>
+                  <input required={editingUser.role === "driver"} type="tel" value={userForm.phone} onChange={(event) => setUserForm((current) => ({ ...current, phone: event.target.value }))} maxLength="20" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Department</span>
+                  <select value={userForm.department} onChange={(event) => setUserForm((current) => ({ ...current, department: event.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    <option value="">Unassigned</option>
+                    {availableDepartments.map((department) => <option key={department} value={department}>{department}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-semibold text-slate-700">Account status</span>
+                  <select value={userForm.status} onChange={(event) => setUserForm((current) => ({ ...current, status: event.target.value }))} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+                </label>
+              </div>
+              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onClick={closeUserEditor} disabled={savingUser} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50">Cancel</button>
+                <button type="submit" disabled={savingUser} className="rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">{savingUser ? "Saving..." : "Save changes"}</button>
+              </div>
+            </form>
+          </div>
+        )}
       </section>
     </DashboardLayout>
   );

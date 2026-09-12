@@ -316,7 +316,7 @@ Route::middleware('role:subject_officer')->group(function () {
 | Component | Main responsibility |
 | --- | --- |
 | `AuthController` | Login, registration, logout, password recovery, profile, password change |
-| `UserController` | Deputy-controlled user listing and deletion |
+| `UserController` | Administrative user listing, updating, and deletion |
 | `DepartmentController` | Department directory and deputy-controlled changes |
 | `VehicleRequestController` | Submission, route calculation, review stages, cancellation, allocation, reallocation, final decisions, request lists |
 | `VehicleController` | Fleet listing/details and subject-officer vehicle mutation/images |
@@ -672,7 +672,7 @@ All listed endpoints are below `/api`. Except login and password recovery, they 
 | Session/profile | `POST /logout`, `/logout-all`; `GET/PUT/POST /profile`; `PUT /profile/password` | Authenticated |
 | Notifications | `GET /notifications`; `PATCH /notifications/{id}/read`, `/notifications/read-all` | Authenticated owner |
 | Push | `GET /push-subscriptions/public-key`; `POST/DELETE /push-subscriptions` | Authenticated owner |
-| Users/departments/backups | `POST /register`; `GET /users`; `DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
+| Users/departments/backups | `POST /register`; `GET /users`; `PATCH|DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
 | Department directory | `GET /departments` | Authenticated |
 | Personal requests | create/list/detail/cancel, route preview, reverse geocode | Authenticated with ownership on records |
 | Department review | `/department/vehicle-requests...` | Department officer plus department isolation |

@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary,system_admin')->group(function () {
         Route::post('/system/database-backups', [DatabaseBackupController::class, 'store']);
         Route::get('/users', [UserController::class, 'index']);
+        Route::patch('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/departments', [DepartmentController::class, 'store']);
         Route::delete('/departments/{department}', [DepartmentController::class, 'destroy']);

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Department;
+use App\Models\Driver;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -47,6 +48,89 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $otherAssistantSecretary->id]);
     }
 
+    public function test_administrator_can_update_registered_user_details_and_synchronises_driver_directory_data(): void
+    {
+        $administrator = User::factory()->create(['role' => 'deputy_secretary']);
+        $driverUser = User::factory()->create([
+            'employee_id' => '200012345678',
+            'email' => 'driver.before@example.com',
+            'name' => 'Driver Before',
+            'phone' => '0712345678',
+            'role' => 'driver',
+            'status' => 'active',
+        ]);
+        $driver = Driver::create([
+            'driver_id' => 'DRV-EDIT-0001',
+            'full_name' => 'Driver Before',
+            'date_of_birth' => '1990-01-01',
+            'nic' => '200012345678',
+            'address' => 'Galle',
+            'contact_number' => '0712345678',
+            'licence_number' => 'EDIT-12345',
+            'licence_type' => 'B',
+            'licence_renewal_date' => '2028-01-01',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($administrator)
+            ->patchJson("/api/users/{$driverUser->id}", [
+                'employee_id' => '200012345679',
+                'name' => 'Driver Updated',
+                'email' => 'driver.updated@example.com',
+                'phone' => '0771234567',
+                'department' => 'Transport',
+                'status' => 'inactive',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.user.employee_id', '200012345679')
+            ->assertJsonPath('data.user.status', 'inactive')
+            ->assertJsonMissingPath('data.user.password');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $driverUser->id,
+            'employee_id' => '200012345679',
+            'name' => 'Driver Updated',
+            'email' => 'driver.updated@example.com',
+            'phone' => '0771234567',
+            'department' => 'Transport',
+            'status' => 'inactive',
+        ]);
+        $this->assertDatabaseHas('drivers', [
+            'id' => $driver->id,
+            'nic' => '200012345679',
+            'full_name' => 'Driver Updated',
+            'contact_number' => '0771234567',
+            'status' => 'inactive',
+        ]);
+    }
+
+    public function test_user_update_rejects_duplicate_identity_values_and_non_administrators(): void
+    {
+        $administrator = User::factory()->create(['role' => 'deputy_secretary']);
+        $employee = User::factory()->create(['role' => 'employee']);
+        $existing = User::factory()->create(['role' => 'employee']);
+        $payload = [
+            'employee_id' => $existing->employee_id,
+            'name' => 'Updated Employee',
+            'email' => $existing->email,
+            'phone' => '0712345678',
+            'department' => 'Administration',
+            'status' => 'active',
+        ];
+
+        $this->actingAs($administrator)
+            ->patchJson("/api/users/{$employee->id}", $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['employee_id', 'email']);
+
+        $this->actingAs($employee)
+            ->patchJson("/api/users/{$existing->id}", $payload)
+            ->assertForbidden();
+
+        $this->app['auth']->forgetGuards();
+        $this->patchJson("/api/users/{$existing->id}", $payload)->assertUnauthorized();
+    }
+
     public function test_non_administrative_user_cannot_manage_users(): void
     {
         $employee = User::factory()->create(['role' => 'employee']);
@@ -61,6 +145,7 @@ class UserManagementTest extends TestCase
     public function test_system_admin_can_manage_administration_but_not_assignment_workflows(): void
     {
         $systemAdmin = User::factory()->create(['role' => 'system_admin', 'status' => 'active']);
+        $managedEmployee = User::factory()->create(['role' => 'employee', 'status' => 'active']);
 
         $this->actingAs($systemAdmin)
             ->postJson('/api/register', [
@@ -77,6 +162,18 @@ class UserManagementTest extends TestCase
         $this->actingAs($systemAdmin)
             ->getJson('/api/users')
             ->assertOk();
+
+        $this->actingAs($systemAdmin)
+            ->patchJson("/api/users/{$managedEmployee->id}", [
+                'employee_id' => $managedEmployee->employee_id,
+                'name' => 'Updated by System Administrator',
+                'email' => $managedEmployee->email,
+                'phone' => '0712345678',
+                'department' => 'Administration',
+                'status' => 'active',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.user.name', 'Updated by System Administrator');
 
         $this->actingAs($systemAdmin)
             ->postJson('/api/departments', ['name' => 'System Administration'])

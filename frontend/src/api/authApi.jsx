@@ -403,6 +403,17 @@ export const getUsers = async () => {
   }
 };
 
+export const updateUser = async (userId, payload) => {
+  try {
+    const response = await API.patch(`/users/${encodeURIComponent(userId)}`, payload, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const deleteUser = async (userId) => {
   try {
     const response = await API.delete(`/users/${encodeURIComponent(userId)}`, {
