@@ -133,6 +133,6 @@ class WorkflowNotificationService
             ? "{$vehicleName} ({$vehicle->registration_number})"
             : $vehicleName;
 
-        return "VMS | Journey Approved\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: {$driverName}\nDriver Contact Number: {$driverContact}\nVehicle Name: {$vehicleDisplay}\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province";
+        return "VMS - Journey Approved:\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: {$driverName}\nDriver Contact Number: {$driverContact}\nVehicle Name: {$vehicleDisplay}\n\nHave a safe journey.";
     }
 }
