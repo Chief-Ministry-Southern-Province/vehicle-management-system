@@ -1,7 +1,7 @@
 import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave, FiTruck } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { createVehicleRequest, reverseGeocodeLocation } from "../../api/authApi";
+import { createVehicleRequest, getPredefinedJourneys, reverseGeocodeLocation } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
 import LocationMapPicker from "./LocationMapPicker";
@@ -33,6 +33,10 @@ export default function VehicleRequest() {
   const [routeResult, setRouteResult] = useState({ key: null, route: null });
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState("");
+  const [journeyMethod, setJourneyMethod] = useState("map");
+  const [predefinedJourneys, setPredefinedJourneys] = useState([]);
+  const [selectedJourneyId, setSelectedJourneyId] = useState("");
+  const [journeysLoading, setJourneysLoading] = useState(true);
   const fileInputRef = useRef(null);
   const reverseLookupRequestRef = useRef({ start: 0, end: 0 });
   const startPoint = form.starting_latitude === "" ? null : { lat: Number(form.starting_latitude), lng: Number(form.starting_longitude) };
@@ -44,7 +48,10 @@ export default function VehicleRequest() {
   const routeKey = startPoint && endPoint ? `${startLng},${startLat};${endLng},${endLat}` : null;
   const route = routeResult.key === routeKey ? routeResult.route : null;
   const visibleRouteError = routeResult.key === routeKey ? routeError : "";
-  const distanceKm = route?.distance_km ?? null;
+  const selectedJourney = predefinedJourneys.find((journey) => String(journey.id) === selectedJourneyId) || null;
+  const distanceKm = journeyMethod === "predefined"
+    ? (selectedJourney ? Number(selectedJourney.distance_km) : null)
+    : (route?.distance_km ?? null);
   const addressLookupInProgress = resolvingAddress.start || resolvingAddress.end;
 
   useEffect(() => {
@@ -76,6 +83,21 @@ export default function VehicleRequest() {
     }, 400);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [routeKey, translate]);
+
+  useEffect(() => {
+    let active = true;
+    getPredefinedJourneys()
+      .then((response) => {
+        if (active) setPredefinedJourneys(response?.data?.journeys || []);
+      })
+      .catch(() => {
+        if (active) toast.error(translate("Unable to load pre-defined journeys."));
+      })
+      .finally(() => {
+        if (active) setJourneysLoading(false);
+      });
+    return () => { active = false; };
+  }, [translate]);
 
   const setSelectedLocation = (type, point, label) => {
     setForm((current) => type === "start" ? {
@@ -179,17 +201,24 @@ export default function VehicleRequest() {
 
   const submitRequest = async (event) => {
     event.preventDefault();
-    if (!startPoint || !endPoint) {
-      toast.error(translate("Select both locations to calculate distance"));
-      return;
-    }
-    if (addressLookupInProgress) {
-      toast.error(translate("Finding location..."));
-      return;
-    }
-    if (routeLoading || !route || distanceKm === null) {
-      toast.error(visibleRouteError || translate("A feasible driving route could not be calculated for these locations."));
-      return;
+    if (journeyMethod === "predefined") {
+      if (!selectedJourney) {
+        toast.error(translate("Select a pre-defined journey."));
+        return;
+      }
+    } else {
+      if (!startPoint || !endPoint) {
+        toast.error(translate("Select both locations to calculate distance"));
+        return;
+      }
+      if (addressLookupInProgress) {
+        toast.error(translate("Finding location..."));
+        return;
+      }
+      if (routeLoading || !route || distanceKm === null) {
+        toast.error(visibleRouteError || translate("A feasible driving route could not be calculated for these locations."));
+        return;
+      }
     }
     setSubmitting(true);
 
@@ -198,6 +227,7 @@ export default function VehicleRequest() {
       Object.entries(form).forEach(([key, value]) =>
         payload.append(key, value),
       );
+      if (journeyMethod === "predefined") payload.append("predefined_journey_id", selectedJourney.id);
       if (attachment) payload.append("attachment", attachment);
 
       await createVehicleRequest(payload);
@@ -215,6 +245,8 @@ export default function VehicleRequest() {
         passenger_count: 1,
         passenger_names: "",
       });
+      setJourneyMethod("map");
+      setSelectedJourneyId("");
       setAttachment(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
@@ -307,6 +339,21 @@ export default function VehicleRequest() {
               />
             </div>
 
+            <div className="md:col-span-2">
+              <p className="mb-2 text-sm font-semibold text-slate-700">{translate("Journey method")}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button type="button" onClick={() => setJourneyMethod("map")} className={`rounded-xl border p-4 text-left transition ${journeyMethod === "map" ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200"}`}>
+                  <span className="block font-bold text-slate-900">{translate("Choose locations on map")}</span>
+                  <span className="mt-1 block text-xs text-slate-600">{translate("Enter your starting point and destination to calculate a driving route.")}</span>
+                </button>
+                <button type="button" onClick={() => setJourneyMethod("predefined")} className={`rounded-xl border p-4 text-left transition ${journeyMethod === "predefined" ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100" : "border-slate-200 bg-white hover:border-blue-200"}`}>
+                  <span className="block font-bold text-slate-900">{translate("Choose a pre-defined journey")}</span>
+                  <span className="mt-1 block text-xs text-slate-600">{translate("Use an approved route and distance configured by the System Administrator.")}</span>
+                </button>
+              </div>
+            </div>
+
+            {journeyMethod === "map" ? <>
             <LocationMapPicker start={startPoint} end={endPoint} routeCoordinates={route?.geometry} focusPoint={focusPoint} activePoint={activePoint} onActivePointChange={setActivePoint} onSelect={selectLocation} translate={translate} />
 
             <div>
@@ -345,6 +392,18 @@ export default function VehicleRequest() {
               </div>
               {visibleRouteError && <p className="mt-2 text-sm font-medium text-red-600">{visibleRouteError}</p>}
             </div>
+            </> : <div className="md:col-span-2 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:p-5">
+              <label className="mb-2 block text-sm font-semibold text-slate-700">{translate("Select pre-defined journey")}</label>
+              <select value={selectedJourneyId} onChange={(event) => setSelectedJourneyId(event.target.value)} disabled={journeysLoading} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 disabled:cursor-wait disabled:bg-slate-100">
+                <option value="">{journeysLoading ? translate("Loading journeys...") : translate("Select an approved journey")}</option>
+                {predefinedJourneys.map((journey) => <option key={journey.id} value={journey.id}>{journey.name} — {journey.starting_location} to {journey.destination}</option>)}
+              </select>
+              {selectedJourney ? <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <div className="rounded-xl bg-white p-3"><span className="block text-xs font-bold uppercase tracking-wide text-slate-400">{translate("Starting location")}</span><span className="mt-1 block font-semibold text-slate-800">{selectedJourney.starting_location}</span></div>
+                <div className="rounded-xl bg-white p-3"><span className="block text-xs font-bold uppercase tracking-wide text-slate-400">{translate("Destination")}</span><span className="mt-1 block font-semibold text-slate-800">{selectedJourney.destination}</span></div>
+                <div className="rounded-xl bg-blue-700 p-3 text-white"><span className="block text-xs font-bold uppercase tracking-wide text-blue-100">{translate("Approved distance")}</span><span className="mt-1 block text-lg font-bold">{Number(selectedJourney.distance_km).toFixed(2)} km</span></div>
+              </div> : <p className="mt-3 text-sm text-slate-600">{translate("Select a journey to use its official locations and distance.")}</p>}
+            </div>}
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">

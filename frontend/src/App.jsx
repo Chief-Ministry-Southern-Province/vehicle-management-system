@@ -53,6 +53,7 @@ import PendingJourny from './pages/subjectOfficer/PendingJourny';
 import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
 import SystemAdminDashboard from './pages/dashboard/SystemAdminDashboard';
+import JourneyManagement from './pages/JourneyManagement';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -138,6 +139,7 @@ function App() {
             <Route path="/usermanagement" element={withAuth(<UserManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/departmentmanagement" element={withAuth(<DepartmentManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/databasemanagement" element={withAuth(<DatabaseManagement />, ["deputy_secretary", "system_admin"])} />
+            <Route path="/journeymanagement" element={withAuth(<JourneyManagement />, ["system_admin"])} />
             <Route path="/systemchanges" element={<Navigate to="/usermanagement" replace />} />
 
 

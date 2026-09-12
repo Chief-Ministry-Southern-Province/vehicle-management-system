@@ -225,6 +225,42 @@ export const createVehicleRequest = async (requestData) => {
   }
 };
 
+export const getPredefinedJourneys = async () => {
+  try {
+    const response = await API.get("/predefined-journeys", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createPredefinedJourney = async (journey) => {
+  try {
+    const response = await API.post("/predefined-journeys", journey, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updatePredefinedJourney = async (id, journey) => {
+  try {
+    const response = await API.put(`/predefined-journeys/${id}`, journey, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const deletePredefinedJourney = async (id) => {
+  try {
+    const response = await API.delete(`/predefined-journeys/${id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const reverseGeocodeLocation = async (latitude, longitude, language = "en") => {
   try {
     const response = await API.get("/vehicle-requests/reverse-geocode", {

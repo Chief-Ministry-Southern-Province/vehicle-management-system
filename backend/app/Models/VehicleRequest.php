@@ -87,6 +87,7 @@ class VehicleRequest extends Model
 
     protected $fillable = [
         'user_id',
+        'predefined_journey_id',
         'requester_name',
         'purpose',
         'starting_location',
@@ -163,6 +164,11 @@ class VehicleRequest extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function predefinedJourney(): BelongsTo
+    {
+        return $this->belongsTo(PredefinedJourney::class);
     }
 
     public function recommender(): BelongsTo

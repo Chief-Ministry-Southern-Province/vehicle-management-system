@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DatabaseBackupController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PredefinedJourneyController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleController;
@@ -34,6 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/departments', [DepartmentController::class, 'store']);
         Route::delete('/departments/{department}', [DepartmentController::class, 'destroy']);
+    });
+    Route::get('/predefined-journeys', [PredefinedJourneyController::class, 'index']);
+    Route::middleware('role:system_admin')->group(function () {
+        Route::post('/predefined-journeys', [PredefinedJourneyController::class, 'store']);
+        Route::put('/predefined-journeys/{predefinedJourney}', [PredefinedJourneyController::class, 'update']);
+        Route::delete('/predefined-journeys/{predefinedJourney}', [PredefinedJourneyController::class, 'destroy']);
     });
     Route::get('/departments', [DepartmentController::class, 'index']);
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -13,6 +13,7 @@ import {
   FiClock,
   FiAlertTriangle,
   FiGlobe,
+  FiMap,
   FiX,
 } from "react-icons/fi";
 
@@ -117,6 +118,12 @@ const menuItems = [
         name: "Database Management",
         path: "/databasemanagement",
         icon: <FiDatabase />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Journey Management",
+        path: "/journeymanagement",
+        icon: <FiMap />,
         roles: ["system_admin"],
       },
 
