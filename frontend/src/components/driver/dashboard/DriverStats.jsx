@@ -35,77 +35,66 @@ export default function DriverStats() {
       title: "Total Trips",
       value: data.total_trips,
       icon: <FiNavigation />,
-      badge: "All assigned",
-      tone: "from-blue-500 to-blue-600",
-      glow: "bg-blue-500/10",
-      badgeClass: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-200",
+      iconClass: "bg-blue-600",
+      accentClass: "bg-blue-600",
     },
     {
       title: "Today's Trips",
       value: data.today_trips,
       icon: <FiTrendingUp />,
-      badge: "Today",
-      tone: "from-cyan-500 to-cyan-600",
-      glow: "bg-cyan-500/10",
-      badgeClass: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-200",
+      iconClass: "bg-cyan-500",
+      accentClass: "bg-cyan-500",
     },
     {
       title: "Scheduled Trips",
       value: data.scheduled_trips,
       icon: <FiClock />,
-      badge: "Upcoming",
-      tone: "from-amber-400 to-amber-500",
-      glow: "bg-amber-500/10",
-      badgeClass: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-200",
+      iconClass: "bg-amber-500",
+      accentClass: "bg-amber-500",
     },
     {
-      title: "Completed",
+      title: "Completed Trips",
       value: data.completed_trips,
       icon: <FiCheckCircle />,
-      badge: `${data.completion_rate}%`,
-      tone: "from-emerald-500 to-emerald-600",
-      glow: "bg-emerald-500/10",
-      badgeClass: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200",
+      iconClass: "bg-emerald-500",
+      accentClass: "bg-emerald-500",
     },
   ];
 
   return (
-    <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-300">
-        Trip Summary
-      </h3>
+    <section>
+      <div className="mb-4 flex items-center gap-3">
+        <h3 className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-xs">
+          Trip Summary
+        </h3>
+        <div className="h-px flex-1 bg-linear-to-r from-slate-300/90 to-transparent dark:from-slate-700" />
+      </div>
       {error && (
         <p className="mb-3 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => (
-          <div
+          <article
             key={item.title}
-            className="group relative overflow-hidden rounded-[18px] border border-slate-100 bg-white/80 p-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-800 sm:p-5"
+            className="group relative min-h-[152px] min-w-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white px-6 py-7 shadow-[0_10px_24px_-19px_rgba(15,23,42,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_32px_-22px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
           >
-            <div
-              className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${item.glow} opacity-60 transition-opacity duration-300 group-hover:opacity-100`}
-            />
-            <div className="relative mb-3 flex items-start justify-between gap-2 sm:mb-5 sm:gap-3">
-              <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br text-base text-white shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 sm:h-11 sm:w-11 sm:text-lg ${item.tone}`}>
+            <div className="flex min-w-0 items-start justify-between gap-4">
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] text-xl text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.7)] transition-transform duration-200 group-hover:scale-105 ${item.iconClass}`}>
                 {item.icon}
-              </div>
-
-              <span className={`max-w-20 truncate rounded-full px-2 py-1 text-[10px] font-semibold sm:max-w-none sm:px-2.5 sm:text-xs ${item.badgeClass}`}>
-                {item.badge}
               </span>
+              <strong className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white">
+                {loading ? "..." : item.value}
+              </strong>
             </div>
-
-            <p className="relative text-sm font-medium text-slate-500 dark:text-slate-400">{item.title}</p>
-
-            <h3 className="relative mt-1 text-2xl font-bold leading-tight text-slate-800 tabular-nums dark:text-white sm:text-[26px]">
-              {loading ? "..." : item.value}
-            </h3>
-          </div>
+            <p className="mt-6 text-sm font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+              {item.title}
+            </p>
+            <span className={`absolute inset-x-0 bottom-0 h-[3px] ${item.accentClass}`} />
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
