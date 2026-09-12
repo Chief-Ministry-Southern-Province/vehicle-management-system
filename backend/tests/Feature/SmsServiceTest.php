@@ -136,9 +136,16 @@ class SmsServiceTest extends TestCase
 
         $allocation = $template->invoke($workflowNotifications, 'Vehicle allocation required', '', $vehicleRequest);
         $approval = $template->invoke($workflowNotifications, 'Journey finally approved', '', $vehicleRequest);
+        $allocated = $template->invoke($workflowNotifications, 'Vehicle and driver allocated', '', $vehicleRequest);
+        $finalApproval = $template->invoke($workflowNotifications, 'Final approval required', '', $vehicleRequest);
+        $fallback = $template->invoke($workflowNotifications, 'A new workflow event', 'Details', $vehicleRequest);
 
         $this->assertSame("VMS | Action Required\n\nVehicle Request REQ-0065 is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province", $allocation);
         $this->assertSame("VMS | Journey Approved\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province", $approval);
+        foreach ([$allocation, $approval, $allocated, $finalApproval, $fallback] as $sms) {
+            $this->assertStringNotContainsString('VMS-GOV', $sms);
+            $this->assertStringStartsWith('VMS', $sms);
+        }
     }
 
     public function test_workflow_notification_is_persisted_when_sms_gateway_delivery_fails(): void
