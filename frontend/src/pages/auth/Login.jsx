@@ -68,7 +68,7 @@ export default function Login() {
             <img src={nationalEmblem} alt="Chief Ministry emblem" className="h-20 w-20 object-contain" />
             <div className="pt-1 font-serif leading-tight text-[#06275d]">
               <p className="text-2xl font-semibold">Chief Ministry</p>
-              <p className="text-lg">Southern Provincial Council</p>
+              <p className="text-lg">Southern Province</p>
               <p className="text-sm">Sri Lanka</p>
               <div className="mt-2 h-px w-full bg-[#1c5a9f]/35" />
               <p className="mt-2 font-sans text-[11px] font-semibold tracking-wide">Efficient Vehicles · Stronger Service · A Better Tomorrow</p>
@@ -101,7 +101,7 @@ export default function Login() {
         <div className="absolute -left-24 top-8 h-96 w-96 rounded-full border-[46px] border-white/10" />
         <div className="absolute -right-20 bottom-[-7rem] h-80 w-80 rounded-full border-[45px] border-cyan-300/10" />
 
-        <label className="absolute right-5 top-5 z-10 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-[#073978] shadow-lg sm:right-8 sm:top-7">
+        <label className="absolute right-5 top-5 z-20 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-[#073978] shadow-lg sm:right-8 sm:top-7">
           <FiGlobe className="text-lg" aria-hidden="true" />
           <span className="sr-only">{t("language.label", "Language")}</span>
           <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t("language.label", "Language")} className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none">
@@ -128,7 +128,7 @@ export default function Login() {
           </form>
 
           <div className="my-8 flex items-center gap-4 text-sm font-semibold text-[#123d7c] before:h-px before:flex-1 before:bg-[#d4e1f2] after:h-px after:flex-1 after:bg-[#d4e1f2]">or</div>
-          <div className="flex items-center gap-4 rounded-2xl bg-[#eaf5ff] px-5 py-4 text-[#0751a3]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm"><FiShield aria-hidden="true" /></span><p className="text-sm leading-relaxed"><span className="block font-bold">Authorized Users Only</span><span className="text-xs text-[#285992]">For official use of the Chief Ministry - Southern Provincial Council.</span></p></div>
+          <div className="flex items-center gap-4 rounded-2xl bg-[#eaf5ff] px-5 py-4 text-[#0751a3]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm"><FiShield aria-hidden="true" /></span><p className="text-sm leading-relaxed"><span className="block font-bold">Authorized Users Only</span><span className="text-xs text-[#285992]">For official use of the Chief Ministry - Southern Province.</span></p></div>
         </div>
 
         <p className="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap text-xs font-medium text-blue-100 lg:block">People&nbsp;&nbsp; | &nbsp;&nbsp;Service&nbsp;&nbsp; | &nbsp;&nbsp;Sustainability</p>
