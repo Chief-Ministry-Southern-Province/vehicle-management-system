@@ -44,22 +44,3 @@ export const pageTranslations = {
   }
 };
 
-export function translatePageText(value, language) {
-  if (language === "en" || !value || !/[A-Za-z]/.test(value)) return value;
-  const dictionary = pageTranslations[language];
-  if (language === "si") {
-    const driverCount = value.match(/^\s*(\d+) driver records\s*$/i);
-    if (driverCount) return `රියදුරු වාර්තා ${driverCount[1]}ක්`;
-    const scheduleCount = value.match(/^\s*Showing (\d+) maintenance schedules\s*$/i);
-    if (scheduleCount) return `නඩත්තු කාලසටහන් ${scheduleCount[1]}ක් පෙන්වයි`;
-    const vehicleCount = value.match(/^\s*(\d+) matching vehicles\s*$/i);
-    if (vehicleCount) return `ගැළපෙන වාහන ${vehicleCount[1]}ක්`;
-    const allVehicles = value.match(/^\s*Showing all (\d+) matching vehicles\. Scroll the inventory to view the complete list\s*$/i);
-    if (allVehicles) return `ගැළපෙන වාහන ${allVehicles[1]}ම පෙන්වයි. සම්පූර්ණ ලැයිස්තුව බැලීමට ලේඛනය පහළට අනුචලනය (Scroll) කරන්න`;
-  }
-  const match = value.match(/^(\s*)(.*?)([.!?:…]*)(\s*)$/s);
-  if (!match) return value;
-  const [, leading, content, punctuation, trailing] = match;
-  const translated = dictionary[content.toLowerCase()];
-  return translated ? `${leading}${translated}${punctuation}${trailing}` : value;
-}

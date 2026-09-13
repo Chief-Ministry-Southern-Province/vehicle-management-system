@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
-import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
+import { getNotifications, getProfile, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
 import nationalEmblem from "../../assets/national-emblem.png";
 import topbarBackdrop from "../../assets/side-bar-5.png";
 import { enablePushNotifications, supportsPushNotifications } from "../../utils/pushNotifications";
@@ -139,8 +139,9 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const apiOrigin =
     import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
     "http://127.0.0.1:8000";
-  const profilePictureUrl = user?.profile_picture_path
-    ? `${apiOrigin}/${String(user.profile_picture_path).replace(/^\/+/, "")}`
+  const [profilePicturePath, setProfilePicturePath] = useState(user?.profile_picture_path || null);
+  const profilePictureUrl = profilePicturePath
+    ? `${apiOrigin}/${String(profilePicturePath).replace(/^\/+/, "")}`
     : null;
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
@@ -153,6 +154,24 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const [pushStatus, setPushStatus] = useState(initialPushStatus);
   const notificationMenuRef = useRef(null);
   const shownNotificationIdsRef = useRef(new Set());
+
+  useEffect(() => {
+    let active = true;
+    setProfilePicturePath(user?.profile_picture_path || null);
+
+    if (!userId) return () => { active = false; };
+
+    getProfile()
+      .then((response) => {
+        const latestPicturePath = response?.data?.user?.profile_picture_path || null;
+        if (active) setProfilePicturePath(latestPicturePath);
+      })
+      .catch(() => {
+        // The cached session image remains available if the profile refresh fails.
+      });
+
+    return () => { active = false; };
+  }, [userId, user?.profile_picture_path]);
 
   const loadNotifications = useCallback(async () => {
     setLoadingNotifications(true);
@@ -380,20 +399,20 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
             <div
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-12 sm:w-12 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
               {profilePictureUrl && (
                 <img
                   src={profilePictureUrl}
                   alt={`${user?.name || "User"} profile`}
-                  className="absolute inset-0 h-full w-full rounded-xl object-cover"
+                  className="absolute inset-0 z-10 h-full w-full object-cover"
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
                   }}
                 />
               )}
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
+              <span className="absolute -bottom-0.5 -right-0.5 z-20 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
             </div>
 
             <div className="hidden min-w-0 sm:block">
