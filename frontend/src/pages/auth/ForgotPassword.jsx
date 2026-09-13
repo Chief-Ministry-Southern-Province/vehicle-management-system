@@ -20,7 +20,7 @@ import loginPageBackground from "../../assets/login-page.png";
 
 export default function ForgotPassword() {
   const { language, languages, setLanguage, t } = useLanguage();
-  const recoveryLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si"].includes(code)), [languages]);
+  const recoveryLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si", "ta"].includes(code)), [languages]);
   const [form, setForm] = useState({ employee_id: "", phone: "" });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);

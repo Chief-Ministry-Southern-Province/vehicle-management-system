@@ -18,6 +18,24 @@ test('every catalog phrase has Sinhala and Tamil display text', () => {
   }
 });
 
+test('all static login-page labels translate to Sinhala and Tamil', () => {
+  const labels = [
+    'Chief Ministry', 'Southern Province', 'Sri Lanka', 'Vehicle Management', 'System',
+    'Vehicle Management System', 'Manage Vehicles | Optimize Resources | Deliver Better Services',
+    'Efficient', 'Allocation', 'Better', 'Planning', 'Accountable', 'Operations',
+    'Data Driven', 'Decisions', 'Chief Ministry, Dakshinapaya, Labuduwa, Galle, Sri Lanka',
+    'Welcome Back', 'Sign in to continue to the Vehicle Management System', 'User ID',
+    'Password', 'Forgot Password?', 'Login', 'or', 'Authorized Users Only',
+    'For official use of the Chief Ministry - Southern Province.', 'People | Service | Sustainability',
+  ];
+
+  for (const language of ['si', 'ta']) {
+    for (const label of labels) {
+      assert.doesNotMatch(translatePageText(label, language), /[A-Za-z]/, `${language}: ${label}`);
+    }
+  }
+});
+
 test('dynamic messages translate without changing substituted names or identifiers', () => {
   for (const row of messageTemplates) {
     const source = row[0].replace(/\{(\d+)\}/g, (_, i) => `VALUE-${i}`);

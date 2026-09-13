@@ -1,6 +1,19 @@
 // Complete phrases, shared by every page, dialog, toast and accessible label.
 // Columns: English, Sinhala, Tamil. Keep user data outside this catalog.
 export const uiPhrases = [
+  ['Chief Ministry', 'ප්‍රධාන අමාත්‍යාංශය', 'முதன்மை அமைச்சு'],
+  ['Sri Lanka', 'ශ්‍රී ලංකාව', 'இலங்கை'],
+  ['Vehicle Management System', 'වාහන කළමනාකරණ පද්ධතිය', 'வாகன மேலாண்மை அமைப்பு'],
+  ['Efficient', 'කාර්යක්ෂම', 'திறமையான'],
+  ['Allocation', 'වෙන් කිරීම', 'ஒதுக்கீடு'],
+  ['Better', 'වඩා හොඳ', 'சிறந்த'],
+  ['Planning', 'සැලසුම් කිරීම', 'திட்டமிடல்'],
+  ['Accountable', 'වගකියන', 'பொறுப்புடைய'],
+  ['Operations', 'මෙහෙයුම්', 'செயல்பாடுகள்'],
+  ['Decisions', 'තීරණ', 'முடிவுகள்'],
+  ['Employee ID', 'සේවක අංකය', 'பணியாளர் எண்'],
+  ['Password', 'මුරපදය', 'கடவுச்சொல்'],
+  ['Forgot Password?', 'මුරපදය අමතකද?', 'கடவுச்சொல்லை மறந்துவிட்டீர்களா?'],
   ['Complete vehicle history', 'සම්පූර්ණ වාහන ඉතිහාසය', 'முழு வாகன வரலாறு'],
   ['Driver details are unavailable.', 'රියදුරු විස්තර නොමැත.', 'சாரதி விவரங்கள் கிடைக்கவில்லை.'],
   ['Vehicle details are unavailable.', 'වාහන විස්තර නොමැත.', 'வாகன விவரங்கள் கிடைக்கவில்லை.'],
