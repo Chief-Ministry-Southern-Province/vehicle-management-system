@@ -23,7 +23,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { language, languages, setLanguage, t } = useLanguage();
-  const loginLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si"].includes(code)), [languages]);
+  const loginLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si", "ta"].includes(code)), [languages]);
   const [formData, setFormData] = useState({ employee_id: "", password: "", role: "employee" });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
