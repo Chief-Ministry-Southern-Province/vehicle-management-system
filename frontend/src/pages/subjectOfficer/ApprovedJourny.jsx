@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FiCalendar,
@@ -92,7 +93,7 @@ function JourneyDetails({ journey, onClose }) {
     try {
       generateApprovedJourneyPdf(journey);
     } catch (error) {
-      window.alert(error.message);
+      alertLocalized(error.message);
     }
   };
   return (

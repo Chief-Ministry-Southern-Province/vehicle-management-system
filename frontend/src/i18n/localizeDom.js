@@ -3,6 +3,7 @@ import { translatePageText } from './translate.js';
 export const translatableAttributes = ['placeholder', 'title', 'aria-label', 'aria-description', 'alt', 'label'];
 const textRecords = new WeakMap();
 const attributeRecords = new WeakMap();
+const implicitOptions = new WeakMap();
 const excluded = '[data-no-translate], [translate="no"], [contenteditable="true"], script, style, code, pre, textarea';
 
 export function canTranslateNode(node) {
@@ -21,8 +22,18 @@ export function localizeText(node, language) {
   const parent = node.parentElement;
   // HTML options without a value submit their text. Freeze that original value
   // before translating the visible label; never translate submitted values.
-  if (parent.tagName === 'OPTION' && !parent.hasAttribute('value')) parent.value = parent.textContent;
   const record = localizedRecord(textRecords.get(node), node.data, language);
+  if (parent.tagName === 'OPTION') {
+    const previousValue = implicitOptions.get(parent);
+    if (!parent.hasAttribute('value') || (previousValue !== undefined && parent.value === previousValue)) {
+      const sourceValue = previousValue === undefined ? parent.textContent : record.source;
+      parent.value = sourceValue;
+      implicitOptions.set(parent, sourceValue);
+    } else {
+      // React supplied an explicit value after mounting: ownership returns to it.
+      implicitOptions.delete(parent);
+    }
+  }
   textRecords.set(node, record);
   if (node.data !== record.rendered) node.data = record.rendered;
 }

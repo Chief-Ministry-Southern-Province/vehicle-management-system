@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -401,7 +402,7 @@ export default function DriverDetails() {
     [drivers],
   );
   const statuses = ["All", ...new Set(drivers.map((driver) => driver.status))];
-  const exportDrivers = () => { try { generateDriverDirectoryPdf(filteredDrivers); } catch (exportError) { window.alert(exportError.message); } };
+  const exportDrivers = () => { try { generateDriverDirectoryPdf(filteredDrivers); } catch (exportError) { alertLocalized(exportError.message); } };
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-slate-50 p-6">

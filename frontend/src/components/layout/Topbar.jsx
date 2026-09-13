@@ -416,7 +416,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
             </div>
 
             <div className="hidden min-w-0 sm:block">
-              <p className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
+              <p translate={user?.name ? "no" : undefined} className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
                 {user?.name || t("user.government")}
               </p>
               <div className="mt-1 flex items-center gap-1.5">                <p className="max-w-32 truncate text-[10px] font-bold uppercase tracking-[0.08em] text-blue-600 lg:max-w-44 dark:text-blue-400">

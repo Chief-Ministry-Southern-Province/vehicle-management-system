@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../../../i18n/runtime.js";
 import { FiEdit2, FiTrash2, FiTruck } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
@@ -103,7 +104,7 @@ export default function VehicleTable({ vehicles, onDelete }) {
                       type="button"
                       onClick={() => {
                         if (
-                          window.confirm(
+                          confirmLocalized(
                             `Delete ${vehicle.reg}? This cannot be undone.`,
                           )
                         )

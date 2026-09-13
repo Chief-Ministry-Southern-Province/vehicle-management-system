@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../i18n/runtime.js";
 import { useEffect, useState } from "react";
 import { FiEdit2, FiMap, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -55,7 +56,7 @@ export default function JourneyManagement() {
   };
 
   const remove = async (journey) => {
-    if (!window.confirm(`Delete "${journey.name}"?`)) return;
+    if (!confirmLocalized(`Delete "${journey.name}"?`)) return;
     try {
       await deletePredefinedJourney(journey.id);
       setJourneys((items) => items.filter((item) => item.id !== journey.id));

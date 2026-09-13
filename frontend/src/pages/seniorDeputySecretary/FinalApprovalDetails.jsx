@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../../i18n/runtime.js";
 import { useEffect, useState } from "react";
 import {
   FiArrowLeft,
@@ -164,7 +165,7 @@ export default function FinalApprovalDetails() {
   };
   const reject = async () => {
     if (
-      !window.confirm(
+      !confirmLocalized(
         "Reject this vehicle request? The allocated driver and vehicle will be released.",
       )
     ) {

@@ -1,3 +1,4 @@
+import { localizePrintDocument } from "../i18n/printDocument.js";
 import { formatLocalDateTime } from "./dateTime";
 
 const escapeHtml = (value) =>
@@ -56,5 +57,6 @@ export function generateDriverIssueRecordsPdf(reports) {
     .reference{margin-top:3mm;border-radius:2mm;background:#edf5fd;padding:3mm;color:#647084;font-size:7pt}.reference strong{display:block;margin-bottom:1mm;color:#0b2f5b;font-size:7.7pt}.footer{position:absolute;right:16mm;bottom:6mm;left:16mm;display:flex;justify-content:space-between;border-top:.2mm solid #d6e0ea;padding-top:3mm;color:#647084;font-size:7.2pt}
     @media screen{.sheet{box-shadow:0 8px 30px rgba(15,23,42,.16)}}@media print{html,body{background:#fff}.sheet{width:210mm;height:296mm;margin:0;box-shadow:none;page-break-inside:avoid;break-inside:avoid}}
   </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
+  localizePrintDocument(printWindow.document);
   printWindow.document.close();
 }

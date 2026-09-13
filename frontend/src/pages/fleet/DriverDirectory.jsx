@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import {
   FiEdit2,
@@ -217,7 +218,7 @@ export default function DriverDirectory() {
   };
   const removeDriver = async (driver) => {
     if (
-      !window.confirm(
+      !confirmLocalized(
         `Delete ${driver.fullName} (${driver.id})? This action cannot be undone.`,
       )
     )

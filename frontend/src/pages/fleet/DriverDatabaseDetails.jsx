@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useState } from "react";
 import { FiArrowLeft, FiDownload, FiSave } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -68,7 +69,7 @@ export default function DriverDatabaseDetails() {
     try {
       generateDriverDetailsPdf(driver);
     } catch (exportError) {
-      window.alert(exportError.message);
+      alertLocalized(exportError.message);
     }
   };
   const fields = [

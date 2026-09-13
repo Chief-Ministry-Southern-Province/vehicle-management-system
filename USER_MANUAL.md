@@ -101,6 +101,8 @@ The sidebar contains your role's work areas. On a phone, open it using the menu 
 
 The top bar provides language selection, notification bell, profile information, and settings. English, Sinhala, and Tamil are supported. Examples and menu names in this manual use English.
 
+The selected language is remembered on this browser and applies to interface labels, dropdown choices, supported validation and workflow messages, confirmation message text, dates, and generated report labels. Names, identifiers, filenames, brands, and entered record data are preserved. Browser-owned controls (such as file pickers and native dialog buttons) follow the browser or operating-system language; SMS and background device-notification text are supplied separately by the server.
+
 | Dashboard | What to use it for |
 | --- | --- |
 | Employee | Review Pending, Approved, and Rejected request counts and create a new request. Approved counts include completed approved journeys. |

@@ -82,23 +82,23 @@ Object.assign(translations.ta, {
 
 // Fuel Analysis table and journey detail labels.
 const fuelLabels = {
-  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල පීඩීඑෆ් ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் பீடிஎஃப் ஆக ஏற்றுமதி செய்"],
   readyToExport: ["Fuel records ready to export", "අපනයනයට සූදානම් ඉන්ධන වාර්තා", "ஏற்றுமதிக்குத் தயாரான எரிபொருள் பதிவுகள்"],
   ledgerDetail: ["Search, filter, and export transaction records.", "ගනුදෙනු වාර්තා සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "பரிவர்த்தனைப் பதிவுகளைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
   partialConsumption: ["Partial total; missing months", "අර්ධ එකතුව; නොමැති මාස", "பகுதி மொத்தம்; விடுபட்ட மாதங்கள்"],
   annualCost: ["Annual Fuel Cost", "වාර්ෂික ඉන්ධන වියදම", "வருடாந்திர எரிபொருள் செலவு"],
-  annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (L)", "வருடாந்திர நிரப்பிய எரிபொருள் (L)"],
-  annualConsumed: ["Annual Fuel Consumed (L)", "වාර්ෂික ඉන්ධන පරිභෝජනය (L)", "வருடாந்திர எரிபொருள் நுகர்வு (L)"],
-  remainingFuel: ["Remaining Fuel (L)", "ඉතිරි ඉන්ධන (L)", "மீதமுள்ள எரிபொருள் (L)"],
+  annualFilled: ["Annual Fuel Filled (L)", "වාර්ෂිකව පිරවූ ඉන්ධන (ලීටර්)", "வருடாந்திர நிரப்பிய எரிபொருள் (லீட்டர்)"],
+  annualConsumed: ["Annual Fuel Consumed (L)", "වාර්ෂික ඉන්ධන පරිභෝජනය (ලීටර්)", "வருடாந்திர எரிபொருள் நுகர்வு (லீட்டர்)"],
+  remainingFuel: ["Remaining Fuel (L)", "ඉතිරි ඉන්ධන (ලීටර්)", "மீதமுள்ள எரிபொருள் (லீட்டர்)"],
   remainingFormula: ["Annual fuel filled − calculated fuel consumed", "වාර්ෂිකව පිරවූ ඉන්ධන − ගණනය කළ පරිභෝජනය", "வருடாந்திர நிரப்பிய எரிபொருள் − கணக்கிடப்பட்ட நுகர்வு"],
   allVehicles: ["All Vehicles", "සියලුම වාහන", "அனைத்து வாகனங்களும்"],
-  filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (L)", "நிரப்பிய எரிபொருள் (L)"],
-  consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (L)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (L)"],
+  filled: ["Fuel filled (L)", "පිරවූ ඉන්ධන (ලීටර්)", "நிரப்பிய எரிபொருள் (லீட்டர்)"],
+  consumed: ["Calculated fuel consumed (L)", "ගණනය කළ ඉන්ධන පරිභෝජනය (ලීටර්)", "கணக்கிடப்பட்ட எரிபொருள் நுகர்வு (லீட்டர்)"],
   consumptionDetail: ["Fuel filled versus actual journey distance × vehicle fuel efficiency, by month", "මාසිකව පිරවූ ඉන්ධන සහ සැබෑ ගමන් දුර × වාහන ඉන්ධන කාර්යක්ෂමතාව", "மாதந்தோறும் நிரப்பிய எரிபொருள் மற்றும் உண்மையான பயணத் தூரம் × வாகன எரிபொருள் திறன்"],
   monthlyOverview: ["Monthly Fuel Overview", "මාසික ඉන්ධන දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் கண்ணோட்டம்"],
   monthlyCostOverview: ["Monthly Fuel Cost Overview", "මාසික ඉන්ධන වියදම් දළ විශ්ලේෂණය", "மாதாந்திர எரிபொருள் செலவுக் கண்ணோட்டம்"],
-  costLkr: ["Fuel cost (LKR)", "ඉන්ධන වියදම (LKR)", "எரிபொருள் செலவு (LKR)"],
-  quantityLiters: ["Fuel quantity (L)", "ඉන්ධන ප්‍රමාණය (L)", "எரிபொருள் அளவு (L)"],
+  costLkr: ["Fuel cost (LKR)", "ඉන්ධන වියදම (රු.)", "எரிபொருள் செலவு (ரூ.)"],
+  quantityLiters: ["Fuel quantity (L)", "ඉන්ධන ප්‍රමාණය (ලීටර්)", "எரிபொருள் அளவு (லீட்டர்)"],
   vehicleMonthlyDetail: ["Recorded fuel quantity and cost for the selected vehicle and year", "තෝරාගත් වාහනය සහ වර්ෂය සඳහා වාර්තාගත ඉන්ධන ප්‍රමාණය සහ වියදම", "தேர்ந்தெடுத்த வாகனம் மற்றும் ஆண்டிற்கான பதிவுசெய்யப்பட்ட எரிபொருள் அளவும் செலவும்"],
   noVehicles: ["No vehicles available", "වාහන නොමැත", "வாகனங்கள் இல்லை"],
   monthlyDistance: ["Monthly distance analysis", "මාසික දුර විශ්ලේෂණය", "மாதாந்திர தூரப் பகுப்பாய்வு"],
@@ -116,7 +116,7 @@ const fuelLabels = {
   allocatedDetail: ["Sum of each request's planned round trip", "එක් එක් ඉල්ලීමේ යාම සහ ඒම සඳහා සැලසුම් කළ දුර එකතුව", "ஒவ்வொரு கோரிக்கையின் திட்டமிட்ட இருவழித் தூரத்தின் கூட்டுத்தொகை"],
   filteredTotals: ["Totals for displayed requests", "පෙන්වන ඉල්ලීම්වල එකතුව", "காட்டப்படும் கோரிக்கைகளின் மொத்தம்"],
   driverName: ["Driver Name", "රියදුරු නම", "சாரதி பெயர்"],
-  extraFuel: ["Extra Fuel (L)", "අමතර ඉන්ධන (L)", "கூடுதல் எரிபொருள் (L)"],
+  extraFuel: ["Extra Fuel (L)", "අමතර ඉන්ධන (ලීටර්)", "கூடுதல் எரிபொருள் (லீட்டர்)"],
   view: ["View more", "තවත් බලන්න", "மேலும் பார்க்க"],
   close: ["Close", "වසන්න", "மூடு"],
   requester: ["Requester", "ඉල්ලුම්කරු", "கோரிக்கையாளர்"],
@@ -194,7 +194,7 @@ for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
 }
 const driverTableLabels = {
-  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල පීඩීඑෆ් ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் பீடிஎஃப் ஆக ஏற்றுமதி செய்"],
   directory: ["Driver Directory", "රියදුරු නාමාවලිය", "சாரதி பட்டியல்"],
   select: ["Select", "තෝරන්න", "தேர்ந்தெடு"],
   photo: ["Profile Picture", "පැතිකඩ ඡායාරූපය", "சுயவிவரப் படம்"],
@@ -209,7 +209,7 @@ for (const [key, labels] of Object.entries(driverTableLabels)) {
 }
 
 const serviceLedgerLabels = {
-  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල PDF ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் PDF ஆக ஏற்றுமதி செய்"],
+  exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල පීඩීඑෆ් ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் பீடிஎஃப் ஆக ஏற்றுமதி செய்"],
   ready: ["service records ready to export", "අපනයනයට සූදානම් සේවා වාර්තා", "ஏற்றுமதிக்குத் தயாரான சேவைப் பதிவுகள்"],
   detail: ["Search, filter, and export service history.", "සේවා ඉතිහාසය සොයන්න, පෙරහන් කරන්න සහ අපනයනය කරන්න.", "சேவை வரலாற்றைத் தேடி, வடிகட்டி, ஏற்றுமதி செய்யவும்."],
 };

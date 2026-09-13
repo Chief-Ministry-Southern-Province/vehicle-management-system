@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../i18n/runtime.js";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { createDepartment, deleteDepartment, getDepartments } from "../api/authApi";
@@ -21,7 +22,7 @@ export default function DepartmentManagement() {
     finally { setAddingDepartment(false); }
   };
   const removeDepartment = async (department) => {
-    if (!window.confirm(`Remove ${department.name}? Users assigned to it will become unassigned.`)) return;
+    if (!confirmLocalized(`Remove ${department.name}? Users assigned to it will become unassigned.`)) return;
     setRemovingDepartmentId(department.id);
     try { const response = await deleteDepartment(department.id); setDepartments((current) => current.filter((item) => item.id !== department.id)); toast.success(response.message || "Department removed successfully."); }
     catch (error) { toast.error(error.message || "Unable to remove this department."); }

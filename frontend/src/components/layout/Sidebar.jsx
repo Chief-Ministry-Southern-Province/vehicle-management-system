@@ -485,7 +485,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
       <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4 lg:hidden dark:border-slate-800">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Navigation</p>
-          <p className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name || "Government User"}</p>
+          <p translate={user?.name ? "no" : undefined} className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name || "Government User"}</p>
         </div>
         <button type="button" onClick={onClose} className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" aria-label="Close navigation menu">
           <FiX />

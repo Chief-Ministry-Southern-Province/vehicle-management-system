@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import { FiAlertTriangle, FiClock, FiDownload, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
@@ -33,7 +34,7 @@ export default function OnTimeAvailability() {
   const toggleAll = () => setSelectedIds(allSelected ? new Set() : new Set(reports.map((report) => report.id)));
   const exportSelected = () => {
     try { generateDriverIssueRecordsPdf(selectedReports); }
-    catch (exportError) { window.alert(exportError.message); }
+    catch (exportError) { alertLocalized(exportError.message); }
   };
 
   return (

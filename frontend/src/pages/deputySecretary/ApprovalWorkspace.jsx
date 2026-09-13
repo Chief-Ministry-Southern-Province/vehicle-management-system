@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import { FiActivity, FiChevronDown, FiInfo, FiShield, FiTruck, FiUser } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
@@ -1214,7 +1215,7 @@ export default function ApprovalWorkspace() {
   };
   const cancelRequest = async () => {
     if (
-      !window.confirm(
+      !confirmLocalized(
         "Cancel this vehicle request? Any allocated driver and vehicle will be released.",
       )
     ) {

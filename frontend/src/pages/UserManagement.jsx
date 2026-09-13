@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { deleteUser, getDepartments, getUsers, updateUser } from "../api/authApi";
@@ -42,7 +43,7 @@ export default function UserManagement() {
   };
   const closeUserEditor = () => !savingUser && setEditingUser(null);
   const removeUser = async (user) => {
-    if (!window.confirm(`Remove ${user.name} from the system?`)) return;
+    if (!confirmLocalized(`Remove ${user.name} from the system?`)) return;
     setRemovingId(user.id);
     try { const response = await deleteUser(user.id); setUsers((current) => current.filter((item) => item.id !== user.id)); toast.success(response.message || "User removed successfully."); }
     catch (requestError) { toast.error(requestError.message || "Unable to remove this user."); }
