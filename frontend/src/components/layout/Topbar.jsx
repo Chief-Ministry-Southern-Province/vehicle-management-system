@@ -291,7 +291,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   return (
     <header
       data-no-translate
-      className="relative z-40 w-full shrink-0 overflow-hidden border-b border-slate-200/70 bg-white/90 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.5)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
+      className="relative z-40 w-full shrink-0 overflow-visible border-b border-slate-200/70 bg-white/90 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.5)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={topbarBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-35 dark:opacity-10" />
@@ -361,21 +361,22 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
             <FiChevronDown className="pointer-events-none absolute right-3 text-xs text-slate-400" />
           </label>
 
-          <div ref={notificationMenuRef} className="relative">
+          <div ref={notificationMenuRef} className="static sm:relative">
             <button
               type="button"
               onClick={toggleNotifications}
               className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/75 text-slate-700 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.75)] transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
               aria-label={t("notifications.title", "Notifications")}
               aria-expanded={notificationsOpen}
+              aria-controls="notification-panel"
             >
               <FiBell size={19} aria-hidden="true" />
               {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-bold text-white dark:border-slate-950">{unreadCount > 9 ? "9+" : unreadCount}</span>}
             </button>
 
             {notificationsOpen && (
-              <section className="absolute right-0 top-[calc(100%+0.65rem)] z-50 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15 dark:border-white/10 dark:bg-slate-900">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
+              <section id="notification-panel" className="absolute inset-x-3 top-[calc(100%+0.65rem)] z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15 sm:left-auto sm:right-0 sm:w-88 dark:border-white/10 dark:bg-slate-900">
+                <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
                   <div><h2 className="font-bold text-slate-900 dark:text-white">{t("notifications.title", "Notifications")}</h2><p className="text-xs text-slate-500 dark:text-slate-400">{unreadCount ? `${unreadCount} unread` : "You're all caught up"}</p></div>
                   {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">Mark all read</button>}
                 </div>
@@ -384,7 +385,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
                 {pushStatus === "enabling" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.enablingDeviceAlerts", "Enabling device alerts…")}</p>}
                 {pushStatus === "denied" && <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-300">{t("notifications.deviceAlertsDenied", "Device alerts are blocked in your browser settings.")}</p>}
                 {pushStatus === "unsupported" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.deviceAlertsUnsupported", "This browser does not support device alerts.")}</p>}
-                <div className="max-h-96 overflow-y-auto">
+                <div className="min-h-0 max-h-96 overflow-y-auto">
                   {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No unread notifications.</p> : notifications.map((notification) => (
                     <button type="button" key={notification.id} onClick={() => openNotification(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
                       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read_at ? "bg-transparent" : "bg-blue-600"}`} />

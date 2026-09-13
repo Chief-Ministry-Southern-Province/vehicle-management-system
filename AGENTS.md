@@ -219,7 +219,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
 - The `Topbar` shows the saved profile picture beside the user details, refreshing its image path from the authenticated profile record when the dashboard loads and falling back to initials when no usable image is available. Its settings icon opens User Settings as a right-side overlay above the current dashboard page; the backdrop or close button dismisses it without changing that page. The `/setting` route remains available for direct visits.
-- `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
+- `Topbar` includes a notification bell with an unread badge and menu. The header must allow overflow so the dropdown can extend over dashboard content; clip only its decorative background. Below the small breakpoint the panel is inset from the full header edges, while on larger screens it aligns to the bell; its height is viewport-limited with an internally scrolling notification list. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
 - Clicking a notification marks it read and opens the role-appropriate workflow page: vehicle allocation, recommendation, final approval, and driver-issue notifications open their respective action lists; other workflow updates open the recipient's most relevant history or dashboard.
 - Role-specific workflow sidebar items show an unread count badge for their matching notification type. For example, the deputy secretary's Pending Approvals badge counts unread `Vehicle allocation required` notifications; the same synchronized unread data also drives recommendation, final-approval, and driver-issue action badges.
 - The notification menu lets users grant device-notification permission. Once granted, `push-sw.js` and the browser Push API receive workflow notifications even when the SPA is closed; an incoming push refreshes any open notification menu without a page reload, and clicking a device notification focuses or opens the recipient's role dashboard. Subscriptions are synchronized when an authenticated app session opens and removed from the current browser on logout. Web Push requires HTTPS in production; on iOS/iPadOS the site must be installed to the Home Screen.
@@ -301,6 +301,7 @@ npm run build
 npm run audit:i18n
 npm run test:i18n
 node --test tests/journeyDistance.test.js
+node --test tests/notificationLayout.test.js
 
 # backend/
 composer test
