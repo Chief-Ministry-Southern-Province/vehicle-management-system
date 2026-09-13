@@ -27,7 +27,10 @@ export default function JourneyManagement() {
     }
   };
 
-  useEffect(() => { loadJourneys(); }, []);
+  useEffect(() => {
+    const initialLoad = window.setTimeout(loadJourneys, 0);
+    return () => window.clearTimeout(initialLoad);
+  }, []);
 
   const submit = async (event) => {
     event.preventDefault();

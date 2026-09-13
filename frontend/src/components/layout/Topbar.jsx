@@ -157,9 +157,15 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
 
   useEffect(() => {
     let active = true;
-    setProfilePicturePath(user?.profile_picture_path || null);
+    const initialPicturePath = user?.profile_picture_path || null;
+    const initialLoad = window.setTimeout(() => {
+      if (active) setProfilePicturePath(initialPicturePath);
+    }, 0);
 
-    if (!userId) return () => { active = false; };
+    if (!userId) return () => {
+      active = false;
+      window.clearTimeout(initialLoad);
+    };
 
     getProfile()
       .then((response) => {
@@ -170,7 +176,10 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
         // The cached session image remains available if the profile refresh fails.
       });
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+      window.clearTimeout(initialLoad);
+    };
   }, [userId, user?.profile_picture_path]);
 
   const loadNotifications = useCallback(async () => {

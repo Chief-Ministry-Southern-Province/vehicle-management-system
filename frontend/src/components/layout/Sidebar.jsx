@@ -415,7 +415,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   }, [user?.id]);
 
   useEffect(() => {
-    loadNotifications();
+    const initialLoad = window.setTimeout(loadNotifications, 0);
 
     const interval = window.setInterval(loadNotifications, 60000);
     const syncNotifications = (event) => {
@@ -431,6 +431,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
     window.addEventListener("vms:notifications-updated", syncNotifications);
     return () => {
+      window.clearTimeout(initialLoad);
       window.clearInterval(interval);
       window.removeEventListener("vms:notifications-updated", syncNotifications);
     };
