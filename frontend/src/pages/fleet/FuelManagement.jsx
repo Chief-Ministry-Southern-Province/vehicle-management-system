@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FiActivity, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiDroplet, FiTruck } from "react-icons/fi";
@@ -321,7 +322,7 @@ export default function FuelManagement() {
     try {
       generateFuelRecordsPdf(displayedLogs);
     } catch (exportError) {
-      window.alert(exportError.message);
+      alertLocalized(exportError.message);
     }
   };
 

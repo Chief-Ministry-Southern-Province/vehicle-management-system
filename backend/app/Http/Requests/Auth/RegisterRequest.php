@@ -4,7 +4,6 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -19,7 +18,7 @@ class RegisterRequest extends FormRequest
             'nic' => ['required', 'string', 'max:20', 'unique:users,employee_id', 'unique:drivers,nic'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'required_if:role,driver', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20'],
             'department' => ['nullable', 'string', 'max:255'],
 
             // Role is restricted at controller level for non-admin self-registration;
@@ -34,7 +33,6 @@ class RegisterRequest extends FormRequest
             'allocated_vehicle' => ['nullable', 'string', 'max:50', 'exists:vehicles,registration_number'],
             'blood_group' => ['nullable', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
 
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ];
     }
 
@@ -44,7 +42,6 @@ class RegisterRequest extends FormRequest
             'nic.unique' => 'This NIC is already registered.',
             'email.unique' => 'An account with this email already exists.',
             'licence_number.unique' => 'This licence number is already registered.',
-            'password.confirmed' => 'Password confirmation does not match.',
         ];
     }
 }

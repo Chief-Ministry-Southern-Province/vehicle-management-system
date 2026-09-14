@@ -1,3 +1,4 @@
+import { localizePrintDocument } from "../i18n/printDocument.js";
 import { formatLocalDateTime } from "./dateTime";
 
 const escapeHtml = (value) =>
@@ -136,5 +137,6 @@ export function generateApprovedJourneyPdf(journey) {
 </div>
 <script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script>
 </body></html>`);
+  localizePrintDocument(printWindow.document);
   printWindow.document.close();
 }

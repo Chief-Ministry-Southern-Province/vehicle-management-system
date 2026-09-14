@@ -1,62 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LanguageContext } from "./LanguageContext";
 import { languages, translations } from "../i18n/translations";
-import { translatePageText } from "../i18n/pageTranslations";
+import { translatePageText } from "../i18n/translate";
+import { localizeElement, translatableAttributes } from "../i18n/localizeDom";
 
 const STORAGE_KEY = "vms-language";
 const supportedCodes = new Set(languages.map(({ code }) => code));
-const originalText = new WeakMap();
-const originalAttributes = new WeakMap();
-const translatableAttributes = ["placeholder", "title", "aria-label", "alt"];
-const canTranslateNode = (node) => {
-  const parent = node.parentElement;
-  return (
-    parent &&
-    !["SCRIPT", "STYLE", "CODE", "PRE", "OPTION"].includes(parent.tagName) &&
-    !parent.closest("[data-no-translate]")
-  );
-};
-
-function localizeElement(root, language, refreshOriginal = false) {
-  const elements =
-    root.nodeType === Node.ELEMENT_NODE
-      ? [root, ...root.querySelectorAll("*")]
-      : [];
-  elements.forEach((element) => {
-    if (
-      ["SCRIPT", "STYLE", "CODE", "PRE"].includes(element.tagName) ||
-      element.closest("[data-no-translate]")
-    )
-      return;
-    let attributes = originalAttributes.get(element) || {};
-    translatableAttributes.forEach((attribute) => {
-      if (!element.hasAttribute(attribute)) return;
-      const current = element.getAttribute(attribute);
-      if (refreshOriginal || !(attribute in attributes))
-        attributes = { ...attributes, [attribute]: current };
-      element.setAttribute(
-        attribute,
-        language === "en"
-          ? attributes[attribute]
-          : translatePageText(attributes[attribute], language),
-      );
-    });
-    originalAttributes.set(element, attributes);
-  });
-
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let node = walker.nextNode();
-  while (node) {
-    if (canTranslateNode(node)) {
-      if (refreshOriginal || !originalText.has(node))
-        originalText.set(node, node.data);
-      const source = originalText.get(node);
-      node.data =
-        language === "en" ? source : translatePageText(source, language);
-    }
-    node = walker.nextNode();
-  }
-}
 
 export default function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(() => {
@@ -74,7 +23,7 @@ export default function LanguageProvider({ children }) {
   }, []);
   const t = useCallback(
     (key, fallback) =>
-      translations[language]?.[key] ?? translations.en[key] ?? fallback ?? key,
+      translatePageText(translations[language]?.[key] ?? translations.en[key] ?? fallback ?? key, language),
     [language],
   );
   useEffect(() => {
@@ -85,26 +34,11 @@ export default function LanguageProvider({ children }) {
     const observer = new MutationObserver((mutations) => {
       observer.disconnect();
       mutations.forEach((mutation) => {
-        if (mutation.type === "characterData") {
-          if (!canTranslateNode(mutation.target)) return;
-          originalText.set(mutation.target, mutation.target.data);
-          const source = originalText.get(mutation.target);
-          mutation.target.data =
-            language === "en" ? source : translatePageText(source, language);
-        } else if (mutation.type === "attributes") {
-          localizeElement(mutation.target, language, true);
+        if (mutation.type === "characterData" || mutation.type === "attributes") {
+          localizeElement(mutation.target, language);
         } else {
           mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-              if (!canTranslateNode(node)) return;
-              originalText.set(node, node.data);
-              node.data =
-                language === "en"
-                  ? node.data
-                  : translatePageText(node.data, language);
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-              localizeElement(node, language, true);
-            }
+            localizeElement(node, language);
           });
         }
       });

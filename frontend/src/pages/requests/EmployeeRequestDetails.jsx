@@ -1,3 +1,4 @@
+import { confirmLocalized } from "../../i18n/runtime.js";
 import { useEffect, useState } from "react";
 import {
   FiArrowLeft,
@@ -206,7 +207,7 @@ export default function EmployeeRequestDetails({
                 type="button"
                 disabled={cancelling}
                 onClick={async () => {
-                  if (!window.confirm("Cancel this vehicle request? This action cannot be undone.")) return;
+                  if (!confirmLocalized("Cancel this vehicle request? This action cannot be undone.")) return;
                   setCancelling(true);
                   setError("");
                   try {

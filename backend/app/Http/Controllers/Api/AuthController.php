@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\Driver;
 use App\Models\User;
+use App\Services\SmsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +24,8 @@ use Throwable;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly SmsService $smsService) {}
+
     private function handleException(Throwable $e, string $action): JsonResponse
     {
         Log::error('AuthController error during ' . $action, [
@@ -44,8 +47,9 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validated();
+            $temporaryPassword = 'Aa'.Str::password(14, true, true, false);
 
-            [$user, $driver] = DB::transaction(function () use ($validated): array {
+            [$user, $driver] = DB::transaction(function () use ($validated, $temporaryPassword): array {
                 $user = User::create([
                     // Keep using the existing database column for compatibility; it now
                     // contains the NIC supplied by the registration form.
@@ -55,7 +59,7 @@ class AuthController extends Controller
                     'phone' => $validated['phone'] ?? null,
                     'department' => $validated['department'] ?? null,
                     'role' => $validated['role'] ?? 'employee',
-                    'password' => Hash::make($validated['password']),
+                    'password' => Hash::make($temporaryPassword),
                     'status' => 'active',
                 ]);
 
@@ -77,17 +81,28 @@ class AuthController extends Controller
                     ]);
                 }
 
+                if (! $this->smsService->sendSms(
+                    $user->phone,
+                    "VMS | Welcome aboard!\nYour account is now active.\n\nUser ID: {$user->employee_id}\nTemporary Password: {$temporaryPassword}\n\nSign in and change your password immediately for security.\n\nKeep your login details private. Never share your password with anyone.\n\nVehicle Management System\nChief Ministry - Southern Province"
+                )) {
+                    throw ValidationException::withMessages([
+                        'phone' => ['Unable to deliver the temporary password by SMS. The account was not created.'],
+                    ]);
+                }
+
                 return [$user, $driver];
             });
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registration successful.',
+                'message' => 'Registration successful. The temporary-password SMS was submitted to the gateway.',
                 'data' => [
                     'user' => $user,
                     'driver' => $driver,
                 ],
             ], 201);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Throwable $e) {
             return $this->handleException($e, 'register');
         }
@@ -289,28 +304,49 @@ class AuthController extends Controller
 
     /**
      * POST /api/forgot-password
-     * Sends a password reset link/token via Laravel's built-in Password broker.
+     * Sends an SMS temporary password after matching User ID and phone number.
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         try {
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
+            $validated = $request->validated();
+            $enteredPhone = $this->smsService->normalisePhoneNumber($validated['phone']);
+            $user = User::query()->where('employee_id', $validated['employee_id'])->first();
 
-            if ($status === Password::RESET_LINK_SENT) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Password reset link sent to your email.',
-                ], 200);
+            if (! $user || ! $user->isActive()
+                || ! $enteredPhone
+                || ! hash_equals($this->smsService->normalisePhoneNumber($user->phone) ?? '', $enteredPhone)) {
+                throw ValidationException::withMessages([
+                    'phone' => ['The phone number does not match the User ID. Please enter the registered mobile number.'],
+                ]);
             }
 
             // Avoid confirming/denying whether the email exists — return success-shaped
             // response either way to prevent user enumeration, but log internally if needed.
+            $temporaryPassword = 'Aa'.Str::password(14, true, true, false);
+
+            DB::transaction(function () use ($user, $temporaryPassword): void {
+                $user->forceFill([
+                    'password' => Hash::make($temporaryPassword),
+                ])->save();
+                $user->tokens()->delete();
+
+                if (! $this->smsService->sendSms(
+                    $user->phone,
+                    "VMS | Password Reset\n\nUser ID: {$user->employee_id}\nTemporary Password: {$temporaryPassword}\n\nSign in and change your password immediately for security.\n\nKeep your login details private. Never share your password with anyone.\n\nVehicle Management System\nChief Ministry - Southern Province"
+                )) {
+                    throw ValidationException::withMessages([
+                        'phone' => ['Unable to deliver a temporary password by SMS. Please try again later.'],
+                    ]);
+                }
+            });
+
             return response()->json([
                 'success' => true,
-                'message' => 'If an account exists with that email, a reset link has been sent.',
+                'message' => 'A temporary password has been sent by SMS.',
             ], 200);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Throwable $e) {
             return $this->handleException($e, 'forgotPassword');
         }

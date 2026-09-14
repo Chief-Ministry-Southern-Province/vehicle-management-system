@@ -5,17 +5,21 @@ import {
   FiTool,
   FiUsers,
   FiBarChart2,
+  FiDatabase,
+  FiLayers,
   FiLogOut,
   FiCheckCircle,
   FiClipboard,
   FiClock,
   FiAlertTriangle,
   FiGlobe,
+  FiMap,
   FiX,
 } from "react-icons/fi";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getNotifications } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
 import { BsPerson } from "react-icons/bs";
 import { useLanguage } from "../../context/useLanguage";
@@ -54,6 +58,7 @@ const menuItems = [
         path: "/departmentrequesthistory",
         icon: <FiClipboard />,
         roles: ["department_officer"],
+        notificationTitles: ["New vehicle request"],
       },
 
       // ================= SUBJECT OFFICER =================
@@ -98,9 +103,27 @@ const menuItems = [
         roles: ["system_admin"],
       },
       {
-        name: "System Changes",
-        path: "/systemchanges",
+        name: "User Management",
+        path: "/usermanagement",
         icon: <FiUsers />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Department Management",
+        path: "/departmentmanagement",
+        icon: <FiLayers />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Database Management",
+        path: "/databasemanagement",
+        icon: <FiDatabase />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Journey Management",
+        path: "/journeymanagement",
+        icon: <FiMap />,
         roles: ["system_admin"],
       },
 
@@ -117,12 +140,14 @@ const menuItems = [
         path: "/pendingapprovals",
         icon: <FiCheckCircle />,
         roles: ["deputy_secretary"],
+        notificationTitles: ["Vehicle allocation required"],
       },
       {
         name: "Pending Recommendations",
         path: "/deputy/pending-recommendations",
         icon: <FiClipboard />,
         roles: ["deputy_secretary"],
+        notificationTitles: ["New vehicle request"],
       },
       {
         name: "Total Approvals",
@@ -144,12 +169,14 @@ const menuItems = [
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["senior_deputy_secretary"],
+        notificationTitles: ["Final approval required"],
       },
       {
         name: "Pending Recommendation",
         path: "/senior-deputy/pending-recommendations",
         icon: <FiClipboard />,
         roles: ["senior_deputy_secretary"],
+        notificationTitles: ["New vehicle request"],
       },
       {
         name: "Total Approvals",
@@ -171,6 +198,7 @@ const menuItems = [
         path: "/pendingfinalapprovals",
         icon: <FiCheckCircle />,
         roles: ["secretary"],
+        notificationTitles: ["Final approval required"],
       },
       {
         name: "Total Approvals",
@@ -249,6 +277,7 @@ const menuItems = [
         path: "/ontimeavailability",
         icon: <FiAlertTriangle />,
         roles: ["subject_officer", "deputy_secretary"],
+        notificationTitles: ["Vehicle issue reported"],
       },
       {
         name: "Approved Journeys",
@@ -354,6 +383,14 @@ const menuItems = [
 
 ];
 
+const countUnreadNotificationsByTitle = (notifications) =>
+  notifications.reduce((counts, notification) => {
+    if (notification.read_at || !notification.data?.title) return counts;
+
+    counts[notification.data.title] = (counts[notification.data.title] || 0) + 1;
+    return counts;
+  }, {});
+
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -361,6 +398,56 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const { language, languages, setLanguage, t } = useLanguage();
 
   const role = user?.role;
+  const [unreadByTitle, setUnreadByTitle] = useState({});
+
+  const loadNotifications = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await getNotifications();
+      const nextNotifications = response.data?.notifications || [];
+      setUnreadByTitle(
+        response.data?.unread_by_title || countUnreadNotificationsByTitle(nextNotifications),
+      );
+    } catch {
+      // A transient notification request must not prevent sidebar navigation.
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    const initialLoad = window.setTimeout(loadNotifications, 0);
+
+    const interval = window.setInterval(loadNotifications, 60000);
+    const syncNotifications = (event) => {
+      if (Array.isArray(event.detail?.notifications)) {
+        const nextNotifications = event.detail.notifications;
+        setUnreadByTitle(
+          event.detail.unreadByTitle || countUnreadNotificationsByTitle(nextNotifications),
+        );
+      } else {
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener("vms:notifications-updated", syncNotifications);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
+      window.removeEventListener("vms:notifications-updated", syncNotifications);
+    };
+  }, [loadNotifications]);
+
+  const notificationCounts = useMemo(() => {
+    return menuItems.flatMap((section) => section.items)
+      .filter((item) => item.roles?.includes(role) && item.notificationTitles?.length)
+      .reduce((counts, item) => {
+        counts[item.path] = item.notificationTitles.reduce(
+          (total, title) => total + (unreadByTitle[title] || 0),
+          0,
+        );
+        return counts;
+      }, {});
+  }, [role, unreadByTitle]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -399,7 +486,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
       <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4 lg:hidden dark:border-slate-800">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Navigation</p>
-          <p className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name || "Government User"}</p>
+          <p translate={user?.name ? "no" : undefined} className="mt-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{user?.name || "Government User"}</p>
         </div>
         <button type="button" onClick={onClose} className="ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700" aria-label="Close navigation menu">
           <FiX />
@@ -446,6 +533,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               <div className="space-y-1 px-3">
                 {visibleItems.map((item) => {
                   const isActive = location.pathname === item.path;
+                  const notificationCount = notificationCounts[item.path] || 0;
 
                   return (
                     <Link
@@ -478,22 +566,32 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
                       <span
                         className={[
-                          "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-base",
+                          "relative flex h-8 w-8 shrink-0 items-center justify-center text-base",
                           "transition-transform duration-200 group-hover:scale-105",
-                          isActive
-                            ? "bg-linear-to-br from-blue-500 to-teal-400 text-white shadow-sm"
-                            : "bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70 group-hover:bg-white group-hover:text-slate-700 dark:bg-white/7 dark:text-slate-400 dark:ring-transparent dark:group-hover:bg-white/10 dark:group-hover:text-slate-200",
+                          notificationCount > 0
+                            ? "rounded-full bg-linear-to-br from-blue-600 via-blue-500 to-cyan-400 text-white shadow-[0_6px_14px_-5px_rgba(37,99,235,0.8)] ring-2 ring-blue-100 dark:ring-blue-400/20"
+                            : isActive
+                            ? "rounded-lg bg-linear-to-br from-blue-500 to-teal-400 text-white shadow-sm"
+                            : "rounded-lg bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70 group-hover:bg-white group-hover:text-slate-700 dark:bg-white/7 dark:text-slate-400 dark:ring-transparent dark:group-hover:bg-white/10 dark:group-hover:text-slate-200",
                         ].join(" ")}
                       >
                         {item.icon}
                       </span>
 
-                      <span className="relative truncate">
+                      <span className="relative min-w-0 flex-1 truncate">
                         {t(
                           `nav.${item.name.toLowerCase().replaceAll(" ", "_")}`,
                           item.name,
                         )}
                       </span>
+                      {notificationCount > 0 && (
+                        <span
+                          aria-label={`${notificationCount} unread notification${notificationCount === 1 ? "" : "s"}`}
+                          className="relative inline-flex min-w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 py-1 text-[11px] font-bold leading-none text-white shadow-[0_5px_12px_-5px_rgba(37,99,235,0.8)] ring-2 ring-white dark:ring-slate-900"
+                        >
+                          {notificationCount > 99 ? "99+" : notificationCount}
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useRef, useState } from "react";
 import { FiArrowLeft, FiDownload, FiImage, FiPlus, FiSave, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
@@ -242,7 +243,7 @@ export default function VehicleDatabaseDetails() {
     try {
       generateVehicleDetailsPdf(vehicle);
     } catch (exportError) {
-      window.alert(exportError.message);
+      alertLocalized(exportError.message);
     }
   };
   if (vehicle === null)

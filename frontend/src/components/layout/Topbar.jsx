@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useLanguage } from "../../context/useLanguage";
-import { getNotifications, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
+import { getNotifications, getProfile, markAllNotificationsRead, markNotificationRead } from "../../api/authApi";
 import nationalEmblem from "../../assets/national-emblem.png";
+import topbarBackdrop from "../../assets/side-bar-5.png";
 import { enablePushNotifications, supportsPushNotifications } from "../../utils/pushNotifications";
 
 const initials = (name) =>
@@ -49,6 +51,54 @@ const saveShownNotificationIds = (userId, notificationIds) => {
   }
 };
 
+const countUnreadNotificationsByTitle = (notifications) =>
+  notifications.reduce((counts, notification) => {
+    if (notification.read_at || !notification.data?.title) return counts;
+
+    counts[notification.data.title] = (counts[notification.data.title] || 0) + 1;
+    return counts;
+  }, {});
+
+const publishNotificationUpdate = (notifications, unreadByTitle) => {
+  window.dispatchEvent(
+    new CustomEvent("vms:notifications-updated", {
+      detail: { notifications, unreadByTitle },
+    }),
+  );
+};
+
+const notificationDestination = (role, title) => {
+  const workflowDestinations = {
+    "New vehicle request": {
+      department_officer: "/departmentrequesthistory",
+      deputy_secretary: "/deputy/pending-recommendations",
+      senior_deputy_secretary: "/senior-deputy/pending-recommendations",
+    },
+    "Vehicle allocation required": { deputy_secretary: "/pendingapprovals" },
+    "Final approval required": {
+      senior_deputy_secretary: "/pendingfinalapprovals",
+      secretary: "/pendingfinalapprovals",
+    },
+    "Vehicle issue reported": {
+      subject_officer: "/ontimeavailability",
+      deputy_secretary: "/ontimeavailability",
+    },
+  };
+
+  const roleHome = {
+    employee: "/requesthistory",
+    department_officer: "/departmentrequesthistory",
+    subject_officer: "/subjectofficer/requesthistory",
+    deputy_secretary: "/requesthistory",
+    senior_deputy_secretary: "/finalapprovals",
+    secretary: "/finalapprovals",
+    driver: "/driverdashboard",
+    system_admin: "/usermanagement",
+  };
+
+  return workflowDestinations[title]?.[role] || roleHome[role] || "/";
+};
+
 const showNotificationPopup = (notification) => {
   const title = notification.data?.title || "New notification";
   const message = notification.data?.message || "You have a new workflow update.";
@@ -83,24 +133,54 @@ const showNotificationPopup = (notification) => {
 
 export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const userId = user?.id || user?.employee_id;
   const { language, languages, setLanguage, t } = useLanguage();
   const apiOrigin =
     import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
     "http://127.0.0.1:8000";
-  const profilePictureUrl = user?.profile_picture_path
-    ? `${apiOrigin}/${String(user.profile_picture_path).replace(/^\/+/, "")}`
+  const [profilePicturePath, setProfilePicturePath] = useState(user?.profile_picture_path || null);
+  const profilePictureUrl = profilePicturePath
+    ? `${apiOrigin}/${String(profilePicturePath).replace(/^\/+/, "")}`
     : null;
   const roleLabel = user?.role
     ? t(`role.${user.role}`, user.role.replaceAll("_", " "))
     : t("user.government");
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadByTitle, setUnreadByTitle] = useState({});
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [pushStatus, setPushStatus] = useState(initialPushStatus);
   const notificationMenuRef = useRef(null);
   const shownNotificationIdsRef = useRef(new Set());
+
+  useEffect(() => {
+    let active = true;
+    const initialPicturePath = user?.profile_picture_path || null;
+    const initialLoad = window.setTimeout(() => {
+      if (active) setProfilePicturePath(initialPicturePath);
+    }, 0);
+
+    if (!userId) return () => {
+      active = false;
+      window.clearTimeout(initialLoad);
+    };
+
+    getProfile()
+      .then((response) => {
+        const latestPicturePath = response?.data?.user?.profile_picture_path || null;
+        if (active) setProfilePicturePath(latestPicturePath);
+      })
+      .catch(() => {
+        // The cached session image remains available if the profile refresh fails.
+      });
+
+    return () => {
+      active = false;
+      window.clearTimeout(initialLoad);
+    };
+  }, [userId, user?.profile_picture_path]);
 
   const loadNotifications = useCallback(async () => {
     setLoadingNotifications(true);
@@ -119,6 +199,10 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
 
       setNotifications(nextNotifications);
       setUnreadCount(response.data?.unread_count || 0);
+      const nextUnreadByTitle =
+        response.data?.unread_by_title || countUnreadNotificationsByTitle(nextNotifications);
+      setUnreadByTitle(nextUnreadByTitle);
+      publishNotificationUpdate(nextNotifications, nextUnreadByTitle);
     } catch {
       // The bell remains available if a transient request fails; it will retry on the next open.
     } finally {
@@ -168,19 +252,38 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     if (!notificationsOpen) loadNotifications();
   };
   const markRead = async (notification) => {
-    if (notification.read_at) return;
+    if (notification.read_at) return true;
     try {
       await markNotificationRead(notification.id);
-      setNotifications((items) => items.filter((item) => item.id !== notification.id));
+      const remainingNotifications = notifications.filter((item) => item.id !== notification.id);
+      const nextUnreadByTitle = { ...unreadByTitle };
+      const notificationTitle = notification.data?.title;
+      if (notificationTitle && nextUnreadByTitle[notificationTitle]) {
+        nextUnreadByTitle[notificationTitle] -= 1;
+        if (nextUnreadByTitle[notificationTitle] === 0) delete nextUnreadByTitle[notificationTitle];
+      }
+      setNotifications(remainingNotifications);
       setUnreadCount((count) => Math.max(0, count - 1));
-    } catch { /* Keep the unread state when the API update fails. */ }
+      setUnreadByTitle(nextUnreadByTitle);
+      publishNotificationUpdate(remainingNotifications, nextUnreadByTitle);
+      return true;
+    } catch {
+      return false;
+    }
   };
   const markAllRead = async () => {
     try {
       await markAllNotificationsRead();
       setNotifications([]);
       setUnreadCount(0);
+      setUnreadByTitle({});
+      publishNotificationUpdate([], {});
     } catch { /* Keep the unread state when the API update fails. */ }
+  };
+  const openNotification = async (notification) => {
+    setNotificationsOpen(false);
+    await markRead(notification);
+    navigate(notificationDestination(user?.role, notification.data?.title));
   };
   const enableDeviceAlerts = async () => {
     setPushStatus("enabling");
@@ -197,15 +300,17 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   return (
     <header
       data-no-translate
-      className="relative z-40 w-full shrink-0 border-b border-slate-200/70 bg-white/90 shadow-[0_12px_36px_-28px_rgba(15,23,42,0.7)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
+      className="relative z-40 w-full shrink-0 overflow-visible border-b border-slate-200/70 bg-white/90 shadow-[0_8px_24px_-22px_rgba(15,23,42,0.5)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <img src={topbarBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-35 dark:opacity-10" />
+        <div className="absolute inset-0 bg-linear-to-r from-white/75 via-white/45 to-white/75 dark:from-slate-950/90 dark:via-slate-950/70 dark:to-slate-950/90" />
         <div className="absolute -left-20 -top-24 h-52 w-52 rounded-full bg-blue-500/8 blur-3xl dark:bg-blue-500/10" />
         <div className="absolute right-[18%] top-0 h-24 w-64 rounded-full bg-teal-400/8 blur-3xl dark:bg-teal-400/10" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-blue-500/45 to-transparent" />
       </div>
 
-      <div className="relative mx-auto flex min-h-17 w-full items-center justify-between gap-2 px-3 py-2.5 sm:min-h-20 sm:gap-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-14 w-full items-center justify-between gap-2 px-2 py-1.5 sm:min-h-15 sm:gap-3 sm:px-4 lg:px-6">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-4">
           <button
             type="button"
@@ -217,7 +322,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
             <FiMenu className="transition-transform duration-200 group-hover:scale-105" />
           </button>
 
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-linear-to-br from-white via-slate-50 to-blue-50 p-1.5 shadow-[0_8px_22px_-12px_rgba(37,99,235,0.6)] ring-1 ring-slate-900/5 sm:h-13 sm:w-13 sm:rounded-2xl sm:p-2 dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950 dark:ring-white/10">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-linear-to-br from-white via-slate-50 to-blue-50 p-1.5 shadow-[0_8px_22px_-12px_rgba(37,99,235,0.6)] ring-1 ring-slate-900/5 sm:h-11 sm:w-11 sm:rounded-xl sm:p-1.5 dark:border-white/10 dark:from-slate-800 dark:via-slate-900 dark:to-blue-950 dark:ring-white/10">
             <div className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-950" />
             <img
               src={nationalEmblem}
@@ -265,21 +370,22 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
             <FiChevronDown className="pointer-events-none absolute right-3 text-xs text-slate-400" />
           </label>
 
-          <div ref={notificationMenuRef} className="relative">
+          <div ref={notificationMenuRef} className="static sm:relative">
             <button
               type="button"
               onClick={toggleNotifications}
               className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/75 text-slate-700 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.75)] transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-blue-500/15 dark:hover:text-blue-300"
               aria-label={t("notifications.title", "Notifications")}
               aria-expanded={notificationsOpen}
+              aria-controls="notification-panel"
             >
               <FiBell size={19} aria-hidden="true" />
               {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-bold text-white dark:border-slate-950">{unreadCount > 9 ? "9+" : unreadCount}</span>}
             </button>
 
             {notificationsOpen && (
-              <section className="absolute right-0 top-[calc(100%+0.65rem)] z-50 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15 dark:border-white/10 dark:bg-slate-900">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
+              <section id="notification-panel" className="absolute inset-x-3 top-[calc(100%+0.65rem)] z-50 flex max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/15 sm:left-auto sm:right-0 sm:w-88 dark:border-white/10 dark:bg-slate-900">
+                <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
                   <div><h2 className="font-bold text-slate-900 dark:text-white">{t("notifications.title", "Notifications")}</h2><p className="text-xs text-slate-500 dark:text-slate-400">{unreadCount ? `${unreadCount} unread` : "You're all caught up"}</p></div>
                   {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">Mark all read</button>}
                 </div>
@@ -288,9 +394,9 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
                 {pushStatus === "enabling" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.enablingDeviceAlerts", "Enabling device alerts…")}</p>}
                 {pushStatus === "denied" && <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-300">{t("notifications.deviceAlertsDenied", "Device alerts are blocked in your browser settings.")}</p>}
                 {pushStatus === "unsupported" && <p className="border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">{t("notifications.deviceAlertsUnsupported", "This browser does not support device alerts.")}</p>}
-                <div className="max-h-96 overflow-y-auto">
+                <div className="min-h-0 max-h-96 overflow-y-auto">
                   {loadingNotifications && notifications.length === 0 ? <p className="px-4 py-6 text-center text-sm text-slate-500">Loading notifications…</p> : notifications.length === 0 ? <p className="px-4 py-8 text-center text-sm text-slate-500">No unread notifications.</p> : notifications.map((notification) => (
-                    <button type="button" key={notification.id} onClick={() => markRead(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
+                    <button type="button" key={notification.id} onClick={() => openNotification(notification)} className={`flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 ${notification.read_at ? "" : "bg-blue-50/70 dark:bg-blue-500/10"}`}>
                       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${notification.read_at ? "bg-transparent" : "bg-blue-600"}`} />
                       <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800 dark:text-slate-100">{notification.data?.title}</span><span className="mt-0.5 block text-xs leading-5 text-slate-600 dark:text-slate-300">{notification.data?.message}</span><span className="mt-1 block text-[11px] text-slate-400">{notification.created_at ? new Date(notification.created_at).toLocaleString() : ""}</span></span>
                       {!notification.read_at && <FiCheck className="mt-1 shrink-0 text-blue-600 dark:text-blue-300" aria-label="Mark as read" />}
@@ -303,24 +409,24 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
 
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/75 p-1.5 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.8)] ring-1 ring-white/70 sm:gap-3 sm:pr-3.5 dark:border-white/10 dark:bg-white/5 dark:ring-white/5">
             <div
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-11 sm:w-11 sm:text-sm dark:focus-visible:ring-blue-500/50"
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-blue-600 via-blue-500 to-teal-400 text-xs font-extrabold text-white shadow-md shadow-blue-500/20 transition hover:scale-105 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-blue-300 sm:h-12 sm:w-12 sm:text-sm dark:focus-visible:ring-blue-500/50"
             >
               {user?.name ? initials(user.name) : <FiUser size={18} />}
               {profilePictureUrl && (
                 <img
                   src={profilePictureUrl}
                   alt={`${user?.name || "User"} profile`}
-                  className="absolute inset-0 h-full w-full rounded-xl object-cover"
+                  className="absolute inset-0 z-10 h-full w-full object-cover"
                   onError={(event) => {
                     event.currentTarget.style.display = "none";
                   }}
                 />
               )}
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
+              <span className="absolute -bottom-0.5 -right-0.5 z-20 h-3 w-3 rounded-full border-[2.5px] border-white bg-emerald-500 shadow-sm dark:border-slate-900" />
             </div>
 
             <div className="hidden min-w-0 sm:block">
-              <p className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
+              <p translate={user?.name ? "no" : undefined} className="max-w-36 truncate text-sm font-bold leading-tight text-slate-900 lg:max-w-48 dark:text-white">
                 {user?.name || t("user.government")}
               </p>
               <div className="mt-1 flex items-center gap-1.5">                <p className="max-w-32 truncate text-[10px] font-bold uppercase tracking-[0.08em] text-blue-600 lg:max-w-44 dark:text-blue-400">

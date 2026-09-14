@@ -67,10 +67,11 @@ export const logoutUser = async () => {
 // Forgot Password
 // ============================
 
-export const forgotPassword = async (email) => {
+export const forgotPassword = async ({ employee_id, phone }) => {
   try {
     const response = await API.post("/forgot-password", {
-      email,
+      employee_id,
+      phone,
     });
 
     return response.data;
@@ -222,6 +223,42 @@ export const createVehicleRequest = async (requestData) => {
   } catch (error) {
     throw error.response?.data || error.message;
   }
+};
+
+export const getPredefinedJourneys = async () => {
+  try {
+    const response = await API.get("/predefined-journeys", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const createPredefinedJourney = async (journey) => {
+  try {
+    const response = await API.post("/predefined-journeys", journey, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updatePredefinedJourney = async (id, journey) => {
+  try {
+    const response = await API.put(`/predefined-journeys/${id}`, journey, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const deletePredefinedJourney = async (id) => {
+  try {
+    const response = await API.delete(`/predefined-journeys/${id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
 };
 
 export const reverseGeocodeLocation = async (latitude, longitude, language = "en") => {
@@ -395,6 +432,17 @@ export const allocateVehicleRequest = async (requestId, allocation) => {
 export const getUsers = async () => {
   try {
     const response = await API.get("/users", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const updateUser = async (userId, payload) => {
+  try {
+    const response = await API.patch(`/users/${encodeURIComponent(userId)}`, payload, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     return response.data;

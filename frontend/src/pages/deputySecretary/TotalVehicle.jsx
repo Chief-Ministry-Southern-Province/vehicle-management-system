@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -340,7 +341,7 @@ export default function TotalVehicles() {
     try {
       generateVehicleDirectoryPdf(filtered);
     } catch (error) {
-      window.alert(error.message);
+      alertLocalized(error.message);
     }
   };
   return (

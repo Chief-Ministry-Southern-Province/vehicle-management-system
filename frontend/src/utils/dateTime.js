@@ -1,3 +1,5 @@
+import { getCurrentLocale, translateCurrentText } from "../i18n/runtime.js";
+
 export const LOCAL_TIME_ZONE = "Asia/Colombo";
 
 const toDate = (value) => {
@@ -9,33 +11,33 @@ const toDate = (value) => {
 export const formatLocalDateTime = (value, fallback = "—") => {
   const date = toDate(value);
   return date
-    ? new Intl.DateTimeFormat("en-LK", {
+    ? translateCurrentText(new Intl.DateTimeFormat(getCurrentLocale(), {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: LOCAL_TIME_ZONE,
-      }).format(date)
+      }).format(date))
     : fallback;
 };
 
 export const formatLocalDate = (value, fallback = "—") => {
   const date = toDate(value);
   return date
-    ? new Intl.DateTimeFormat("en-LK", {
+    ? translateCurrentText(new Intl.DateTimeFormat(getCurrentLocale(), {
         year: "numeric",
         month: "short",
         day: "2-digit",
         timeZone: LOCAL_TIME_ZONE,
-      }).format(date)
+      }).format(date))
     : fallback;
 };
 
 export const formatLocalTime = (value, fallback = "—") => {
   const date = toDate(value);
   return date
-    ? new Intl.DateTimeFormat("en-LK", {
+    ? translateCurrentText(new Intl.DateTimeFormat(getCurrentLocale(), {
         hour: "2-digit",
         minute: "2-digit",
         timeZone: LOCAL_TIME_ZONE,
-      }).format(date)
+      }).format(date))
     : fallback;
 };

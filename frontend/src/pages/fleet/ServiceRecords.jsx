@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -260,7 +261,7 @@ export default function ServiceRecords() {
     try {
       generateServiceRecordsPdf(displayedRecords);
     } catch (exportError) {
-      window.alert(exportError.message);
+      alertLocalized(exportError.message);
     }
   };
 

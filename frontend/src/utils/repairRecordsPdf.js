@@ -1,3 +1,4 @@
+import { localizePrintDocument } from "../i18n/printDocument.js";
 const escapeHtml = (value) =>
   String(value ?? "-")
     .replaceAll("&", "&amp;")
@@ -84,5 +85,6 @@ export function generateRepairRecordsPdf(records, { recordKind = "Repair" } = {}
     .footer { position:absolute; right:14mm; bottom:6mm; left:14mm; display:flex; justify-content:space-between; border-top:.2mm solid #d6e0ea; padding-top:2.5mm; color:#647084; font-size:7.5pt; }
     @media screen {.sheet{box-shadow:0 8px 30px rgba(15,23,42,.16)}} @media print {html,body{background:#fff}.sheet{margin:0;box-shadow:none}.sheet:last-child{page-break-after:avoid;break-after:avoid-page}}
   </style></head><body>${sheets}<script>window.addEventListener("load",()=>{setTimeout(()=>window.print(),250)});</script></body></html>`);
+  localizePrintDocument(printWindow.document);
   printWindow.document.close();
 }

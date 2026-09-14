@@ -1,3 +1,4 @@
+import { alertLocalized } from "../../i18n/runtime.js";
 import { useEffect, useMemo, useState } from "react";
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FiActivity, FiAlertTriangle, FiBarChart2, FiCalendar, FiDollarSign, FiDownload, FiTool, FiTruck } from "react-icons/fi";
@@ -182,7 +183,7 @@ export default function RepairRecords() {
   const selectedMonthLabel = monthlyData.find((item) => item.monthKey === selectedMonth)?.month;
   const exportDisplayedRecords = () => {
     try { generateRepairRecordsPdf(displayedRecords); }
-    catch (exportError) { window.alert(exportError.message); }
+    catch (exportError) { alertLocalized(exportError.message); }
   };
 
   return (

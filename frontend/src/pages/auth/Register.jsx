@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   FiArrowRight, FiCalendar, FiCreditCard, FiDroplet,
-  FiHash, FiHome, FiLock, FiMail, FiPhone, FiTruck, FiUser,
+  FiHash, FiHome, FiMail, FiPhone, FiTruck, FiUser,
 } from "react-icons/fi";
 import { getDepartments, registerUser } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
@@ -11,7 +11,6 @@ const initialForm = {
   nic: "", name: "", email: "", phone: "", department: "", role: "employee",
   date_of_birth: "", address: "", licence_number: "", licence_type: "",
   licence_renewal_date: "", allocated_vehicle: "", blood_group: "",
-  password: "", password_confirmation: "",
 };
 const roleOptions = [
   ["employee", "Employee"], ["department_officer", "Department Officer"],
@@ -47,9 +46,8 @@ export default function Register() {
   const handleChange = ({ target: { name, value } }) => setFormData((current) => ({ ...current, [name]: value }));
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (formData.password !== formData.password_confirmation) { toast.error("Password confirmation does not match"); return; }
     setIsLoading(true);
-    try { await registerUser(formData); toast.success("Employee account created successfully"); setFormData(initialForm); }
+    try { await registerUser(formData); toast.success("Employee account created. The temporary-password SMS was submitted to the gateway."); setFormData(initialForm); }
     catch (error) { toast.error(error?.message || error?.error || error?.detail || "Registration failed. Please check the entered details."); }
     finally { setIsLoading(false); }
   };
@@ -85,7 +83,7 @@ export default function Register() {
               </div>
             )}
 
-            <div className="grid gap-5 md:grid-cols-2"><Field {...fieldProps} label="Password" name="password" value={formData.password} type="password" placeholder="••••••••" icon={FiLock} /><Field {...fieldProps} label="Confirm Password" name="password_confirmation" value={formData.password_confirmation} type="password" placeholder="••••••••" icon={FiLock} /></div>
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900"><p className="font-semibold">Temporary password by SMS</p><p className="mt-1 text-blue-800">A secure temporary password will be generated and sent to the phone number above. The employee should change it after signing in.</p></div>
             <button type="submit" disabled={isLoading} className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#0b3474] px-6 py-4 font-semibold text-white shadow-lg transition hover:bg-[#08285b] disabled:cursor-not-allowed disabled:opacity-60">{isLoading ? "Creating Account..." : <>Create Account <FiArrowRight className="transition group-hover:translate-x-1" /></>}</button>
           </form>
         </div>

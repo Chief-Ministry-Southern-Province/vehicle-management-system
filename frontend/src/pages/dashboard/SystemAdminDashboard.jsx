@@ -115,12 +115,12 @@ export default function SystemAdminDashboard() {
                   <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">Create employee</strong><span className="text-xs text-slate-500">Register a user account and role.</span></span>
                   <FiArrowRight className="text-slate-400" aria-hidden="true" />
                 </Link>
-                <Link to="/systemchanges" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
+                <Link to="/usermanagement" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
                   <span className="rounded-lg bg-indigo-100 p-2 text-indigo-700"><FiUsers aria-hidden="true" /></span>
-                  <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">Manage users and departments</strong><span className="text-xs text-slate-500">Review accounts, departments, and roles.</span></span>
+                  <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">Manage users</strong><span className="text-xs text-slate-500">Review accounts, roles, and user details.</span></span>
                   <FiArrowRight className="text-slate-400" aria-hidden="true" />
                 </Link>
-                <Link to="/systemchanges#database-backup-title" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
+                <Link to="/databasemanagement" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
                   <span className="rounded-lg bg-emerald-100 p-2 text-emerald-700"><FiDatabase aria-hidden="true" /></span>
                   <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">Create database backup</strong><span className="text-xs text-slate-500">Download a secure database copy.</span></span>
                   <FiArrowRight className="text-slate-400" aria-hidden="true" />

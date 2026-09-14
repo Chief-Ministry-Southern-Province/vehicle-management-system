@@ -14,7 +14,16 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'employee_id' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:32'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'employee_id.required' => 'Please enter your User ID.',
+            'phone.required' => 'Please enter your registered phone number.',
         ];
     }
 }

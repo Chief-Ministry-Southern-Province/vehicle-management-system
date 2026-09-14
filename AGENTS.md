@@ -28,8 +28,8 @@ VMS-GOV is a government Vehicle Management System for the Chief Ministry at Daks
 
 The implemented system supports:
 
-- authenticated employee accounts and role-based dashboards, including per-user in-app workflow notifications;
-- official vehicle requests, attachments, history, details, and cancellation;
+- authenticated employee accounts and role-based dashboards, including per-user in-app, Web Push, and optional TEXTIT.BIZ SMS workflow notifications;
+- official vehicle requests, attachments, history, details, cancellation, and System Administrator-defined reusable journeys;
 - department, deputy, senior deputy, and secretary review stages;
 - vehicle and driver allocation/reallocation with conflict checks;
 - driver schedules, trip start/completion, history, assigned vehicle, and issue reports;
@@ -53,10 +53,11 @@ Browser
 
 Frontend technologies: React Router 7, Axios, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, Web Push/PWA service-worker APIs, and browser-side PDF helpers.
 
-Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
+Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, TEXTIT.BIZ's HTTPS SMS gateway, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
 
 Important locations:
 
+- `USER_MANUAL.md`: end-user procedures for all eight roles, including request creation, recommendations, allocation, driver operations, fleet records, administration, notifications, reports, troubleshooting, and current implementation limitations. Keep affected user-facing procedures synchronized when these behaviors change.
 - `frontend/src/App.jsx`: client route registry.
 - `frontend/src/pages/`: page-level screens, mostly grouped by role/domain.
 - `frontend/src/components/`: reusable and role-specific UI.
@@ -86,8 +87,8 @@ Role values are persisted as exact snake_case strings. Never rename one in only 
 | `employee` | Create official vehicle requests; view own request list/details/status; cancel an eligible own request; manage own profile/password. |
 | `department_officer` | All authenticated requester capabilities; view requests from their own department; recommend or reject pending requests; assign department priority and notes; view department history/dashboard. Department isolation must be enforced server-side. |
 | `subject_officer` | Fleet operator: view recommended/approved journeys and issue reports; register/update vehicles; create/update/delete drivers; maintain fuel, service, repair, analytics, and fleet screens. Fleet writes belong only to this role. |
-| `deputy_secretary` | System administrator and operational approver: manage users and departments; review department recommendations; submit deputy recommendations; allocate/reallocate vehicles and drivers; view issue reports, approved journeys, executive stats, and fleet/driver records. This role is the only role allowed to register app users. |
-| `system_admin` | Administration-only role: view the System Admin Dashboard; create users; manage users and departments; create database backups; and use the Administration Panel. This role cannot review, allocate, recommend, approve, or otherwise alter vehicle-request workflows. |
+| `deputy_secretary` | System administrator and operational approver: register, list, update, and remove users; manage departments; review department recommendations; submit deputy recommendations; allocate/reallocate vehicles and drivers; view issue reports, approved journeys, executive stats, and fleet/driver records. |
+| `system_admin` | Administration-only role: view the System Admin Dashboard; create, list, update, and remove users; manage users, departments, and reusable journeys; create database backups; and use the Administration Panel. This role cannot review, allocate, recommend, approve, or otherwise alter vehicle-request workflows. |
 | `senior_deputy_secretary` | Review and recommend requests at the senior stage; perform final approval/rejection where permitted; view executive stats and read-only fleet/driver data. |
 | `secretary` | Final approval/rejection authority; executive dashboard and organization-wide read-only fleet/driver visibility. |
 | `driver` | View personal driver dashboard, schedule, trip history, and assigned vehicle; start/complete assigned journeys; report vehicle issues; create personal vehicle requests. The login user's `employee_id` is associated with a driver record by the implemented mapping rules. |
@@ -102,10 +103,10 @@ Notes:
 
 ### 4.1 Authentication and administration
 
-1. Public users may log in and request/reset a forgotten password.
+1. Public users may log in and recover a forgotten password by supplying their User ID and registered phone number. A matching active account receives a new SMS temporary password; the server replaces the stored password and revokes existing tokens only after the gateway accepts the SMS request. A non-matching or invalid phone number returns a visible phone-field warning and no SMS is sent.
 2. Login accepts the supported identity fields defined by `LoginRequest` (including employee-ID login) and returns a Sanctum token.
 3. Authenticated users may log out, revoke all tokens, read/update their profile (including multipart profile-picture upload), and change password.
-4. Deputy secretaries and system administrators may register users, list/delete users, and create/delete departments. System Administrator accounts themselves cannot be removed; Assistant Secretary accounts can be removed through user management. Only deputy secretaries may perform operational request review and allocation.
+4. Deputy secretaries and system administrators may register, list, update, and delete users, and create/delete departments. System administrators may also manage reusable journey names, official locations, and manual one-way distances. Registration requires a mobile number but never accepts or returns a plaintext password: the server generates a mixed-case/numeric temporary password and delivers it through TEXTIT.BIZ SMS. Registration is rolled back when the gateway does not accept that SMS, preventing an account whose owner cannot receive its initial credential. The gateway send retries configured transient connection failures before registration is rejected. User updates support employee ID, name, email, phone, department, and account status; role changes remain in the dedicated registration workflow. Updating a driver user atomically synchronizes its linked driver directory identity/contact and active state. System Administrator accounts themselves cannot be removed; Assistant Secretary accounts can be removed through user management. Only deputy secretaries may perform operational request review and allocation.
 5. A user must be active and have an allowed role to pass privileged API middleware.
 6. The administration-only `system_admin` role is excluded from vehicle-request creation and every request-review, allocation, final-decision, driver, and fleet-management route.
 
@@ -125,7 +126,7 @@ submitted request
   -> driver completes journey
 ```
 
-Requests include requester, purpose, map-selected starting/ending coordinates, their display labels, a server-calculated feasible driving-route distance and geometry, departure/return times, passenger count/names, optional attachment, and workflow audit fields. Route data is fetched from the configured OSRM-compatible Directions API and cannot be supplied or edited by the requester. Allocation records the selected vehicle/driver, allocator, time, parking location, and notification state. Reallocation preserves previous vehicle/driver plus reason, actor, and timestamp.
+Requests include requester, purpose, departure/return times, passenger count/names, optional attachment, and workflow audit fields. A requester either selects map locations, for which the server calculates the feasible driving-route distance and geometry from the configured OSRM-compatible Directions API, or selects a reusable journey. Reusable journeys copy their System Administrator-configured start, destination, and manual one-way distance server-side; client-supplied location and distance values are ignored. Allocation records the selected vehicle/driver, allocator, time, parking location, and notification state. Reallocation preserves previous vehicle/driver plus reason, actor, and timestamp.
 
 Key workflow rules enforced by the backend and covered by tests include:
 
@@ -151,7 +152,7 @@ Do not invent new status strings in one layer. Search migrations, controllers, U
 - Journey states are `scheduled`, `ongoing`, `issue`, and `completed`.
 - Driver duty states are `available`, `on_trip`, and `unavailable`.
 - Vehicle states currently include `available`, `scheduled_trip`, `unavailable`, and `maintenance`.
-- User accounts use active/inactive status; privileged middleware requires `active`.
+- User accounts use `active`, `inactive`, or `suspended` status; privileged middleware requires `active`.
 - Vehicle issue reports are created with `open` status.
 
 There are multiple state fields on a vehicle request (general status, recommendation data, journey status, allocation/final-decision audit fields). Preserve their distinct meanings and transition them atomically where a workflow action affects more than one entity.
@@ -174,7 +175,8 @@ Primary domain entities and relationships:
 
 - `User`: requester; recommender/approver/allocator/admin actor; belongs logically to a department name; owns Sanctum tokens, database-backed in-app notifications, and per-device Web Push subscriptions.
 - `Department`: unique name and optional creating user.
-- `VehicleRequest`: belongs to requesting user; stores map-selected start/end coordinates and the server-calculated driving-route distance, duration, and geometry; may belong to recommending/allocating/approving/rejecting/cancelling users; may reference current and previous allocated vehicle and driver.
+- `PredefinedJourney`: System Administrator-managed reusable journey with official start, destination, manually entered one-way distance, and creator.
+- `VehicleRequest`: belongs to requesting user and may reference a reusable journey. It stores either map-selected coordinates with server-calculated route data, or copied reusable-journey locations with its configured manual distance; it may belong to recommending/allocating/approving/rejecting/cancelling users and reference current and previous allocated vehicle and driver.
 - `Vehicle`: may be assigned to many requests over time and stores embedded JSON arrays for service, repair, fuel, and images.
 - `VehicleRequest` also stores nullable `start_odometer_km` and `end_odometer_km`. Its server-derived `actual_distance_km` is the ending minus starting reading, or null when either is missing; `distance_km` remains the authoritative planned one-way route distance. Consolidated requests share the whole journey's readings and actual distance, which must not be summed across those member requests.
 - `Driver`: may be assigned to many requests and has JSON current/previous assignment data.
@@ -186,10 +188,11 @@ Schema changes must be new reversible migrations. Update model `$fillable`, cast
 
 All paths below are under `/api`. Except login/password recovery, routes require a Sanctum bearer token.
 
-- Public auth: `POST /login`, `/forgot-password`, `/reset-password`.
+- Public auth: `POST /login`, `/forgot-password`, `/reset-password`. The forgotten-password endpoint accepts `employee_id` and `phone`, then issues a replacement temporary password by SMS only when both identify the same active user.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
 - Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`. Each authenticated user can read and mark only their own notifications and manage only their current browser subscription.
-- Administration: deputy secretaries and system administrators may use `POST /register`; `GET /users`; `DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
+- Administration: deputy secretaries and system administrators may use `POST /register` (the server sends the generated temporary password by SMS); `GET /users`; `PATCH|DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
+- Pre-defined journeys: every authenticated requester may use `GET /predefined-journeys`; only system administrators may `POST`, `PUT`, or `DELETE /predefined-journeys[/{predefinedJourney}]`.
 - Personal requests: `POST|GET /vehicle-requests`; `POST /vehicle-requests/route`; `GET /vehicle-requests/reverse-geocode`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
 - Department review: `GET /department/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`.
 - Deputy workflow: `GET /approvals/recommendations`, `/approvals/department-recommendations`, `/approvals/vehicle-requests[/{id}]`; `PATCH .../{id}/recommendation`, `/allocate`, `/reallocate`.
@@ -208,17 +211,19 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 
 - `AuthProvider` owns token/user session state; the token is currently stored in `localStorage` as `token`.
 - `RoleProvider` and `ProtectedRoute` control role-aware navigation. Add explicit `allowedRoles` to every sensitive route; do not rely only on hiding sidebar links.
-- System administrators are routed to `/systemchanges` after login and may access the Administration Panel's Create Employee and System Changes pages. These client checks align with the administration-only backend routes.
+- System administrators may access the Administration Panel's Create Employee page plus dedicated `/usermanagement`, `/departmentmanagement`, and `/databasemanagement` pages. The retired `/systemchanges` path redirects to User Management for existing bookmarks. These client checks align with the administration-only backend routes.
 - Each role has a dashboard under `frontend/src/pages/dashboard/`.
 - `/totalapprovals` explicitly restricts client access to deputy secretaries. Its Official Approval Records table has six columns: request number, requester, department, purpose/route/departure and return times, status, and View. View fetches the authorized approval-detail endpoint and opens a read-only native dialog with request/route/schedule/passenger/attachment details, recommendation and priority, current/previous allocation, approval and cancellation/rejection audit fields, and journey odometer readings. The dialog supports Close and Escape; the table scrolls horizontally on narrow screens.
-- The deputy-only System Changes page can create and download a complete database backup. Backup files are created in private server storage for the response and deleted after the download is sent. SQLite backups use a consistent database copy; MySQL and MariaDB backups use the configured `DATABASE_DUMP_BINARY` (default `mysqldump`) and add the configured password through the child process environment while preserving the server's existing environment. On Windows, the default automatically prefers an installed MySQL Server `mysqldump.exe` and uses XAMPP's bundled tool only when no MySQL Server tool is found.
+- The administration-only `/usermanagement` page lets deputy secretaries and system administrators edit registered users' employee ID, name, email, phone, department, and account status. It displays roles read-only because driver role changes require the dedicated registration workflow. Saving a driver user's details synchronizes its linked driver directory record. `/departmentmanagement` separately creates, lists, and removes departments. System administrators use `/journeymanagement` to create, edit, and delete reusable journeys. `/databasemanagement` separately creates and downloads a complete database backup. Backup files are created in private server storage for the response and deleted after the download is sent. SQLite backups use a consistent database copy; MySQL and MariaDB backups use the configured `DATABASE_DUMP_BINARY` (default `mysqldump`) and add the configured password through the child process environment while preserving the server's existing environment. On Windows, the default automatically prefers an installed MySQL Server `mysqldump.exe` and uses XAMPP's bundled tool only when no MySQL Server tool is found.
 - `/departmentrequesthistory` explicitly restricts client access to department officers. Its Request History header, filters, archive table, and View action preserve the department-scoped API records and existing query, status-filter, reset, refresh, pending-review navigation, and details navigation behavior.
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
-- The `Topbar` shows a settings icon beside the profile image. The icon opens User Settings as a right-side overlay above the current dashboard page; the backdrop or close button dismisses it without changing that page. The `/setting` route remains available for direct visits.
-- `Topbar` includes a notification bell with an unread badge and menu. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
+- The `Topbar` shows the saved profile picture beside the user details, refreshing its image path from the authenticated profile record when the dashboard loads and falling back to initials when no usable image is available. Its settings icon opens User Settings as a right-side overlay above the current dashboard page; the backdrop or close button dismisses it without changing that page. The `/setting` route remains available for direct visits.
+- `Topbar` includes a notification bell with an unread badge and menu. The header must allow overflow so the dropdown can extend over dashboard content; clip only its decorative background. Below the small breakpoint the panel is inset from the full header edges, while on larger screens it aligns to the bell; its height is viewport-limited with an internally scrolling notification list. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
+- Clicking a notification marks it read and opens the role-appropriate workflow page: vehicle allocation, recommendation, final approval, and driver-issue notifications open their respective action lists; other workflow updates open the recipient's most relevant history or dashboard.
+- Role-specific workflow sidebar items show an unread count badge for their matching notification type. For example, the deputy secretary's Pending Approvals badge counts unread `Vehicle allocation required` notifications; the same synchronized unread data also drives recommendation, final-approval, and driver-issue action badges.
 - The notification menu lets users grant device-notification permission. Once granted, `push-sw.js` and the browser Push API receive workflow notifications even when the SPA is closed; an incoming push refreshes any open notification menu without a page reload, and clicking a device notification focuses or opens the recipient's role dashboard. Subscriptions are synchronized when an authenticated app session opens and removed from the current browser on logout. Web Push requires HTTPS in production; on iOS/iPadOS the site must be installed to the Home Screen.
-- Language preference is stored client-side. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted.
+- Language preference is stored client-side as `vms-language`. English (`en`), Sinhala (`si`), and Tamil (`ta`) are supported. Add or change translation keys in all three dictionaries and test text that is dynamically inserted. `i18n/translate.js` handles the shared phrase catalog, positional workflow/validation messages, and date labels; only explicitly marked label/date placeholders are translated, while names and identifiers remain verbatim. `localizeDom.js` retains source/rendered text and attributes across language switches and React updates; option labels must never change canonical submitted values. Use `confirmLocalized`/`alertLocalized` for native dialog message text and `localizePrintDocument` before closing generated report documents. Shared date formatting uses the selected locale with explicit calendar-word fallback for runtimes without Sinhala locale data. Unknown user-authored text is preserved, not hidden or translated word by word. Native browser controls and off-device SMS/Web Push are not governed by the SPA's DOM translator.
 - Vehicle-request text searches use the configurable client-side `VITE_GEOCODING_API_URL` endpoint with results restricted to Sri Lanka (`countrycodes=lk`). Deliberate map selections call the authenticated `GET /vehicle-requests/reverse-geocode` endpoint, which uses the server-side `GEOCODING_REVERSE_API_URL` service to return a readable address without browser CORS restrictions; coordinates remain the fallback when reverse geocoding fails. The defaults are the public OpenStreetMap Nominatim search and reverse endpoints; configure an identifying `GEOCODING_USER_AGENT`, preserve attribution, and avoid per-keystroke autocomplete or request rates that violate the provider policy.
 - The request form previews feasible driving routes directly from the configurable `VITE_DIRECTIONS_API_URL`. The backend independently queries its `DIRECTIONS_API_URL` during submission and persists that authoritative distance, duration, and geometry; never trust preview route values from the client.
 - The driver dashboard's Scheduled Journeys cards present the full operational assignment: requester/purpose, schedule, passengers, start/end locations, authoritative distance and road geometry, vehicle, parking location, status, and available trip actions. Each normal journey also shows journey kilometers as the derived round-trip distance (`distance_km * 2`). Consolidated journeys expose route and round-trip distance details per member request rather than inventing an inaccurate combined distance.
@@ -276,6 +281,8 @@ php artisan serve
 
 On Unix-like shells, use `cp` instead of `copy`. Default API URL is `http://127.0.0.1:8000`. Relevant environment settings include `APP_URL`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, `GEOCODING_REVERSE_API_URL`, `GEOCODING_TIMEOUT`, `GEOCODING_USER_AGENT`, `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, mail/password-reset settings, filesystem, cache, session, and queue configuration. VAPID keys must be stable per environment; expose only the public key and never commit `.env` or the private key. If XAMPP PHP cannot generate an EC key on Windows, set `OPENSSL_CONF` to its `apache/conf/openssl.cnf` while running `php artisan webpush:vapid`.
 
+For optional server-side SMS delivery, set `TEXTIT_ENABLED=true` with `TEXTIT_API_KEY`, `TEXTIT_ENDPOINT` (default `https://api.textit.biz/`), `TEXTIT_API_VERSION` (default `v1`), and optionally `TEXTIT_TIMEOUT`, `TEXTIT_RETRY_ATTEMPTS` (default 3), and `TEXTIT_RETRY_DELAY_MS` (default 500). The REST API key is sent only in the server-side Basic authorization header and must never be exposed to the browser or committed. The legacy `TEXTIT_USER_ID`, `TEXTIT_PASSWORD`, and `TEXTIT_URL` HTTP API configuration is used only when no REST API key exists. The service retries only transient connection failures; it does not retry a gateway rejection. Leave SMS disabled unless all required TEXTIT.BIZ values are configured.
+
 Frontend setup (from `frontend/`):
 
 ```bash
@@ -291,7 +298,10 @@ Quality commands:
 # frontend/
 npm run lint
 npm run build
+npm run audit:i18n
+npm run test:i18n
 node --test tests/journeyDistance.test.js
+node --test tests/notificationLayout.test.js
 
 # backend/
 composer test
@@ -300,6 +310,8 @@ php artisan test
 ```
 
 For targeted backend verification, use `php artisan test --filter=TestOrMethodName`. Tests default to an in-memory SQLite database per `phpunit.xml`, so do not depend on MySQL-only behavior without explicit coverage.
+
+The frontend localization audit scans fixed JSX text, interface attributes, conditional labels, and common message calls. `scripts/preserved-ui-text.mjs` lists reviewed brands, identifiers, and example data excluded from translation. `node scripts/audit-translations.mjs --all-literals --templates --reports --backend --locations` provides a broader manual-review inventory, including non-UI code and synthetic interpolation values; the fixed-text audit is not proof of runtime or PDF-layout coverage. Localization regression tests cover catalog completeness, dynamic placeholders, date fallback, source restoration, updated attributes, dropdown values, and native confirmation messages.
 
 Seeded development users exist for all eight roles. `UserSeeder` assigns the shared development password `Password123` to non-admin demo accounts. It creates or updates the System Administrator from `SYSTEM_ADMIN_USERNAME`, `SYSTEM_ADMIN_NAME`, `SYSTEM_ADMIN_EMAIL`, `SYSTEM_ADMIN_PHONE`, `SYSTEM_ADMIN_DEPARTMENT`, and `SYSTEM_ADMIN_PASSWORD` through `config/system_admin.php`; the username is stored as `employee_id`. These credentials are demo-only and must never be used in production. `VehicleSeeder` creates representative fleet data; `DriverSeeder` creates representative drivers.
 
@@ -338,6 +350,8 @@ Use factories for focused tests. Avoid coupling tests to bulk seed data unless t
 
 - Workflow notifications are stored in Laravel's `notifications` table and are visible only to the recipient. They are created for request submission, recommendation/rejection, allocation/reallocation, final decisions, driver trip start/completion, and driver issue reports.
 - When VAPID keys and a browser subscription are present, the same workflow notification is also delivered through Web Push. Push payloads contain only the existing non-sensitive title/message, internal IDs, and a role-dashboard path; expired subscriptions are removed by the Web Push channel.
+- When `TEXTIT_ENABLED` plus a server-side TEXTIT.BIZ REST API key are configured, the workflow notification service also sends a concise SMS to each active recipient with a valid phone number. It POSTs a JSON `to` and `text` payload to `TEXTIT_ENDPOINT` with the key in a Basic authorization header and `X-API-VERSION`; recipient numbers are normalized to international numeric form without `+` or `00` (local Sri Lankan mobile numbers are converted). A successful REST status is accepted; legacy HTTP mode accepts only a response body beginning with `OK`, while an HTTP 200 response beginning with `Err` is logged as a gateway rejection. Gateway failures never roll back the persisted workflow notification or workflow transition.
+- A final approved-journey SMS identifies the request and includes the allocated driver name, driver contact number, and vehicle name with registration number. Older incomplete allocations use clear “not assigned” or “not available” fallbacks.
 - Vehicle-request creation and its submission notifications are committed in one database transaction. A notification persistence failure rolls back the request instead of leaving a partially completed submission.
 - Keep notification payloads free of sensitive personal data. Use the workflow service for new lifecycle notices so role/department recipient selection remains consistent.
 

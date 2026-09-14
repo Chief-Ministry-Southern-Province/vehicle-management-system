@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Models\PredefinedJourney;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use App\Rules\WithinSriLanka;
@@ -675,7 +676,7 @@ class VehicleRequestController extends Controller
             ]);
         });
 
-        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user']), true);
+        $this->notifications->finalDecision($vehicleRequest->fresh(['user', 'allocatedDriver.user', 'allocatedVehicle']), true);
 
         return response()->json([
             'success' => true,
@@ -903,12 +904,13 @@ class VehicleRequestController extends Controller
     {
         $validated = $request->validate([
             'purpose' => ['required', 'string', 'max:255'],
-            'starting_location' => ['required', 'string', 'max:255'],
-            'starting_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'starting_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('starting_latitude'))],
-            'destination' => ['required', 'string', 'max:255'],
-            'destination_latitude' => ['required', 'numeric', 'between:5.7,10'],
-            'destination_longitude' => ['required', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('destination_latitude'))],
+            'predefined_journey_id' => ['nullable', 'integer', 'exists:predefined_journeys,id'],
+            'starting_location' => ['nullable', 'required_without:predefined_journey_id', 'string', 'max:255'],
+            'starting_latitude' => ['nullable', 'required_without:predefined_journey_id', 'numeric', 'between:5.7,10'],
+            'starting_longitude' => ['nullable', 'required_without:predefined_journey_id', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('starting_latitude'))],
+            'destination' => ['nullable', 'required_without:predefined_journey_id', 'string', 'max:255'],
+            'destination_latitude' => ['nullable', 'required_without:predefined_journey_id', 'numeric', 'between:5.7,10'],
+            'destination_longitude' => ['nullable', 'required_without:predefined_journey_id', 'numeric', 'between:79.5,82', new WithinSriLanka($request->input('destination_latitude'))],
             'departure_at' => ['required', 'date'],
             'expected_return_at' => ['required', 'date', 'after:departure_at'],
             'passenger_count' => ['required', 'integer', 'min:1', 'max:100'],
@@ -917,13 +919,21 @@ class VehicleRequestController extends Controller
         ]);
 
         try {
-            // Route data is authoritative server data. Never accept client-supplied values.
-            $route = $this->fetchDrivingRoute(
-                (float) $validated['starting_latitude'],
-                (float) $validated['starting_longitude'],
-                (float) $validated['destination_latitude'],
-                (float) $validated['destination_longitude'],
-            );
+            $predefinedJourney = isset($validated['predefined_journey_id'])
+                ? PredefinedJourney::findOrFail($validated['predefined_journey_id'])
+                : null;
+            $route = $predefinedJourney
+                ? [
+                    'distance_km' => $predefinedJourney->distance_km,
+                    'duration_seconds' => null,
+                    'geometry' => null,
+                ]
+                : $this->fetchDrivingRoute(
+                    (float) $validated['starting_latitude'],
+                    (float) $validated['starting_longitude'],
+                    (float) $validated['destination_latitude'],
+                    (float) $validated['destination_longitude'],
+                );
         } catch (Throwable $e) {
             Log::warning('Unable to calculate a driving route while creating a request.', [
                 'exception' => $e::class,
@@ -932,7 +942,7 @@ class VehicleRequestController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'A feasible driving route could not be calculated for these locations.',
+                'message' => 'The selected journey is unavailable or a feasible driving route could not be calculated for these locations.',
             ], 422);
         }
 
@@ -949,6 +959,15 @@ class VehicleRequestController extends Controller
 
             // The uploaded file itself is not a database column; store only its metadata.
             unset($validated['attachment']);
+
+            if ($predefinedJourney) {
+                $validated['starting_location'] = $predefinedJourney->starting_location;
+                $validated['destination'] = $predefinedJourney->destination;
+                $validated['starting_latitude'] = null;
+                $validated['starting_longitude'] = null;
+                $validated['destination_latitude'] = null;
+                $validated['destination_longitude'] = null;
+            }
 
             $validated['distance_km'] = $route['distance_km'];
             $validated['route_duration_seconds'] = $route['duration_seconds'];

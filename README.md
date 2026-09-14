@@ -13,7 +13,8 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 - Maintain vehicle and driver directories, compliance data, images, service, repair, and fuel records.
 - Provide role-specific and executive dashboards, analytics, and PDF exports.
 - Manage users, departments, profiles, passwords, and account status.
-- Deliver opt-in workflow alerts through Web Push even when the browser app is closed.
+- Generate temporary credentials for newly registered users and deliver them by SMS; administrators never enter or receive the plaintext password.
+- Deliver workflow alerts in-app, through opt-in Web Push, and through optional TEXTIT.BIZ SMS delivery.
 - Present the interface in English, Sinhala, and Tamil.
 
 ## Roles
@@ -24,7 +25,7 @@ VMS-GOV is a web-based government fleet and official-journey management system f
 | Department Officer | Review requests from their department, recommend or reject them, and set priority/notes. |
 | Subject Officer | Manage vehicles, drivers, fuel, service, repairs, analytics, and approved journeys. |
 | Deputy Secretary | Manage users/departments, review applicable recommendations, allocate/reallocate resources, and view executive data. |
-| System Administrator | Use the System Admin Dashboard and Administration Panel to create users, manage users/departments, and create database backups. This role has no request-review, allocation, or approval authority. |
+| System Administrator | Use the System Admin Dashboard and Administration Panel to create, update, and manage users/departments, and create database backups. This role has no request-review, allocation, or approval authority. |
 | Senior Deputy Secretary | Recommend requests submitted by deputy secretaries and perform permitted final decisions. |
 | Secretary | Give final approval or rejection and monitor organization-wide operations. |
 | Driver | View assignments, start/complete journeys, review history, and report vehicle issues. |
@@ -63,6 +64,7 @@ Backend:
 - PHP 8.2+ and Laravel 12
 - Laravel Sanctum bearer-token authentication
 - Laravel Web Push notification channel with VAPID authentication
+- TEXTIT.BIZ HTTP SMS gateway for optional workflow SMS delivery
 - Eloquent ORM and REST-style JSON APIs
 - PHPUnit 11 and Laravel Pint
 
@@ -180,9 +182,22 @@ FRONTEND_URL=http://localhost:5173
 VAPID_SUBJECT=mailto:admin@example.gov.lk
 VAPID_PUBLIC_KEY=<generated-public-key>
 VAPID_PRIVATE_KEY=<generated-private-key>
+TEXTIT_ENABLED=false
+TEXTIT_API_KEY=<textit-rest-api-key>
+TEXTIT_ENDPOINT=https://api.textit.biz/
+TEXTIT_API_VERSION=v1
+TEXTIT_TIMEOUT=15
+# Legacy HTTP API fallback only when TEXTIT_API_KEY is blank:
+TEXTIT_USER_ID=<textit-user-id>
+TEXTIT_PASSWORD=<textit-password>
+TEXTIT_URL=https://textit.biz/sendmsg/
+TEXTIT_RETRY_ATTEMPTS=3
+TEXTIT_RETRY_DELAY_MS=500
 ```
 
 Keep the generated VAPID pair stable for each environment; changing it invalidates existing browser subscriptions. Never expose the private key or commit `.env`. Production Web Push requires HTTPS. On iOS/iPadOS, users must install the site to the Home Screen before enabling notifications.
+
+To enable TEXTIT.BIZ transactional SMS notifications, set `TEXTIT_ENABLED=true` and provide `TEXTIT_API_KEY`. The backend POSTs the recipient and message JSON to `TEXTIT_ENDPOINT` with that key in a server-side Basic authorization header and the configured `X-API-VERSION`. Local Sri Lankan mobile numbers such as `0771234567` are converted to international gateway form (`94771234567`); other numbers must already be valid international numeric values. A successful REST response is accepted. When no REST API key is configured, the legacy HTTP integration sends `id`, `pw`, `to`, and `text` and requires a response body beginning with `OK`; `Err` responses are logged as rejections. Transient connection failures are retried three times by default with a 500 ms delay; gateway rejections are not retried. SMS is supplementary: a gateway failure is logged without rolling back the in-app workflow notification or request transition.
 
 ### 3. Frontend
 

@@ -316,7 +316,7 @@ Route::middleware('role:subject_officer')->group(function () {
 | Component | Main responsibility |
 | --- | --- |
 | `AuthController` | Login, registration, logout, password recovery, profile, password change |
-| `UserController` | Deputy-controlled user listing and deletion |
+| `UserController` | Administrative user listing, updating, and deletion |
 | `DepartmentController` | Department directory and deputy-controlled changes |
 | `VehicleRequestController` | Submission, route calculation, review stages, cancellation, allocation, reallocation, final decisions, request lists |
 | `VehicleController` | Fleet listing/details and subject-officer vehicle mutation/images |
@@ -672,7 +672,7 @@ All listed endpoints are below `/api`. Except login and password recovery, they 
 | Session/profile | `POST /logout`, `/logout-all`; `GET/PUT/POST /profile`; `PUT /profile/password` | Authenticated |
 | Notifications | `GET /notifications`; `PATCH /notifications/{id}/read`, `/notifications/read-all` | Authenticated owner |
 | Push | `GET /push-subscriptions/public-key`; `POST/DELETE /push-subscriptions` | Authenticated owner |
-| Users/departments/backups | `POST /register`; `GET /users`; `DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
+| Users/departments/backups | `POST /register`; `GET /users`; `PATCH|DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
 | Department directory | `GET /departments` | Authenticated |
 | Personal requests | create/list/detail/cancel, route preview, reverse geocode | Authenticated with ownership on records |
 | Department review | `/department/vehicle-requests...` | Department officer plus department isolation |
@@ -703,7 +703,7 @@ Expected errors are `401` unauthenticated, `403` forbidden/inactive, `404` missi
 
 ## 11. Notifications and background browser behavior
 
-Workflow events create a per-user Laravel database notification. If stable VAPID keys and a browser subscription exist, the same non-sensitive payload is sent over Web Push.
+Workflow events create a per-user Laravel database notification. If stable VAPID keys and a browser subscription exist, the same non-sensitive payload is sent over Web Push. If `TEXTIT_ENABLED` and the gateway credentials are configured, recipients with a valid phone number also receive a concise TEXTIT.BIZ SMS.
 
 ```mermaid
 flowchart LR
@@ -713,15 +713,17 @@ flowchart LR
     DB[(notifications table)]
     WP[WebPushChannel]
     PS[Browser push service]
+    SMS[TEXTIT.BIZ SMS gateway]
     SW[push-sw.js]
     UI[Notification menu and device notification]
 
     EVENT --> SERVICE --> USERS
     USERS --> DB --> UI
     USERS --> WP --> PS --> SW --> UI
+    USERS --> SMS
 ```
 
-The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, and issue reports. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data.
+The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, and issue reports. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. It requires the gateway response body to begin with `OK`; an HTTP 200 response beginning with `Err` is a rejected submission and is logged with a sanitized result code. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
 
 The SPA notification menu refreshes on open and every minute. The service worker can display notifications when the SPA is closed. Web Push requires HTTPS in production; iOS/iPadOS users must install the site to the Home Screen.
 
@@ -843,7 +845,7 @@ flowchart LR
 
 The frontend build can be served independently from the API. `frontend/vercel.json` supplies the SPA fallback and currently includes an API proxy rule; deployed environments should use an HTTPS API destination instead of an unsecured numeric host. Laravel locally defaults to SQLite, while MySQL configuration is available. No full production infrastructure-as-code definition is committed.
 
-Required production configuration includes `APP_URL`, `APP_KEY`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, filesystem settings, mail settings, routing/geocoding endpoints, and VAPID subject/public/private keys. Only the VAPID public key may be exposed to the browser.
+Required production configuration includes `APP_URL`, `APP_KEY`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, filesystem settings, mail settings, routing/geocoding endpoints, VAPID subject/public/private keys, and the server-only `TEXTIT_ENABLED`, `TEXTIT_USER_ID`, `TEXTIT_PASSWORD`, `TEXTIT_URL`, and `TEXTIT_TIMEOUT` settings. Only the VAPID public key may be exposed to the browser; do not expose TEXTIT.BIZ credentials.
 
 ## 16. Reliability and consistency
 
@@ -909,7 +911,7 @@ Not every change needs a migration, but no affected layer should be skipped. Pre
 | Server-authoritative route calculation | Prevents clients from falsifying distance or geometry |
 | Persisted route geometry | Driver/detail screens remain useful without recalculation |
 | JSON maintenance histories | Keeps embedded service/repair/fuel records with a vehicle; future high-volume analytics may justify normalization |
-| Database plus Web Push notifications | Provides durable in-app history and optional background delivery |
+| Database, Web Push, and optional SMS notifications | Provides durable in-app history plus optional browser and TEXTIT.BIZ gateway delivery |
 | Three-language client dictionaries | Keeps language switching immediate; all new labels must be synchronized |
 | Browser-side PDF generation | Avoids report endpoints but requires UI/report mappings to remain aligned |
 

@@ -485,7 +485,6 @@ export default function RecommendationReview() {
                   onChange={(event) => setPriority(event.target.value)}
                   className="w-full rounded-lg border p-3"
                 >
-                  <option value="critical">Critical</option>
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>

@@ -6,21 +6,30 @@ use App\Models\User;
 use App\Models\VehicleRequest;
 use App\Notifications\WorkflowNotification;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 class WorkflowNotificationService
 {
+    public function __construct(private readonly SmsService $smsService) {}
+
     public function send(iterable|User|null $recipients, string $title, string $message, ?VehicleRequest $vehicleRequest = null): void
     {
         $recipients = $recipients instanceof User ? collect([$recipients]) : collect($recipients);
 
         $recipients->filter(fn ($user) => $user instanceof User && $user->isActive())
             ->unique('id')
-            ->each(fn (User $user) => $user->notify(new WorkflowNotification([
-                'title' => $title,
-                'message' => $message,
-                'vehicle_request_id' => $vehicleRequest?->id,
-                'reference' => $vehicleRequest ? 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT) : null,
-            ])));
+            ->each(function (User $user) use ($title, $message, $vehicleRequest): void {
+                $user->notify(new WorkflowNotification([
+                    'title' => $title,
+                    'message' => $message,
+                    'vehicle_request_id' => $vehicleRequest?->id,
+                    'reference' => $vehicleRequest ? 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT) : null,
+                ]));
+
+                // Gateway delivery is supplementary. A provider outage must not undo
+                // the durable in-app workflow notification or its completed transition.
+                $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest));
+            });
     }
 
     public function requestSubmitted(VehicleRequest $vehicleRequest): void
@@ -86,5 +95,44 @@ class WorkflowNotificationService
     private function reference(VehicleRequest $vehicleRequest): string
     {
         return 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function smsMessage(string $title, string $message, ?VehicleRequest $vehicleRequest): string
+    {
+        $reference = $vehicleRequest ? $this->reference($vehicleRequest) : 'your request';
+
+        $sms = match ($title) {
+            'New vehicle request' => "VMS - Update: {$reference} is ready for your review.",
+            'Request recommended' => "VMS - Update: {$reference} was recommended and moves to allocation.",
+            'Request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
+            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Vehicle and driver allocated' => "VMS - Update: {$reference} is allocated and awaiting final approval.",
+            'Journey allocation updated' => "VMS - Update: {$reference} has a new allocation and needs final approval.",
+            'Final approval required' => "VMS - Action Required: Final approval is needed for {$reference}.",
+            'Journey finally approved' => $this->approvedJourneySms($reference, $vehicleRequest),
+            'Journey request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
+            'Journey request cancelled' => "VMS - Update: {$reference} has been cancelled.",
+            'Journey started' => "VMS - Update: Your journey for {$reference} has started.",
+            'Journey completed' => "VMS - Complete: Your journey for {$reference} is complete. Thank you.",
+            'Vehicle issue reported' => "VMS - Alert: A vehicle issue was reported for {$reference}. Please review it.",
+            default => Str::limit("VMS - Update: {$title}: {$message}", 120, '...'),
+        };
+
+        return $sms;
+    }
+
+    private function approvedJourneySms(string $reference, ?VehicleRequest $vehicleRequest): string
+    {
+        $driver = $vehicleRequest?->allocatedDriver;
+        $vehicle = $vehicleRequest?->allocatedVehicle;
+        $driverName = $driver?->full_name ?: 'Not assigned';
+        $driverContact = $driver?->contact_number ?: $driver?->user?->phone ?: 'Not available';
+        $vehicleName = trim(collect([$vehicle?->make, $vehicle?->model])->filter()->join(' '));
+        $vehicleName = $vehicleName ?: $vehicle?->vehicle_type ?: 'Not assigned';
+        $vehicleDisplay = $vehicle?->registration_number
+            ? "{$vehicleName} ({$vehicle->registration_number})"
+            : $vehicleName;
+
+        return "VMS - Journey Approved:\n\n{$reference} has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: {$driverName}\nDriver Contact Number: {$driverContact}\nVehicle Name: {$vehicleDisplay}\n\nHave a safe journey.";
     }
 }
