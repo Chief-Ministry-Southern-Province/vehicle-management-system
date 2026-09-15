@@ -683,6 +683,17 @@ export const getRecommendedRequests = async () => {
   }
 };
 
+export const downloadDatabaseBackupFile = (file, filename) => {
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
 export const downloadDatabaseBackup = async () => {
   try {
     const response = await API.post('/system/database-backups', null, {
@@ -692,14 +703,10 @@ export const downloadDatabaseBackup = async () => {
 
     const filename = response.headers['content-disposition']
       ?.match(/filename="?([^";]+)"?/i)?.[1] || 'vms-gov-backup.sql';
-    const url = URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    const file = response.data instanceof Blob ? response.data : new Blob([response.data]);
+    downloadDatabaseBackupFile(file, filename);
+
+    return { file, filename, size: file.size };
   } catch (error) {
     if (error.response?.data instanceof Blob) {
       const body = await error.response.data.text();
