@@ -519,6 +519,7 @@ sequenceDiagram
     API->>DB: Validate and persist transition
     API->>Notify: Dispatch event-specific notification
     Notify->>DB: Store per-user notification
+    Notify-->>Recipient: Private Reverb workflow invalidation
     Notify-->>Recipient: Optional Web Push when configured
     Notify-->>Recipient: Optional TEXTIT.BIZ SMS when configured
     API-->>Actor: JSON success response
@@ -535,7 +536,7 @@ sequenceDiagram
 | Journey started/completed | Requester |
 | Issue reported | Requester, subject officers, deputy secretaries |
 
-Notifications use the database channel and optionally Web Push when stable VAPID keys exist. When `TEXTIT_ENABLED` and the TEXTIT.BIZ credentials are configured, the same workflow event also sends a concise SMS to recipients with a valid phone number. SMS recipients are normalized to the gateway's international numeric form. A TEXTIT.BIZ submission is accepted only when the response body begins with `OK`; an HTTP 200 body beginning with `Err` is logged as a gateway rejection and does not roll back a persisted workflow transition. Payloads contain only non-sensitive titles/messages, internal identifiers, and role-dashboard navigation data.
+Notifications use the database channel and a private Laravel Reverb channel named `workflow.user.{id}`. The channel authorization endpoint is protected by the recipient's Sanctum bearer token, and its event includes only an action, request identifier, and timestamp; the client reloads its normal role-protected data after receipt. Web Push is optional when stable VAPID keys exist. When `TEXTIT_ENABLED` and the TEXTIT.BIZ credentials are configured, the same workflow event also sends a concise SMS to recipients with a valid phone number. SMS recipients are normalized to the gateway's international numeric form. A TEXTIT.BIZ submission is accepted only when the response body begins with `OK`; an HTTP 200 body beginning with `Err` is logged as a gateway rejection and does not roll back a persisted workflow transition.
 
 ## 9. Frontend page and API mapping
 

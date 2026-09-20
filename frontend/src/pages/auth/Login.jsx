@@ -43,6 +43,7 @@ export default function Login() {
       const token = payload?.token ?? payload?.access_token ?? payload?.accessToken ?? payload?.data?.token ?? payload?.data?.access_token ?? null;
       const backendUser = payload?.user ?? payload?.data?.user ?? payload?.data ?? payload;
       const nextUser = {
+        id: backendUser?.id ?? backendUser?.user_id ?? null,
         name: backendUser?.name ?? backendUser?.full_name ?? backendUser?.username ?? formData.employee_id,
         email: backendUser?.email ?? "",
         employee_id: backendUser?.employee_id ?? backendUser?.employeeId ?? backendUser?.id ?? backendUser?.user_id ?? formData.employee_id,

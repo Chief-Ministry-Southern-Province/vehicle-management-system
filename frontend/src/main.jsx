@@ -5,6 +5,7 @@ import App from "./App";
 
 import RoleProvider from "./context/RoleProvider";
 import { AuthProvider } from "./context/AuthProvider";
+import RealtimeProvider from "./context/RealtimeProvider";
 import LanguageProvider from "./context/LanguageProvider";
 import { registerPushServiceWorker } from "./utils/pushNotifications";
 
@@ -21,7 +22,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <LanguageProvider>
       <RoleProvider>
         <AuthProvider>
-          <App />
+          <RealtimeProvider>
+            <App />
+          </RealtimeProvider>
         </AuthProvider>
       </RoleProvider>
     </LanguageProvider>

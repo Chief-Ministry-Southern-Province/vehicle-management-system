@@ -1,5 +1,6 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Navigate, Routes, Route  } from 'react-router-dom';
+import { useRealtime } from './context/useRealtime';
 import './App.css';
 import { Toaster } from 'react-hot-toast';
 
@@ -59,16 +60,16 @@ const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
 );
 
-function App() {
-  
+function ApplicationRoutes() {
+  const { workflowRevision } = useRealtime();
+
   return (
-    <BrowserRouter>
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
         <div className="w-full h-screen">
 
           <Toaster position="top-right"/>
 
-          <Routes>
+          <Routes key={workflowRevision}>
             <Route path="/" element={<Login />} />
             <Route path="/register" element={withAuth(<Register />, ["deputy_secretary", "system_admin"])} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -147,6 +148,13 @@ function App() {
 
         </div>
       </GoogleOAuthProvider>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ApplicationRoutes />
     </BrowserRouter>
   )
 }

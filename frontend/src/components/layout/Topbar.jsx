@@ -217,10 +217,6 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     return () => window.clearTimeout(initialLoad);
   }, [loadNotifications, userId]);
   useEffect(() => {
-    const interval = window.setInterval(loadNotifications, 60000);
-    return () => window.clearInterval(interval);
-  }, [loadNotifications]);
-  useEffect(() => {
     const refreshOnPush = (event) => {
       if (event.data?.type === "VMS_PUSH_NOTIFICATION") loadNotifications();
     };

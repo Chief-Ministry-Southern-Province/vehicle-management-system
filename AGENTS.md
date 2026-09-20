@@ -28,7 +28,7 @@ VMS-GOV is a government Vehicle Management System for the Chief Ministry at Daks
 
 The implemented system supports:
 
-- authenticated employee accounts and role-based dashboards, including per-user in-app, Web Push, and optional TEXTIT.BIZ SMS workflow notifications;
+- authenticated employee accounts and role-based dashboards, including per-user real-time WebSocket, in-app, Web Push, and optional TEXTIT.BIZ SMS workflow notifications;
 - official vehicle requests, attachments, history, details, cancellation, and System Administrator-defined reusable journeys;
 - department, deputy, senior deputy, and secretary review stages;
 - vehicle and driver allocation/reallocation with conflict checks;
@@ -48,12 +48,13 @@ Browser
   -> React 19 single-page application (frontend/, Vite 8)
   -> JSON/multipart REST API at /api (backend/, Laravel 12, PHP 8.2+)
   -> Laravel Sanctum bearer-token authentication and server-side RBAC
+  -> Laravel Reverb private WebSocket channels for workflow invalidations
   -> SQL database (SQLite by default; MySQL configuration is available)
 ```
 
-Frontend technologies: React Router 7, Axios, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, Web Push/PWA service-worker APIs, and browser-side PDF helpers.
+Frontend technologies: React Router 7, Axios, Laravel Echo/Pusher protocol client, Tailwind CSS 4, Lucide/React Icons, Recharts, react-hot-toast, Web Push/PWA service-worker APIs, and browser-side PDF helpers.
 
-Backend technologies: Laravel 12, Sanctum 4, Eloquent, `laravel-notification-channels/webpush`, TEXTIT.BIZ's HTTPS SMS gateway, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
+Backend technologies: Laravel 12, Sanctum 4, Eloquent, Laravel Reverb, `laravel-notification-channels/webpush`, TEXTIT.BIZ's HTTPS SMS gateway, database-backed cache/session/queue defaults, PHPUnit 11, Laravel Pint, and seeders/factories.
 
 Important locations:
 
@@ -63,10 +64,12 @@ Important locations:
 - `frontend/src/pages/`: page-level screens, mostly grouped by role/domain.
 - `frontend/src/components/`: reusable and role-specific UI.
 - `frontend/src/api/authApi.jsx`: shared API client/functions. Its API base comes from `VITE_API_URL` and falls back locally to `http://127.0.0.1:8000/api`.
-- `frontend/src/context/`: authentication, role, and language state.
+- `frontend/src/context/`: authentication, role, language, and authenticated Reverb workflow-update state.
 - `frontend/src/i18n/`: English/Sinhala/Tamil dictionaries and page-text translation.
 - `frontend/src/utils/`: date/time, driver mapping, and PDF exports.
 - `backend/routes/api.php`: API surface and role access rules.
+- `backend/routes/channels.php`, `backend/config/broadcasting.php`, and `backend/config/reverb.php`: Sanctum-authenticated private workflow channels and Reverb server configuration.
+- `backend/composer.json` starts `php artisan reverb:start` as part of `composer dev`; deployed environments must supervise the same long-running process.
 - `backend/app/Http/Controllers/Api/`: API behavior and validation.
 - `backend/app/Http/Middleware/RoleMiddleware.php`: server-side RBAC and active-account enforcement.
 - `backend/app/Models/`: Eloquent entities, relations, casts, and fillable fields.
@@ -191,7 +194,7 @@ All paths below are under `/api`. Except login/password recovery, routes require
 
 - Public auth: `POST /login`, `/forgot-password`, `/reset-password`. The forgotten-password endpoint accepts `employee_id` and `phone`, then issues a replacement temporary password by SMS only when both identify the same active user.
 - Session/profile: `POST /logout`, `/logout-all`; `GET|PUT|POST /profile`; `PUT /profile/password`.
-- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`. Each authenticated user can read and mark only their own notifications and manage only their current browser subscription.
+- Notifications: `GET /notifications`; `PATCH /notifications/{id}/read`; `PATCH /notifications/read-all`; `GET /push-subscriptions/public-key`; `POST|DELETE /push-subscriptions`; and `POST /broadcasting/auth` for Laravel Reverb private-channel authorization. Each authenticated user can read and mark only their own notifications, subscribe only to `workflow.user.{their-id}`, and manage only their current browser subscription.
 - Administration: deputy secretaries and system administrators may use `POST /register` (the server sends the generated temporary password by SMS); `GET /users`; `PATCH|DELETE /users/{user}`; `GET|POST /departments`; `DELETE /departments/{department}`; `POST /system/database-backups` creates and downloads a database backup.
 - Pre-defined journeys: every authenticated requester may use `GET /predefined-journeys`; only system administrators may `POST`, `PUT`, or `DELETE /predefined-journeys[/{predefinedJourney}]`.
 - Personal requests: `POST|GET /vehicle-requests`; `POST /vehicle-requests/route`; `GET /vehicle-requests/reverse-geocode`; `GET /vehicle-requests/{id}`; `PATCH /vehicle-requests/{id}/cancel`.
@@ -220,7 +223,8 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - Role-specific page folders cover requests, recommendations, department officer, subject officer, deputy secretary, senior deputy secretary, driver, and fleet functions.
 - `DashboardLayout`, `Sidebar`, and `Topbar` provide shared chrome.
 - The `Topbar` shows the saved profile picture beside the user details, refreshing its image path from the authenticated profile record when the dashboard loads and falling back to initials when no usable image is available. Its settings icon opens User Settings as a right-side overlay above the current dashboard page; the backdrop or close button dismisses it without changing that page. The `/setting` route remains available for direct visits.
-- `Topbar` includes a notification bell with an unread badge and menu. The header must allow overflow so the dropdown can extend over dashboard content; clip only its decorative background. Below the small breakpoint the panel is inset from the full header edges, while on larger screens it aligns to the bell; its height is viewport-limited with an internally scrolling notification list. It refreshes the signed-in user's recent unread database notifications on open and every minute; newly observed unread workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
+- `RealtimeProvider` maintains one Reverb private channel per authenticated user. A received workflow invalidation remounts the active route so its normal role-protected loader reflects the transition immediately; no minute polling is used. The event contains only an action, request ID, and timestamp, while REST remains authoritative for commands, notification contents, and current record data.
+- `Topbar` includes a notification bell with an unread badge and menu. The header must allow overflow so the dropdown can extend over dashboard content; clip only its decorative background. Below the small breakpoint the panel is inset from the full header edges, while on larger screens it aligns to the bell; its height is viewport-limited with an internally scrolling notification list. It loads the signed-in user's recent unread database notifications initially and when opened; newly observed workflow notifications also appear as dismissible in-app pop-ups once per browser session. Marking an individual notification or all notifications as read removes them from the menu while preserving the database records.
 - Clicking a notification marks it read and opens the role-appropriate workflow page: vehicle allocation, recommendation, final approval, and driver-issue notifications open their respective action lists; other workflow updates open the recipient's most relevant history or dashboard.
 - Role-specific workflow sidebar items show an unread count badge for their matching notification type. For example, the deputy secretary's Pending Approvals badge counts unread `Vehicle allocation required` notifications; the same synchronized unread data also drives recommendation, final-approval, and driver-issue action badges.
 - The notification menu lets users grant device-notification permission. Once granted, `push-sw.js` and the browser Push API receive workflow notifications even when the SPA is closed; an incoming push refreshes any open notification menu without a page reload, and clicking a device notification focuses or opens the recipient's role dashboard. Subscriptions are synchronized when an authenticated app session opens and removed from the current browser on logout. Web Push requires HTTPS in production; on iOS/iPadOS the site must be installed to the Home Screen.

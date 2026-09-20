@@ -113,7 +113,7 @@ The selected language is remembered on this browser and applies to interface lab
 | Driver | Review personal trip statistics, scheduled assignments, trip actions, and assigned-vehicle information. |
 | System Administrator | Review administration information and open account, department, journey, and database management. |
 
-Dashboard request counts represent records. Sidebar badges represent unread notifications and can differ from the number of unfinished requests. A dash or loading indicator is not a confirmed zero. Reopen or refresh the relevant page after changes if its values have not yet refreshed.
+Dashboard request counts represent records. Sidebar badges represent unread notifications and can differ from the number of unfinished requests. When the real-time service is available, affected open role pages update automatically after another user saves a workflow action. A dash or loading indicator is not a confirmed zero; reopen or refresh if a connection was interrupted.
 
 ## 5. Creating a vehicle request
 
@@ -461,7 +461,7 @@ The operation creates a database backup and removes the temporary server copy af
 
 ### 15.1 In-app notifications
 
-Open the notification bell to view unread updates. The menu refreshes on opening and periodically, normally every minute. New updates can also appear as temporary pop-ups.
+Open the notification bell to view unread updates. While signed in, new workflow changes arrive immediately through the application's live connection and can also appear as temporary pop-ups. Opening the menu reloads the durable unread list, which remains available if the live connection is interrupted.
 
 Clicking a menu notification attempts to mark it read and then opens the role-appropriate page. A successful read removes it from the unread menu and decreases matching sidebar counts. **Mark all read** clears the unread list. Reading retains the database record and does not approve, allocate, or otherwise complete the related task.
 
@@ -536,7 +536,7 @@ Recommendation, overall request, and driver journey statuses describe different 
 | PDF did not download | Check browser downloads/permissions, selection requirements, and whether any records match. |
 | Backup fails | Technical staff should check database access, backup-tool availability, and private storage permissions. |
 | Access denied or record not found | Confirm your role and ownership/department access. Do not use another person's account to work around the restriction. |
-| New data does not appear | Reopen or refresh the page after a confirmed save. Check for a failed request before repeating an action. |
+| New data does not appear | Check the network connection, then reopen or refresh the page after a confirmed save. Check for a failed request before repeating an action. |
 
 When contacting support, provide your role, page, request reference or vehicle registration, action time, exact error, and reproduction steps. Include a screenshot if useful, with passwords, SMS credentials, and unrelated personal details concealed.
 

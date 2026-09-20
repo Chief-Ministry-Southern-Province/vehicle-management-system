@@ -12,7 +12,7 @@ Versions below are the version constraints declared in `frontend/package.json` a
 | Client-side navigation and role-aware route guarding | `react-router-dom` `^7.17.0` | `frontend/src/App.jsx`, `frontend/src/routes/ProtectedRoute.jsx` | Frontend guards improve navigation UX; Laravel role middleware remains the security boundary. |
 | REST API calls and file/download requests | `axios` `^1.18.1` | `frontend/src/api/authApi.jsx` | Uses `VITE_API_URL` and bearer tokens stored by the current authentication implementation. |
 | Token authentication and server-side role access | `laravel/sanctum` `^4.3`, Laravel framework | `backend/app/Models/User.php`, `backend/app/Http/Middleware/RoleMiddleware.php`, `backend/routes/api.php` | Sanctum personal-access tokens secure the API. `auth:sanctum` and `role:` middleware must protect sensitive routes. |
-| In-app workflow notifications | Laravel framework's notification and database facilities, `axios`, React | `backend/app/Notifications/WorkflowNotification.php`, `backend/app/Services/WorkflowNotificationService.php`, `backend/app/Http/Controllers/Api/NotificationController.php`, `frontend/src/components/layout/Topbar.jsx` | Notifications persist in the `notifications` table and are retrieved through `/api/notifications`. No real-time broker package is used. |
+| Real-time workflow updates and in-app notifications | `laravel/reverb` `^1.11`, `laravel-echo` `^2.5`, `pusher-js`, Laravel broadcasting/database notifications | `backend/app/Events/WorkflowUpdated.php`, `backend/app/Services/WorkflowNotificationService.php`, `backend/routes/channels.php`, `frontend/src/context/RealtimeProvider.jsx` | Every signed-in browser subscribes only to `private-workflow.user.{id}` using a Sanctum bearer token at `/api/broadcasting/auth`. Events carry only an action, request ID, and timestamp; the route reloads its normal authorized API data. Configure Reverb server/public browser variables and do not expose `REVERB_APP_SECRET`. |
 | Browser Web Push notifications | `laravel-notification-channels/webpush` `^12.1`; browser Service Worker, Push API, Notifications API, VAPID | `backend/config/webpush.php`, `backend/app/Http/Controllers/Api/PushSubscriptionController.php`, `frontend/src/utils/pushNotifications.js`, `frontend/public/push-sw.js` | Generate stable keys with `php artisan webpush:vapid`; configure `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, and `VAPID_PRIVATE_KEY`. Production delivery requires HTTPS; the Web Push package owns persisted subscriptions and delivery. |
 | SMS delivery and SMS password recovery | Laravel HTTP client (included with `laravel/framework`); TEXTIT.BIZ REST or legacy HTTP gateway | `backend/app/Services/SmsService.php`, `backend/app/Services/WorkflowNotificationService.php`, `backend/app/Http/Controllers/Api/AuthController.php` | There is no separate Composer SMS SDK. Enable only with server-side `TEXTIT_*` settings; never expose the API key to the browser. Gateway failure does not undo a completed workflow notification. |
 | PDF exports and printable reports | Native browser `window.open` / `window.print`, HTML/CSS; React data sources | `frontend/src/utils/*Pdf.js`, including `approvedJourneyPdf.js`, `fuelRecordsPdf.js`, `repairRecordsPdf.js`, and directory/detail exporters | No `jsPDF`, `pdfmake`, or server-side PDF package is installed. The browser print dialog creates or saves the PDF, so pop-ups must be allowed. |
@@ -34,6 +34,7 @@ Versions below are the version constraints declared in `frontend/package.json` a
 | `@react-oauth/google` | `^0.13.5` | Google OAuth provider setup; see the current implementation limitation above. |
 | `@tailwindcss/vite` | `^4.3.1` | Tailwind's Vite integration. |
 | `axios` | `^1.18.1` | HTTP client for the Laravel API and file downloads. |
+| `laravel-echo` | `^2.5.0` | Authenticated browser subscription to Laravel Reverb workflow channels. |
 | `lucide-react` | `^1.23.0` | React icon components. |
 | `react`, `react-dom` | `^19.2.6` | SPA rendering. |
 | `react-hot-toast` | `^2.6.0` | Toast feedback. |
@@ -48,6 +49,7 @@ Versions below are the version constraints declared in `frontend/package.json` a
 | --- | --- | --- |
 | `php` | `^8.2` | Required PHP runtime. |
 | `laravel/framework` | `^12.0` | REST application, Eloquent, validation, filesystem, HTTP client, notifications, queues, and process helpers. |
+| `laravel/reverb` | `^1.11` | Self-hosted Pusher-protocol WebSocket server for private workflow invalidations. |
 | `laravel/sanctum` | `^4.3` | API bearer-token authentication. |
 | `laravel-notification-channels/webpush` | `^12.1` | VAPID Web Push subscriptions and delivery channel. |
 | `laravel/tinker` | `^2.10.1` | Local interactive Laravel shell; not a production feature dependency. |
@@ -65,8 +67,8 @@ These packages support development and CI rather than an end-user feature.
 ## Install and configuration checklist
 
 1. Install the locked dependency trees with `npm ci` in `frontend/` and `composer install` in `backend/`.
-2. Configure only public browser values in `frontend/.env`: `VITE_API_URL`, optional map endpoints, and `VITE_GOOGLE_CLIENT_ID`. Never put SMS, VAPID private, database, or other secrets in a `VITE_*` variable.
-3. Configure server-only integrations in `backend/.env`: database settings, `FRONTEND_URL`, map service settings, VAPID values, and optional `TEXTIT_*` credentials.
+2. Configure only public browser values in `frontend/.env`: `VITE_API_URL`, `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, `VITE_REVERB_SCHEME`, optional map endpoints, and `VITE_GOOGLE_CLIENT_ID`. Never put SMS, VAPID private, database, Reverb secret, or other secrets in a `VITE_*` variable.
+3. Configure server-only integrations in `backend/.env`: database settings, `FRONTEND_URL`, `BROADCAST_CONNECTION=reverb`, the `REVERB_*` server/app values and allowed SPA origins, map service settings, VAPID values, and optional `TEXTIT_*` credentials. Run `php artisan reverb:start` alongside the Laravel API in each environment.
 4. For Web Push, run `php artisan webpush:vapid` once per environment and retain the generated key pair.
 5. For MySQL/MariaDB database backups, install or configure `mysqldump` (or set `DATABASE_DUMP_BINARY`); no PHP package supplies it.
 
