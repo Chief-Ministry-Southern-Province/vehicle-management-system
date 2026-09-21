@@ -55,7 +55,7 @@ export default function SecretaryDashboard() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-cyan-100/80 sm:text-base">A consolidated view of approvals, fleet resources and operational spending.</p>
             </div>
           </header>
-          <StatsCard />
+          <StatsCard compactMobileOverview />
           <MonthlyCostAnalysis vehicles={vehicles} loading={loadingCosts} error={costError} />
         </div>
       </div>
