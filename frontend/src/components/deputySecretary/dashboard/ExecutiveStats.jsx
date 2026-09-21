@@ -221,8 +221,8 @@ function StatCard({ title, value, icon, path, tone }) {
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(path)}
       aria-label={`View ${title} details`}
       className={[
-        "group relative min-h-[120px] min-w-0 cursor-pointer overflow-hidden rounded-[20px]",
-        "border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:p-5",
+        "group relative min-h-[108px] min-w-0 cursor-pointer overflow-hidden rounded-2xl",
+        "border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:min-h-[120px] sm:rounded-[20px] sm:p-5",
         "shadow-sm",
         "transition-all duration-300 ease-out",
         "hover:-translate-y-1 hover:border-slate-200 hover:shadow-[0_24px_48px_-20px_rgba(15,23,42,0.3)]",
@@ -231,10 +231,10 @@ function StatCard({ title, value, icon, path, tone }) {
         palette.ring,
       ].join(" ")}
     >
-      <div className="relative flex items-center justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-2 sm:gap-3">
         <div
           className={[
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg text-white shadow-sm",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-base text-white shadow-sm sm:h-10 sm:w-10 sm:text-lg",
             "bg-linear-to-br transition-transform duration-300",
             "group-hover:scale-110 group-hover:rotate-3",
             palette.icon,
@@ -243,12 +243,12 @@ function StatCard({ title, value, icon, path, tone }) {
           {icon}
         </div>
 
-        <h2 className={`min-w-0 break-words text-right font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white ${String(value).startsWith("LKR") ? "text-xl sm:text-2xl" : "text-3xl sm:text-4xl"}`}>
+        <h2 className={`min-w-0 break-words text-right font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white ${String(value).startsWith("LKR") ? "text-lg sm:text-2xl" : "text-2xl sm:text-4xl"}`}>
           {animatedValue}
         </h2>
       </div>
 
-      <p className="relative mt-4 text-xs font-bold uppercase leading-5 tracking-wide text-slate-600 dark:text-slate-400 sm:text-sm">
+      <p className="relative mt-3 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 sm:mt-4 sm:text-xs sm:leading-5 dark:text-slate-400">
         {title}
       </p>
       <div aria-hidden="true" className={`absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r ${palette.icon}`} />
