@@ -52,7 +52,7 @@ export default function SeniorDeputySecretaryDashboard() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-indigo-100/80 sm:text-base">Review final approvals, fleet capacity and annual operational expenditure.</p>
             </div>
           </header>
-          <StatsCard />
+          <StatsCard compactMobileOverview />
           <MonthlyCostAnalysis vehicles={vehicles} loading={loadingCosts} error={costError} />
         </div>
       </div>
