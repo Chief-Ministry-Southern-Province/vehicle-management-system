@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
-import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_BOUNDARY, SRI_LANKA_CENTER } from "../../utils/sriLankaBoundary";
+import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_BOUNDARIES, SRI_LANKA_CENTER } from "../../utils/sriLankaBoundary";
 
 const TILE_SIZE = 256;
 const MIN_ZOOM = 7;
@@ -149,10 +149,12 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const endPosition = pointPosition(end);
   const routePoints = (routeCoordinates || []).map(([lng, lat]) => pointPosition({ lat, lng })).filter(Boolean);
   const routePath = routePoints.map((point) => `${(point.left / width) * 100},${(point.top / height) * 100}`).join(" ");
-  const boundaryPath = SRI_LANKA_BOUNDARY.map(([lng, lat], index) => {
-    const position = pointPosition({ lat, lng });
-    return `${index === 0 ? "M" : "L"}${position.left} ${position.top}`;
-  }).join(" ") + " Z";
+  const boundaryPath = SRI_LANKA_BOUNDARIES.map((boundary) => (
+    boundary.map(([lng, lat], index) => {
+      const position = pointPosition({ lat, lng });
+      return `${index === 0 ? "M" : "L"}${position.left} ${position.top}`;
+    }).join(" ") + " Z"
+  )).join(" ");
 
   const selectPoint = (clientX, clientY) => {
     if (readOnly || !onSelect) return;
