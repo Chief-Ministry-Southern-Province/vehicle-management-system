@@ -44,11 +44,11 @@ export default function StatsCards({ stats = {} }) {
     ...stats,
   });
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
         <div
           key={item.title}
-          className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+          className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:rounded-3xl sm:p-5"
         >
           {/* Top Gradient */}
           <div
@@ -57,23 +57,23 @@ export default function StatsCards({ stats = {} }) {
 
           {/* Decorative Glow */}
           <div
-            className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${item.bg} opacity-70`}
+            className={`absolute -right-6 -top-6 h-20 w-20 rounded-full ${item.bg} opacity-70 sm:-right-8 sm:-top-8 sm:h-24 sm:w-24`}
           />
 
           <div className="relative">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs sm:tracking-widest">
                   {item.title}
                 </p>
 
-                <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:mt-3 sm:text-4xl">
                   {item.value}
                 </h2>
               </div>
 
               <div
-                className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} ${item.iconColor}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.iconColor} sm:h-12 sm:w-12 sm:rounded-2xl`}
               >
                 {item.icon}
               </div>
