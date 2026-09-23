@@ -225,6 +225,17 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
     return () => navigator.serviceWorker?.removeEventListener("message", refreshOnPush);
   }, [loadNotifications]);
   useEffect(() => {
+    // Reverb events intentionally contain only an invalidation. Reload the
+    // recipient's authorized, durable notification list so the bell, badges,
+    // and in-app pop-up update immediately without a browser refresh.
+    const refreshOnWorkflowUpdate = () => {
+      loadNotifications();
+    };
+
+    window.addEventListener("vms:workflow-updated", refreshOnWorkflowUpdate);
+    return () => window.removeEventListener("vms:workflow-updated", refreshOnWorkflowUpdate);
+  }, [loadNotifications]);
+  useEffect(() => {
     let active = true;
 
     if (!supportsPushNotifications() || Notification.permission !== "granted") return undefined;

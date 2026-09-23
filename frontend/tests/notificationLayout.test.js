@@ -40,3 +40,9 @@ test('notification panel fits the mobile header and keeps its list scrollable', 
   assert.ok(elements.some((node) => attribute(node, 'aria-controls')?.value === 'notification-panel'));
   assert.ok(elements.some((node) => classes(node).includes('min-h-0') && classes(node).includes('overflow-y-auto')));
 });
+
+test('workflow WebSocket updates reload the durable notification list', () => {
+  assert.match(source, /const refreshOnWorkflowUpdate = \(\) => \{\s*loadNotifications\(\);\s*\};/);
+  assert.match(source, /window\.addEventListener\("vms:workflow-updated", refreshOnWorkflowUpdate\)/);
+  assert.match(source, /window\.removeEventListener\("vms:workflow-updated", refreshOnWorkflowUpdate\)/);
+});
