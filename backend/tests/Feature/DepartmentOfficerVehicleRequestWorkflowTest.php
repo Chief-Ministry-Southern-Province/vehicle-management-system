@@ -17,6 +17,7 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
             'role' => 'subject_officer',
             'department' => 'IT',
             'status' => 'active',
+            'profile_picture_path' => 'profile-pictures/subject-officer.png',
         ]);
         $departmentOfficer = User::factory()->create([
             'role' => 'department_officer',
@@ -44,7 +45,8 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($departmentOfficer)
             ->getJson('/api/department/vehicle-requests?status=pending')
             ->assertOk()
-            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id);
+            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id)
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $subjectOfficer->profile_picture_path);
 
         $this->actingAs($departmentOfficer)
             ->patchJson("/api/department/vehicle-requests/{$vehicleRequest->id}/recommendation", [

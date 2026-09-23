@@ -198,6 +198,8 @@ Other operational roles can access personal request creation, but their recommen
 6. Select **Recommend** to forward it for allocation, or **Reject** if it should not proceed.
 7. Confirm the result in the department history.
 
+Each Pending Recommendations card shows the requester's saved profile image beside their name and User ID. When the requester has no image, their initials are shown instead.
+
 Only eligible pending requests can be reviewed. Department Officers cannot use this queue to review another department's records.
 
 ### 7.3 Deputy and senior recommendations

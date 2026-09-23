@@ -1123,7 +1123,7 @@ class VehicleRequestController extends Controller
     {
         return VehicleRequest::query()
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id',
                 'allocatedVehicle',
             )
