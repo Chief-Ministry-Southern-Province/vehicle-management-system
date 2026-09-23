@@ -1,6 +1,22 @@
 import { FiFilter, FiChevronRight, FiArrowRight } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
 export default function ApprovalQueue({
   requests = [],
   loading = false,
@@ -99,16 +115,31 @@ export default function ApprovalQueue({
                 </td>
 
                 <td className="px-6 py-5">
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      {item.requester_name ||
-                        item.user?.name ||
-                        "Unknown requester"}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                      {initials(item.requester_name || item.user?.name)}
+                      {profilePictureUrl(item.user?.profile_picture_path) && (
+                        <img
+                          src={profilePictureUrl(item.user.profile_picture_path)}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">
+                        {item.requester_name ||
+                          item.user?.name ||
+                          "Unknown requester"}
+                      </p>
 
-                    <p className="text-xs text-slate-500">
-                      {item.user?.employee_id || "Government Employee"}
-                    </p>
+                      <p className="text-xs text-slate-500">
+                        {item.user?.employee_id || "Government Employee"}
+                      </p>
+                    </div>
                   </div>
                 </td>
 

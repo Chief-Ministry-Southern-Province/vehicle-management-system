@@ -118,7 +118,7 @@ class VehicleRequestController extends Controller
 
         $baseQuery = VehicleRequest::query();
         $query = (clone $baseQuery)
-            ->with('user:id,name,employee_id,department', 'recommender:id,name')
+            ->with('user:id,name,employee_id,department,profile_picture_path', 'recommender:id,name')
             ->latest();
 
         if ($status === 'pending') {
