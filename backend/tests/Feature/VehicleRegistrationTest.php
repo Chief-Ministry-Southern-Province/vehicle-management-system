@@ -23,15 +23,21 @@ class VehicleRegistrationTest extends TestCase
                 'vehicle_type' => 'Ambulance',
                 'make' => 'Toyota',
                 'model' => 'HiAce',
+                'insurance_expiry' => '2027-09-30',
+                'emission_expiry' => '2027-10-31',
                 'status' => 'available',
                 'fuel_level' => 0,
             ])
             ->assertCreated()
-            ->assertJsonPath('data.vehicle.vehicle_type', 'Ambulance');
+            ->assertJsonPath('data.vehicle.vehicle_type', 'Ambulance')
+            ->assertJsonPath('data.vehicle.insurance_expiry', '2027-09-30')
+            ->assertJsonPath('data.vehicle.emission_expiry', '2027-10-31');
 
         $this->assertDatabaseHas('vehicles', [
             'registration_number' => 'CUSTOM-TYPE-001',
             'vehicle_type' => 'Ambulance',
+            'insurance_expiry' => '2027-09-30',
+            'emission_expiry' => '2027-10-31',
         ]);
     }
 }

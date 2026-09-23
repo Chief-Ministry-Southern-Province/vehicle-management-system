@@ -312,7 +312,7 @@ Subject Officers maintain vehicle records. Executive roles can inspect fleet rec
 2. Open a vehicle for full details, or use the registration action to add one.
 3. Enter registration number, vehicle type, make, model, operational status, and fuel level as required. Select **Add a new vehicle type...** when the type is not listed, then enter the type to save with that vehicle.
 4. Add applicable manufacturing year, color, VIN/chassis and engine identifiers, fuel capacity, efficiency and its unit, seat capacity, and technical notes.
-5. Complete registration/revenue-licence expiries, insurance, assignment, service information, and images as applicable.
+5. Complete the revenue-licence, insurance, and emission expiry dates, insurance details, assignment, service information, and images as applicable.
 6. Save and check the persisted details.
 
 Registration numbers must be unique. VIN and engine identifiers, if supplied, must also be unique. Seat capacity must be between 1 and 100, fuel level between 0 and 100 percent, and an efficiency value must have a corresponding supported unit.

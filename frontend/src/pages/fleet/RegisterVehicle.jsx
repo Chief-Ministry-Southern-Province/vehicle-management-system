@@ -19,8 +19,9 @@ const initialForm = {
   fuel_efficiency_unit: "km/l",
   seat_capacity: "",
   technical_notes: "",
-  registration_expiry: "",
   revenue_license_expiry: "",
+  insurance_expiry: "",
+  emission_expiry: "",
   insurance_policy: "",
   insurance_provider: "",
   assignment: "General Fleet Pool",
@@ -306,21 +307,31 @@ export default function RegisterVehicle() {
                   />
                 </label>
                 <label>
-                  Registration expiry
-                  <input
-                    type="date"
-                    name="registration_expiry"
-                    value={form.registration_expiry}
-                    onChange={change}
-                    className={fieldClass}
-                  />
-                </label>
-                <label>
                   Revenue licence expiry
                   <input
                     type="date"
                     name="revenue_license_expiry"
                     value={form.revenue_license_expiry}
+                    onChange={change}
+                    className={fieldClass}
+                  />
+                </label>
+                <label>
+                  Insurance expiry
+                  <input
+                    type="date"
+                    name="insurance_expiry"
+                    value={form.insurance_expiry}
+                    onChange={change}
+                    className={fieldClass}
+                  />
+                </label>
+                <label>
+                  Emission expiry
+                  <input
+                    type="date"
+                    name="emission_expiry"
+                    value={form.emission_expiry}
                     onChange={change}
                     className={fieldClass}
                   />
