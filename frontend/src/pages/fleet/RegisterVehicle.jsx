@@ -37,6 +37,8 @@ const categories = [
   "Protocol & VIP Movement",
   "General Fleet Pool",
 ];
+const vehicleTypes = ["SUV", "Sedan", "Van", "Pickup", "Bus"];
+const customVehicleTypeOption = "__custom_vehicle_type__";
 export default function RegisterVehicle() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
@@ -44,11 +46,22 @@ export default function RegisterVehicle() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [isCustomVehicleType, setIsCustomVehicleType] = useState(false);
   const change = (event) =>
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
     }));
+  const changeVehicleType = (event) => {
+    const vehicleType = event.target.value;
+    const isCustom = vehicleType === customVehicleTypeOption;
+
+    setIsCustomVehicleType(isCustom);
+    setForm((current) => ({
+      ...current,
+      vehicle_type: isCustom ? "" : vehicleType,
+    }));
+  };
   const chooseImage = (event) => {
     const file = event.target.files?.[0];
     setImage(file || null);
@@ -128,18 +141,41 @@ export default function RegisterVehicle() {
                 <label>
                   Vehicle type
                   <select
-                    name="vehicle_type"
-                    value={form.vehicle_type}
-                    onChange={change}
+                    value={
+                      isCustomVehicleType
+                        ? customVehicleTypeOption
+                        : form.vehicle_type
+                    }
+                    onChange={changeVehicleType}
                     className={fieldClass}
                   >
-                    <option>SUV</option>
-                    <option>Sedan</option>
-                    <option>Van</option>
-                    <option>Pickup</option>
-                    <option>Bus</option>
+                    {vehicleTypes.map((vehicleType) => (
+                      <option key={vehicleType} value={vehicleType}>
+                        {vehicleType}
+                      </option>
+                    ))}
+                    <option value={customVehicleTypeOption}>
+                      Add a new vehicle type...
+                    </option>
                   </select>
                 </label>
+                {isCustomVehicleType && (
+                  <label>
+                    New vehicle type
+                    <input
+                      required
+                      name="vehicle_type"
+                      value={form.vehicle_type}
+                      onChange={change}
+                      maxLength="100"
+                      placeholder="e.g. Ambulance"
+                      className={fieldClass}
+                    />
+                    <span className="mt-1.5 block text-xs text-slate-500">
+                      This type will be saved with the vehicle.
+                    </span>
+                  </label>
+                )}
                 <label>
                   Manufacturer / make
                   <input
