@@ -14,6 +14,11 @@ class RealtimeWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_reverb_normalizes_a_full_frontend_origin_to_its_hostname(): void
+    {
+        $this->assertSame(['localhost'], config('reverb.apps.apps.0.allowed_origins'));
+    }
+
     public function test_private_workflow_channel_requires_the_matching_sanctum_user(): void
     {
         config([

@@ -1,5 +1,19 @@
 <?php
 
+$configuredAllowedOrigins = env('REVERB_ALLOWED_ORIGINS', env('FRONTEND_URL', 'http://localhost:5173'));
+
+// Reverb compares the hostname parsed from the browser Origin header. Accept
+// full SPA origins in environment files (for example https://vms.example.lk)
+// while passing Reverb the hostname it expects (vms.example.lk).
+$allowedOrigins = array_values(array_filter(array_map(
+    static function (string $origin): string {
+        $origin = trim($origin);
+
+        return parse_url($origin, PHP_URL_HOST) ?: $origin;
+    },
+    explode(',', $configuredAllowedOrigins),
+)));
+
 return [
 
     /*
@@ -83,9 +97,9 @@ return [
                     'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
                 ],
                 // Browsers may open a socket only from configured SPA origins.
-                // A comma-separated value supports local development and a
-                // production SPA without publishing a permissive wildcard.
-                'allowed_origins' => array_filter(explode(',', env('REVERB_ALLOWED_ORIGINS', env('FRONTEND_URL', 'http://localhost:5173')))),
+                // Full origins are normalized to their hostnames because Reverb
+                // compares against the hostname parsed from the Origin header.
+                'allowed_origins' => $allowedOrigins,
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections' => env('REVERB_APP_MAX_CONNECTIONS'),

@@ -188,7 +188,9 @@ REVERB_APP_SECRET=<reverb-server-secret>
 REVERB_HOST=127.0.0.1
 REVERB_PORT=8080
 REVERB_SCHEME=http
-REVERB_ALLOWED_ORIGINS=http://localhost:5173
+# Use `localhost` (or a comma-separated production hostname list).
+# Full SPA origins are accepted and normalized automatically.
+REVERB_ALLOWED_ORIGINS=localhost
 VAPID_SUBJECT=mailto:admin@example.gov.lk
 VAPID_PUBLIC_KEY=<generated-public-key>
 VAPID_PRIVATE_KEY=<generated-private-key>
