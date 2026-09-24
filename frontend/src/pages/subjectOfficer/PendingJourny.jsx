@@ -150,8 +150,7 @@ export default function PendingJourny() {
                   <tr>
                     <th className="px-6 py-4">Requester</th>
                     <th className="px-6 py-4">Destination</th>
-                    <th className="px-6 py-4">Departure Time</th>
-                    <th className="px-6 py-4">Expected Arrival Time</th>
+                    <th className="px-6 py-4">Schedule</th>
                     <th className="px-6 py-4">Passengers</th>
                     <th className="px-6 py-4">Vehicle Allocation</th>
                     <th className="px-6 py-4">Request Status</th>
@@ -210,16 +209,26 @@ export default function PendingJourny() {
                         </p>
                       </td>
                       <td className="px-6 py-5 text-sm text-slate-600">
-                        <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 font-medium ring-1 ring-inset ring-slate-100">
-                          <FiClock className="text-blue-500" />
-                          {formatLocalDateTime(request.departure_at)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm text-slate-600">
-                        <span className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 font-medium ring-1 ring-inset ring-slate-100">
-                          <FiCalendar className="text-blue-500" />
-                          {formatLocalDateTime(request.expected_return_at)}
-                        </span>
+                        <div className="space-y-2">
+                          <span className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 font-medium ring-1 ring-inset ring-slate-100">
+                            <FiClock className="shrink-0 text-blue-500" />
+                            <span>
+                              <span className="mr-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                Depart
+                              </span>
+                              {formatLocalDateTime(request.departure_at)}
+                            </span>
+                          </span>
+                          <span className="flex items-center gap-2 rounded-xl bg-indigo-50/70 px-3 py-2 font-medium ring-1 ring-inset ring-indigo-100">
+                            <FiCalendar className="shrink-0 text-indigo-500" />
+                            <span>
+                              <span className="mr-2 text-[10px] font-bold uppercase tracking-wide text-indigo-400">
+                                Return
+                              </span>
+                              {formatLocalDateTime(request.expected_return_at)}
+                            </span>
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-5">
                         <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 ring-1 ring-inset ring-blue-100">
