@@ -18,6 +18,7 @@ export default function VehicleDirectory() {
         setVehicles(
           (response?.data?.vehicles || []).map((vehicle) => ({
             reg: vehicle.registration_number,
+            imageUrl: vehicle.image_url,
             name: `${vehicle.make} ${vehicle.model}`,
             year: vehicle.manufacturing_year || "—",
             type: vehicle.vehicle_type,

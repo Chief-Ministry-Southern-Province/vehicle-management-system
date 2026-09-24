@@ -308,7 +308,7 @@ Use assigned-vehicle information to check the vehicle identity and available com
 
 Subject Officers maintain vehicle records. Executive roles can inspect fleet records but cannot save fleet changes.
 
-1. Open **Vehicle Directory** and use its search/status controls.
+1. Open **Vehicle Directory** and use its search/status controls. Each vehicle row shows its saved vehicle image, or a truck icon when no image is available.
 2. Open a vehicle for full details, or use the registration action to add one.
 3. Enter registration number, vehicle type, make, model, operational status, and fuel level as required. Select **Add a new vehicle type...** when the type is not listed, then enter the type to save with that vehicle.
 4. Add applicable manufacturing year, color, VIN/chassis and engine identifiers, fuel capacity, efficiency and its unit, seat capacity, and technical notes.
