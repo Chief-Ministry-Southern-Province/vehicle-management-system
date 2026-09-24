@@ -273,6 +273,12 @@ const menuItems = [
     title: "FLEET MANAGEMENT",
     items: [
       {
+        name: "Daily Schedule Trips",
+        path: "/dailyscheduletrips",
+        icon: <AiFillSchedule />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Driver Issue Reports",
         path: "/ontimeavailability",
         icon: <FiAlertTriangle />,
@@ -280,22 +286,16 @@ const menuItems = [
         notificationTitles: ["Vehicle issue reported"],
       },
       {
-        name: "Approved Journeys",
-        path: "/approvedjourny",
-        icon: <FiCheckCircle />,
-        roles: ["deputy_secretary"],
-      },
-      {
-        name: "Daily Schedule Trips",
-        path: "/dailyscheduletrips",
-        icon: <AiFillSchedule />,
-        roles: ["deputy_secretary"],
-      },
-      {
         name: "Journey Analysis",
         path: "/fuelanalysis",
         icon: <FiDroplet />,
         roles: ["subject_officer", "deputy_secretary"],
+      },
+      {
+        name: "Approved Journeys",
+        path: "/approvedjourny",
+        icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
       },
     ],
   },
