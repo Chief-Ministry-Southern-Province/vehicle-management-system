@@ -50,7 +50,7 @@ class VehicleRequestController extends Controller
             ->whereIn('status', ['approved', 'completed', 'cancelled'])
             ->whereNotNull('approved_at')
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id,department',
                 'allocatedVehicle',
                 'allocatedDriver',
