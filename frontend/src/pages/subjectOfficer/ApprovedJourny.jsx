@@ -429,7 +429,7 @@ export default function ApprovedJourny() {
                         key={journey.id}
                         className="group transition-colors duration-200 hover:bg-emerald-50/50"
                       >
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-9">
                           <div className="flex items-center gap-3">
                             <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
                               <span>
@@ -467,7 +467,7 @@ export default function ApprovedJourny() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-9">
                           <p className="flex items-center gap-2.5 font-semibold text-slate-700">
                             <span className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 ring-1 ring-inset ring-emerald-100">
                               <FiMapPin className="shrink-0" />
@@ -478,7 +478,7 @@ export default function ApprovedJourny() {
                             {display(journey.purpose)}
                           </p>
                         </td>
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-9">
                           <div className="rounded-2xl bg-indigo-50/70 px-3 py-2.5 ring-1 ring-inset ring-indigo-100">
                             <p className="flex items-center gap-2 font-bold text-slate-800">
                               <FiTruck className="text-indigo-500" />
@@ -502,7 +502,7 @@ export default function ApprovedJourny() {
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-9">
                           <p className="font-bold text-slate-700">
                             {display(driver.full_name)}
                           </p>
@@ -510,10 +510,10 @@ export default function ApprovedJourny() {
                             {display(driver.driver_id)}
                           </p>
                         </td>
-                        <td className="px-6 py-5">
+                        <td className="px-6 py-9">
                           <DriverStatus journey={journey} />
                         </td>
-                        <td className="px-6 py-5 text-sm text-slate-600">
+                        <td className="px-6 py-9 text-sm text-slate-600">
                           <div className="space-y-2">
                             <p className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 font-medium ring-1 ring-inset ring-slate-100">
                               <FiClock className="shrink-0 text-emerald-600" />
@@ -535,7 +535,7 @@ export default function ApprovedJourny() {
                             </p>
                           </div>
                         </td>
-                        <td className="px-6 py-5 text-center">
+                        <td className="px-6 py-9 text-center">
                           <button
                             type="button"
                             onClick={() => setSelectedJourney(journey)}
