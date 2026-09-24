@@ -146,7 +146,7 @@ export default function PendingJourny() {
           <section className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_20px_55px_-36px_rgba(15,23,42,0.42)]">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1250px]">
-                <thead className="bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950 text-left text-[11px] font-bold uppercase tracking-[0.13em] text-blue-100">
+                <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                   <tr>
                     <th className="px-6 py-4">Requester</th>
                     <th className="px-6 py-4">Destination</th>
