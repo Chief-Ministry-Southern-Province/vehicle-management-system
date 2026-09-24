@@ -112,7 +112,9 @@ export default function ApprovalQueue({
                   <th className="px-6 py-4 font-semibold">Schedule</th>
                 </>
               )}
-              <th className="px-6 py-4 font-semibold">Status</th>
+              {view !== "pending" && (
+                <th className="px-6 py-4 font-semibold">Status</th>
+              )}
               <th className="px-6 py-4 font-semibold">Priority</th>
               <th className="px-6 py-4 text-center font-semibold">Action</th>
             </tr>
@@ -208,13 +210,15 @@ export default function ApprovalQueue({
                   </>
                 )}
 
-                <td className="px-6 py-5">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${item.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                  >
-                    {item.status?.replaceAll("_", " ")}
-                  </span>
-                </td>
+                {view !== "pending" && (
+                  <td className="px-6 py-5">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${item.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                    >
+                      {item.status?.replaceAll("_", " ")}
+                    </span>
+                  </td>
+                )}
 
                 <td className="px-6 py-5">
                   <span
