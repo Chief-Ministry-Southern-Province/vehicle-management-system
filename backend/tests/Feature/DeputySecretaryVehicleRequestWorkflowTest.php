@@ -90,7 +90,8 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
             'destination' => 'Galle', 'departure_at' => '2026-08-10 09:00:00',
             'expected_return_at' => '2026-08-10 12:00:00', 'recommendation_status' => 'recommended',
         ];
-        VehicleRequest::create([...$base, 'purpose' => 'First visit', 'passenger_count' => 2,
+        $scheduledJourney = VehicleRequest::create([...$base, 'purpose' => 'First visit', 'passenger_count' => 2,
+            'starting_location' => 'Labuduwa',
             'status' => 'approved', 'journey_status' => 'scheduled',
             'allocated_vehicle_id' => $vehicle->id, 'allocated_driver_id' => $driver->id]);
         $second = VehicleRequest::create([...$base, 'purpose' => 'Second visit', 'destination' => 'Nugegoda', 'passenger_count' => 3,
@@ -104,7 +105,18 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($deputy)->getJson("/api/vehicles?{$slot}")
             ->assertOk()->assertJsonPath('data.vehicles.0.available_for_slot', true);
         $this->actingAs($deputy)->getJson("/api/drivers?{$slot}")
-            ->assertOk()->assertJsonPath('data.drivers.0.available_for_slot', true);
+            ->assertOk()
+            ->assertJsonPath('data.drivers.0.available_for_slot', true)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.id', $scheduledJourney->id)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.starting_location', 'Labuduwa')
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.destination', 'Galle')
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.passenger_count', 2)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.vehicle.registration_number', 'SHARED-1001')
+            ->assertJsonStructure([
+                'data' => ['drivers' => [['scheduled_journeys' => [[
+                    'departure_at', 'expected_return_at', 'purpose',
+                ]]]]],
+            ]);
 
         $this->actingAs($deputy)
             ->patchJson("/api/approvals/vehicle-requests/{$second->id}/allocate", [

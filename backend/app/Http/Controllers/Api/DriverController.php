@@ -19,6 +19,7 @@ class DriverController extends Controller
     public function __construct(private readonly WorkflowNotificationService $notifications)
     {
     }
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -75,6 +76,28 @@ class DriverController extends Controller
                 ? VehicleRequest::find($validated['ignore_request_id'])
                 : null;
             $drivers->each(function (Driver $driver) use ($startsAt, $endsAt, $validated, $vehicleRequest): void {
+                $scheduledJourneys = $driver->activeJourneysDuring(
+                    $startsAt,
+                    $endsAt,
+                    $validated['ignore_request_id'] ?? null,
+                )
+                    ->with('allocatedVehicle:id,registration_number,make,model')
+                    ->orderBy('departure_at')
+                    ->get()
+                    ->map(fn (VehicleRequest $journey): array => [
+                        'id' => $journey->id,
+                        'reference' => 'REQ-'.str_pad((string) $journey->id, 4, '0', STR_PAD_LEFT),
+                        'starting_location' => $journey->starting_location,
+                        'destination' => $journey->destination,
+                        'departure_at' => $journey->departure_at?->toISOString(),
+                        'expected_return_at' => $journey->expected_return_at?->toISOString(),
+                        'passenger_count' => $journey->passenger_count,
+                        'purpose' => $journey->purpose,
+                        'vehicle' => $journey->allocatedVehicle,
+                    ])
+                    ->values()
+                    ->all();
+
                 $statusForSlot = $driver->operationalStatusFor(
                     $startsAt,
                     $endsAt,
@@ -90,6 +113,7 @@ class DriverController extends Controller
                     ),
                 );
                 $driver->setAttribute('status_for_slot', $statusForSlot);
+                $driver->setAttribute('scheduled_journeys', $scheduledJourneys);
             });
         }
 

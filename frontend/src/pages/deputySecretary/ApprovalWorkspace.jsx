@@ -486,6 +486,74 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
       ongoing_trip: "Ongoing Trip",
       unavailable: "Unavailable",
     })[status] || status;
+  const scheduledJourneysPanel =
+    driver &&
+    (driver.status_for_slot || driver.status) === "scheduled_trip" &&
+    Array.isArray(driver.scheduled_journeys) &&
+    driver.scheduled_journeys.length > 0 ? (
+      <section className="overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/50">
+        <div className="border-b border-amber-200 bg-amber-50 px-5 py-4">
+          <h4 className="font-bold text-amber-950">Scheduled Journey</h4>
+        </div>
+        <div className="divide-y divide-amber-100">
+          {driver.scheduled_journeys.map((journey) => (
+            <article key={journey.id} className="space-y-4 p-5 text-sm">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Route
+                </p>
+                <p className="mt-1 font-bold text-slate-900">
+                  {journey.starting_location || "Not recorded"} →{" "}
+                  {journey.destination || "Not recorded"}
+                </p>
+              </div>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Schedule
+                  </dt>
+                  <dd className="mt-1 font-medium text-slate-800">
+                    {formatLocalDateTime(journey.departure_at)} –{" "}
+                    {formatLocalDateTime(journey.expected_return_at)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Vehicle
+                  </dt>
+                  <dd className="mt-1 font-medium text-slate-800">
+                    {[journey.vehicle?.make, journey.vehicle?.model]
+                      .filter(Boolean)
+                      .join(" ") || "Not recorded"}
+                    {journey.vehicle?.registration_number && (
+                      <span className="block text-xs text-slate-500">
+                        {journey.vehicle.registration_number}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Passenger count
+                  </dt>
+                  <dd className="mt-1 font-medium text-slate-800">
+                    {journey.passenger_count ?? "Not recorded"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Purpose
+                  </dt>
+                  <dd className="mt-1 font-medium text-slate-800">
+                    {journey.purpose || "Not recorded"}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : null;
   const previousJourneysPanel = driver ? (
     <section className="overflow-hidden rounded-xl border border-slate-200">
       <div className="border-b bg-slate-50 px-4 py-3">
@@ -665,6 +733,7 @@ function DatabaseAllocationPanel({ onAllocationChange, request }) {
             <p className="mt-1">The scheduled vehicle is selected automatically when it has enough remaining seats.</p>
           </div>
         )}
+        {scheduledJourneysPanel}
         <label className="block text-sm font-semibold">
           Parking location <span className="text-red-600">*</span>
           <select
