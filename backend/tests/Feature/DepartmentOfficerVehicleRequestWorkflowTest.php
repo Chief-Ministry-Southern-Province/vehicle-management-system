@@ -63,6 +63,12 @@ class DepartmentOfficerVehicleRequestWorkflowTest extends TestCase
             'recommended_by' => $departmentOfficer->id,
         ]);
 
+        $this->actingAs($departmentOfficer)
+            ->getJson('/api/department/vehicle-requests?status=all')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $vehicleRequest->id)
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $subjectOfficer->profile_picture_path);
+
         $this->actingAs($subjectOfficer)
             ->getJson('/api/vehicle-requests')
             ->assertOk()

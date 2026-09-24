@@ -1,6 +1,22 @@
 import { FiArrowUpRight, FiEye, FiMapPin } from "react-icons/fi";
 import { formatLocalDateTime as formatDate } from "../../../utils/dateTime";
 
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const shortLocation = (location) => String(location || "—").split(",")[0].trim() || "—";
 const statusClasses = {
@@ -58,12 +74,29 @@ export default function HistoryTable({ requests, loading, error, onView }) {
                   {requestNumber(request.id)}
                 </td>
                 <td className="px-5 py-4">
-                  <p className="font-semibold text-slate-900">
-                    {request.requester_name || request.user?.name || "—"}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {request.user?.employee_id || "—"}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                      {initials(request.requester_name || request.user?.name)}
+                      {profilePictureUrl(request.user?.profile_picture_path) && (
+                        <img
+                          src={profilePictureUrl(request.user.profile_picture_path)}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900">
+                        {request.requester_name || request.user?.name || "—"}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {request.user?.employee_id || "—"}
+                      </p>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-5 py-4">
                   <p className="flex items-center gap-1.5 font-semibold text-slate-800"><FiMapPin className="shrink-0 text-blue-500" />

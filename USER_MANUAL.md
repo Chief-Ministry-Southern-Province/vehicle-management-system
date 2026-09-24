@@ -200,6 +200,8 @@ Other operational roles can access personal request creation, but their recommen
 
 Each Pending Recommendations card shows the requester's saved profile image beside their name and User ID. When the requester has no image, their initials are shown instead.
 
+The Request Archive table in **Recommendation History** also shows each requester's saved profile image beside their name and User ID, with the same initials fallback.
+
 Only eligible pending requests can be reviewed. Department Officers cannot use this queue to review another department's records.
 
 ### 7.3 Deputy and senior recommendations
