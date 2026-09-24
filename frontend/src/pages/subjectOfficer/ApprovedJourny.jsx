@@ -422,7 +422,7 @@ export default function ApprovedJourny() {
                   <col className="w-[21%]" />
                   <col className="w-[6%]" />
                 </colgroup>
-                <thead className="bg-gradient-to-r from-slate-950 via-emerald-950 to-teal-950 text-left text-[11px] font-bold uppercase tracking-[0.13em] text-emerald-100">
+                <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Requester</th>
                     <th className="px-4 py-3">Destination</th>
