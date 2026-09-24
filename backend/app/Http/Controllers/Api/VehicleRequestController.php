@@ -572,7 +572,7 @@ class VehicleRequestController extends Controller
         }
 
         $query = VehicleRequest::query()
-            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
+            ->with('user:id,name,employee_id,department,profile_picture_path', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
             ->latest();
 
         if ($status === 'pending') {

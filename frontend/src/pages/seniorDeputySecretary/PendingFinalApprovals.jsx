@@ -6,7 +6,6 @@ import {
   FiChevronRight,
   FiClock,
   FiMapPin,
-  FiUser,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { getFinalApprovalVehicleRequests } from "../../api/authApi";
@@ -15,6 +14,22 @@ import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
 const requesterName = (request) =>
   request.requester_name || request.user?.name || "Unknown requester";
+
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
 export default function PendingFinalApprovals() {
   const navigate = useNavigate();
@@ -99,7 +114,19 @@ export default function PendingFinalApprovals() {
                     </td>
                     <td className="px-5 py-5 align-top">
                       <div className="flex items-start gap-2.5">
-                        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500"><FiUser /></span>
+                        <div className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-blue-100 text-[10px] font-bold text-blue-700">
+                          {initials(requesterName(request))}
+                          {profilePictureUrl(request.user?.profile_picture_path) && (
+                            <img
+                              src={profilePictureUrl(request.user.profile_picture_path)}
+                              alt=""
+                              className="absolute inset-0 h-full w-full object-cover"
+                              onError={(event) => {
+                                event.currentTarget.style.display = "none";
+                              }}
+                            />
+                          )}
+                        </div>
                         <div className="min-w-0"><p className="truncate font-semibold text-slate-800">{requesterName(request)}</p><p className="mt-1 truncate text-xs text-slate-500">{request.user?.employee_id || "Government Employee"}</p></div>
                       </div>
                     </td>
@@ -128,7 +155,28 @@ export default function PendingFinalApprovals() {
                 className="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div><span className="inline-flex rounded-lg bg-blue-50 px-2.5 py-1.5 text-sm font-bold text-blue-700">{requestNumber(request.id)}</span><p className="mt-3 font-bold text-slate-900">{requesterName(request)}</p><p className="mt-0.5 text-xs text-slate-500">{request.user?.employee_id || "Government Employee"}</p></div>
+                  <div className="min-w-0">
+                    <span className="inline-flex rounded-lg bg-blue-50 px-2.5 py-1.5 text-sm font-bold text-blue-700">{requestNumber(request.id)}</span>
+                    <div className="mt-3 flex min-w-0 items-center gap-2.5">
+                      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-100 text-[11px] font-bold text-blue-700">
+                        {initials(requesterName(request))}
+                        {profilePictureUrl(request.user?.profile_picture_path) && (
+                          <img
+                            src={profilePictureUrl(request.user.profile_picture_path)}
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-slate-900">{requesterName(request)}</p>
+                        <p className="mt-0.5 truncate text-xs text-slate-500">{request.user?.employee_id || "Government Employee"}</p>
+                      </div>
+                    </div>
+                  </div>
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white"><FiArrowUpRight /></span>
                 </div>
                 <div className="my-4 h-px bg-slate-100" />

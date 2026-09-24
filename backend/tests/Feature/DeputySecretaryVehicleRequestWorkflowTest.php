@@ -39,6 +39,31 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
             ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
     }
 
+    public function test_pending_final_approval_queue_includes_the_requester_profile_picture_path(): void
+    {
+        $secretary = User::factory()->create(['role' => 'secretary', 'status' => 'active']);
+        $requester = User::factory()->create([
+            'role' => 'employee',
+            'profile_picture_path' => 'profile-pictures/final-approval-requester.png',
+        ]);
+        $request = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Official meeting',
+            'destination' => 'Galle',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 1,
+            'status' => 'vehicle_allocated',
+        ]);
+
+        $this->actingAs($secretary)
+            ->getJson('/api/final-approvals/vehicle-requests?status=pending')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $request->id)
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
+    }
+
     public function test_overlapping_requests_can_be_manually_consolidated_before_start_when_seats_are_available(): void
     {
         $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
