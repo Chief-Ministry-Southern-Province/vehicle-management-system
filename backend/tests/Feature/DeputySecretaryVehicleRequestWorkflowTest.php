@@ -24,6 +24,7 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
             'user_id' => $requester->id,
             'requester_name' => $requester->name,
             'purpose' => 'Official meeting',
+            'starting_location' => 'Labuduwa',
             'destination' => 'Galle',
             'departure_at' => '2026-08-10 09:00:00',
             'expected_return_at' => '2026-08-10 12:00:00',
@@ -36,6 +37,11 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
             ->getJson('/api/approvals/vehicle-requests?status=pending')
             ->assertOk()
             ->assertJsonPath('data.requests.0.id', $request->id)
+            ->assertJsonPath('data.requests.0.starting_location', 'Labuduwa')
+            ->assertJsonPath('data.requests.0.destination', 'Galle')
+            ->assertJsonStructure([
+                'data' => ['requests' => [['departure_at', 'expected_return_at']]],
+            ])
             ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
     }
 

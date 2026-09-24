@@ -1,5 +1,12 @@
-import { FiFilter, FiChevronRight, FiArrowRight } from "react-icons/fi";
+import {
+  FiFilter,
+  FiChevronRight,
+  FiArrowRight,
+  FiClock,
+  FiMapPin,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { formatLocalTime } from "../../../utils/dateTime";
 
 const apiOrigin =
   import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
@@ -16,6 +23,9 @@ const initials = (name) =>
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+
+const shortLocation = (location) =>
+  String(location || "Not specified").split(",")[0].trim() || "Not specified";
 
 export default function ApprovalQueue({
   requests = [],
@@ -87,6 +97,12 @@ export default function ApprovalQueue({
               <th className="px-6 py-4 font-semibold">Request ID</th>
               <th className="px-6 py-4 font-semibold">Requester</th>
               <th className="px-6 py-4 font-semibold">Department</th>
+              {view === "pending" && (
+                <>
+                  <th className="px-6 py-4 font-semibold">Route</th>
+                  <th className="px-6 py-4 font-semibold">Schedule</th>
+                </>
+              )}
               <th className="px-6 py-4 font-semibold">Status</th>
               <th className="px-6 py-4 font-semibold">Priority</th>
               <th className="px-6 py-4 text-center font-semibold">Action</th>
@@ -146,6 +162,35 @@ export default function ApprovalQueue({
                 <td className="px-6 py-5 text-slate-600">
                   {item.user?.department || "Not specified"}
                 </td>
+
+                {view === "pending" && (
+                  <>
+                    <td className="px-6 py-5">
+                      <p
+                        className="flex items-center gap-1.5 whitespace-nowrap font-semibold text-slate-800"
+                        title={`${item.starting_location || "Not specified"} → ${item.destination || "Not specified"}`}
+                      >
+                        <FiMapPin className="shrink-0 text-blue-500" />
+                        <span className="max-w-32 truncate">
+                          {shortLocation(item.starting_location)}
+                        </span>
+                        <span className="text-blue-500" aria-hidden="true">→</span>
+                        <span className="max-w-32 truncate">
+                          {shortLocation(item.destination)}
+                        </span>
+                      </p>
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-700">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FiClock className="shrink-0 text-slate-400" />
+                        {formatLocalTime(item.departure_at)}
+                        <span className="text-slate-400" aria-hidden="true">–</span>
+                        {formatLocalTime(item.expected_return_at)}
+                      </span>
+                    </td>
+                  </>
+                )}
 
                 <td className="px-6 py-5">
                   <span

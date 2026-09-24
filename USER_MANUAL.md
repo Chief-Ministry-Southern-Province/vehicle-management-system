@@ -221,7 +221,7 @@ Assistant/Deputy Secretary:
 5. Enter the required parking/pickup location.
 6. Submit the allocation and wait for confirmation.
 
-The Pending Approvals table shows the requester's saved profile image beside their name and User ID. If no image is available, it displays their initials instead.
+The Pending Approvals table shows the requester's saved profile image beside their name and User ID, plus the saved start-to-destination route and local departure-to-expected-return time range. If no image is available, it displays their initials instead.
 
 The server checks resource eligibility, overlapping assignments, and passenger capacity. An assignment may be rejected if availability changed while the screen was open. Refresh and choose again. Allocation sends the request to final approval and notifies the requester, linked driver user, and final approvers.
 
