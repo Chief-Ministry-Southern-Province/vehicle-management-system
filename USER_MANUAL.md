@@ -244,7 +244,7 @@ The system records the previous vehicle and driver, reason, actor, and time. The
 - **Total Approvals:** inspect the official records table, including each requester's saved profile image (or initials when no image is available), and open View for the full read-only audit detail.
 - **Approved Journeys:** inspect approved/completed journeys and their travel/allocation information; use the screen's filters and export controls.
 - **Daily Schedule Trips:** choose a day to see approved journeys against the driver directory. Drivers with no journey on that day still appear.
-- **Pending Journeys:** Subject Officer view of recommended requests awaiting subsequent workflow steps.
+- **Pending Journeys:** Subject Officer view of recommended requests awaiting subsequent workflow steps. The Recommended Requests table shows each requester's saved profile image beside their name and request ID, with initials fallback.
 
 ## 9. Final approval and rejection
 

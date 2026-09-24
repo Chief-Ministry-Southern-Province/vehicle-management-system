@@ -30,7 +30,7 @@ class VehicleRequestController extends Controller
         $requests = VehicleRequest::query()
             ->where('recommendation_status', 'recommended')
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id,department',
                 'allocatedVehicle',
             )
