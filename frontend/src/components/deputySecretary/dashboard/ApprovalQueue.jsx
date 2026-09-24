@@ -6,7 +6,7 @@ import {
   FiMapPin,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { formatLocalTime } from "../../../utils/dateTime";
+import { formatLocalDate, formatLocalTime } from "../../../utils/dateTime";
 
 const apiOrigin =
   import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
@@ -26,6 +26,15 @@ const initials = (name) =>
 
 const shortLocation = (location) =>
   String(location || "Not specified").split(",")[0].trim() || "Not specified";
+
+const scheduleDate = (request) => {
+  const departureDate = formatLocalDate(request.departure_at);
+  const returnDate = formatLocalDate(request.expected_return_at);
+
+  return departureDate === returnDate
+    ? departureDate
+    : `${departureDate} – ${returnDate}`;
+};
 
 export default function ApprovalQueue({
   requests = [],
@@ -182,11 +191,18 @@ export default function ApprovalQueue({
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-700">
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-start gap-1.5">
                         <FiClock className="shrink-0 text-slate-400" />
-                        {formatLocalTime(item.departure_at)}
-                        <span className="text-slate-400" aria-hidden="true">–</span>
-                        {formatLocalTime(item.expected_return_at)}
+                        <span>
+                          <span className="block text-xs font-semibold text-slate-500">
+                            {scheduleDate(item)}
+                          </span>
+                          <span className="mt-0.5 block">
+                            {formatLocalTime(item.departure_at)}
+                            <span className="text-slate-400" aria-hidden="true"> – </span>
+                            {formatLocalTime(item.expected_return_at)}
+                          </span>
+                        </span>
                       </span>
                     </td>
                   </>
