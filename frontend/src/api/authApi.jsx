@@ -694,6 +694,17 @@ export const downloadDatabaseBackupFile = (file, filename) => {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+export const getDatabaseBackupHistory = async () => {
+  try {
+    const response = await API.get('/system/database-backups', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const downloadDatabaseBackup = async () => {
   try {
     const response = await API.post('/system/database-backups', null, {

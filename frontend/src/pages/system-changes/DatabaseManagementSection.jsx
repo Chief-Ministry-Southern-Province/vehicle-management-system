@@ -1,6 +1,6 @@
 import { FiCheckCircle, FiClock, FiDatabase, FiDownload, FiFileText, FiShield } from "react-icons/fi";
 
-export default function DatabaseManagementSection({ backups, creatingBackup, onCreateBackup, onDownloadBackup }) {
+export default function DatabaseManagementSection({ backups, loadingBackups, backupHistoryError, creatingBackup, onCreateBackup }) {
   const latestBackup = backups[0];
 
   return (
@@ -16,7 +16,7 @@ export default function DatabaseManagementSection({ backups, creatingBackup, onC
           icon={FiDatabase}
           iconClassName="bg-emerald-50 text-emerald-600"
           label="Last backup"
-          value={latestBackup ? formatDate(latestBackup.createdAt) : "No backups created yet"}
+          value={latestBackup ? formatDate(latestBackup.created_at) : "No backups created yet"}
           detail={latestBackup ? "Completed successfully" : "Create one whenever a protected copy is needed."}
           completed={Boolean(latestBackup)}
         />
@@ -42,28 +42,37 @@ export default function DatabaseManagementSection({ backups, creatingBackup, onC
           <span className="rounded-xl bg-blue-50 p-2.5 text-blue-600"><FiClock className="h-5 w-5" aria-hidden="true" /></span>
           <div>
             <h2 id="backup-history-title" className="font-bold text-slate-900">Backup History</h2>
-            <p className="text-xs text-slate-500">Backups created while this page is open</p>
+            <p className="text-xs text-slate-500">Completed backup records are retained after refresh.</p>
           </div>
         </header>
 
-        {backups.length === 0 ? (
+        {loadingBackups ? (
+          <div className="flex items-center justify-center px-5 py-10 text-sm text-slate-500">
+            Loading backup history...
+          </div>
+        ) : backupHistoryError ? (
+          <div className="px-5 py-10 text-center text-sm text-red-600">
+            {backupHistoryError}
+          </div>
+        ) : backups.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
             <span className="rounded-full bg-slate-50 p-3 text-slate-400"><FiFileText className="h-5 w-5" aria-hidden="true" /></span>
-            <p className="mt-3 text-sm text-slate-500">No backups have been created while this page is open.</p>
+            <p className="mt-3 text-sm text-slate-500">No completed backups have been recorded yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-[680px] w-full text-left text-sm">
+            <table className="min-w-[760px] w-full text-left text-sm">
               <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                <tr><th scope="col" className="px-5 py-3">Backup date &amp; time</th><th scope="col" className="px-5 py-3">Status</th><th scope="col" className="px-5 py-3">File size</th><th scope="col" className="px-5 py-3 text-right">Action</th></tr>
+                <tr><th scope="col" className="px-5 py-3">Backup date &amp; time</th><th scope="col" className="px-5 py-3">Created by</th><th scope="col" className="px-5 py-3">File name</th><th scope="col" className="px-5 py-3">File size</th><th scope="col" className="px-5 py-3">Status</th></tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {backups.map((backup) => (
                   <tr key={backup.id} className="hover:bg-slate-50/70">
-                    <td className="px-5 py-3.5 font-medium text-slate-700"><time dateTime={backup.createdAt.toISOString()}>{formatDate(backup.createdAt)}</time></td>
+                    <td className="px-5 py-3.5 font-medium text-slate-700"><time dateTime={dateTimeAttribute(backup.created_at)}>{formatDate(backup.created_at)}</time></td>
+                    <td className="px-5 py-3.5 text-slate-600">{backup.creator?.name || "Removed user"}</td>
+                    <td className="px-5 py-3.5 font-mono text-xs text-slate-600" data-no-translate>{backup.filename}</td>
+                    <td className="px-5 py-3.5 text-slate-600" data-no-translate>{formatFileSize(backup.size_bytes)}</td>
                     <td className="px-5 py-3.5"><span className="inline-flex items-center gap-2 text-emerald-600"><span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />Completed</span></td>
-                    <td className="px-5 py-3.5 text-slate-600" data-no-translate>{formatFileSize(backup.size)}</td>
-                    <td className="px-5 py-3.5 text-right"><button type="button" onClick={() => onDownloadBackup(backup)} className="inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-white px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100" aria-label="Download backup again"><FiDownload aria-hidden="true" />Download again</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -87,7 +96,14 @@ function StatusCard({ icon: Icon, iconClassName, label, value, detail, completed
 }
 
 function formatDate(value) {
-  return new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(value);
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return "Not recorded";
+  return new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+}
+
+function dateTimeAttribute(value) {
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
 }
 
 function formatFileSize(size) {

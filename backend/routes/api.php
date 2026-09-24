@@ -29,6 +29,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:deputy_secretary,system_admin')->post('/register', [AuthController::class, 'register']);
     Route::middleware('role:deputy_secretary,system_admin')->group(function () {
+        Route::get('/system/database-backups', [DatabaseBackupController::class, 'index']);
         Route::post('/system/database-backups', [DatabaseBackupController::class, 'store']);
         Route::get('/users', [UserController::class, 'index']);
         Route::patch('/users/{user}', [UserController::class, 'update']);

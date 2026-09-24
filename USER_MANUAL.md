@@ -458,10 +458,10 @@ The journey name supports up to 120 characters and each location up to 255. The 
 
 1. Open **Database Management** using an authorized administrative account.
 2. Select the backup/download action and wait for it to finish.
-3. Check that the file downloaded and store it in an approved secure location.
+3. Check that the file downloaded and store it in an approved secure location. The Backup History section retains the date, file name, size, creator, and completion status after a page refresh.
 4. Report any failure to technical support with the time and displayed error.
 
-The operation creates a database backup and removes the temporary server copy after download. It does not provide browser-based restoration. Database backup files alone do not include separately stored attachments, profile photos, or vehicle images; technical staff must back up those files separately. Restore operations belong to the technical administrator's recovery procedure.
+The operation creates a database backup and removes the temporary server copy after download. Backup History records only the completed backup metadata; it cannot download that removed file again. It does not provide browser-based restoration. Database backup files alone do not include separately stored attachments, profile photos, or vehicle images; technical staff must back up those files separately. Restore operations belong to the technical administrator's recovery procedure.
 
 ## 15. Notifications and SMS
 
