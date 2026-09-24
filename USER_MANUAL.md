@@ -488,6 +488,8 @@ Simply viewing a work page through the sidebar or dismissing a temporary pop-up 
 
 SMS is supplied through TEXTIT.BIZ when enabled by technical administration. Valid Sri Lankan mobile numbers in local form, such as 0771234567, are normalized for the gateway. Keep the registered number accurate.
 
+Allocation-required SMS messages sent to Assistant/Deputy Secretaries contain a link to the specific Vehicle Allocation page. Final-approval-required SMS messages sent to Senior Assistant/Deputy Secretaries contain a link to the specific final-review page. When you are already signed in to VMS in that browser, opening the link takes you directly to the relevant request.
+
 An approved-journey SMS identifies the request and includes **Driver Name**, **Driver Contact Number**, and **Vehicle Name** with registration. Older incomplete records may show Not assigned or Not available. Confirm current details in VMS if an assignment has changed.
 
 For workflow messages, an SMS gateway failure does not reverse the saved workflow transition or its in-app notification. Registration and password recovery have different acceptance rules described above. Never share an SMS temporary password with another user.

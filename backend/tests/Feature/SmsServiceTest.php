@@ -131,6 +131,7 @@ class SmsServiceTest extends TestCase
 
     public function test_workflow_sms_uses_the_allocation_and_approval_templates(): void
     {
+        config(['app.frontend_url' => 'https://vms.example.test/']);
         $workflowNotifications = app(WorkflowNotificationService::class);
         $vehicleRequest = new VehicleRequest();
         $vehicleRequest->setAttribute('id', 65);
@@ -144,15 +145,18 @@ class SmsServiceTest extends TestCase
             'registration_number' => 'CAB-1234',
         ]));
         $template = (new \ReflectionClass($workflowNotifications))->getMethod('smsMessage');
+        $deputy = new User(['role' => 'deputy_secretary']);
+        $seniorDeputy = new User(['role' => 'senior_deputy_secretary']);
 
-        $allocation = $template->invoke($workflowNotifications, 'Vehicle allocation required', '', $vehicleRequest);
+        $allocation = $template->invoke($workflowNotifications, 'Vehicle allocation required', '', $vehicleRequest, $deputy);
         $approval = $template->invoke($workflowNotifications, 'Journey finally approved', '', $vehicleRequest);
         $allocated = $template->invoke($workflowNotifications, 'Vehicle and driver allocated', '', $vehicleRequest);
-        $finalApproval = $template->invoke($workflowNotifications, 'Final approval required', '', $vehicleRequest);
+        $finalApproval = $template->invoke($workflowNotifications, 'Final approval required', '', $vehicleRequest, $seniorDeputy);
         $fallback = $template->invoke($workflowNotifications, 'A new workflow event', 'Details', $vehicleRequest);
 
-        $this->assertSame("VMS | Action Required\n\nVehicle Request REQ-0065 is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province", $allocation);
-        $this->assertSame("VMS | Journey Approved\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: Nimal Perera\nDriver Contact Number: 0771234567\nVehicle Name: Toyota Prius (CAB-1234)\n\nHave a safe journey.\n\nVehicle Management System\nChief Ministry - Southern Province", $approval);
+        $this->assertSame("VMS | Action Required\n\nVehicle Request REQ-0065 is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province\n\nOpen in VMS: https://vms.example.test/approval/65", $allocation);
+        $this->assertSame('VMS - Action Required: Final approval is needed for REQ-0065.'."\n\nOpen in VMS: https://vms.example.test/final-approvals/65", $finalApproval);
+        $this->assertSame("VMS - Journey Approved:\n\nREQ-0065 has been approved successfully.\nYour vehicle journey is now ready to proceed.\n\nDriver Name: Nimal Perera\nDriver Contact Number: 0771234567\nVehicle Name: Toyota Prius (CAB-1234)\n\nHave a safe journey.", $approval);
         foreach ([$allocation, $approval, $allocated, $finalApproval, $fallback] as $sms) {
             $this->assertStringNotContainsString('VMS-GOV', $sms);
             $this->assertStringStartsWith('VMS', $sms);

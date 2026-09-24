@@ -39,7 +39,7 @@ class WorkflowNotificationService
 
             // Gateway delivery is supplementary. A provider outage must not undo
             // the durable in-app workflow notification or its completed transition.
-            $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest));
+            $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest, $user));
         });
 
         return $recipients;
@@ -194,7 +194,7 @@ class WorkflowNotificationService
         return 'REQ-'.str_pad((string) $vehicleRequest->id, 4, '0', STR_PAD_LEFT);
     }
 
-    private function smsMessage(string $title, string $message, ?VehicleRequest $vehicleRequest): string
+    private function smsMessage(string $title, string $message, ?VehicleRequest $vehicleRequest, ?User $recipient = null): string
     {
         $reference = $vehicleRequest ? $this->reference($vehicleRequest) : 'your request';
 
@@ -202,10 +202,20 @@ class WorkflowNotificationService
             'New vehicle request' => "VMS - Update: {$reference} is ready for your review.",
             'Request recommended' => "VMS - Update: {$reference} was recommended and moves to allocation.",
             'Request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
-            'Vehicle allocation required' => "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+            'Vehicle allocation required' => $this->withWorkflowLink(
+                "VMS | Action Required\n\nVehicle Request {$reference} is ready for allocation.\nPlease assign a suitable vehicle and driver to proceed.\n\nVehicle Management System\nChief Ministry - Southern Province",
+                $title,
+                $vehicleRequest,
+                $recipient,
+            ),
             'Vehicle and driver allocated' => "VMS - Update: {$reference} is allocated and awaiting final approval.",
             'Journey allocation updated' => "VMS - Update: {$reference} has a new allocation and needs final approval.",
-            'Final approval required' => "VMS - Action Required: Final approval is needed for {$reference}.",
+            'Final approval required' => $this->withWorkflowLink(
+                "VMS - Action Required: Final approval is needed for {$reference}.",
+                $title,
+                $vehicleRequest,
+                $recipient,
+            ),
             'Journey finally approved' => $this->approvedJourneySms($reference, $vehicleRequest),
             'Journey request rejected' => "VMS - Update: {$reference} was not approved. Open VMS for details.",
             'Journey request cancelled' => "VMS - Update: {$reference} has been cancelled.",
@@ -216,6 +226,29 @@ class WorkflowNotificationService
         };
 
         return $sms;
+    }
+
+    private function withWorkflowLink(string $sms, string $title, ?VehicleRequest $vehicleRequest, ?User $recipient): string
+    {
+        $link = $this->workflowLink($title, $vehicleRequest, $recipient);
+
+        return $link ? "{$sms}\n\nOpen in VMS: {$link}" : $sms;
+    }
+
+    private function workflowLink(string $title, ?VehicleRequest $vehicleRequest, ?User $recipient): ?string
+    {
+        if (! $vehicleRequest?->id || ! $recipient) {
+            return null;
+        }
+
+        $path = match ([$title, $recipient->role]) {
+            ['Vehicle allocation required', 'deputy_secretary'] => "/approval/{$vehicleRequest->id}",
+            ['Final approval required', 'senior_deputy_secretary'],
+            ['Final approval required', 'secretary'] => "/final-approvals/{$vehicleRequest->id}",
+            default => null,
+        };
+
+        return $path ? rtrim((string) config('app.frontend_url'), '/').$path : null;
     }
 
     private function approvedJourneySms(string $reference, ?VehicleRequest $vehicleRequest): string
