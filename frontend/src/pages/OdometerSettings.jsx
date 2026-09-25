@@ -29,7 +29,8 @@ export default function OdometerSettings() {
   }, [t]);
 
   useEffect(() => {
-    void loadSettings();
+    const initialLoad = window.setTimeout(loadSettings, 0);
+    return () => window.clearTimeout(initialLoad);
   }, [loadSettings]);
 
   const toggleRequirement = async () => {
