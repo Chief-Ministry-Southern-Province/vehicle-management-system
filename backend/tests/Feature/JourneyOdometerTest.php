@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Driver;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleRequest;
@@ -69,6 +70,54 @@ class JourneyOdometerTest extends TestCase
         $url = "/api/driver/journeys/{$trip->id}/status";
         $this->actingAs($user)->patchJson($url, ['action' => 'complete', 'end_odometer_km' => 0])->assertUnprocessable();
         $this->patchJson($url, ['action' => 'complete', 'start_odometer_km' => 0, 'end_odometer_km' => 0])->assertOk()->assertJsonPath('data.trip.actual_distance_km', 0);
+    }
+
+    public function test_optional_policy_allows_a_driver_to_start_and_complete_without_readings(): void
+    {
+        [$user, $trip] = $this->assignment();
+        $administrator = User::factory()->create(['role' => 'system_admin', 'status' => 'active']);
+        SystemSetting::setOdometerReadingsRequired(false, $administrator->id);
+        $url = "/api/driver/journeys/{$trip->id}/status";
+
+        $this->actingAs($user)
+            ->getJson('/api/driver/scheduled-journeys')
+            ->assertOk()
+            ->assertJsonPath('data.odometer_readings_required', false);
+
+        $this->patchJson($url, ['action' => 'start'])
+            ->assertOk()
+            ->assertJsonPath('data.trip.start_odometer_km', null)
+            ->assertJsonPath('data.odometer_readings_required', false);
+        $this->patchJson($url, ['action' => 'complete'])
+            ->assertOk()
+            ->assertJsonPath('data.trip.start_odometer_km', null)
+            ->assertJsonPath('data.trip.end_odometer_km', null)
+            ->assertJsonPath('data.trip.actual_distance_km', null);
+
+        $this->assertSame('completed', $trip->fresh()->journey_status);
+    }
+
+    public function test_optional_policy_still_validates_readings_when_the_driver_supplies_them(): void
+    {
+        [$user, $trip] = $this->assignment();
+        $administrator = User::factory()->create(['role' => 'system_admin', 'status' => 'active']);
+        SystemSetting::setOdometerReadingsRequired(false, $administrator->id);
+        $url = "/api/driver/journeys/{$trip->id}/status";
+
+        $this->actingAs($user)
+            ->patchJson($url, ['action' => 'start', 'start_odometer_km' => -1])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('start_odometer_km');
+        $this->patchJson($url, ['action' => 'start', 'start_odometer_km' => 100])
+            ->assertOk();
+        $this->patchJson($url, ['action' => 'complete', 'end_odometer_km' => 99])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('end_odometer_km');
+        $this->patchJson($url, ['action' => 'complete'])
+            ->assertOk()
+            ->assertJsonPath('data.trip.start_odometer_km', 100)
+            ->assertJsonPath('data.trip.end_odometer_km', null)
+            ->assertJsonPath('data.trip.actual_distance_km', null);
     }
 
     public function test_only_the_active_assigned_driver_can_record_readings(): void

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PredefinedJourneyController;
 use App\Http\Controllers\Api\PushSubscriptionController;
+use App\Http\Controllers\Api\SystemSettingsController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VehicleIssueReportController;
@@ -39,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/predefined-journeys', [PredefinedJourneyController::class, 'index']);
     Route::middleware('role:system_admin')->group(function () {
+        Route::get('/system/odometer-settings', [SystemSettingsController::class, 'show']);
+        Route::patch('/system/odometer-settings', [SystemSettingsController::class, 'update']);
         Route::post('/predefined-journeys', [PredefinedJourneyController::class, 'store']);
         Route::put('/predefined-journeys/{predefinedJourney}', [PredefinedJourneyController::class, 'update']);
         Route::delete('/predefined-journeys/{predefinedJourney}', [PredefinedJourneyController::class, 'destroy']);

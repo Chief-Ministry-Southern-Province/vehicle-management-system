@@ -14,6 +14,7 @@ import {
   FiAlertTriangle,
   FiGlobe,
   FiMap,
+  FiSettings,
   FiX,
 } from "react-icons/fi";
 
@@ -124,6 +125,12 @@ const menuItems = [
         name: "Journey Management",
         path: "/journeymanagement",
         icon: <FiMap />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Odometer Settings",
+        path: "/odometersettings",
+        icon: <FiSettings />,
         roles: ["system_admin"],
       },
 

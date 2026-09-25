@@ -193,6 +193,58 @@ Object.assign(translations.ta, { "role.system_admin": "கணினி நிர
 for (const [key, labels] of Object.entries(driverViewLabels)) {
   ["en", "si", "ta"].forEach((language, index) => { translations[language][`driverView.${key}`] = labels[index]; });
 }
+Object.assign(translations.en, {
+  "nav.odometer_settings": "Odometer Settings",
+  "odometer.settingsTitle": "Odometer reading requirement",
+  "odometer.settingsDescription": "Choose whether drivers must enter meter readings when they start and complete a journey.",
+  "odometer.required": "Required",
+  "odometer.optional": "Optional",
+  "odometer.optionalHint": "Meter readings are optional for this journey. Any reading you enter will still be checked.",
+  "odometer.settingUpdated": "Odometer-reading requirement updated.",
+  "odometer.settingLoadFailed": "Unable to load odometer settings.",
+  "odometer.settingSaveFailed": "Unable to update odometer settings.",
+  "odometer.dashboardDescription": "Choose whether driver meter readings are mandatory.",
+  "odometer.systemAdministration": "System administration",
+  "odometer.driverJourneys": "Driver journeys",
+  "odometer.loadingSettings": "Loading settings...",
+  "odometer.requiredDescription": "Drivers must enter a starting and ending meter reading for every journey.",
+  "odometer.optionalDescription": "Drivers can leave meter readings blank when a vehicle meter is unavailable or faulty.",
+});
+Object.assign(translations.si, {
+  "nav.odometer_settings": "ඕඩෝමීටර් සැකසුම්",
+  "odometer.settingsTitle": "ඕඩෝමීටර් කියවීම් අවශ්‍යතාවය",
+  "odometer.settingsDescription": "රියදුරන් ගමනක් ආරම්භ කර අවසන් කරන විට මීටර් කියවීම් ඇතුළත් කළ යුතුද යන්න තෝරන්න.",
+  "odometer.required": "අනිවාර්යයි",
+  "odometer.optional": "විකල්පයි",
+  "odometer.optionalHint": "මෙම ගමන සඳහා මීටර් කියවීම් විකල්ප වේ. ඔබ ඇතුළත් කරන ඕනෑම කියවීමක් තවමත් පරීක්ෂා කෙරේ.",
+  "odometer.settingUpdated": "ඕඩෝමීටර් කියවීම් අවශ්‍යතාවය යාවත්කාලීන කරන ලදී.",
+  "odometer.settingLoadFailed": "ඕඩෝමීටර් සැකසුම් පූරණය කළ නොහැක.",
+  "odometer.settingSaveFailed": "ඕඩෝමීටර් සැකසුම් යාවත්කාලීන කළ නොහැක.",
+  "odometer.dashboardDescription": "රියදුරු මීටර් කියවීම් අනිවාර්යද යන්න තෝරන්න.",
+  "odometer.systemAdministration": "පද්ධති පරිපාලනය",
+  "odometer.driverJourneys": "රියදුරු ගමන්",
+  "odometer.loadingSettings": "සැකසුම් පූරණය වෙමින් පවතී...",
+  "odometer.requiredDescription": "සෑම ගමනක් සඳහාම රියදුරන් ආරම්භක සහ අවසාන මීටර් කියවීමක් ඇතුළත් කළ යුතුය.",
+  "odometer.optionalDescription": "වාහන මීටරය නොමැති හෝ දෝෂ සහිත අවස්ථාවල රියදුරන්ට මීටර් කියවීම් හිස්ව තැබිය හැක.",
+});
+Object.assign(translations.ta, {
+  "nav.odometer_settings": "ஓடோமீட்டர் அமைப்புகள்",
+  "odometer.settingsTitle": "ஓடோமீட்டர் அளவீட்டு தேவை",
+  "odometer.settingsDescription": "பயணத்தை தொடங்கவும் முடிக்கவும் ஓட்டுநர்கள் மீட்டர் அளவீடுகளை உள்ளிட வேண்டுமா என்பதைத் தேர்ந்தெடுக்கவும்.",
+  "odometer.required": "கட்டாயம்",
+  "odometer.optional": "விருப்பமானது",
+  "odometer.optionalHint": "இந்தப் பயணத்திற்கான மீட்டர் அளவீடுகள் விருப்பமானவை. நீங்கள் உள்ளிடும் எந்த அளவீடும் தொடர்ந்து சரிபார்க்கப்படும்.",
+  "odometer.settingUpdated": "ஓடோமீட்டர் அளவீட்டு தேவை புதுப்பிக்கப்பட்டது.",
+  "odometer.settingLoadFailed": "ஓடோமீட்டர் அமைப்புகளை ஏற்ற முடியவில்லை.",
+  "odometer.settingSaveFailed": "ஓடோமீட்டர் அமைப்புகளை புதுப்பிக்க முடியவில்லை.",
+  "odometer.dashboardDescription": "ஓட்டுநர் மீட்டர் அளவீடுகள் கட்டாயமா என்பதைத் தேர்ந்தெடுக்கவும்.",
+  "odometer.systemAdministration": "கணினி நிர்வாகம்",
+  "odometer.driverJourneys": "ஓட்டுநர் பயணங்கள்",
+  "odometer.loadingSettings": "அமைப்புகள் ஏற்றப்படுகின்றன...",
+  "odometer.requiredDescription": "ஒவ்வொரு பயணத்திற்கும் ஓட்டுநர்கள் தொடக்க மற்றும் முடிவு மீட்டர் அளவீடுகளை உள்ளிட வேண்டும்.",
+  "odometer.optionalDescription": "வாகன மீட்டர் இல்லாதபோது அல்லது பழுதானபோது ஓட்டுநர்கள் மீட்டர் அளவீடுகளை காலியாக விடலாம்.",
+});
+
 const driverTableLabels = {
   exportAll: ["Export All Listed PDF", "ලැයිස්තුගත සියල්ල පීඩීඑෆ් ලෙස අපනයනය කරන්න", "பட்டியலிலுள்ள அனைத்தையும் பீடிஎஃப் ஆக ஏற்றுமதி செய்"],
   directory: ["Driver Directory", "රියදුරු නාමාවලිය", "சாரதி பட்டியல்"],

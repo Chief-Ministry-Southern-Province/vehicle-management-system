@@ -178,6 +178,24 @@ export const updateDriverJourneyStatus = async (journeyId, action, readings = {}
   } catch (error) { throw error.response?.data || error.message; }
 };
 
+export const getOdometerSettings = async () => {
+  try {
+    const response = await API.get("/system/odometer-settings", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
+export const updateOdometerSettings = async (settings) => {
+  try {
+    const response = await API.patch("/system/odometer-settings", settings, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    return response.data;
+  } catch (error) { throw error.response?.data || error.message; }
+};
+
 export const getDriverAssignedVehicle = async () => {
   try {
     const response = await API.get("/driver/assigned-vehicle", {

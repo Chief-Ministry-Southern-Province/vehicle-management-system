@@ -55,6 +55,7 @@ import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
 import SystemAdminDashboard from './pages/dashboard/SystemAdminDashboard';
 import JourneyManagement from './pages/JourneyManagement';
+import OdometerSettings from './pages/OdometerSettings';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
@@ -141,6 +142,7 @@ function ApplicationRoutes() {
             <Route path="/departmentmanagement" element={withAuth(<DepartmentManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/databasemanagement" element={withAuth(<DatabaseManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/journeymanagement" element={withAuth(<JourneyManagement />, ["system_admin"])} />
+            <Route path="/odometersettings" element={withAuth(<OdometerSettings />, ["system_admin"])} />
             <Route path="/systemchanges" element={<Navigate to="/usermanagement" replace />} />
 
 
