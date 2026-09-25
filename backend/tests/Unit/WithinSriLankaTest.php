@@ -84,6 +84,15 @@ class WithinSriLankaTest extends TestCase
         $this->assertSame($backendCoordinates, $frontendCoordinates[0]);
     }
 
+    public function test_the_map_does_not_draw_the_generalized_boundary_mask(): void
+    {
+        $mapSource = file_get_contents(dirname(__DIR__, 3).'/frontend/src/components/employee/LocationMapPicker.jsx');
+
+        $this->assertNotFalse($mapSource);
+        $this->assertStringNotContainsString('SRI_LANKA_BOUNDARIES', $mapSource);
+        $this->assertStringNotContainsString('boundaryPath', $mapSource);
+    }
+
     private function edgesCross(array $firstStart, array $firstEnd, array $secondStart, array $secondEnd): bool
     {
         $orientation = static fn (array $origin, array $first, array $second): float =>
