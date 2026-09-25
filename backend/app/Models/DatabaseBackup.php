@@ -14,6 +14,7 @@ class DatabaseBackup extends Model
         'filename',
         'size_bytes',
         'database_driver',
+        'operation',
     ];
 
     protected function casts(): array

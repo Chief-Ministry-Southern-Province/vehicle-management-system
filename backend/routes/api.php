@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/predefined-journeys', [PredefinedJourneyController::class, 'index']);
     Route::middleware('role:system_admin')->group(function () {
+        Route::post('/system/database-backups/import', [DatabaseBackupController::class, 'restore']);
         Route::get('/system/odometer-settings', [SystemSettingsController::class, 'show']);
         Route::patch('/system/odometer-settings', [SystemSettingsController::class, 'update']);
         Route::post('/predefined-journeys', [PredefinedJourneyController::class, 'store']);
