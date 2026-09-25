@@ -30,7 +30,7 @@ class VehicleRequestController extends Controller
         $requests = VehicleRequest::query()
             ->where('recommendation_status', 'recommended')
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id,department',
                 'allocatedVehicle',
             )
@@ -50,7 +50,7 @@ class VehicleRequestController extends Controller
             ->whereIn('status', ['approved', 'completed', 'cancelled'])
             ->whereNotNull('approved_at')
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id,department',
                 'allocatedVehicle',
                 'allocatedDriver',
@@ -118,7 +118,7 @@ class VehicleRequestController extends Controller
 
         $baseQuery = VehicleRequest::query();
         $query = (clone $baseQuery)
-            ->with('user:id,name,employee_id,department', 'recommender:id,name')
+            ->with('user:id,name,employee_id,department,profile_picture_path', 'recommender:id,name')
             ->latest();
 
         if ($status === 'pending') {
@@ -572,7 +572,7 @@ class VehicleRequestController extends Controller
         }
 
         $query = VehicleRequest::query()
-            ->with('user:id,name,employee_id,department', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
+            ->with('user:id,name,employee_id,department,profile_picture_path', 'recommender:id,name', 'allocatedVehicle', 'previousAllocatedVehicle', 'allocatedDriver', 'previousAllocatedDriver', 'reallocator:id,name')
             ->latest();
 
         if ($status === 'pending') {
@@ -1123,7 +1123,7 @@ class VehicleRequestController extends Controller
     {
         return VehicleRequest::query()
             ->with(
-                'user:id,name,employee_id,department',
+                'user:id,name,employee_id,department,profile_picture_path',
                 'recommender:id,name,employee_id',
                 'allocatedVehicle',
             )

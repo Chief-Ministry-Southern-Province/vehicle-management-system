@@ -77,11 +77,16 @@ export default function ScheduledJourney() {
   const [error, setError] = useState("");
   const [readings, setReadings] = useState({});
   const [completedTrip, setCompletedTrip] = useState(null);
+  const [odometerReadingsRequired, setOdometerReadingsRequired] = useState(true);
 
   useEffect(() => {
     let active = true;
     getDriverScheduledJourneys()
-      .then((response) => active && setTrips(response?.data?.trips || []))
+      .then((response) => {
+        if (!active) return;
+        setTrips(response?.data?.trips || []);
+        setOdometerReadingsRequired(response?.data?.odometer_readings_required !== false);
+      })
       .catch((requestError) => active && setError(requestError?.message || "Unable to load scheduled journeys."))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
@@ -91,7 +96,11 @@ export default function ScheduledJourney() {
     const action = ["ongoing", "issue"].includes(trip.journey_status) ? "complete" : "start";
     setUpdatingId(trip.id);
     try {
-      const response = await updateDriverJourneyStatus(trip.id, action, readings[trip.id] || {});
+      const submittedReadings = Object.fromEntries(
+        Object.entries(readings[trip.id] || {}).filter(([, value]) => value !== "" && value != null),
+      );
+      const response = await updateDriverJourneyStatus(trip.id, action, submittedReadings);
+      setOdometerReadingsRequired(response?.data?.odometer_readings_required !== false);
       if (action === "complete") {
         setTrips((current) => current.filter((item) => item.id !== trip.id));
         setSelectedTrip(null);
@@ -233,18 +242,19 @@ export default function ScheduledJourney() {
                 </div>
               )}
 
-              <form onSubmit={(event) => { event.preventDefault(); if (updatingId === null) changeStatus(trip); }} className="mt-5 grid grid-cols-1 gap-2 border-t border-slate-100 p-4 sm:flex sm:flex-wrap sm:gap-3 sm:p-5 lg:mr-64 xl:mr-72 dark:border-slate-700">
+              <form noValidate onSubmit={(event) => { event.preventDefault(); if (updatingId === null) changeStatus(trip); }} className="mt-5 grid grid-cols-1 gap-2 border-t border-slate-100 p-4 sm:flex sm:flex-wrap sm:gap-3 sm:p-5 lg:mr-64 xl:mr-72 dark:border-slate-700">
                 <div className="grid w-full gap-3 sm:grid-cols-2">
                   {trip.start_odometer_km == null && <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                    {t("odometer.start")}
-                    <input required type="number" inputMode="decimal" min="0" max="99999999.99" step="0.01" disabled={updatingId !== null} value={readings[trip.id]?.start_odometer_km ?? ""} onChange={(event) => setReadings((current) => ({ ...current, [trip.id]: { ...current[trip.id], start_odometer_km: event.target.value } }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-600 dark:bg-slate-900" />
+                    {t("odometer.start")}{!odometerReadingsRequired && <span className="ml-1 text-xs font-semibold text-slate-500">({t("odometer.optional")})</span>}
+                    <input required={odometerReadingsRequired} type="number" inputMode="decimal" min="0" max="99999999.99" step="0.01" disabled={updatingId !== null} value={readings[trip.id]?.start_odometer_km ?? ""} onChange={(event) => setReadings((current) => ({ ...current, [trip.id]: { ...current[trip.id], start_odometer_km: event.target.value } }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-600 dark:bg-slate-900" />
                   </label>}
                   {["ongoing", "issue"].includes(trip.journey_status) && <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                    {t("odometer.end")}
-                    <input required type="number" inputMode="decimal" min={trip.start_odometer_km ?? readings[trip.id]?.start_odometer_km ?? 0} max="99999999.99" step="0.01" disabled={updatingId !== null} value={readings[trip.id]?.end_odometer_km ?? ""} onChange={(event) => setReadings((current) => ({ ...current, [trip.id]: { ...current[trip.id], end_odometer_km: event.target.value } }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-600 dark:bg-slate-900" />
+                    {t("odometer.end")}{!odometerReadingsRequired && <span className="ml-1 text-xs font-semibold text-slate-500">({t("odometer.optional")})</span>}
+                    <input required={odometerReadingsRequired} type="number" inputMode="decimal" min={trip.start_odometer_km ?? readings[trip.id]?.start_odometer_km ?? 0} max="99999999.99" step="0.01" disabled={updatingId !== null} value={readings[trip.id]?.end_odometer_km ?? ""} onChange={(event) => setReadings((current) => ({ ...current, [trip.id]: { ...current[trip.id], end_odometer_km: event.target.value } }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 dark:border-slate-600 dark:bg-slate-900" />
                   </label>}
                 </div>
-                {trip.journey_status !== "scheduled" && trip.start_odometer_km == null && <p className="w-full text-sm text-amber-700 dark:text-amber-300">{t("odometer.missingStart")}</p>}
+                {!odometerReadingsRequired && <p className="w-full text-sm text-slate-500 dark:text-slate-400">{t("odometer.optionalHint")}</p>}
+                {odometerReadingsRequired && trip.journey_status !== "scheduled" && trip.start_odometer_km == null && <p className="w-full text-sm text-amber-700 dark:text-amber-300">{t("odometer.missingStart")}</p>}
                 {trip.is_consolidated && <p className="w-full text-sm text-slate-500 dark:text-slate-400">{t("odometer.shared")}</p>}
                 <button type="submit" disabled={updatingId !== null} className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-60 sm:w-auto ${["ongoing", "issue"].includes(trip.journey_status) ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-700 hover:bg-blue-800"}`}>
                   {["ongoing", "issue"].includes(trip.journey_status) ? <FiCheckCircle /> : <FiPlay />}

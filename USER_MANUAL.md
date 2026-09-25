@@ -51,8 +51,8 @@ Your account role determines the menus, records, and actions available to you. O
 | Assistant/Deputy Secretary | Recommend Department Officer requests; allocate and reallocate vehicles and drivers; review operational records and issues. Also has user, department, and backup administration permission. |
 | Senior Assistant/Deputy Secretary | Recommend Deputy Secretary requests and perform final approval or rejection of eligible allocated requests; inspect executive and fleet records. |
 | Secretary | Perform final approval or rejection and inspect executive and fleet records. |
-| System Administrator | Create and maintain accounts, manage departments and pre-defined journeys, and download database backups. Does not allocate vehicles or approve transport requests. |
-| Driver | View assigned journeys and vehicle information, start and complete journeys with meter readings, report issues, and view trip history. May also submit personal transport requests. |
+| System Administrator | Create and maintain accounts, manage departments and pre-defined journeys, choose the global odometer-reading requirement, and download database backups. Does not allocate vehicles or approve transport requests. |
+| Driver | View assigned journeys and vehicle information, start and complete journeys with meter readings when required by the organization, report issues, and view trip history. May also submit personal transport requests. |
 
 Some menus use the legacy labels “Assistance Secreatry” and “Senior Assistance Secretary.” In this manual, Assistant/Deputy Secretary and Senior Assistant/Deputy Secretary refer to those respective roles.
 
@@ -111,9 +111,9 @@ The selected language is remembered on this browser and applies to interface lab
 | Assistant/Deputy Secretary | Monitor operational queues and executive statistics, then open recommendation or allocation workspaces. |
 | Senior Assistant/Deputy Secretary and Secretary | Review executive statistics and the recommendation/final-decision queues available to the role. |
 | Driver | Review personal trip statistics, scheduled assignments, trip actions, and assigned-vehicle information. |
-| System Administrator | Review administration information and open account, department, journey, and database management. |
+| System Administrator | Review administration information and open account, department, journey, odometer-setting, and database management. |
 
-Dashboard request counts represent records. Sidebar badges represent unread notifications and can differ from the number of unfinished requests. A dash or loading indicator is not a confirmed zero. Reopen or refresh the relevant page after changes if its values have not yet refreshed.
+Dashboard request counts represent records. Sidebar badges represent unread notifications and can differ from the number of unfinished requests. When the real-time service is available, affected open role pages update automatically after another user saves a workflow action. A dash or loading indicator is not a confirmed zero; reopen or refresh if a connection was interrupted.
 
 ## 5. Creating a vehicle request
 
@@ -198,6 +198,10 @@ Other operational roles can access personal request creation, but their recommen
 6. Select **Recommend** to forward it for allocation, or **Reject** if it should not proceed.
 7. Confirm the result in the department history.
 
+Each Pending Recommendations card shows the requester's saved profile image beside their name and User ID. When the requester has no image, their initials are shown instead.
+
+The Request Archive table in **Recommendation History** also shows each requester's saved profile image beside their name and User ID, with the same initials fallback.
+
 Only eligible pending requests can be reviewed. Department Officers cannot use this queue to review another department's records.
 
 ### 7.3 Deputy and senior recommendations
@@ -219,6 +223,8 @@ Assistant/Deputy Secretary:
 5. Enter the required parking/pickup location.
 6. Submit the allocation and wait for confirmation.
 
+The Pending Approvals table shows the requester's saved profile image beside their name and User ID, plus the saved start-to-destination route, local journey date, and local departure-to-expected-return time range. Overnight journeys display both dates. If no image is available, it displays their initials instead. Selecting an eligible driver marked **Scheduled Trip** shows only the overlapping journey's route, time range, vehicle, passenger count, and purpose before you decide whether to share that allocation.
+
 The server checks resource eligibility, overlapping assignments, and passenger capacity. An assignment may be rejected if availability changed while the screen was open. Refresh and choose again. Allocation sends the request to final approval and notifies the requester, linked driver user, and final approvers.
 
 ### 8.2 Shared journeys
@@ -235,10 +241,10 @@ The system records the previous vehicle and driver, reason, actor, and time. The
 
 ### 8.4 Operational lists
 
-- **Total Approvals:** inspect the official records table and open View for the full read-only audit detail.
-- **Approved Journeys:** inspect approved/completed journeys and their travel/allocation information; use the screen's filters and export controls.
+- **Total Approvals:** inspect the official records table, including each requester's saved profile image (or initials when no image is available), and open View for the full read-only audit detail.
+- **Approved Journeys:** inspect approved/completed journeys and their travel/allocation information; use the screen's filters and export controls. The table shows each requester's saved profile image beside their name and request ID, with initials fallback.
 - **Daily Schedule Trips:** choose a day to see approved journeys against the driver directory. Drivers with no journey on that day still appear.
-- **Pending Journeys:** Subject Officer view of recommended requests awaiting subsequent workflow steps.
+- **Pending Journeys:** Subject Officer view of recommended requests awaiting subsequent workflow steps. The Recommended Requests table shows each requester's saved profile image beside their name and request ID, with initials fallback.
 
 ## 9. Final approval and rejection
 
@@ -265,22 +271,22 @@ On smaller screens, some summaries appear only inside View Details. Expand vehic
 ### 10.2 Start a journey
 
 1. Identify the correct approved scheduled assignment.
-2. Record the vehicle's actual starting odometer reading in kilometers.
-3. Enter it in the starting-meter field.
+2. Check whether the starting-meter field is marked **Required** or **Optional**.
+3. When required, record the vehicle's actual starting odometer reading in kilometers and enter it in the field. When optional because the organization has disabled the global requirement, leave it blank if the meter is unreliable; do not enter an estimated value.
 4. Select **Start Trip** and wait for confirmation.
 
-The journey becomes Ongoing. The saved starting reading cannot be changed afterward. Readings must be nonnegative, with no more than two decimal places, and no greater than 99,999,999.99 km.
+The journey becomes Ongoing. Any saved starting reading cannot be changed afterward. The System Administrator controls this global requirement for all drivers; it is required by default. Even when a field is optional, any reading entered must be nonnegative, have no more than two decimal places, and be no greater than 99,999,999.99 km.
 
 ### 10.3 Complete a journey
 
 1. Open the ongoing or issue journey when travel is finished.
-2. Enter its ending odometer reading.
-3. Ensure it is at least the starting reading.
-4. For an older journey without a starting reading, supply the missing start as requested.
+2. Check whether the ending-meter field is marked **Required** or **Optional**.
+3. When required, enter its ending odometer reading and ensure it is at least the starting reading. For an older journey without a starting reading, also supply the missing start as requested.
+4. When optional, leave either unavailable meter reading blank. If both readings are entered, the ending reading must still be at least the starting reading.
 5. Select **Complete Trip**.
-6. Verify the recorded actual distance and the Trip History entry.
+6. Verify the Trip History entry and, when both readings were recorded, the actual distance.
 
-Actual distance equals ending reading minus starting reading. Completion records the result and updates vehicle/driver availability based on other assignments. For shared journeys, do not submit separate meter totals for each passenger request.
+Actual distance equals ending reading minus starting reading only when both readings are available; otherwise the actual distance is not recorded. Completion updates vehicle/driver availability based on other assignments. For shared journeys, do not submit separate meter totals for each passenger request.
 
 ### 10.4 Report an issue
 
@@ -304,11 +310,11 @@ Use assigned-vehicle information to check the vehicle identity and available com
 
 Subject Officers maintain vehicle records. Executive roles can inspect fleet records but cannot save fleet changes.
 
-1. Open **Vehicle Directory** and use its search/status controls.
+1. Open **Vehicle Directory** and use its search/status controls. Each vehicle row shows its saved vehicle image, or a truck icon when no image is available.
 2. Open a vehicle for full details, or use the registration action to add one.
-3. Enter registration number, vehicle type, make, model, operational status, and fuel level as required.
+3. Enter registration number, vehicle type, make, model, operational status, and fuel level as required. Select **Add a new vehicle type...** when the type is not listed, then enter the type to save with that vehicle.
 4. Add applicable manufacturing year, color, VIN/chassis and engine identifiers, fuel capacity, efficiency and its unit, seat capacity, and technical notes.
-5. Complete registration/revenue-licence expiries, insurance, assignment, service information, and images as applicable.
+5. Complete the revenue-licence, insurance, and emission expiry dates, insurance details, assignment, service information, and images as applicable.
 6. Save and check the persisted details.
 
 Registration numbers must be unique. VIN and engine identifiers, if supplied, must also be unique. Seat capacity must be between 1 and 100, fuel level between 0 and 100 percent, and an efficiency value must have a corresponding supported unit.
@@ -384,7 +390,7 @@ Monthly charts compare allocated and actual kilometers and show Extra Fuel by co
 | --- | --- |
 | Planned one-way distance | Server-calculated driving distance or System Administrator's saved manual journey distance. |
 | Allocated round-trip distance | Planned one-way distance × 2. |
-| Actual distance | Ending odometer − starting odometer. |
+| Actual distance | Ending odometer − starting odometer when both readings are recorded; unavailable when either reading is omitted under the optional global policy. |
 | Calculated consumed fuel | Actual kilometers × stored numeric fuel efficiency. |
 | Remaining fuel | Recorded filled fuel − calculated consumed fuel for the selected annual scope. |
 | Extra Fuel | (Actual distance − allocated round-trip distance) × stored numeric fuel efficiency. |
@@ -448,20 +454,31 @@ Only the System Administrator can maintain the pre-defined journey catalogue.
 
 The journey name supports up to 120 characters and each location up to 255. The distance must be positive and no greater than 99,999.99 km. Enter the one-way distance, not the return total. Existing requests keep their copied locations and distance when the catalogue changes; deleting the catalogue entry does not erase that copied request information.
 
-### 14.5 Database Management
+### 14.5 Odometer Settings
+
+Only the System Administrator can change this setting. It is a single global policy for every driver and defaults to requiring starting and ending meter readings.
+
+1. Open **Odometer Settings**.
+2. Review the current requirement status.
+3. Turn the requirement off only when vehicles have unreliable mileage meters; the change is saved immediately.
+4. Turn it back on when reliable readings can again be collected.
+
+When disabled, drivers may start or complete any journey without an unavailable reading. This does not alter a journey's approval, allocation, status, or saved audit information. Any value a driver does enter is still checked, and an actual distance is unavailable unless both start and end readings were recorded. The choice applies globally, not to a selected vehicle or individual journey.
+
+### 14.6 Database Management
 
 1. Open **Database Management** using an authorized administrative account.
 2. Select the backup/download action and wait for it to finish.
-3. Check that the file downloaded and store it in an approved secure location.
+3. Check that the file downloaded and store it in an approved secure location. The Backup History section retains the date, file name, size, creator, and completion status after a page refresh.
 4. Report any failure to technical support with the time and displayed error.
 
-The operation creates a database backup and removes the temporary server copy after download. It does not provide browser-based restoration. Database backup files alone do not include separately stored attachments, profile photos, or vehicle images; technical staff must back up those files separately. Restore operations belong to the technical administrator's recovery procedure.
+The operation creates a database backup and removes the temporary server copy after download. Backup History records only the completed backup metadata; it cannot download that removed file again. It does not provide browser-based restoration. Database backup files alone do not include separately stored attachments, profile photos, or vehicle images; technical staff must back up those files separately. Restore operations belong to the technical administrator's recovery procedure.
 
 ## 15. Notifications and SMS
 
 ### 15.1 In-app notifications
 
-Open the notification bell to view unread updates. The menu refreshes on opening and periodically, normally every minute. New updates can also appear as temporary pop-ups.
+Open the notification bell to view unread updates. While signed in, new workflow changes arrive immediately through the application's live connection and can also appear as temporary pop-ups. Opening the menu reloads the durable unread list, which remains available if the live connection is interrupted.
 
 Clicking a menu notification attempts to mark it read and then opens the role-appropriate page. A successful read removes it from the unread menu and decreases matching sidebar counts. **Mark all read** clears the unread list. Reading retains the database record and does not approve, allocate, or otherwise complete the related task.
 
@@ -483,6 +500,8 @@ Simply viewing a work page through the sidebar or dismissing a temporary pop-up 
 ### 15.3 SMS messages
 
 SMS is supplied through TEXTIT.BIZ when enabled by technical administration. Valid Sri Lankan mobile numbers in local form, such as 0771234567, are normalized for the gateway. Keep the registered number accurate.
+
+Allocation-required SMS messages sent to Assistant/Deputy Secretaries contain a link to the specific Vehicle Allocation page. Final-approval-required SMS messages sent to Senior Assistant/Deputy Secretaries contain a link to the specific final-review page. When you are already signed in to VMS in that browser, opening the link takes you directly to the relevant request.
 
 An approved-journey SMS identifies the request and includes **Driver Name**, **Driver Contact Number**, and **Vehicle Name** with registration. Older incomplete records may show Not assigned or Not available. Confirm current details in VMS if an assignment has changed.
 
@@ -529,14 +548,14 @@ Recommendation, overall request, and driver journey statuses describe different 
 | Request missing from reviewer queue | Check requester role/department, review stage, filters, and whether another officer already acted. |
 | Allocation rejected | Refresh resource availability; check overlap, shared passenger capacity, active driver, and vehicle eligibility. |
 | Driver cannot see trip | Confirm final approval, correct driver allocation, linked login identity, and schedule filters. Allocation alone is insufficient. |
-| Cannot start or complete | Check assigned account, journey state, and required odometer readings. End must be at least start. |
+| Cannot start or complete | Check assigned account, journey state, and the current global odometer requirement. When readings are required, provide them; when optional, any entered end must still be at least the available start. |
 | Wrong saved meter reading | Contact the responsible officer/support; the saved starting reading cannot be edited in the normal workflow. |
 | Notification badge persists | Open the bell notification or use Mark all read; allow refresh. Viewing a sidebar page alone does not clear it. |
 | Empty table/export disabled | Clear overly restrictive filters and verify records exist in the selected scope. |
 | PDF did not download | Check browser downloads/permissions, selection requirements, and whether any records match. |
 | Backup fails | Technical staff should check database access, backup-tool availability, and private storage permissions. |
 | Access denied or record not found | Confirm your role and ownership/department access. Do not use another person's account to work around the restriction. |
-| New data does not appear | Reopen or refresh the page after a confirmed save. Check for a failed request before repeating an action. |
+| New data does not appear | Check the network connection, then reopen or refresh the page after a confirmed save. Check for a failed request before repeating an action. |
 
 When contacting support, provide your role, page, request reference or vehicle registration, action time, exact error, and reproduction steps. Include a screenshot if useful, with passwords, SMS credentials, and unrelated personal details concealed.
 
@@ -559,15 +578,16 @@ When contacting support, provide your role, page, request reference or vehicle r
 ### Driver
 
 - Review today's approved assignments and pickup information.
-- Record the true starting meter before starting.
+- Check whether meter inputs are required; record true readings whenever the meter is reliable.
 - Report issues against the correct journey.
-- Record the ending meter, complete the trip, and verify history.
+- Record the ending meter when available, complete the trip, and verify history/actual distance where both readings exist.
 
 ### Administration and fleet staff
 
 - Maintain accurate user mobiles, departments, driver identities, and active states.
 - Keep vehicle compliance, status, capacity, and expenditure entries current.
 - Review saved journey distances before making them available to requesters.
+- System Administrators should keep the global odometer requirement enabled unless unreliable vehicle meters make optional entry necessary, and restore it when possible.
 - Download and secure backups according to the organization's schedule; include separate uploaded-file backups through technical support.
 
 ## 19. Current limitations and support
@@ -613,6 +633,7 @@ Use the sidebar or dashboard shortcuts where available. The following paths are 
 | Driver directory / executive driver details | /driverdirectory and /driverdetails |
 | Fuel / Service / Repair Records | /fuelmanagement, /servicerecords, /repairrecords |
 | Settings | /setting |
+| Odometer Settings (System Administrator) | /odometersettings |
 | Create Employee / User Management | /register and /usermanagement |
 | Department / Journey / Database Management | /departmentmanagement, /journeymanagement, /databasemanagement |
 | Illustrative Fleet Analytics | /fleetanalytics |

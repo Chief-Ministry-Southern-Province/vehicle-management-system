@@ -19,8 +19,9 @@ const initialForm = {
   fuel_efficiency_unit: "km/l",
   seat_capacity: "",
   technical_notes: "",
-  registration_expiry: "",
   revenue_license_expiry: "",
+  insurance_expiry: "",
+  emission_expiry: "",
   insurance_policy: "",
   insurance_provider: "",
   assignment: "General Fleet Pool",
@@ -37,6 +38,8 @@ const categories = [
   "Protocol & VIP Movement",
   "General Fleet Pool",
 ];
+const vehicleTypes = ["SUV", "Sedan", "Van", "Pickup", "Bus"];
+const customVehicleTypeOption = "__custom_vehicle_type__";
 export default function RegisterVehicle() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
@@ -44,11 +47,22 @@ export default function RegisterVehicle() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [isCustomVehicleType, setIsCustomVehicleType] = useState(false);
   const change = (event) =>
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
     }));
+  const changeVehicleType = (event) => {
+    const vehicleType = event.target.value;
+    const isCustom = vehicleType === customVehicleTypeOption;
+
+    setIsCustomVehicleType(isCustom);
+    setForm((current) => ({
+      ...current,
+      vehicle_type: isCustom ? "" : vehicleType,
+    }));
+  };
   const chooseImage = (event) => {
     const file = event.target.files?.[0];
     setImage(file || null);
@@ -128,18 +142,41 @@ export default function RegisterVehicle() {
                 <label>
                   Vehicle type
                   <select
-                    name="vehicle_type"
-                    value={form.vehicle_type}
-                    onChange={change}
+                    value={
+                      isCustomVehicleType
+                        ? customVehicleTypeOption
+                        : form.vehicle_type
+                    }
+                    onChange={changeVehicleType}
                     className={fieldClass}
                   >
-                    <option>SUV</option>
-                    <option>Sedan</option>
-                    <option>Van</option>
-                    <option>Pickup</option>
-                    <option>Bus</option>
+                    {vehicleTypes.map((vehicleType) => (
+                      <option key={vehicleType} value={vehicleType}>
+                        {vehicleType}
+                      </option>
+                    ))}
+                    <option value={customVehicleTypeOption}>
+                      Add a new vehicle type...
+                    </option>
                   </select>
                 </label>
+                {isCustomVehicleType && (
+                  <label>
+                    New vehicle type
+                    <input
+                      required
+                      name="vehicle_type"
+                      value={form.vehicle_type}
+                      onChange={change}
+                      maxLength="100"
+                      placeholder="e.g. Ambulance"
+                      className={fieldClass}
+                    />
+                    <span className="mt-1.5 block text-xs text-slate-500">
+                      This type will be saved with the vehicle.
+                    </span>
+                  </label>
+                )}
                 <label>
                   Manufacturer / make
                   <input
@@ -270,21 +307,31 @@ export default function RegisterVehicle() {
                   />
                 </label>
                 <label>
-                  Registration expiry
-                  <input
-                    type="date"
-                    name="registration_expiry"
-                    value={form.registration_expiry}
-                    onChange={change}
-                    className={fieldClass}
-                  />
-                </label>
-                <label>
                   Revenue licence expiry
                   <input
                     type="date"
                     name="revenue_license_expiry"
                     value={form.revenue_license_expiry}
+                    onChange={change}
+                    className={fieldClass}
+                  />
+                </label>
+                <label>
+                  Insurance expiry
+                  <input
+                    type="date"
+                    name="insurance_expiry"
+                    value={form.insurance_expiry}
+                    onChange={change}
+                    className={fieldClass}
+                  />
+                </label>
+                <label>
+                  Emission expiry
+                  <input
+                    type="date"
+                    name="emission_expiry"
+                    value={form.emission_expiry}
                     onChange={change}
                     className={fieldClass}
                   />

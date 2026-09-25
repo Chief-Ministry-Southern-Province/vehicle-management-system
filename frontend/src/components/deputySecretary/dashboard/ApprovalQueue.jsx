@@ -1,5 +1,40 @@
-import { FiFilter, FiChevronRight, FiArrowRight } from "react-icons/fi";
+import {
+  FiFilter,
+  FiChevronRight,
+  FiArrowRight,
+  FiClock,
+  FiMapPin,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { formatLocalDate, formatLocalTime } from "../../../utils/dateTime";
+
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+const shortLocation = (location) =>
+  String(location || "Not specified").split(",")[0].trim() || "Not specified";
+
+const scheduleDate = (request) => {
+  const departureDate = formatLocalDate(request.departure_at);
+  const returnDate = formatLocalDate(request.expected_return_at);
+
+  return departureDate === returnDate
+    ? departureDate
+    : `${departureDate} – ${returnDate}`;
+};
 
 export default function ApprovalQueue({
   requests = [],
@@ -71,7 +106,15 @@ export default function ApprovalQueue({
               <th className="px-6 py-4 font-semibold">Request ID</th>
               <th className="px-6 py-4 font-semibold">Requester</th>
               <th className="px-6 py-4 font-semibold">Department</th>
-              <th className="px-6 py-4 font-semibold">Status</th>
+              {view === "pending" && (
+                <>
+                  <th className="px-6 py-4 font-semibold">Route</th>
+                  <th className="px-6 py-4 font-semibold">Schedule</th>
+                </>
+              )}
+              {view !== "pending" && (
+                <th className="px-6 py-4 font-semibold">Status</th>
+              )}
               <th className="px-6 py-4 font-semibold">Priority</th>
               <th className="px-6 py-4 text-center font-semibold">Action</th>
             </tr>
@@ -99,16 +142,31 @@ export default function ApprovalQueue({
                 </td>
 
                 <td className="px-6 py-5">
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      {item.requester_name ||
-                        item.user?.name ||
-                        "Unknown requester"}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                      {initials(item.requester_name || item.user?.name)}
+                      {profilePictureUrl(item.user?.profile_picture_path) && (
+                        <img
+                          src={profilePictureUrl(item.user.profile_picture_path)}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">
+                        {item.requester_name ||
+                          item.user?.name ||
+                          "Unknown requester"}
+                      </p>
 
-                    <p className="text-xs text-slate-500">
-                      {item.user?.employee_id || "Government Employee"}
-                    </p>
+                      <p className="text-xs text-slate-500">
+                        {item.user?.employee_id || "Government Employee"}
+                      </p>
+                    </div>
                   </div>
                 </td>
 
@@ -116,13 +174,51 @@ export default function ApprovalQueue({
                   {item.user?.department || "Not specified"}
                 </td>
 
-                <td className="px-6 py-5">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${item.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                  >
-                    {item.status?.replaceAll("_", " ")}
-                  </span>
-                </td>
+                {view === "pending" && (
+                  <>
+                    <td className="px-6 py-5">
+                      <p
+                        className="flex items-center gap-1.5 whitespace-nowrap font-semibold text-slate-800"
+                        title={`${item.starting_location || "Not specified"} → ${item.destination || "Not specified"}`}
+                      >
+                        <FiMapPin className="shrink-0 text-blue-500" />
+                        <span className="max-w-32 truncate">
+                          {shortLocation(item.starting_location)}
+                        </span>
+                        <span className="text-blue-500" aria-hidden="true">→</span>
+                        <span className="max-w-32 truncate">
+                          {shortLocation(item.destination)}
+                        </span>
+                      </p>
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-5 text-sm font-medium text-slate-700">
+                      <span className="inline-flex items-start gap-1.5">
+                        <FiClock className="shrink-0 text-slate-400" />
+                        <span>
+                          <span className="block text-xs font-semibold text-slate-500">
+                            {scheduleDate(item)}
+                          </span>
+                          <span className="mt-0.5 block">
+                            {formatLocalTime(item.departure_at)}
+                            <span className="text-slate-400" aria-hidden="true"> – </span>
+                            {formatLocalTime(item.expected_return_at)}
+                          </span>
+                        </span>
+                      </span>
+                    </td>
+                  </>
+                )}
+
+                {view !== "pending" && (
+                  <td className="px-6 py-5">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${item.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                    >
+                      {item.status?.replaceAll("_", " ")}
+                    </span>
+                  </td>
+                )}
 
                 <td className="px-6 py-5">
                   <span

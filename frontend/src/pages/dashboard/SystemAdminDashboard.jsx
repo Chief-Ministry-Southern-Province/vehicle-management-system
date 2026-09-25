@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiArrowRight, FiDatabase, FiLayers, FiPlus, FiShield, FiUserCheck, FiUsers } from "react-icons/fi";
+import { FiArrowRight, FiDatabase, FiLayers, FiPlus, FiSettings, FiShield, FiUserCheck, FiUsers } from "react-icons/fi";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getDepartments, getUsers } from "../../api/authApi";
+import { useLanguage } from "../../context/useLanguage";
 
 const roleLabels = {
   employee: "Employee",
@@ -16,6 +17,7 @@ const roleLabels = {
 };
 
 export default function SystemAdminDashboard() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,6 +125,11 @@ export default function SystemAdminDashboard() {
                 <Link to="/databasemanagement" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
                   <span className="rounded-lg bg-emerald-100 p-2 text-emerald-700"><FiDatabase aria-hidden="true" /></span>
                   <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">Create database backup</strong><span className="text-xs text-slate-500">Download a secure database copy.</span></span>
+                  <FiArrowRight className="text-slate-400" aria-hidden="true" />
+                </Link>
+                <Link to="/odometersettings" className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-blue-300 hover:bg-blue-50">
+                  <span className="rounded-lg bg-amber-100 p-2 text-amber-700"><FiSettings aria-hidden="true" /></span>
+                  <span className="min-w-0 flex-1"><strong className="block text-sm text-slate-900">{t("nav.odometer_settings")}</strong><span className="text-xs text-slate-500">{t("odometer.dashboardDescription")}</span></span>
                   <FiArrowRight className="text-slate-400" aria-hidden="true" />
                 </Link>
               </div>

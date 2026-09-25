@@ -1,5 +1,6 @@
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Navigate, Routes, Route  } from 'react-router-dom';
+import { useRealtime } from './context/useRealtime';
 import './App.css';
 import { Toaster } from 'react-hot-toast';
 
@@ -54,21 +55,22 @@ import DailyScheduleTrips from './pages/deputySecretary/DailyScheduleTrips';
 import FuelAnalysis from './pages/deputySecretary/FuelAnalysis';
 import SystemAdminDashboard from './pages/dashboard/SystemAdminDashboard';
 import JourneyManagement from './pages/JourneyManagement';
+import OdometerSettings from './pages/OdometerSettings';
 
 const withAuth = (element, allowedRoles) => (
   <ProtectedRoute allowedRoles={allowedRoles}>{element}</ProtectedRoute>
 );
 
-function App() {
-  
+function ApplicationRoutes() {
+  const { workflowRevision } = useRealtime();
+
   return (
-    <BrowserRouter>
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
         <div className="w-full h-screen">
 
           <Toaster position="top-right"/>
 
-          <Routes>
+          <Routes key={workflowRevision}>
             <Route path="/" element={<Login />} />
             <Route path="/register" element={withAuth(<Register />, ["deputy_secretary", "system_admin"])} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -140,6 +142,7 @@ function App() {
             <Route path="/departmentmanagement" element={withAuth(<DepartmentManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/databasemanagement" element={withAuth(<DatabaseManagement />, ["deputy_secretary", "system_admin"])} />
             <Route path="/journeymanagement" element={withAuth(<JourneyManagement />, ["system_admin"])} />
+            <Route path="/odometersettings" element={withAuth(<OdometerSettings />, ["system_admin"])} />
             <Route path="/systemchanges" element={<Navigate to="/usermanagement" replace />} />
 
 
@@ -147,6 +150,13 @@ function App() {
 
         </div>
       </GoogleOAuthProvider>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ApplicationRoutes />
     </BrowserRouter>
   )
 }

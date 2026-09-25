@@ -15,6 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // The SPA authenticates private channels with its existing Sanctum bearer
+    // token. Keep this endpoint under /api so it receives the configured CORS
+    // policy instead of relying on a browser session cookie.
+    ->withBroadcasting(__DIR__.'/../routes/channels.php', [
+        'prefix' => 'api',
+        'middleware' => ['api', 'auth:sanctum'],
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         // Required for SPA cookie-based auth if you switch from token-only later.
         $middleware->statefulApi();

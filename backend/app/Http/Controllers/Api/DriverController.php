@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Models\SystemSetting;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ class DriverController extends Controller
     public function __construct(private readonly WorkflowNotificationService $notifications)
     {
     }
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -75,6 +77,28 @@ class DriverController extends Controller
                 ? VehicleRequest::find($validated['ignore_request_id'])
                 : null;
             $drivers->each(function (Driver $driver) use ($startsAt, $endsAt, $validated, $vehicleRequest): void {
+                $scheduledJourneys = $driver->activeJourneysDuring(
+                    $startsAt,
+                    $endsAt,
+                    $validated['ignore_request_id'] ?? null,
+                )
+                    ->with('allocatedVehicle:id,registration_number,make,model')
+                    ->orderBy('departure_at')
+                    ->get()
+                    ->map(fn (VehicleRequest $journey): array => [
+                        'id' => $journey->id,
+                        'reference' => 'REQ-'.str_pad((string) $journey->id, 4, '0', STR_PAD_LEFT),
+                        'starting_location' => $journey->starting_location,
+                        'destination' => $journey->destination,
+                        'departure_at' => $journey->departure_at?->toISOString(),
+                        'expected_return_at' => $journey->expected_return_at?->toISOString(),
+                        'passenger_count' => $journey->passenger_count,
+                        'purpose' => $journey->purpose,
+                        'vehicle' => $journey->allocatedVehicle,
+                    ])
+                    ->values()
+                    ->all();
+
                 $statusForSlot = $driver->operationalStatusFor(
                     $startsAt,
                     $endsAt,
@@ -90,6 +114,7 @@ class DriverController extends Controller
                     ),
                 );
                 $driver->setAttribute('status_for_slot', $statusForSlot);
+                $driver->setAttribute('scheduled_journeys', $scheduledJourneys);
             });
         }
 
@@ -155,7 +180,10 @@ class DriverController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ['trips' => $trips],
+            'data' => [
+                'trips' => $trips,
+                'odometer_readings_required' => SystemSetting::odometerReadingsRequired(),
+            ],
         ]);
     }
 
@@ -251,10 +279,15 @@ class DriverController extends Controller
             return response()->json(['success' => false, 'message' => 'Journey not found.'], 404);
         }
 
+        $action = $request->input('action');
+        $odometerReadingsRequired = SystemSetting::odometerReadingsRequired();
+        $requiresStartingReading = $odometerReadingsRequired
+            && ($action === 'start' || ($action === 'complete' && $vehicleRequest->start_odometer_km === null));
+
         $validated = $request->validate([
             'action' => ['required', Rule::in(['start', 'complete'])],
-            'start_odometer_km' => [Rule::requiredIf($request->input('action') === 'start' || $vehicleRequest->start_odometer_km === null), 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
-            'end_odometer_km' => ['required_if:action,complete', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'start_odometer_km' => [Rule::requiredIf($requiresStartingReading), 'nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'end_odometer_km' => [Rule::requiredIf($odometerReadingsRequired && $action === 'complete'), 'nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
         ]);
 
         if ($validated['action'] === 'start') {
@@ -280,7 +313,7 @@ class DriverController extends Controller
                 VehicleRequest::query()->whereKey($group->pluck('id'))->update([
                     'journey_status' => 'ongoing',
                     'journey_started_at' => now(),
-                    'start_odometer_km' => $validated['start_odometer_km'],
+                    'start_odometer_km' => $validated['start_odometer_km'] ?? null,
                 ]);
 
                 $vehicle?->update(['status' => 'unavailable']);
@@ -305,11 +338,17 @@ class DriverController extends Controller
                     $group->contains(fn (VehicleRequest $trip) => ! in_array($trip->journey_status, ['ongoing', 'issue'], true))) {
                     throw ValidationException::withMessages(['action' => 'Start the journey before completing it.']);
                 }
-                $startReading = $lockedRequest->start_odometer_km ?? $validated['start_odometer_km'];
-                if (isset($validated['start_odometer_km']) && (float) $validated['start_odometer_km'] !== (float) $startReading) {
+                $submittedStartReading = $validated['start_odometer_km'] ?? null;
+                $submittedEndReading = $validated['end_odometer_km'] ?? null;
+                $startReading = $lockedRequest->start_odometer_km;
+
+                if ($submittedStartReading !== null && $startReading !== null
+                    && (float) $submittedStartReading !== (float) $startReading) {
                     throw ValidationException::withMessages(['start_odometer_km' => 'The starting meter reading cannot be changed.']);
                 }
-                if ($validated['end_odometer_km'] < $startReading) {
+                $startReading ??= $submittedStartReading;
+
+                if ($startReading !== null && $submittedEndReading !== null && $submittedEndReading < $startReading) {
                     throw ValidationException::withMessages(['end_odometer_km' => 'The ending meter reading must be at least the starting reading.']);
                 }
                 VehicleRequest::query()->whereKey($group->pluck('id'))->update([
@@ -317,7 +356,7 @@ class DriverController extends Controller
                     'journey_status' => 'completed',
                     'journey_completed_at' => now(),
                     'start_odometer_km' => $startReading,
-                    'end_odometer_km' => $validated['end_odometer_km'],
+                    'end_odometer_km' => $submittedEndReading,
                 ]);
 
                 $driverHasAnotherJourney = VehicleRequest::query()
@@ -366,6 +405,7 @@ class DriverController extends Controller
             'data' => [
                 'trip' => $this->tripPayload($vehicleRequest->fresh()->load('allocatedVehicle'), $vehicleRequest->fresh()->consolidatedRequests()),
                 'driver_status' => $driver->fresh()->status,
+                'odometer_readings_required' => SystemSetting::odometerReadingsRequired(),
             ],
         ]);
     }

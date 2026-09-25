@@ -15,11 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call seeders in order
-        $this->call([
-            UserSeeder::class,
-            VehicleSeeder::class,
-            DriverSeeder::class,
-        ]);
+        $this->call(UserSeeder::class);
     }
 }

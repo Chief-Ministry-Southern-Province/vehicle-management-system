@@ -50,8 +50,17 @@ export default function VehicleTable({ vehicles, onDelete }) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blue-50 text-blue-600">
                       <FiTruck size={18} />
+                      {vehicle.imageUrl && (
+                        <img
+                          src={vehicle.imageUrl}
+                          alt={`${vehicle.name} vehicle`}
+                          className="absolute inset-0 h-full w-full bg-white object-cover"
+                          loading="lazy"
+                          onError={(event) => event.currentTarget.remove()}
+                        />
+                      )}
                     </div>
                     <div>
                       <h4 className="font-medium text-slate-800">

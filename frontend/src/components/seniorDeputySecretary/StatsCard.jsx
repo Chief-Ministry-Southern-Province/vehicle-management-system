@@ -247,14 +247,14 @@ function StatCard({ title, value, icon, path, tone }) {
 /* ------------------------------------------------------------------ */
 /*  Row wrapper — label + responsive grid                             */
 /* ------------------------------------------------------------------ */
-function StatRow({ label, items }) {
+function StatRow({ label, items, twoColumnMobile = false }) {
   return (
     <section className="mb-5 last:mb-0">
       <div className="mb-3 flex items-center gap-3 sm:mb-4">
         <h3 className="shrink-0 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sm:text-xs">{label}</h3>
         <div className="h-px flex-1 bg-linear-to-r from-slate-200 to-transparent dark:from-slate-700" />
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <div className={`grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 ${twoColumnMobile ? "grid-cols-2" : "grid-cols-1"}`}>
         {items.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}
@@ -266,7 +266,7 @@ function StatRow({ label, items }) {
 /* ------------------------------------------------------------------ */
 /*  Exported section                                                  */
 /* ------------------------------------------------------------------ */
-export default function StatsCard() {
+export default function StatsCard({ compactMobileOverview = false }) {
   const [data, setData] = useState({
     pending_approvals: 0,
     total_vehicles: 0,
@@ -318,7 +318,11 @@ export default function StatsCard() {
 
   return (
     <div className="rounded-[26px] border border-white/80 bg-white/60 p-3 shadow-[0_20px_50px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/50 sm:p-5 lg:p-6">
-      <StatRow label="Executive Overview" items={createOverviewStats(data)} />
+      <StatRow
+        label="Executive Overview"
+        items={createOverviewStats(data)}
+        twoColumnMobile={compactMobileOverview}
+      />
       <StatRow
         label={`Fleet Costs (${CURRENT_YEAR})`}
         items={createCostStats(data)}

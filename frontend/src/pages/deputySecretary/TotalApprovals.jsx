@@ -11,6 +11,23 @@ import RequestOverview from "../../components/deputySecretary/approvalWorkspace/
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { getApprovalVehicleRequest, getApprovalVehicleRequests } from "../../api/authApi";
 import { formatLocalDateTime } from "../../utils/dateTime";
+
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
 const statusStyle = {
   approved: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
   vehicle_allocated:
@@ -264,7 +281,26 @@ export default function TotalApprovals() {
               <tbody className="divide-y divide-slate-100">
                 {!loading && !error && visibleRequests.map(request => <tr key={request.id} className="align-top hover:bg-blue-50/70">
                   <td className="whitespace-nowrap px-5 py-5 font-bold text-blue-700">REQ-{String(request.id).padStart(4, "0")}</td>
-                  <td className="px-5 py-5 font-semibold">{request.requester_name || request.user?.name || t("odometer.notRecorded")}</td>
+                  <td className="px-5 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                        {initials(request.requester_name || request.user?.name)}
+                        {profilePictureUrl(request.user?.profile_picture_path) && (
+                          <img
+                            src={profilePictureUrl(request.user.profile_picture_path)}
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                      </div>
+                      <span className="font-semibold">
+                        {request.requester_name || request.user?.name || t("odometer.notRecorded")}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-5 py-5">{request.user?.department || t("odometer.notRecorded")}</td>
                   <td className="min-w-72 px-5 py-5">
                     <p className="font-semibold">{request.purpose || t("odometer.notRecorded")}</p>

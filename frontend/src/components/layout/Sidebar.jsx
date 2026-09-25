@@ -14,6 +14,7 @@ import {
   FiAlertTriangle,
   FiGlobe,
   FiMap,
+  FiSettings,
   FiX,
 } from "react-icons/fi";
 
@@ -124,6 +125,12 @@ const menuItems = [
         name: "Journey Management",
         path: "/journeymanagement",
         icon: <FiMap />,
+        roles: ["system_admin"],
+      },
+      {
+        name: "Odometer Settings",
+        path: "/odometersettings",
+        icon: <FiSettings />,
         roles: ["system_admin"],
       },
 
@@ -273,6 +280,12 @@ const menuItems = [
     title: "FLEET MANAGEMENT",
     items: [
       {
+        name: "Daily Schedule Trips",
+        path: "/dailyscheduletrips",
+        icon: <AiFillSchedule />,
+        roles: ["deputy_secretary"],
+      },
+      {
         name: "Driver Issue Reports",
         path: "/ontimeavailability",
         icon: <FiAlertTriangle />,
@@ -280,22 +293,16 @@ const menuItems = [
         notificationTitles: ["Vehicle issue reported"],
       },
       {
-        name: "Approved Journeys",
-        path: "/approvedjourny",
-        icon: <FiCheckCircle />,
-        roles: ["deputy_secretary"],
-      },
-      {
-        name: "Daily Schedule Trips",
-        path: "/dailyscheduletrips",
-        icon: <AiFillSchedule />,
-        roles: ["deputy_secretary"],
-      },
-      {
         name: "Journey Analysis",
         path: "/fuelanalysis",
         icon: <FiDroplet />,
         roles: ["subject_officer", "deputy_secretary"],
+      },
+      {
+        name: "Approved Journeys",
+        path: "/approvedjourny",
+        icon: <FiCheckCircle />,
+        roles: ["deputy_secretary"],
       },
     ],
   },
@@ -417,7 +424,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   useEffect(() => {
     const initialLoad = window.setTimeout(loadNotifications, 0);
 
-    const interval = window.setInterval(loadNotifications, 60000);
     const syncNotifications = (event) => {
       if (Array.isArray(event.detail?.notifications)) {
         const nextNotifications = event.detail.notifications;
@@ -432,7 +438,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     window.addEventListener("vms:notifications-updated", syncNotifications);
     return () => {
       window.clearTimeout(initialLoad);
-      window.clearInterval(interval);
       window.removeEventListener("vms:notifications-updated", syncNotifications);
     };
   }, [loadNotifications]);

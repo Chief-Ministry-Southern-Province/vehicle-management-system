@@ -82,6 +82,23 @@ class VehicleImageDeletionTest extends TestCase
         $this->assertSame($imagePath, $vehicle->fresh()->image_path);
     }
 
+    public function test_vehicle_directory_includes_each_vehicle_image_url(): void
+    {
+        $vehicle = $this->createVehicle([
+            'image_path' => 'vehicle-images/directory-preview.jpg',
+        ]);
+        $subjectOfficer = User::factory()->create([
+            'role' => 'subject_officer',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($subjectOfficer)
+            ->getJson('/api/vehicles')
+            ->assertOk()
+            ->assertJsonPath('data.vehicles.0.registration_number', $vehicle->registration_number)
+            ->assertJsonPath('data.vehicles.0.image_url', url('/vehicle-images/directory-preview.jpg'));
+    }
+
     public function test_vehicle_image_deletion_requires_authentication(): void
     {
         $imagePath = $this->createImageFile();

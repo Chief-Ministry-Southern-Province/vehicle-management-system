@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiCrosshair, FiMinus, FiPlus } from "react-icons/fi";
-import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_BOUNDARY, SRI_LANKA_CENTER } from "../../utils/sriLankaBoundary";
+import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_CENTER } from "../../utils/sriLankaBoundary";
 
 const TILE_SIZE = 256;
 const MIN_ZOOM = 7;
@@ -149,11 +149,6 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   const endPosition = pointPosition(end);
   const routePoints = (routeCoordinates || []).map(([lng, lat]) => pointPosition({ lat, lng })).filter(Boolean);
   const routePath = routePoints.map((point) => `${(point.left / width) * 100},${(point.top / height) * 100}`).join(" ");
-  const boundaryPath = SRI_LANKA_BOUNDARY.map(([lng, lat], index) => {
-    const position = pointPosition({ lat, lng });
-    return `${index === 0 ? "M" : "L"}${position.left} ${position.top}`;
-  }).join(" ") + " Z";
-
   const selectPoint = (clientX, clientY) => {
     if (readOnly || !onSelect) return;
     const bounds = mapRef.current?.getBoundingClientRect();
@@ -264,10 +259,6 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       >
         <div className="absolute left-0 top-0 h-full w-full" style={{ transform: `scaleX(${1})` }}>
           {tiles.map((tile) => <img key={`${tile.x}-${tile.y}`} src={tile.url} alt="" draggable="false" className="pointer-events-none absolute max-w-none select-none" style={{ width: `${(TILE_SIZE / width) * 100}%`, height: `${(TILE_SIZE / height) * 100}%`, left: `${(tile.left / width) * 100}%`, top: `${(tile.top / height) * 100}%` }} />)}
-          <svg className="pointer-events-none absolute inset-0 z-[5] h-full w-full" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
-            <path d={`M0 0 H${width} V${height} H0 Z ${boundaryPath}`} fill="rgba(15, 23, 42, 0.28)" fillRule="evenodd" />
-            <path d={boundaryPath} fill="rgba(37, 99, 235, 0.05)" stroke="#1d4ed8" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-          </svg>
           {routePath && (
             <svg className="pointer-events-none absolute inset-0 z-10 h-full w-full drop-shadow-md" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               <polyline points={routePath} fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />

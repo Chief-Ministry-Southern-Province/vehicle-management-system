@@ -102,6 +102,8 @@ class VehicleController extends Controller
             'technical_notes' => ['nullable', 'string', 'max:5000'],
             'registration_expiry' => ['nullable', 'date'],
             'revenue_license_expiry' => ['nullable', 'date'],
+            'insurance_expiry' => ['nullable', 'date'],
+            'emission_expiry' => ['nullable', 'date'],
             'insurance_policy' => ['nullable', 'string', 'max:100'],
             'insurance_provider' => ['nullable', 'string', 'max:255'],
             'assignment' => ['nullable', 'string', 'max:255'],

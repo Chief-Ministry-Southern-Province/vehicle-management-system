@@ -13,6 +13,89 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_pending_allocation_queue_includes_the_requester_profile_picture_path(): void
+    {
+        $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
+        $requester = User::factory()->create([
+            'role' => 'employee',
+            'profile_picture_path' => 'profile-pictures/requester.png',
+        ]);
+        $request = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Official meeting',
+            'starting_location' => 'Labuduwa',
+            'destination' => 'Galle',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 1,
+            'status' => 'recommended',
+            'recommendation_status' => 'recommended',
+        ]);
+
+        $this->actingAs($deputy)
+            ->getJson('/api/approvals/vehicle-requests?status=pending')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $request->id)
+            ->assertJsonPath('data.requests.0.starting_location', 'Labuduwa')
+            ->assertJsonPath('data.requests.0.destination', 'Galle')
+            ->assertJsonStructure([
+                'data' => ['requests' => [['departure_at', 'expected_return_at']]],
+            ])
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
+    }
+
+    public function test_pending_final_approval_queue_includes_the_requester_profile_picture_path(): void
+    {
+        $secretary = User::factory()->create(['role' => 'secretary', 'status' => 'active']);
+        $requester = User::factory()->create([
+            'role' => 'employee',
+            'profile_picture_path' => 'profile-pictures/final-approval-requester.png',
+        ]);
+        $request = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Official meeting',
+            'destination' => 'Galle',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 1,
+            'status' => 'vehicle_allocated',
+        ]);
+
+        $this->actingAs($secretary)
+            ->getJson('/api/final-approvals/vehicle-requests?status=pending')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $request->id)
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
+    }
+
+    public function test_official_approval_records_include_the_requester_profile_picture_path(): void
+    {
+        $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
+        $requester = User::factory()->create([
+            'role' => 'employee',
+            'profile_picture_path' => 'profile-pictures/approval-record-requester.png',
+        ]);
+        $request = VehicleRequest::create([
+            'user_id' => $requester->id,
+            'requester_name' => $requester->name,
+            'purpose' => 'Official meeting',
+            'destination' => 'Galle',
+            'departure_at' => '2026-08-10 09:00:00',
+            'expected_return_at' => '2026-08-10 12:00:00',
+            'passenger_count' => 1,
+            'status' => 'recommended',
+            'recommendation_status' => 'recommended',
+        ]);
+
+        $this->actingAs($deputy)
+            ->getJson('/api/approvals/vehicle-requests?status=all')
+            ->assertOk()
+            ->assertJsonPath('data.requests.0.id', $request->id)
+            ->assertJsonPath('data.requests.0.user.profile_picture_path', $requester->profile_picture_path);
+    }
+
     public function test_overlapping_requests_can_be_manually_consolidated_before_start_when_seats_are_available(): void
     {
         $deputy = User::factory()->create(['role' => 'deputy_secretary', 'status' => 'active']);
@@ -33,7 +116,8 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
             'destination' => 'Galle', 'departure_at' => '2026-08-10 09:00:00',
             'expected_return_at' => '2026-08-10 12:00:00', 'recommendation_status' => 'recommended',
         ];
-        VehicleRequest::create([...$base, 'purpose' => 'First visit', 'passenger_count' => 2,
+        $scheduledJourney = VehicleRequest::create([...$base, 'purpose' => 'First visit', 'passenger_count' => 2,
+            'starting_location' => 'Labuduwa',
             'status' => 'approved', 'journey_status' => 'scheduled',
             'allocated_vehicle_id' => $vehicle->id, 'allocated_driver_id' => $driver->id]);
         $second = VehicleRequest::create([...$base, 'purpose' => 'Second visit', 'destination' => 'Nugegoda', 'passenger_count' => 3,
@@ -47,7 +131,18 @@ class DeputySecretaryVehicleRequestWorkflowTest extends TestCase
         $this->actingAs($deputy)->getJson("/api/vehicles?{$slot}")
             ->assertOk()->assertJsonPath('data.vehicles.0.available_for_slot', true);
         $this->actingAs($deputy)->getJson("/api/drivers?{$slot}")
-            ->assertOk()->assertJsonPath('data.drivers.0.available_for_slot', true);
+            ->assertOk()
+            ->assertJsonPath('data.drivers.0.available_for_slot', true)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.id', $scheduledJourney->id)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.starting_location', 'Labuduwa')
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.destination', 'Galle')
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.passenger_count', 2)
+            ->assertJsonPath('data.drivers.0.scheduled_journeys.0.vehicle.registration_number', 'SHARED-1001')
+            ->assertJsonStructure([
+                'data' => ['drivers' => [['scheduled_journeys' => [[
+                    'departure_at', 'expected_return_at', 'purpose',
+                ]]]]],
+            ]);
 
         $this->actingAs($deputy)
             ->patchJson("/api/approvals/vehicle-requests/{$second->id}/allocate", [

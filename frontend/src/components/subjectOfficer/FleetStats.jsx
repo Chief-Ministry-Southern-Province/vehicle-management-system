@@ -136,7 +136,7 @@ export default function FleetStats() {
         {Array.from({ length: 7 }).map((_, index) => (
           <div
             key={index}
-            className="h-[152px] animate-pulse rounded-[24px] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+            className="h-[126px] animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 sm:h-[152px] sm:rounded-[24px]"
           />
         ))}
       </div>
@@ -155,7 +155,7 @@ export default function FleetStats() {
           <h2 className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-xs">Fleet overview</h2>
           <div className="h-px flex-1 bg-linear-to-r from-slate-300/90 to-transparent dark:from-slate-700" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           {stats.slice(0, 4).map((item) => (
             <StatCard key={item.title} item={item} />
           ))}
@@ -167,7 +167,7 @@ export default function FleetStats() {
           <h2 className="shrink-0 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 sm:text-xs">Fleet costs</h2>
           <div className="h-px flex-1 bg-linear-to-r from-slate-300/90 to-transparent dark:from-slate-700" />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
           {stats.slice(4).map((item) => (
             <StatCard key={item.title} item={item} compactValue />
           ))}
@@ -179,16 +179,16 @@ export default function FleetStats() {
 
 function StatCard({ item, compactValue = false }) {
   return (
-    <article className="group relative min-h-[152px] min-w-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white px-6 py-7 shadow-[0_10px_24px_-19px_rgba(15,23,42,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_32px_-22px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
-      <div className="flex min-w-0 items-start justify-between gap-4">
-        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] text-xl text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.7)] transition-transform duration-200 group-hover:scale-105 ${item.iconClass}`}>
+    <article className="group relative min-h-[120px] min-w-0 overflow-hidden rounded-[20px] border border-slate-200 bg-white px-4 py-4 shadow-[0_5px_14px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_12px_24px_rgba(15,23,42,0.12)] sm:min-h-[152px] sm:rounded-[24px] sm:px-6 sm:py-7 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+      <div className="flex min-w-0 items-start justify-between gap-3 sm:gap-4">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.7)] transition-transform duration-200 group-hover:scale-105 sm:h-12 sm:w-12 sm:rounded-[15px] sm:text-xl ${item.iconClass}`}>
           {item.icon}
         </span>
-        <strong className={`min-w-0 break-words text-right font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white ${compactValue ? "text-2xl sm:text-[30px]" : "text-4xl"}`}>
+        <strong className={`min-w-0 break-words text-right font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white ${compactValue ? "text-xl sm:text-[30px]" : "text-3xl sm:text-4xl"}`}>
           {item.value}
         </strong>
       </div>
-      <p className="mt-6 text-sm font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+      <p className="mt-5 text-[11px] font-extrabold uppercase tracking-wide text-slate-600 sm:mt-6 sm:text-sm dark:text-slate-300">
         {item.title}
       </p>
       <span className={`absolute inset-x-0 bottom-0 h-[3px] ${item.accentClass}`} />

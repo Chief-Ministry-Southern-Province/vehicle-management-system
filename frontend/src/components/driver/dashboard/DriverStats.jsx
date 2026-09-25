@@ -74,21 +74,21 @@ export default function DriverStats() {
           {error}
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {stats.map((item) => (
           <article
             key={item.title}
-            className="group relative min-h-[152px] min-w-0 overflow-hidden rounded-[24px] border border-slate-200/90 bg-white px-6 py-7 shadow-[0_10px_24px_-19px_rgba(15,23,42,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_32px_-22px_rgba(15,23,42,0.55)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+            className="group relative min-h-[112px] min-w-0 overflow-hidden rounded-2xl border border-slate-200/90 bg-white px-4 py-3 shadow-[0_10px_24px_-19px_rgba(15,23,42,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_32px_-22px_rgba(15,23,42,0.55)] sm:min-h-[152px] sm:rounded-[24px] sm:px-6 sm:py-7 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
           >
-            <div className="flex min-w-0 items-start justify-between gap-4">
-              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px] text-xl text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.7)] transition-transform duration-200 group-hover:scale-105 ${item.iconClass}`}>
+            <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-4">
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.7)] transition-transform duration-200 group-hover:scale-105 sm:h-12 sm:w-12 sm:rounded-[15px] sm:text-xl ${item.iconClass}`}>
                 {item.icon}
               </span>
-              <strong className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums dark:text-white">
+              <strong className="min-w-0 text-right text-3xl font-extrabold leading-tight tracking-tight text-slate-900 tabular-nums sm:text-4xl dark:text-white">
                 {loading ? "..." : item.value}
               </strong>
             </div>
-            <p className="mt-6 text-sm font-extrabold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+            <p className="mt-3 text-[10px] font-extrabold uppercase leading-4 tracking-[0.08em] text-slate-600 sm:mt-6 sm:text-sm sm:tracking-wide dark:text-slate-300">
               {item.title}
             </p>
             <span className={`absolute inset-x-0 bottom-0 h-[3px] ${item.accentClass}`} />

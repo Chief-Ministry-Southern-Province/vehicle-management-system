@@ -154,6 +154,8 @@ php artisan key:generate
 php artisan webpush:vapid
 php artisan migrate --seed
 php artisan serve
+# In a second backend terminal: start the WebSocket server for live workflow notifications.
+php artisan reverb:start
 ```
 
 On Windows PowerShell, replace the copy command with:
@@ -179,6 +181,16 @@ Useful settings include:
 APP_URL=http://127.0.0.1:8000
 APP_LOCAL_TIMEZONE=Asia/Colombo
 FRONTEND_URL=http://localhost:5173
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=<reverb-app-id>
+REVERB_APP_KEY=<reverb-public-key>
+REVERB_APP_SECRET=<reverb-server-secret>
+REVERB_HOST=127.0.0.1
+REVERB_PORT=8080
+REVERB_SCHEME=http
+# Use `localhost` (or a comma-separated production hostname list).
+# Full SPA origins are accepted and normalized automatically.
+REVERB_ALLOWED_ORIGINS=localhost
 VAPID_SUBJECT=mailto:admin@example.gov.lk
 VAPID_PUBLIC_KEY=<generated-public-key>
 VAPID_PRIVATE_KEY=<generated-private-key>
@@ -208,7 +220,9 @@ npm ci
 npm run dev
 ```
 
-The client normally starts at `http://localhost:5173`. Its API base is currently `http://127.0.0.1:8000/api` in `frontend/src/api/authApi.jsx`. For deployment, update that configuration and ensure backend CORS `FRONTEND_URL` matches the frontend origin.
+The client normally starts at `http://localhost:5173`. Its API base is configured with `VITE_API_URL` in `frontend/.env` and falls back to `http://127.0.0.1:8000/api`. For deployment, update that configuration and ensure backend CORS `FRONTEND_URL` matches the frontend origin.
+
+Copy `frontend/.env.example` to `frontend/.env` and set its public Reverb values to the matching backend app key, host, port, and scheme. `VITE_REVERB_APP_KEY` is public; never expose `REVERB_APP_SECRET`. Rebuild or restart Vite after changing any `VITE_*` value. The API and `php artisan reverb:start` must both remain running for new bell notifications, sidebar badges, and in-app alerts to appear without refreshing the page.
 
 ## Seeded development accounts
 
@@ -242,6 +256,7 @@ Backend, from `backend/`:
 
 ```bash
 php artisan serve                  # start API
+php artisan reverb:start           # start the private WebSocket server
 php artisan migrate --seed         # apply schema and seed demo data
 php artisan test                   # run all tests
 php artisan test --filter=Name     # run targeted tests

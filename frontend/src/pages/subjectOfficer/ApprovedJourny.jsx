@@ -16,9 +16,26 @@ import {
 } from "react-icons/fi";
 import { getApprovedJourneys } from "../../api/authApi";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { formatLocalDateTime as formatDateTime } from "../../utils/dateTime";
+import {
+  formatLocalDate,
+  formatLocalDateTime as formatDateTime,
+  formatLocalTime,
+} from "../../utils/dateTime";
 import { generateApprovedJourneyPdf } from "../../utils/approvedJourneyPdf";
 const requestNumber = (id) => `REQ-${String(id).padStart(4, "0")}`;
+const apiOrigin =
+  import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
+  "http://127.0.0.1:8000";
+const profilePictureUrl = (path) =>
+  path ? `${apiOrigin}/${String(path).replace(/^\/+/, "")}` : null;
+const initials = (name) =>
+  String(name || "User")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 const display = (value) => value || "—";
 const journeyStatus = (journey) => {
   if (journey.status === "cancelled") return "Cancelled";
@@ -393,90 +410,150 @@ export default function ApprovedJourny() {
           </div>
         )}
         {!loading && !error && filteredJourneys.length > 0 && (
-          <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <section className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_20px_55px_-36px_rgba(15,23,42,0.42)]">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1160px]">
-                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <table className="w-full min-w-[1280px] table-fixed">
+                <colgroup>
+                  <col className="w-[15%]" />
+                  <col className="w-[23%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[21%]" />
+                  <col className="w-[6%]" />
+                </colgroup>
+                <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                   <tr>
-                    <th className="px-6 py-4">Requester</th>
-                    <th className="px-6 py-4">Destination</th>
-                    <th className="px-6 py-4">Allocated Vehicle</th>
-                    <th className="px-6 py-4">Allocated Driver</th>
-                    <th className="px-6 py-4">Driver Status</th>
-                    <th className="px-6 py-4">Time</th>
-                    <th className="px-6 py-4 text-center">Action</th>
+                    <th className="px-4 py-3">Requester</th>
+                    <th className="px-4 py-3">Destination</th>
+                    <th className="px-4 py-3">Allocated Vehicle</th>
+                    <th className="px-4 py-3">Allocated Driver</th>
+                    <th className="px-4 py-3">Driver Status</th>
+                    <th className="px-4 py-3">Schedule</th>
+                    <th className="px-4 py-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100/90">
                   {filteredJourneys.map((journey) => {
                     const vehicle = journey.allocated_vehicle || {};
                     const driver = journey.allocated_driver || {};
                     return (
                       <tr
                         key={journey.id}
-                        className="border-t border-slate-100 hover:bg-blue-50/40"
+                        className="group transition-colors duration-200 hover:bg-emerald-50/50"
                       >
-                        <td className="px-6 py-5">
-                          <p className="font-semibold text-slate-800">
-                            {display(
-                              journey.requester_name || journey.user?.name,
-                            )}
-                          </p>
-                          <p className="mt-1 text-xs font-medium text-blue-600">
-                            {requestNumber(journey.id)}
-                          </p>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 text-[10px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
+                              <span>
+                                {initials(
+                                  journey.requester_name || journey.user?.name,
+                                )}
+                              </span>
+                              {profilePictureUrl(
+                                journey.user?.profile_picture_path,
+                              ) && (
+                                <img
+                                  src={profilePictureUrl(
+                                    journey.user?.profile_picture_path,
+                                  )}
+                                  alt=""
+                                  className="absolute inset-0 h-full w-full object-cover"
+                                  onError={(event) => {
+                                    event.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-800">
+                                {display(
+                                  journey.requester_name || journey.user?.name,
+                                )}
+                              </p>
+                              <p className="mt-0.5 text-[11px] font-semibold tracking-wide text-emerald-700">
+                                {requestNumber(journey.id)}
+                              </p>
+                              <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                                {display(journey.user?.department)}
+                              </p>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <p className="font-medium text-slate-700">
+                        <td className="px-4 py-3">
+                          <p className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                            <span className="rounded-lg bg-emerald-50 p-1 text-emerald-600 ring-1 ring-inset ring-emerald-100">
+                              <FiMapPin className="shrink-0" />
+                            </span>
                             {display(journey.destination)}
                           </p>
-                          <p className="mt-1 max-w-xs truncate text-xs text-slate-500">
+                          <p className="mt-0.5 truncate text-[11px] text-slate-500">
                             {display(journey.purpose)}
                           </p>
                         </td>
-                        <td className="px-6 py-5">
-                          <p className="font-semibold text-slate-700">
-                            {display(vehicle.registration_number)}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {display(
-                              [vehicle.make, vehicle.model]
-                                .filter(Boolean)
-                                .join(" "),
-                            )}
-                          </p>
-                          <p className="mt-1 flex items-start gap-1 text-xs text-slate-500">
-                            <FiMapPin
-                              className="mt-0.5 shrink-0 text-blue-500"
-                              aria-hidden="true"
-                            />
-                            <span className="max-w-52 whitespace-pre-wrap">
-                              {display(journey.parking_location)}
+                        <td className="px-4 py-3">
+                          <div className="flex items-start gap-2.5">
+                            <span className="rounded-lg bg-indigo-50 p-1.5 text-indigo-500 ring-1 ring-inset ring-indigo-100">
+                              <FiTruck className="shrink-0" />
                             </span>
-                          </p>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-slate-800">
+                                {display(vehicle.registration_number)}
+                              </p>
+                              <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500">
+                                {display(
+                                  [vehicle.make, vehicle.model]
+                                    .filter(Boolean)
+                                    .join(" "),
+                                )}
+                              </p>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-5">
-                          <p className="font-semibold text-slate-700">
+                        <td className="px-4 py-3">
+                          <p className="truncate text-sm font-bold text-slate-700">
                             {display(driver.full_name)}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-0.5 text-[11px] text-slate-500">
                             {display(driver.driver_id)}
                           </p>
                         </td>
-                        <td className="px-6 py-5">
+                        <td className="px-4 py-3">
                           <DriverStatus journey={journey} />
                         </td>
-                        <td className="px-6 py-5 text-sm text-slate-600">
-                          <p>{formatDateTime(journey.departure_at)}</p>
-                          <p className="mt-1 text-xs text-slate-400">
-                            Return: {formatDateTime(journey.expected_return_at)}
-                          </p>
+                        <td className="px-4 py-3 text-xs text-slate-600">
+                          <div className="space-y-1.5">
+                            <p className="flex items-center gap-2 whitespace-nowrap">
+                              <FiClock className="shrink-0 text-emerald-600" />
+                              <span className="w-11 shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                                Depart
+                              </span>
+                              <span className="font-semibold text-slate-700">
+                                {formatLocalDate(journey.departure_at)}
+                              </span>
+                              <span className="font-medium text-slate-500">
+                                {formatLocalTime(journey.departure_at)}
+                              </span>
+                            </p>
+                            <p className="flex items-center gap-2 whitespace-nowrap">
+                              <FiCalendar className="shrink-0 text-emerald-600" />
+                              <span className="w-11 shrink-0 text-[10px] font-bold uppercase tracking-wide text-emerald-500">
+                                Return
+                              </span>
+                              <span className="font-semibold text-slate-700">
+                                {formatLocalDate(journey.expected_return_at)}
+                              </span>
+                              <span className="font-medium text-slate-500">
+                                {formatLocalTime(journey.expected_return_at)}
+                              </span>
+                            </p>
+                          </div>
                         </td>
-                        <td className="px-6 py-5 text-center">
+                        <td className="px-4 py-3 text-center">
                           <button
                             type="button"
                             onClick={() => setSelectedJourney(journey)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700"
                           >
                             <FiEye /> View
                           </button>
@@ -487,9 +564,14 @@ export default function ApprovedJourny() {
                 </tbody>
               </table>
             </div>
-            <div className="border-t border-slate-100 bg-slate-50 px-6 py-4 text-sm text-slate-500">
-              Showing {filteredJourneys.length} of {journeys.length} approved
-              journeys
+            <div className="flex items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/80 px-6 py-4 text-sm text-slate-500">
+              <span>
+                Showing {filteredJourneys.length} of {journeys.length} approved
+                journeys
+              </span>
+              <span className="hidden text-xs font-semibold uppercase tracking-wide text-slate-400 sm:block">
+                Journey records
+              </span>
             </div>
           </section>
         )}

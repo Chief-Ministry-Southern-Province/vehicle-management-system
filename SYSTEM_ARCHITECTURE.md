@@ -2,7 +2,7 @@
 
 **System:** Vehicle Management System for the Chief Ministry, Dakshinapaya, Labuduwa, Galle, Sri Lanka
 
-**Architecture style:** React single-page application backed by a Laravel REST API
+**Architecture style:** React single-page application backed by a Laravel REST API and authenticated Laravel Reverb workflow-update channels
 
 **Document basis:** Repository implementation as of 2 September 2026
 
@@ -41,6 +41,7 @@ flowchart LR
         RBAC[Role middleware]
         DOMAIN[Controllers and domain rules]
         NOTIFY[Laravel notifications]
+        REVERB[Laravel Reverb]
     end
 
     DB[(SQL database)]
@@ -52,6 +53,7 @@ flowchart LR
 
     U --> SPA
     SPA <-->|HTTPS JSON or multipart| API
+    SPA <-->|private WebSocket| REVERB
     SPA --> LS
     SPA -->|route preview and text search| OSRM
     SPA -->|Sri Lanka location search| NOM
@@ -62,6 +64,7 @@ flowchart LR
     DOMAIN -->|reverse geocoding| NOM
     DOMAIN --> NOTIFY
     NOTIFY --> DB
+    NOTIFY -->|workflow invalidation| REVERB
     NOTIFY --> PUSH --> SW
     API -->|password reset| MAIL
 ```
@@ -74,14 +77,14 @@ The browser is an untrusted client. Client route guards improve navigation, but 
 | --- | --- | --- |
 | UI | React 19, React Router 7 | Role-oriented pages and navigation |
 | Build and styling | Vite 8, Tailwind CSS 4 | Development server and production SPA bundle |
-| Client communication | Axios | JSON and multipart REST requests |
+| Client communication | Axios, Laravel Echo, Pusher protocol client | JSON/multipart REST commands and authenticated WebSocket workflow invalidations |
 | Client state | React Context, `localStorage` | Authentication, role, language, and theme state |
 | UI support | Recharts, Lucide/React Icons, react-hot-toast | Charts, icons, and feedback |
 | API | PHP 8.2+, Laravel 12 | Routing, validation, orchestration, serialization |
 | Authentication | Laravel Sanctum 4 | Bearer-token creation and validation |
 | Persistence | Eloquent ORM | Entities, relationships, casts, and queries |
 | Database | SQLite by default; MySQL supported | Transactional application data |
-| Notifications | Laravel database notifications and Web Push | In-app and device workflow alerts |
+| Notifications | Laravel database notifications, Laravel Reverb, and Web Push | Durable in-app alerts, live workflow updates, and optional device delivery |
 | Files | Laravel filesystem plus public vehicle images | Attachments, profile pictures, and vehicle images |
 | Maps | OpenStreetMap UI, OSRM-compatible routing, Nominatim-compatible geocoding | Location selection, route preview/calculation, reverse geocoding |
 | Testing | PHPUnit 11 / Laravel feature tests, ESLint, Vite build | Backend behavior and frontend quality checks |
@@ -210,7 +213,7 @@ The client guard redirects missing sessions and disallowed roles, but it is not 
 ```mermaid
 flowchart TD
     MAIN[main.jsx]
-    CTX[Auth, Role, Language providers]
+    CTX[Auth, Role, Language, Realtime providers]
     ROUTER[App.jsx and React Router]
     GUARD[ProtectedRoute]
     LAYOUT[DashboardLayout]
@@ -219,10 +222,12 @@ flowchart TD
     API[authApi.jsx]
     UTIL[Date, map, push, mapping, PDF utilities]
     REST[Laravel /api]
+    WS[Reverb private channel]
 
     MAIN --> CTX --> ROUTER --> GUARD --> LAYOUT --> PAGE
     PAGE --> COMPONENT
     PAGE --> API --> REST
+    CTX --> WS
     PAGE --> UTIL
     COMPONENT --> UTIL
 ```
@@ -703,7 +708,7 @@ Expected errors are `401` unauthenticated, `403` forbidden/inactive, `404` missi
 
 ## 11. Notifications and background browser behavior
 
-Workflow events create a per-user Laravel database notification. If stable VAPID keys and a browser subscription exist, the same non-sensitive payload is sent over Web Push. If `TEXTIT_ENABLED` and the gateway credentials are configured, recipients with a valid phone number also receive a concise TEXTIT.BIZ SMS.
+Workflow events create a per-user Laravel database notification and a compact `workflow.updated` event on that user's private Laravel Reverb channel. Each channel is authorized by the existing Sanctum bearer token at `POST /api/broadcasting/auth`; no public workflow channel exists. The event contains only an action, request identifier, and timestamp, so the client treats it as an invalidation and re-runs its normal role-protected data loader. If stable VAPID keys and a browser subscription exist, the same non-sensitive notification is also sent over Web Push. If `TEXTIT_ENABLED` and the gateway credentials are configured, recipients with a valid phone number also receive a concise TEXTIT.BIZ SMS.
 
 ```mermaid
 flowchart LR
@@ -711,6 +716,7 @@ flowchart LR
     SERVICE[WorkflowNotificationService]
     USERS[Resolve active recipients by role/department]
     DB[(notifications table)]
+    REVERB[Private Reverb user channel]
     WP[WebPushChannel]
     PS[Browser push service]
     SMS[TEXTIT.BIZ SMS gateway]
@@ -719,13 +725,14 @@ flowchart LR
 
     EVENT --> SERVICE --> USERS
     USERS --> DB --> UI
+    USERS --> REVERB --> UI
     USERS --> WP --> PS --> SW --> UI
     USERS --> SMS
 ```
 
 The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, and issue reports. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. It requires the gateway response body to begin with `OK`; an HTTP 200 response beginning with `Err` is a rejected submission and is logged with a sanitized result code. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
 
-The SPA notification menu refreshes on open and every minute. The service worker can display notifications when the SPA is closed. Web Push requires HTTPS in production; iOS/iPadOS users must install the site to the Home Screen.
+The SPA subscribes once per signed-in user and refreshes the affected route immediately on a Reverb workflow event; it does not use minute polling. The notification menu still reads the durable unread list on its initial load and when opened. The service worker can display notifications when the SPA is closed. Web Push requires HTTPS in production; iOS/iPadOS users must install the site to the Home Screen.
 
 ## 12. File and media architecture
 
@@ -845,7 +852,7 @@ flowchart LR
 
 The frontend build can be served independently from the API. `frontend/vercel.json` supplies the SPA fallback and currently includes an API proxy rule; deployed environments should use an HTTPS API destination instead of an unsecured numeric host. Laravel locally defaults to SQLite, while MySQL configuration is available. No full production infrastructure-as-code definition is committed.
 
-Required production configuration includes `APP_URL`, `APP_KEY`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, filesystem settings, mail settings, routing/geocoding endpoints, VAPID subject/public/private keys, and the server-only `TEXTIT_ENABLED`, `TEXTIT_USER_ID`, `TEXTIT_PASSWORD`, `TEXTIT_URL`, and `TEXTIT_TIMEOUT` settings. Only the VAPID public key may be exposed to the browser; do not expose TEXTIT.BIZ credentials.
+Required production configuration includes `APP_URL`, `APP_KEY`, `APP_LOCAL_TIMEZONE`, `FRONTEND_URL`, `DB_*`, filesystem settings, mail settings, routing/geocoding endpoints, `BROADCAST_CONNECTION=reverb`, server-side `REVERB_*` values and allowed SPA origins, VAPID subject/public/private keys, and the server-only `TEXTIT_ENABLED`, `TEXTIT_USER_ID`, `TEXTIT_PASSWORD`, `TEXTIT_URL`, and `TEXTIT_TIMEOUT` settings. The browser receives only `VITE_REVERB_APP_KEY`, host, port, and scheme; never expose `REVERB_APP_SECRET` or TEXTIT.BIZ credentials. Run `php artisan reverb:start` as a managed service beside the API.
 
 ## 16. Reliability and consistency
 
