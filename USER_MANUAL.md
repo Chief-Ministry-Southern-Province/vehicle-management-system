@@ -319,6 +319,8 @@ Subject Officers maintain vehicle records. Executive roles can inspect fleet rec
 
 Registration numbers must be unique. VIN and engine identifiers, if supplied, must also be unique. Seat capacity must be between 1 and 100, fuel level between 0 and 100 percent, and an efficiency value must have a corresponding supported unit.
 
+The system alerts every active Subject Officer and Assistant/Deputy Secretary one calendar month and one week before a saved revenue-licence expiry. Keep this date current after every renewal. The alert appears in VMS and, when TEXTIT.BIZ SMS is enabled and the account has a valid phone number, is also sent by SMS.
+
 ### 11.2 Edit vehicle data and images
 
 Open the vehicle details editor, change the required fields, and save. Add or remove service, repair, and fuel rows in their corresponding sections before saving the vehicle.
@@ -332,6 +334,8 @@ There is no general vehicle-delete endpoint in the current application. Use the 
 Open **Driver Directory** for fleet maintenance or **Driver Details** for the read-only executive directory. Search and filter by status, then open the driver profile.
 
 Driver information includes ID, full name, NIC, birth date, address, contact number, blood group, licence number/type/expiry, duty/account state, vehicle allocation, and available journey history. Licence expiry badges show red for a past date and green for today or a future date; missing/invalid dates have a neutral appearance.
+
+The system sends every active Subject Officer and Assistant/Deputy Secretary a VMS notification one calendar month and one week before a driver's saved licence expiry date. Keep the driver's licence date current when it is renewed.
 
 Subject Officers can create, edit, and delete directory records through the available controls. Save changes and re-open the profile to confirm them. Creating a directory record is separate from creating a login account. For a driver who must sign in, the administrator should use **Create Employee**, select Driver, and complete the additional driver fields; that workflow creates the linked account and directory information together.
 
@@ -495,6 +499,8 @@ Simply viewing a work page through the sidebar or dismissing a temporary pop-up 
 | Cancellation | Relevant requester/driver users receive a cancellation update. |
 | Trip start/completion | Requester receives progress updates. |
 | Driver issue | Requester, Subject Officer, and Deputy Secretary receive issue notifications. |
+| Vehicle revenue-licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive reminders one calendar month and one week before expiry. |
+| Driver licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive notifications one calendar month and one week before expiry. |
 | Registration/password recovery | The account mobile receives a temporary-password SMS when the gateway accepts the request. |
 
 ### 15.3 SMS messages

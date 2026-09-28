@@ -38,6 +38,11 @@ class Driver extends Model
         return $this->hasMany(VehicleRequest::class, 'allocated_driver_id');
     }
 
+    public function licenceExpiryReminders(): HasMany
+    {
+        return $this->hasMany(DriverLicenceExpiryReminder::class);
+    }
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class, 'employee_id', 'nic');

@@ -114,6 +114,16 @@ class User extends Authenticatable
         return $this->hasMany(VehicleRequest::class);
     }
 
+    public function vehicleLicenceExpiryReminders(): HasMany
+    {
+        return $this->hasMany(VehicleLicenceExpiryReminder::class);
+    }
+
+    public function driverLicenceExpiryReminders(): HasMany
+    {
+        return $this->hasMany(DriverLicenceExpiryReminder::class);
+    }
+
     public function driver(): HasOne
     {
         return $this->hasOne(Driver::class, 'nic', 'employee_id');
