@@ -752,6 +752,22 @@ export const downloadDatabaseBackup = async () => {
   }
 };
 
+export const importDatabaseBackup = async (backupFile, confirmation) => {
+  const formData = new FormData();
+  formData.append("backup_file", backupFile);
+  formData.append("confirmation", confirmation);
+
+  try {
+    const response = await API.post("/system/database-backups/import", formData, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
 export const getVehicles = async (schedule = {}) => {
   try {
     const response = await API.get("/vehicles", {

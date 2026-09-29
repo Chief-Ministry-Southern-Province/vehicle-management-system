@@ -21,6 +21,10 @@ return [
 
     'dump_binary' => env('DATABASE_DUMP_BINARY', 'mysqldump'),
 
+    'restore_binary' => env('DATABASE_RESTORE_BINARY', 'mysql'),
+
+    'backup_import_max_kb' => (int) env('DATABASE_BACKUP_IMPORT_MAX_KB', 102_400),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections

@@ -1,7 +1,20 @@
-import { FiCheckCircle, FiClock, FiDatabase, FiDownload, FiFileText, FiShield } from "react-icons/fi";
+import { useState } from "react";
+import { FiAlertTriangle, FiCheckCircle, FiClock, FiDatabase, FiDownload, FiFileText, FiShield, FiUpload } from "react-icons/fi";
 
-export default function DatabaseManagementSection({ backups, loadingBackups, backupHistoryError, creatingBackup, onCreateBackup }) {
+const RESTORE_CONFIRMATION = "RESTORE";
+
+export default function DatabaseManagementSection({ backups, loadingBackups, backupHistoryError, creatingBackup, onCreateBackup, canImport, restoringBackup, onImportBackup }) {
   const latestBackup = backups[0];
+  const [backupFile, setBackupFile] = useState(null);
+  const [confirmation, setConfirmation] = useState("");
+  const canRestore = Boolean(backupFile) && confirmation === RESTORE_CONFIRMATION && !restoringBackup;
+
+  const restoreBackup = async (event) => {
+    event.preventDefault();
+    if (!canRestore) return;
+
+    await onImportBackup(backupFile, confirmation);
+  };
 
   return (
     <section aria-labelledby="database-management-title" className="space-y-6">
@@ -36,6 +49,47 @@ export default function DatabaseManagementSection({ backups, loadingBackups, bac
           <button type="button" onClick={onCreateBackup} disabled={creatingBackup} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60"><FiDownload aria-hidden="true" /> {creatingBackup ? "Creating backup..." : "Create backup"}</button>
         </div>
       </div>
+
+      {canImport && (
+        <section className="rounded-2xl border border-red-200 bg-red-50/70 p-4 sm:p-5" aria-labelledby="restore-database-title">
+          <div className="flex items-start gap-3">
+            <span className="rounded-xl bg-red-100 p-3 text-red-700"><FiAlertTriangle className="h-5 w-5" aria-hidden="true" /></span>
+            <div className="min-w-0">
+              <h2 id="restore-database-title" className="font-bold text-slate-900">Restore database backup</h2>
+              <p className="mt-1 text-sm font-medium text-red-800">This permanently replaces the current database, signs out every user, and cannot be undone.</p>
+              <p className="mt-1 text-sm text-slate-600">Only upload a compatible .sqlite or .sql backup. Attachments, profile pictures, and vehicle images stored outside the database are not restored.</p>
+            </div>
+          </div>
+
+          <form className="mt-5 grid gap-4 border-t border-red-200 pt-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end" onSubmit={restoreBackup}>
+            <label className="block text-sm font-semibold text-slate-700" htmlFor="database-backup-file">
+              Backup file
+              <input
+                id="database-backup-file"
+                type="file"
+                accept=".sqlite,.sql,application/vnd.sqlite3,application/sql,text/plain"
+                disabled={restoringBackup}
+                onChange={(event) => setBackupFile(event.target.files?.[0] || null)}
+                className="mt-1.5 block w-full cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200 focus:outline-none focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700" htmlFor="database-restore-confirmation">
+              Type RESTORE to confirm
+              <input
+                id="database-restore-confirmation"
+                type="text"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                placeholder="RESTORE"
+                autoComplete="off"
+                disabled={restoringBackup}
+                className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <button type="submit" disabled={!canRestore} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-200 disabled:cursor-not-allowed disabled:opacity-60"><FiUpload aria-hidden="true" /> {restoringBackup ? "Restoring backup..." : "Restore backup"}</button>
+          </form>
+        </section>
+      )}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white" aria-labelledby="backup-history-title">
         <header className="flex items-center gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">

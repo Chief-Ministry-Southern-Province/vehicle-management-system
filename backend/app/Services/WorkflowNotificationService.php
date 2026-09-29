@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Events\WorkflowUpdated;
+use App\Models\Driver;
 use App\Models\User;
+use App\Models\Vehicle;
 use App\Models\VehicleRequest;
 use App\Notifications\WorkflowNotification;
 use Illuminate\Support\Collection;
@@ -22,11 +24,11 @@ class WorkflowNotificationService
      *
      * @return Collection<int, User>
      */
-    public function send(iterable|User|null $recipients, string $title, string $message, ?VehicleRequest $vehicleRequest = null, string $action = 'workflow_updated'): Collection
+    public function send(iterable|User|null $recipients, string $title, string $message, ?VehicleRequest $vehicleRequest = null, string $action = 'workflow_updated', bool $sendSms = true): Collection
     {
         $recipients = $this->activeRecipients($recipients);
 
-        $recipients->each(function (User $user) use ($title, $message, $vehicleRequest, $action): void {
+        $recipients->each(function (User $user) use ($title, $message, $vehicleRequest, $action, $sendSms): void {
             $payload = [
                 'title' => $title,
                 'message' => $message,
@@ -39,7 +41,9 @@ class WorkflowNotificationService
 
             // Gateway delivery is supplementary. A provider outage must not undo
             // the durable in-app workflow notification or its completed transition.
-            $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest, $user));
+            if ($sendSms) {
+                $this->smsService->sendSms($user->phone, $this->smsMessage($title, $message, $vehicleRequest, $user));
+            }
         });
 
         return $recipients;
@@ -127,6 +131,45 @@ class WorkflowNotificationService
         $recipients = collect([$vehicleRequest->user])->merge($this->usersWithRoles(['subject_officer', 'deputy_secretary']));
         $notified = $this->send($recipients, 'Vehicle issue reported', "An issue was reported for {$this->reference($vehicleRequest)}. Please review it promptly.", $vehicleRequest, 'issue_reported');
         $this->broadcastAdditional([$vehicleRequest->allocatedDriver?->user], $notified, 'issue_reported', $vehicleRequest);
+    }
+
+    /**
+     * Send a compliance reminder through the established database, Web Push,
+     * real-time, and supplementary SMS channels.
+     */
+    public function vehicleLicenceExpiryReminder(Vehicle $vehicle, string $timeframe, \DateTimeInterface $expiryDate, iterable|User|null $recipients): void
+    {
+        $vehicleName = trim(collect([$vehicle->make, $vehicle->model])->filter()->join(' '));
+        $vehicleName = $vehicleName ?: $vehicle->vehicle_type ?: 'Vehicle';
+        $registration = $vehicle->registration_number ?: 'unregistered vehicle';
+        $expiry = $expiryDate->format('Y-m-d');
+        $message = "Revenue licence for {$vehicleName} ({$registration}) expires on {$expiry}, {$timeframe} from today. Please arrange renewal.";
+
+        $this->send(
+            $recipients,
+            'Vehicle revenue licence renewal reminder',
+            $message,
+            null,
+            'vehicle_licence_expiry_reminder',
+        );
+    }
+
+    /** Send an in-app, real-time, and Web Push reminder without an SMS. */
+    public function driverLicenceExpiryReminder(Driver $driver, string $timeframe, \DateTimeInterface $expiryDate, iterable|User|null $recipients): void
+    {
+        $name = $driver->full_name ?: 'Driver';
+        $driverId = $driver->driver_id ?: 'unregistered driver';
+        $expiry = $expiryDate->format('Y-m-d');
+        $message = "Driving licence for {$name} ({$driverId}) expires on {$expiry}, {$timeframe} from today. Please arrange renewal.";
+
+        $this->send(
+            $recipients,
+            'Driver licence renewal reminder',
+            $message,
+            null,
+            'driver_licence_expiry_reminder',
+            false,
+        );
     }
 
     private function usersWithRoles(array $roles): Collection
@@ -222,6 +265,7 @@ class WorkflowNotificationService
             'Journey started' => "VMS - Update: Your journey for {$reference} has started.",
             'Journey completed' => "VMS - Complete: Your journey for {$reference} is complete. Thank you.",
             'Vehicle issue reported' => "VMS - Alert: A vehicle issue was reported for {$reference}. Please review it.",
+            'Vehicle revenue licence renewal reminder' => Str::limit("VMS - Licence Alert: {$message}", 320, '...'),
             default => Str::limit("VMS - Update: {$title}: {$message}", 120, '...'),
         };
 

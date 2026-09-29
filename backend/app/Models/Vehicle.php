@@ -49,6 +49,11 @@ class Vehicle extends Model
         return $this->hasMany(VehicleRequest::class, 'allocated_vehicle_id');
     }
 
+    public function licenceExpiryReminders(): HasMany
+    {
+        return $this->hasMany(VehicleLicenceExpiryReminder::class);
+    }
+
     public function hasScheduleConflict(Carbon|string $startsAt, Carbon|string $endsAt, ?int $ignoreRequestId = null, ?VehicleRequest $request = null): bool
     {
         $journeys = $this->activeJourneysDuring($startsAt, $endsAt, $ignoreRequestId)->get();
