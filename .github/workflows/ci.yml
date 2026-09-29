@@ -58,15 +58,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2.12
+          php-version: "8.2"
           extensions: mbstring, pdo_mysql, bcmath, intl
           coverage: none
 
       - name: Check PHP Version
         run: php -v
-
-      - name: Install Dependencies
-        uses: ramsey/composer-install@v2
 
       - name: Install Composer Dependencies
         run: composer install --no-interaction --prefer-dist
