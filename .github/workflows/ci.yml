@@ -1,4 +1,4 @@
-name: Vehicle Management CI
+name: Vehicle Management CI/CD
 
 on:
   push:
@@ -13,8 +13,10 @@ on:
 
 jobs:
 
-  frontend:
+  # FRONTEND CI
 
+  frontend:
+    name: Frontend CI
     runs-on: ubuntu-latest
 
     defaults:
@@ -22,7 +24,6 @@ jobs:
         working-directory: frontend
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -33,17 +34,20 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Dependencies
+      - name: Install Frontend Dependencies
         run: npm ci
 
       - name: Run Linter and StyleLint
         run: npm run lint
 
-      - name: Build React App
+      - name: Build React Application
         run: npm run build
 
-  backend:
 
+  # BACKEND CI
+
+  backend:
+    name: Backend CI
     runs-on: ubuntu-latest
 
     defaults:
@@ -51,7 +55,6 @@ jobs:
         working-directory: backend
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -66,15 +69,16 @@ jobs:
         run: php -v
 
       - name: Install Composer Dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: |
+          composer install \
+            --no-interaction \
+            --prefer-dist \
+            --no-progress
 
-      - name: Laravel Version Check
-        run: php artisan --version
-
-      - name: Create Environment File
+      - name: Create CI Environment File
         run: cp .env.example .env
 
-      - name: Generate Application Key
+      - name: Generate CI Application Key
         run: php artisan key:generate
 
       - name: Check Laravel Version
@@ -82,3 +86,113 @@ jobs:
 
       - name: Run Laravel Tests
         run: php artisan test
+
+
+  # BACKEND CD - AWS EC2
+  
+  deploy:
+    name: Deploy Backend to AWS
+
+    # Both CI jobs MUST succeed before deployment can start.
+    needs:
+      - frontend
+      - backend
+
+    # Deploy only for an actual push/merge to main.
+    # Pull requests and develop pushes will never deploy.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    concurrency:
+      group: vms-production-backend
+      cancel-in-progress: false
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/vms_deploy_key
+          chmod 600 ~/.ssh/vms_deploy_key
+
+          ssh-keyscan \
+            -p "${{ secrets.SERVER_PORT }}" \
+            "${{ secrets.SERVER_HOST }}" \
+            >> ~/.ssh/known_hosts
+
+      - name: Deploy Laravel Backend to AWS EC2
+        run: |
+          ssh \
+            -i ~/.ssh/vms_deploy_key \
+            -p "${{ secrets.SERVER_PORT }}" \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
+
+            set -e
+
+            APP_DIR="/var/www/vehicle-management-system/backend"
+
+            echo "=========================================="
+            echo " VMS-GOV Backend Production Deployment"
+            echo "=========================================="
+
+            cd "$APP_DIR"
+
+            echo "Current production commit:"
+            git rev-parse --short HEAD
+
+            echo "Fetching latest main branch..."
+            git fetch origin main
+
+            echo "Switching to main branch..."
+            git checkout main
+
+            echo "Pulling latest production code..."
+            git pull --ff-only origin main
+
+            echo "Installing production Composer dependencies..."
+            composer install \
+              --no-dev \
+              --prefer-dist \
+              --optimize-autoloader \
+              --no-interaction \
+              --no-progress
+
+            echo "Enabling Laravel maintenance mode..."
+            php artisan down --retry=60 || true
+
+            cleanup() {
+              echo "Ensuring application leaves maintenance mode..."
+              php artisan up || true
+            }
+
+            trap cleanup EXIT
+
+            echo "Running production database migrations..."
+            php artisan migrate --force
+
+            echo "Clearing old Laravel caches..."
+            php artisan optimize:clear
+
+            echo "Building Laravel production caches..."
+            php artisan optimize
+
+            echo "Restarting Laravel queue workers..."
+            php artisan queue:restart
+
+            echo "Disabling Laravel maintenance mode..."
+            php artisan up
+
+            trap - EXIT
+
+            echo "Production deployment commit:"
+            git rev-parse --short HEAD
+
+            echo "=========================================="
+            echo " VMS-GOV Deployment Completed Successfully"
+            echo "=========================================="
+
+          EOF
