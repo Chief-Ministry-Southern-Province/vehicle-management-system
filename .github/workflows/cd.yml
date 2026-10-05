@@ -23,18 +23,19 @@ jobs:
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/vms_deploy_key
+          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" | tr -d '\r' > ~/.ssh/vms_deploy_key
           chmod 600 ~/.ssh/vms_deploy_key
 
-          ssh-keyscan -p ${{ secrets.SERVER_PORT }} \
-            ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${{ secrets.SERVER_PORT }}" \
+            "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy application
         run: |
           ssh \
             -i ~/.ssh/vms_deploy_key \
-            -p ${{ secrets.SERVER_PORT }} \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            -o IdentitiesOnly=yes \
+            -p "${{ secrets.SERVER_PORT }}" \
+            "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" << 'EOF'
 
             set -e
 
