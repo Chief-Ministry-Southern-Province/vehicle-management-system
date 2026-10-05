@@ -166,6 +166,8 @@ Copy-Item .env.example .env
 
 The API normally starts at `http://127.0.0.1:8000`. The default environment uses SQLite. For MySQL, configure:
 
+If ports 8000 or 8080 are occupied, use `php artisan serve --host=127.0.0.1 --port=8001` and `php artisan reverb:start --host=127.0.0.1 --port=8081`. Set one `VITE_API_URL=http://127.0.0.1:8001/api` and match backend `REVERB_PORT`/`REVERB_SERVER_PORT` and frontend `VITE_REVERB_PORT` to 8081. Keep Reverb credentials nonempty and defined once, with matching backend/frontend app keys. Run `php artisan config:clear` and restart Reverb and Vite after changes.
+
 ```dotenv
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
