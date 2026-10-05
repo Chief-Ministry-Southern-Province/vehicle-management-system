@@ -7,63 +7,180 @@ on:
 
   workflow_dispatch:
 
-jobs:
+concurrency:
+  group: vms-production-deployment
+  cancel-in-progress: false
 
+jobs:
   deploy:
-    name: Deploy VMS
+    name: Deploy Backend to AWS EC2
     runs-on: ubuntu-latest
 
     environment:
       name: production
 
     steps:
+      # -------------------------------------------------------
+      # 1. Checkout repository
+      # -------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # -------------------------------------------------------
+      # 2. Configure SSH
+      # -------------------------------------------------------
       - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/vms_deploy_key
-          chmod 600 ~/.ssh/vms_deploy_key
+          set -euo pipefail
 
-          ssh-keyscan -p ${{ secrets.SERVER_PORT }} \
-            ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          echo "Configuring SSH..."
 
-      - name: Deploy application
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/vms_deploy_key"
+          chmod 600 "$HOME/.ssh/vms_deploy_key"
+
+          ssh-keyscan \
+            -p "$SERVER_PORT" \
+            -H "$SERVER_HOST" \
+            >> "$HOME/.ssh/known_hosts"
+
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+          echo "SSH configuration completed."
+
+      # -------------------------------------------------------
+      # 3. Test SSH authentication
+      # -------------------------------------------------------
+      - name: Test SSH Connection
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
+          set -euo pipefail
+
+          echo "Testing SSH connection..."
+
           ssh \
-            -i ~/.ssh/vms_deploy_key \
-            -p ${{ secrets.SERVER_PORT }} \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o ConnectTimeout=15 \
+            -i "$HOME/.ssh/vms_deploy_key" \
+            -p "$SERVER_PORT" \
+            "$SERVER_USER@$SERVER_HOST" \
+            "echo 'SSH authentication successful.'"
 
-            set -e
+      # -------------------------------------------------------
+      # 4. Deploy Laravel backend
+      # -------------------------------------------------------
+      - name: Deploy Laravel Backend
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          set -euo pipefail
 
-            cd /var/www/vms
+          ssh \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=3 \
+            -i "$HOME/.ssh/vms_deploy_key" \
+            -p "$SERVER_PORT" \
+            "$SERVER_USER@$SERVER_HOST" <<'EOF'
 
-            echo "Pulling latest code..."
-            git fetch origin
-            git checkout main
-            git pull origin main
+          set -euo pipefail
 
-            echo "Installing backend dependencies..."
-            cd backend
-            composer install \
-              --no-dev \
-              --prefer-dist \
-              --optimize-autoloader \
-              --no-interaction
+          PROJECT_DIR="/var/www/vehicle-management-system"
+          BACKEND_DIR="$PROJECT_DIR/backend"
 
-            echo "Running database migrations..."
-            php artisan migrate --force
+          echo "========================================"
+          echo " VMS Production Deployment"
+          echo "========================================"
 
-            echo "Optimizing Laravel..."
-            php artisan optimize
+          echo ""
+          echo "1. Opening project directory..."
 
-            echo "Building frontend..."
-            cd ../frontend
-            npm ci
-            npm run build
+          cd "$PROJECT_DIR"
 
-            echo "Deployment completed successfully."
+          echo ""
+          echo "2. Pulling latest source code..."
+
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+
+          echo ""
+          echo "3. Opening Laravel backend..."
+
+          cd "$BACKEND_DIR"
+
+          echo ""
+          echo "4. Installing production dependencies..."
+
+          composer install \
+            --no-dev \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-interaction \
+            --no-progress
+
+          echo ""
+          echo "5. Enabling maintenance mode..."
+
+          php artisan down --retry=60 || true
+
+          # Make sure Laravel comes back online even if a later
+          # deployment command fails.
+          cleanup() {
+            echo ""
+            echo "Restoring application availability..."
+            php artisan up || true
+          }
+
+          trap cleanup EXIT
+
+          echo ""
+          echo "6. Clearing old Laravel caches..."
+
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+
+          echo ""
+          echo "7. Running database migrations..."
+
+          php artisan migrate --force
+
+          echo ""
+          echo "8. Optimizing Laravel..."
+
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+          echo ""
+          echo "9. Restarting queue workers..."
+
+          php artisan queue:restart || true
+
+          echo ""
+          echo "10. Disabling maintenance mode..."
+
+          php artisan up
+
+          trap - EXIT
+
+          echo ""
+          echo "========================================"
+          echo " Deployment completed successfully"
+          echo "========================================"
 
           EOF
