@@ -162,7 +162,7 @@ export default function PendingJourny() {
                       key={request.id}
                       className="group transition-colors duration-200 hover:bg-blue-50/60"
                     >
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-3">
                         <div className="flex items-center gap-3">
                           <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-200/70">
                             <span>
@@ -200,7 +200,7 @@ export default function PendingJourny() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-3">
                         <p className="flex items-center gap-2.5 font-semibold text-slate-700">
                           <span className="rounded-lg bg-blue-50 p-1.5 text-blue-600 ring-1 ring-inset ring-blue-100">
                             <FiMapPin className="shrink-0" />
@@ -208,9 +208,9 @@ export default function PendingJourny() {
                           {display(request.destination)}
                         </p>
                       </td>
-                      <td className="px-6 py-5 text-sm text-slate-600">
-                        <div className="space-y-2">
-                          <span className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 font-medium ring-1 ring-inset ring-slate-100">
+                      <td className="px-6 py-3 text-sm text-slate-600">
+                        <div className="space-y-1">
+                          <span className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 font-medium ring-1 ring-inset ring-slate-100">
                             <FiClock className="shrink-0 text-blue-500" />
                             <span>
                               <span className="mr-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
@@ -219,7 +219,7 @@ export default function PendingJourny() {
                               {formatLocalDateTime(request.departure_at)}
                             </span>
                           </span>
-                          <span className="flex items-center gap-2 rounded-xl bg-indigo-50/70 px-3 py-2 font-medium ring-1 ring-inset ring-indigo-100">
+                          <span className="flex items-center gap-2 rounded-xl bg-indigo-50/70 px-3 py-1.5 font-medium ring-1 ring-inset ring-indigo-100">
                             <FiCalendar className="shrink-0 text-indigo-500" />
                             <span>
                               <span className="mr-2 text-[10px] font-bold uppercase tracking-wide text-indigo-400">
@@ -230,15 +230,15 @@ export default function PendingJourny() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 ring-1 ring-inset ring-blue-100">
+                      <td className="px-6 py-3">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700 ring-1 ring-inset ring-blue-100">
                           <FiUsers className="text-blue-500" />
                           {request.passenger_count ?? "—"}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-3">
                         {request.allocated_vehicle ? (
-                          <div className="rounded-2xl bg-indigo-50/70 px-3 py-2.5 ring-1 ring-inset ring-indigo-100">
+                          <div className="rounded-2xl bg-indigo-50/70 px-3 py-2 ring-1 ring-inset ring-indigo-100">
                             <p className="flex items-center gap-2 font-bold text-slate-800">
                               <FiTruck className="text-indigo-500" />
                               {display(
@@ -262,12 +262,12 @@ export default function PendingJourny() {
                             )}
                           </div>
                         ) : (
-                          <span className="inline-flex rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-500">
+                          <span className="inline-flex rounded-xl bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-500">
                             Not allocated
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-3">
                         <span
                           className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ring-current/10 ${statusStyles[request.status] || "bg-amber-100 text-amber-700"}`}
                         >
