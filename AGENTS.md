@@ -311,6 +311,7 @@ npm run dev
 ```
 
 The Vite development URL defaults to `http://localhost:5173`; ensure `FRONTEND_URL`/CORS and the frontend API base agree with the actual hosts.
+If another service occupies port 8000 or 8080, run the API with `php artisan serve --host=127.0.0.1 --port=8001` and Reverb with `php artisan reverb:start --host=127.0.0.1 --port=8081`. Set a single `VITE_API_URL=http://127.0.0.1:8001/api`, match `REVERB_PORT`, `REVERB_SERVER_PORT`, and `VITE_REVERB_PORT` to 8081, and match the frontend app key to the backend app key. Avoid duplicate environment definitions, especially empty Reverb credentials preceding configured values. Clear Laravel configuration and restart Reverb and Vite after environment changes.
 als
 Quality commands:
 
