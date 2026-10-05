@@ -93,8 +93,8 @@ function ApplicationRoutes() {
             <Route path="/subjectofficer/requests/:id" element={withAuth(<EmployeeRequestDetails historyPath="/subjectofficer/requesthistory" />, ["subject_officer"])} />
             <Route path="/vehicledirectory" element={withAuth(<VehicleDirectory />)}/>
             <Route path="/vehicledetails/:registration" element={withAuth(<VehicleDetails />)}/>
-            <Route path="/driverdirectory" element={withAuth(<DriverDirectory />)}/>
-            <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />)}/>
+            <Route path="/driverdirectory" element={withAuth(<DriverDirectory />, ["subject_officer"])}/>
+            <Route path="/driverdirectory/:driverId" element={withAuth(<DriverDatabaseDetails />, ["subject_officer"])}/>
             <Route path="/registervehicle" element={withAuth(<RegisterVehicle />)}/>
             <Route path="/fuelmanagement" element={withAuth(<FuelManagement />, ["subject_officer", "deputy_secretary", "secretary", "senior_deputy_secretary"])}/>
             <Route path="/servicerecords" element={withAuth(<ServiceRecords />)}/>
