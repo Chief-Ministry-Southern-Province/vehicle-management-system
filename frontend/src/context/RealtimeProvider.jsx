@@ -22,7 +22,7 @@ const reverbOptions = (token) => {
     wsPort: port,
     wssPort: port,
     forceTLS: scheme === "https",
-    enabledTransports: scheme === "https" ? ["wss"] : ["ws", "wss"],
+    enabledTransports: scheme === "https" ? ["wss"] : ["ws"],
     authEndpoint: `${apiUrl()}/broadcasting/auth`,
     auth: {
       headers: {
