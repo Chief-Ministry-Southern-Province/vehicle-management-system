@@ -1,15 +1,13 @@
 import { confirmLocalized } from "../../i18n/runtime.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FiEdit2,
-  FiEye,
   FiSearch,
   FiTrash2,
-  FiX,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../layouts/DashboardLayout";
-import { deleteDriver, getDriver, getDrivers } from "../../api/authApi";
+import { deleteDriver, getDrivers } from "../../api/authApi";
 import { normalizeDriver } from "../../utils/driverMapper";
 function StatusPill({ status }) {
   const styles = {
@@ -27,80 +25,7 @@ function StatusPill({ status }) {
   );
 }
 
-function DriverProfile({ driver, onClose }) {
-  const dialogRef = useRef(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog.showModal();
-    return () => dialog.close();
-  }, []);
-
-  const value = (item) => item || "Not recorded";
-  return (
-    <dialog
-      ref={dialogRef}
-      className="fixed inset-0 m-auto max-h-[94vh] w-[calc(100%_-_2rem)] max-w-3xl overflow-visible rounded-3xl bg-transparent p-0 backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
-      aria-labelledby="driver-profile-title"
-      onCancel={onClose}
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <article className="max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <header className="relative bg-slate-900 p-6 text-white sm:p-8">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-5 top-5 rounded-xl p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
-            aria-label="Close driver profile"
-          >
-            <FiX className="text-xl" />
-          </button>
-          <div className="flex items-center gap-5 pr-10">
-            <ProfileAvatar driver={driver} />
-            <div>
-              <p className="text-sm font-semibold text-blue-300">{driver.id}</p>
-              <h2 id="driver-profile-title" className="mt-1 text-2xl font-bold">
-                {driver.fullName}
-              </h2>
-              <p className="mt-1 text-sm text-slate-300">Profile</p>
-            </div>
-          </div>
-        </header>
-
-        <div className="space-y-6 p-6 sm:p-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <StatusPill status={driver.status} />
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              Duty: {value(driver.dutyStatus)}
-            </span>
-          </div>
-
-          <ProfileSection title="Personal Information">
-            <ProfileItem label="Date of Birth" value={value(driver.dateOfBirth)} />
-            <ProfileItem label="NIC" value={value(driver.nic)} />
-            <ProfileItem label="Contact Number" value={value(driver.contactNumber)} />
-            <ProfileItem label="Blood Group" value={value(driver.bloodGroup)} />
-            <ProfileItem label="Email" value={value(driver.email)} />
-            <ProfileItem label="Department" value={value(driver.department)} />
-            <ProfileItem label="Address" value={value(driver.address)} wide />
-          </ProfileSection>
-
-          <ProfileSection title="Licence & Vehicle Allocation">
-            <ProfileItem label="Licence Number" value={value(driver.licenceNumber)} />
-            <ProfileItem label="Licence Type" value={value(driver.licenceType)} />
-            <ProfileItem label="Licence Expiry Date" value={value(driver.licenceRenewalDate)} />
-            <ProfileItem label="Allocated Vehicle" value={value(driver.vehicle)} />
-            <ProfileItem label="Vehicle Registration" value={value(driver.registration)} />
-          </ProfileSection>
-        </div>
-      </article>
-    </dialog>
-  );
-}
-
-function ProfileAvatar({ driver }) {
+function DriverAvatar({ driver }) {
   const [imageFailed, setImageFailed] = useState(false);
   const initials = driver.fullName
     .split(" ")
@@ -110,7 +35,7 @@ function ProfileAvatar({ driver }) {
     .toUpperCase();
 
   return (
-    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-blue-600 text-2xl font-black text-white ring-4 ring-white/10">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-600 text-xs font-black text-white">
       {driver.profilePhotoUrl && !imageFailed ? (
         <img
           src={driver.profilePhotoUrl}
@@ -125,26 +50,6 @@ function ProfileAvatar({ driver }) {
   );
 }
 
-function ProfileSection({ title, children }) {
-  return (
-    <section>
-      <h3 className="border-b border-slate-100 pb-3 text-sm font-bold uppercase tracking-wide text-slate-900">
-        {title}
-      </h3>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">{children}</div>
-    </section>
-  );
-}
-
-function ProfileItem({ label, value, wide = false }) {
-  return (
-    <div className={`rounded-2xl bg-slate-50 p-4 ${wide ? "sm:col-span-2" : ""}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-slate-800">{value}</p>
-    </div>
-  );
-}
-
 export default function DriverDirectory() {
   const navigate = useNavigate();
   const [drivers, setDrivers] = useState([]);
@@ -152,8 +57,6 @@ export default function DriverDirectory() {
   const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState("");
-  const [profileDriver, setProfileDriver] = useState(null);
-  const [profileLoadingId, setProfileLoadingId] = useState("");
   useEffect(() => {
     let active = true;
     getDrivers()
@@ -210,18 +113,6 @@ export default function DriverDirectory() {
       setDeletingId("");
     }
   };
-  const showProfile = async (driver) => {
-    setProfileLoadingId(driver.id);
-    setLoadError("");
-    try {
-      const response = await getDriver(driver.id);
-      setProfileDriver(normalizeDriver(response?.data?.driver));
-    } catch (error) {
-      setLoadError(error?.message || "Unable to load the driver profile.");
-    } finally {
-      setProfileLoadingId("");
-    }
-  };
   return (
     <DashboardLayout>
       <main className="min-h-screen space-y-6 bg-slate-50 p-6">
@@ -265,7 +156,7 @@ export default function DriverDirectory() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1360px]">
+            <table className="w-full min-w-[1250px]">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
                   {[
@@ -295,8 +186,13 @@ export default function DriverDirectory() {
                       <td className="px-4 py-4 font-semibold text-blue-600">
                         {driver.id}
                       </td>
-                      <td className="px-4 py-4 font-semibold text-slate-900">
-                        {driver.fullName}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <DriverAvatar driver={driver} />
+                          <span className="font-semibold text-slate-900">
+                            {driver.fullName}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-4 text-slate-600">{driver.nic}</td>
                       <td className="px-4 py-4 text-slate-600">
@@ -316,14 +212,6 @@ export default function DriverDirectory() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            disabled={Boolean(profileLoadingId)}
-                            onClick={() => showProfile(driver)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                          >
-                            <FiEye /> {profileLoadingId === driver.id ? "Loadingâ€¦" : "Profile"}
-                          </button>
                           <button
                             type="button"
                             onClick={() =>
@@ -363,12 +251,6 @@ export default function DriverDirectory() {
           )}
         </section>
       </main>
-      {profileDriver && (
-        <DriverProfile
-          driver={profileDriver}
-          onClose={() => setProfileDriver(null)}
-        />
-      )}
     </DashboardLayout>
   );
 }
