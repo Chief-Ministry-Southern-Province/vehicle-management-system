@@ -237,40 +237,6 @@ const menuItems = [
     ],
   },
 
-  // ==========================================
-  // DEPARTMENT OFFICER SECTION
-  // ==========================================
-
-  {
-    title: "VEHICLE REQUESTS",
-    items: [
-      {
-        name: "Create Vehicle Request",
-        path: "/createvehiclerequest",
-        icon: <FiTruck />,
-        roles: ["department_officer", "subject_officer", "deputy_secretary",],
-      },
-      {
-        name: "Requests History",
-        path: "/requesthistory",
-        icon: <FiClipboard />,
-        roles: ["department_officer"],
-      },
-      {
-        name: "Request History",
-        path: "/subjectofficer/requesthistory",
-        icon: <FiClipboard />,
-        roles: ["subject_officer"],
-      },
-      {
-        name: "Request History",
-        path: "/requesthistory",
-        icon: <FiClipboard />,
-        roles: ["deputy_secretary"],
-      },
-    ],
-  },
-
 
   // ==========================================
   // SUBJECT OFFICER, Assistance Secreatry SECTION, SENIOR ASSISTANCE SECRETARY SECTION
@@ -307,6 +273,39 @@ const menuItems = [
     ],
   },
 
+  // ==========================================
+  // DEPARTMENT OFFICER SECTION
+  // ==========================================
+
+  {
+    title: "VEHICLE REQUESTS",
+    items: [
+      {
+        name: "Create Vehicle Request",
+        path: "/createvehiclerequest",
+        icon: <FiTruck />,
+        roles: ["department_officer", "subject_officer", "deputy_secretary",],
+      },
+      {
+        name: "Requests History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["department_officer"],
+      },
+      {
+        name: "Request History",
+        path: "/subjectofficer/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["subject_officer"],
+      },
+      {
+        name: "Request History",
+        path: "/requesthistory",
+        icon: <FiClipboard />,
+        roles: ["deputy_secretary"],
+      },
+    ],
+  },
 
   // ==========================================
   // SUBJECT OFFICER SECTION
