@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FiBell, FiCheck, FiChevronDown, FiGlobe, FiMenu, FiSettings, FiUser } from "react-icons/fi";
+import { FiBell, FiCheck, FiMenu, FiSettings, FiUser } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
@@ -8,6 +8,7 @@ import { getNotifications, getProfile, markAllNotificationsRead, markNotificatio
 import nationalEmblem from "../../assets/national-emblem.png";
 import topbarBackdrop from "../../assets/side-bar-5.png";
 import { enablePushNotifications, supportsPushNotifications } from "../../utils/pushNotifications";
+import LanguageSwitcher from "../common/LanguageSwitcher";
 
 const initials = (name) =>
   String(name || "User")
@@ -135,7 +136,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const userId = user?.id || user?.employee_id;
-  const { language, languages, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const apiOrigin =
     import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, "") ||
     "http://127.0.0.1:8000";
@@ -357,25 +358,7 @@ export default function Topbar({ onMenuToggle, onSettingsOpen }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <label className="group relative hidden items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white/75 px-3.5 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.75)] transition hover:border-blue-200 hover:bg-white focus-within:border-blue-400 focus-within:ring-3 focus-within:ring-blue-100/70 sm:flex dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/8 dark:focus-within:ring-blue-500/15">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-              <FiGlobe aria-hidden="true" />
-            </span>
-            <span className="sr-only">{t("language.label")}</span>
-            <select
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              aria-label={t("language.label")}
-              className="max-w-28 cursor-pointer appearance-none bg-transparent pr-5 outline-none lg:max-w-none"
-            >
-              {languages.map(({ code, nativeLabel }) => (
-                <option key={code} value={code}>
-                  {nativeLabel}
-                </option>
-              ))}
-            </select>
-            <FiChevronDown className="pointer-events-none absolute right-3 text-xs text-slate-400" />
-          </label>
+          <LanguageSwitcher variant="header" className="hidden sm:block" />
 
           <div ref={notificationMenuRef} className="static sm:relative">
             <button

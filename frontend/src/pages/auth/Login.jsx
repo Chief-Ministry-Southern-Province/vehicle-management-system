@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FiArrowRight,
-  FiChevronDown,
   FiEye,
   FiEyeOff,
-  FiGlobe,
   FiLock,
   FiMapPin,
   FiShield,
@@ -15,22 +13,16 @@ import {
 } from "react-icons/fi";
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/useAuth";
-import { useLanguage } from "../../context/useLanguage";
+import LanguageSwitcher from "../../components/common/LanguageSwitcher";
 import nationalEmblem from "../../assets/national-emblem.png";
 import loginPageBackground from "../../assets/login-page.png";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { language, languages, setLanguage, t } = useLanguage();
-  const loginLanguages = useMemo(() => languages.filter(({ code }) => ["en", "si", "ta"].includes(code)), [languages]);
   const [formData, setFormData] = useState({ employee_id: "", password: "", role: "employee" });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (!loginLanguages.some(({ code }) => code === language)) setLanguage("en");
-  }, [language, loginLanguages, setLanguage]);
 
   const handleChange = (event) => setFormData({ ...formData, [event.target.name]: event.target.value });
 
@@ -107,14 +99,7 @@ export default function Login() {
         <div className="absolute -left-24 top-8 h-96 w-96 rounded-full border-[46px] border-white/10" />
         <div className="absolute -right-20 bottom-[-7rem] h-80 w-80 rounded-full border-[45px] border-cyan-300/10" />
 
-        <label className="absolute right-5 top-5 z-20 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-[#073978] shadow-lg sm:right-8 sm:top-7">
-          <FiGlobe className="text-lg" aria-hidden="true" />
-          <span className="sr-only">{t("language.label", "Language")}</span>
-          <select value={language} onChange={(event) => setLanguage(event.target.value)} aria-label={t("language.label", "Language")} className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none">
-            {loginLanguages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}
-          </select>
-          <FiChevronDown className="pointer-events-none absolute right-3.5 text-xs" aria-hidden="true" />
-        </label>
+        <LanguageSwitcher variant="auth" className="absolute right-5 top-5 z-20 sm:right-8 sm:top-7" />
 
         <div className="relative z-10 w-full max-w-[42rem] rounded-[2rem] border border-white/80 bg-white/95 px-6 py-10 shadow-[0_30px_80px_rgba(0,24,73,0.38)] backdrop-blur-xl sm:px-10 sm:py-12 lg:px-12">
           <div className="text-center">
