@@ -136,13 +136,13 @@ Verify the schedule carefully: departure and expected-return times cannot be edi
 ### 5.2 Method A: map locations
 
 1. Select **Choose locations on map**.
-2. Type the starting location and use **Find on map**, or select the starting point on the map.
-3. Repeat for the ending location.
+2. Type the starting location and use **Find on map**, then choose the correct Sri Lankan match from the displayed list; alternatively, select the starting point directly on the map.
+3. Repeat for the ending location. For local landmarks, include the town or district in the search (for example, **Baddegama bus stand**) and choose the most specific returned match.
 4. Check that both selected points and their labels are correct. Selections must lie inside the supported Sri Lankan territory.
 5. Wait for address lookup and driving-route calculation to finish.
 6. Review **Calculated Distance** and the route preview.
 
-Typing a place name alone may not be enough: both points must be resolved to coordinates. The server recalculates the driving route on submission, so a failed directions service may prevent submission even if a preview appeared earlier. If a readable address cannot be found, coordinates may be shown as the location label.
+Typing a place name alone may not be enough: both points must be resolved to coordinates by choosing a result or selecting the map. Search returns several matching Sri Lankan places where the map provider has coverage; if a landmark is not listed, choose its nearby town from the results and place the exact point on the map. The server recalculates the driving route on submission, so a failed directions service may prevent submission even if a preview appeared earlier. If a readable address cannot be found, coordinates may be shown as the location label.
 
 ### 5.3 Method B: pre-defined journey
 

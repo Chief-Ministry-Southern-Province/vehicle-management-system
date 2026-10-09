@@ -1,7 +1,7 @@
 import { FiMapPin, FiUsers, FiPaperclip, FiSend, FiSave, FiTruck } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { createVehicleRequest, getPredefinedJourneys, reverseGeocodeLocation } from "../../api/authApi";
+import { createVehicleRequest, getPredefinedJourneys, reverseGeocodeLocation, searchSriLankanLocations } from "../../api/authApi";
 import { useLanguage } from "../../context/useLanguage";
 import { useAuth } from "../../context/useAuth";
 import LocationMapPicker from "./LocationMapPicker";
@@ -30,6 +30,7 @@ export default function VehicleRequest() {
   const [activePoint, setActivePoint] = useState("start");
   const [focusPoint, setFocusPoint] = useState(null);
   const [searching, setSearching] = useState(null);
+  const [locationResults, setLocationResults] = useState({ start: [], end: [] });
   const [resolvingAddress, setResolvingAddress] = useState({ start: false, end: false });
   const [routeResult, setRouteResult] = useState({ key: null, route: null });
   const [routeLoading, setRouteLoading] = useState(false);
@@ -40,6 +41,7 @@ export default function VehicleRequest() {
   const [journeysLoading, setJourneysLoading] = useState(true);
   const fileInputRef = useRef(null);
   const reverseLookupRequestRef = useRef({ start: 0, end: 0 });
+  const locationSearchRequestRef = useRef({ start: 0, end: 0 });
   const startPoint = form.starting_latitude === "" ? null : { lat: Number(form.starting_latitude), lng: Number(form.starting_longitude) };
   const endPoint = form.destination_latitude === "" ? null : { lat: Number(form.destination_latitude), lng: Number(form.destination_longitude) };
   const startLat = startPoint?.lat;
@@ -151,7 +153,9 @@ export default function VehicleRequest() {
 
   const updateLocationText = (type, value) => {
     reverseLookupRequestRef.current[type] += 1;
+    locationSearchRequestRef.current[type] += 1;
     setResolvingAddress((current) => ({ ...current, [type]: false }));
+    setLocationResults((current) => ({ ...current, [type]: [] }));
     setForm((current) => type === "start" ? {
       ...current,
       starting_location: value,
@@ -170,23 +174,32 @@ export default function VehicleRequest() {
     if (hasCoordinates) return;
     const query = (type === "start" ? form.starting_location : form.destination).trim();
     if (query.length < 3 || searching) return;
+    const requestId = locationSearchRequestRef.current[type] + 1;
+    locationSearchRequestRef.current[type] = requestId;
     setSearching(type);
+    setLocationResults((current) => ({ ...current, [type]: [] }));
     try {
-      const parameters = new URLSearchParams({ q: query, format: "jsonv2", countrycodes: "lk", limit: "1", "accept-language": "en,si,ta" });
-      const geocodingUrl = import.meta.env.VITE_GEOCODING_API_URL || "https://nominatim.openstreetmap.org/search";
-      const response = await fetch(`${geocodingUrl}?${parameters}`);
-      if (!response.ok) throw new Error("Location lookup failed");
-      const [result] = await response.json();
-      if (!result) {
+      const response = await searchSriLankanLocations(query, language);
+      const results = response?.data?.results || [];
+      if (locationSearchRequestRef.current[type] !== requestId) return;
+      if (!results.length) {
         toast.error(translate("No matching location found in Sri Lanka."));
         return;
       }
-      selectLocation(type, { lat: Number(result.lat), lng: Number(result.lon) }, result.display_name, true);
+      setLocationResults((current) => ({ ...current, [type]: results }));
     } catch {
-      toast.error(translate("Unable to find that location. Please select it on the map."));
+      if (locationSearchRequestRef.current[type] === requestId) {
+        toast.error(translate("Unable to find that location. Please select it on the map."));
+      }
     } finally {
-      setSearching(null);
+      if (locationSearchRequestRef.current[type] === requestId) setSearching(null);
     }
+  };
+
+  const selectLocationResult = (type, result) => {
+    locationSearchRequestRef.current[type] += 1;
+    setLocationResults((current) => ({ ...current, [type]: [] }));
+    selectLocation(type, { lat: Number(result.latitude), lng: Number(result.longitude) }, result.label, true);
   };
 
   const handleLocationKeyDown = (event, type) => {
@@ -248,6 +261,7 @@ export default function VehicleRequest() {
       });
       setJourneyMethod("map");
       setSelectedJourneyId("");
+      setLocationResults({ start: [], end: [] });
       setAttachment(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
@@ -259,6 +273,33 @@ export default function VehicleRequest() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const renderLocationResults = (type) => {
+    const results = locationResults[type];
+    if (!results.length) return null;
+
+    return (
+      <div
+        className="mt-2 max-h-52 overflow-y-auto rounded-xl border border-blue-100 bg-white p-1 shadow-[0_12px_28px_-18px_rgba(37,99,235,0.55)]"
+        role="listbox"
+        aria-label={type === "start" ? translate("Starting Location") : translate("Ending Location")}
+      >
+        {results.map((result) => (
+          <button
+            key={result.id}
+            type="button"
+            role="option"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => selectLocationResult(type, result)}
+            className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
+          >
+            <span className="block font-semibold text-slate-800">{result.label}</span>
+            <span className="mt-0.5 block text-[11px] text-slate-400">{Number(result.latitude).toFixed(5)}, {Number(result.longitude).toFixed(5)}</span>
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -374,6 +415,7 @@ export default function VehicleRequest() {
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
               />
               <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("start")} disabled={searching !== null || form.starting_location.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "start" ? translate("Finding location...") : translate("Find on map")}</button>
+              {renderLocationResults("start")}
               {resolvingAddress.start && <p className="mt-2 text-xs font-medium text-blue-600">{translate("Finding location...")}</p>}
             </div>
 
@@ -381,6 +423,7 @@ export default function VehicleRequest() {
               <label className="mb-2 block text-sm font-semibold text-slate-700">{translate("Ending Location")}</label>
               <input type="text" name="destination" value={form.destination} onChange={(event) => updateLocationText("end", event.target.value)} onKeyDown={(event) => handleLocationKeyDown(event, "end")} onBlur={() => findLocation("end")} required placeholder={translate("Type or select the ending point on the map")} className="w-full rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50" />
               <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => findLocation("end")} disabled={searching !== null || form.destination.trim().length < 3} className="mt-2 text-xs font-bold text-blue-600 disabled:text-slate-400">{searching === "end" ? translate("Finding location...") : translate("Find on map")}</button>
+              {renderLocationResults("end")}
               {resolvingAddress.end && <p className="mt-2 text-xs font-medium text-blue-600">{translate("Finding location...")}</p>}
             </div>
 

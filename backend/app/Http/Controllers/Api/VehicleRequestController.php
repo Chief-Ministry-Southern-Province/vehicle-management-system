@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -1084,6 +1085,86 @@ class VehicleRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'A readable address could not be found for the selected location.',
+            ], 422);
+        }
+    }
+
+    /** Find multiple Sri Lankan place matches for a requester-entered location. */
+    public function geocode(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'query' => ['required', 'string', 'min:3', 'max:180'],
+            'language' => ['nullable', 'in:en,si,ta'],
+        ]);
+
+        $query = Str::squish($validated['query']);
+        $language = $validated['language'] ?? 'en';
+        $cacheKey = 'geocoding:search:'.sha1(Str::lower("{$language}|{$query}"));
+
+        try {
+            $results = Cache::remember($cacheKey, now()->addHours(12), function () use ($query, $language): array {
+                $providerQuery = Str::contains(Str::lower($query), 'sri lanka')
+                    ? $query
+                    : "{$query}, Sri Lanka";
+                $limit = min(max((int) config('services.geocoding.search_limit', 20), 1), 50);
+
+                $response = Http::acceptJson()
+                    ->withHeaders([
+                        'Accept-Language' => "{$language},en",
+                        'User-Agent' => (string) config('services.geocoding.user_agent'),
+                    ])
+                    ->timeout(config('services.geocoding.timeout', 10))
+                    ->get((string) config('services.geocoding.search_url'), [
+                        'q' => $providerQuery,
+                        'format' => 'jsonv2',
+                        'countrycodes' => 'lk',
+                        'limit' => $limit,
+                        'addressdetails' => 1,
+                        'dedupe' => 1,
+                        'namedetails' => 1,
+                    ])
+                    ->throw()
+                    ->json();
+
+                if (! is_array($response)) {
+                    throw new \RuntimeException('Geocoding search returned an invalid response.');
+                }
+
+                return collect($response)
+                    ->filter(function ($result): bool {
+                        $latitude = $result['lat'] ?? null;
+                        $longitude = $result['lon'] ?? null;
+
+                        return is_numeric($latitude)
+                            && is_numeric($longitude)
+                            && WithinSriLanka::contains((float) $latitude, (float) $longitude);
+                    })
+                    ->map(fn (array $result): array => [
+                        'id' => (string) ($result['place_id'] ?? "{$result['lat']},{$result['lon']}"),
+                        'label' => Str::limit(trim((string) ($result['display_name'] ?? '')), 255, ''),
+                        'latitude' => (float) $result['lat'],
+                        'longitude' => (float) $result['lon'],
+                        'category' => (string) ($result['category'] ?? $result['class'] ?? ''),
+                        'type' => (string) ($result['type'] ?? ''),
+                    ])
+                    ->filter(fn (array $result): bool => $result['label'] !== '')
+                    ->unique(fn (array $result): string => "{$result['latitude']},{$result['longitude']}")
+                    ->values()
+                    ->all();
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => ['results' => $results],
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Location search could not resolve a Sri Lankan place.', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'A location search could not be completed.',
             ], 422);
         }
     }

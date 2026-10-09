@@ -66,6 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:employee,department_officer,subject_officer,deputy_secretary,senior_deputy_secretary,secretary,driver')
         ->post('/vehicle-requests', [VehicleRequestController::class, 'store']);
     Route::post('/vehicle-requests/route', [VehicleRequestController::class, 'route']);
+    Route::middleware('role:employee,department_officer,subject_officer,deputy_secretary,senior_deputy_secretary,secretary,driver')
+        ->get('/vehicle-requests/geocode', [VehicleRequestController::class, 'geocode']);
     Route::get('/vehicle-requests/reverse-geocode', [VehicleRequestController::class, 'reverseGeocode']);
     Route::get('/vehicle-requests', [VehicleRequestController::class, 'personalIndex']);
     Route::get('/vehicle-requests/{vehicleRequest}', [VehicleRequestController::class, 'personalShow']);

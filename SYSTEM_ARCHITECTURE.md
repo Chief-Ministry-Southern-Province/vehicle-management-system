@@ -56,12 +56,11 @@ flowchart LR
     SPA <-->|private WebSocket| REVERB
     SPA --> LS
     SPA -->|route preview and text search| OSRM
-    SPA -->|Sri Lanka location search| NOM
     API --> AUTH --> RBAC --> DOMAIN
     DOMAIN <--> DB
     DOMAIN <--> FILES
     DOMAIN -->|authoritative route calculation| OSRM
-    DOMAIN -->|reverse geocoding| NOM
+    DOMAIN -->|place search and reverse geocoding| NOM
     DOMAIN --> NOTIFY
     NOTIFY --> DB
     NOTIFY -->|workflow invalidation| REVERB
@@ -679,7 +678,7 @@ All listed endpoints are below `/api`. Except login and password recovery, they 
 | Push | `GET /push-subscriptions/public-key`; `POST/DELETE /push-subscriptions` | Authenticated owner |
 | Users/departments/backups | `POST /register`; `GET /users`; `PATCH|DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
 | Department directory | `GET /departments` | Authenticated |
-| Personal requests | create/list/detail/cancel, route preview, reverse geocode | Authenticated with ownership on records |
+| Personal requests | create/list/detail/cancel, route preview, multi-result place search, reverse geocode | Authenticated with ownership on records |
 | Department review | `/department/vehicle-requests...` | Department officer plus department isolation |
 | Deputy workflow | `/approvals/...` recommendation, allocation, reallocation | Deputy secretary |
 | Senior recommendation | `/senior-recommendations/vehicle-requests...` | Senior deputy secretary |
@@ -757,7 +756,7 @@ Uploads are untrusted input. MIME type, size, path, authorization, and deletion 
 
 ### 13.2 Geocoding
 
-- Frontend search: `VITE_GEOCODING_API_URL`, restricted to `countrycodes=lk`.
+- Backend place search: `GEOCODING_SEARCH_API_URL`, restricted to Sri Lanka, cached for 12 hours, and limited by `GEOCODING_SEARCH_RESULT_LIMIT`.
 - Backend reverse lookup: `GEOCODING_REVERSE_API_URL`.
 - Backend identity: `GEOCODING_USER_AGENT`.
 - Backend timeout: `GEOCODING_TIMEOUT`.
