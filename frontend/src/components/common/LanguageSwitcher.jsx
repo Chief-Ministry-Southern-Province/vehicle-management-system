@@ -4,8 +4,8 @@ import { useLanguage } from "../../context/useLanguage";
 
 const variants = {
   auth: {
-    trigger: "min-w-40 rounded-2xl border border-white/70 bg-white/92 px-2.5 py-2 text-[#073978] shadow-[0_14px_30px_-14px_rgba(1,36,91,0.75)] ring-1 ring-white/30 hover:-translate-y-0.5 hover:bg-white focus-visible:ring-white/80",
-    menu: "right-0 mt-3 w-72 border-white/70 bg-white/96 shadow-[0_24px_54px_-18px_rgba(1,36,91,0.55)]",
+    trigger: "w-auto min-w-0 rounded-full bg-white/95 px-4 py-2.5 text-[#073978] shadow-lg hover:bg-white focus-visible:ring-white/80",
+    menu: "right-0 mt-2 w-56 border-white/70 bg-white/96 shadow-[0_24px_54px_-18px_rgba(1,36,91,0.55)]",
   },
   header: {
     trigger: "min-w-40 rounded-2xl border border-slate-200/80 bg-white/80 px-2 py-1.5 text-slate-700 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.75)] hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white focus-visible:ring-blue-200 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10 dark:focus-visible:ring-blue-500/30",
@@ -24,6 +24,7 @@ export default function LanguageSwitcher({ variant = "header", className = "" })
   const listboxId = useId();
   const style = variants[variant] || variants.header;
   const selectedLanguage = languages.find(({ code }) => code === language) || languages[0];
+  const isAuthVariant = variant === "auth";
 
   useEffect(() => {
     const closeOnOutsidePointer = (event) => {
@@ -44,28 +45,59 @@ export default function LanguageSwitcher({ variant = "header", className = "" })
     setOpen(false);
   };
 
+  const openAuthMenu = (event) => {
+    event.preventDefault();
+    setOpen((current) => !current);
+  };
+
   return (
-    <div ref={rootRef} className={`relative ${className}`} data-no-translate>
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        className={`group flex w-full items-center gap-2.5 text-left transition duration-200 focus:outline-none focus-visible:ring-4 ${style.trigger}`}
-        aria-label={t("language.label", "Language")}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-controls={listboxId}
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-white shadow-[0_6px_14px_-6px_rgba(37,99,235,0.9)]">
-          <FiGlobe className="text-[15px]" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
-            {t("language.label", "Language")}
-          </span>
-          <span className="block truncate text-sm font-bold leading-4">{selectedLanguage?.nativeLabel}</span>
-        </span>
-        <FiChevronDown className={`shrink-0 text-sm text-slate-400 transition duration-200 group-hover:text-blue-500 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
-      </button>
+    <div ref={rootRef} className={className} data-no-translate>
+      <div className="relative">
+      {isAuthVariant ? (
+        <label
+          className="flex cursor-pointer items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-semibold text-[#073978] shadow-lg"
+          onMouseDown={openAuthMenu}
+        >
+          <FiGlobe className="text-lg" aria-hidden="true" />
+          <span className="sr-only">{t("language.label", "Language")}</span>
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
+            onKeyDown={(event) => {
+              if (["Enter", " ", "ArrowDown", "ArrowUp"].includes(event.key)) openAuthMenu(event);
+            }}
+            aria-label={t("language.label", "Language")}
+            aria-expanded={open}
+            aria-haspopup="listbox"
+            aria-controls={listboxId}
+            className="max-w-24 cursor-pointer appearance-none bg-transparent pr-4 outline-none"
+          >
+            {languages.map(({ code, nativeLabel }) => <option key={code} value={code}>{nativeLabel}</option>)}
+          </select>
+          <FiChevronDown className={`pointer-events-none absolute right-3.5 text-xs transition duration-200 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        </label>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          className={`group flex w-full items-center gap-2.5 text-left transition duration-200 focus:outline-none focus-visible:ring-4 ${style.trigger}`}
+          aria-label={t("language.label", "Language")}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+          aria-controls={listboxId}
+        >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-cyan-500 text-white shadow-[0_6px_14px_-6px_rgba(37,99,235,0.9)]">
+              <FiGlobe className="text-[15px]" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[9px] font-extrabold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-400">
+                {t("language.label", "Language")}
+              </span>
+              <span className="block truncate text-sm font-bold leading-4">{selectedLanguage?.nativeLabel}</span>
+            </span>
+            <FiChevronDown className={`shrink-0 text-sm text-slate-400 transition duration-200 group-hover:text-blue-500 ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+      )}
 
       {open && (
         <div
@@ -103,6 +135,7 @@ export default function LanguageSwitcher({ variant = "header", className = "" })
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }
