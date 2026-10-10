@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleInsuranceExpiryReminder;
 use App\Models\VehicleLicenceExpiryReminder;
 use App\Services\WorkflowNotificationService;
 use Illuminate\Console\Command;
@@ -15,7 +16,7 @@ class SendVehicleLicenceExpiryReminders extends Command
 {
     protected $signature = 'vehicles:send-licence-expiry-reminders';
 
-    protected $description = 'Send due revenue-licence expiry reminders to fleet officers.';
+    protected $description = 'Send due vehicle revenue-licence and insurance expiry reminders to fleet officers.';
 
     public function __construct(private readonly WorkflowNotificationService $notifications)
     {
@@ -39,17 +40,23 @@ class SendVehicleLicenceExpiryReminders extends Command
         $sent = 0;
 
         foreach ($this->reminderDates($today) as $reminder) {
-            Vehicle::query()
-                ->whereDate('revenue_license_expiry', $reminder['date']->toDateString())
-                ->orderBy('id')
-                ->chunkById(100, function (Collection $vehicles) use ($recipients, $reminder, &$sent): void {
-                    foreach ($vehicles as $vehicle) {
-                        $sent += $this->sendReminder($vehicle, $recipients, $reminder);
-                    }
-                });
+            $sent += $this->sendDueReminders(
+                'revenue_license_expiry',
+                VehicleLicenceExpiryReminder::class,
+                false,
+                $recipients,
+                $reminder,
+            );
+            $sent += $this->sendDueReminders(
+                'insurance_expiry',
+                VehicleInsuranceExpiryReminder::class,
+                true,
+                $recipients,
+                $reminder,
+            );
         }
 
-        $this->info("Sent {$sent} vehicle revenue-licence expiry reminder(s).");
+        $this->info("Sent {$sent} vehicle compliance-expiry reminder(s).");
 
         return self::SUCCESS;
     }
@@ -74,15 +81,47 @@ class SendVehicleLicenceExpiryReminders extends Command
     }
 
     /**
+     * @param  class-string<VehicleLicenceExpiryReminder|VehicleInsuranceExpiryReminder>  $reminderModel
      * @param  Collection<int, User>  $recipients
      * @param  array{type: string, label: string, date: Carbon}  $reminder
      */
-    private function sendReminder(Vehicle $vehicle, Collection $recipients, array $reminder): int
-    {
-        return DB::transaction(function () use ($vehicle, $recipients, $reminder): int {
+    private function sendDueReminders(
+        string $expiryColumn,
+        string $reminderModel,
+        bool $isInsurance,
+        Collection $recipients,
+        array $reminder,
+    ): int {
+        $sent = 0;
+
+        Vehicle::query()
+            ->whereDate($expiryColumn, $reminder['date']->toDateString())
+            ->orderBy('id')
+            ->chunkById(100, function (Collection $vehicles) use ($reminderModel, $isInsurance, $recipients, $reminder, &$sent): void {
+                foreach ($vehicles as $vehicle) {
+                    $sent += $this->sendReminder($vehicle, $recipients, $reminder, $reminderModel, $isInsurance);
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * @param  Collection<int, User>  $recipients
+     * @param  array{type: string, label: string, date: Carbon}  $reminder
+     * @param  class-string<VehicleLicenceExpiryReminder|VehicleInsuranceExpiryReminder>  $reminderModel
+     */
+    private function sendReminder(
+        Vehicle $vehicle,
+        Collection $recipients,
+        array $reminder,
+        string $reminderModel,
+        bool $isInsurance,
+    ): int {
+        return DB::transaction(function () use ($vehicle, $recipients, $reminder, $reminderModel, $isInsurance): int {
             $timestamp = now();
-            $newRecipients = $recipients->filter(function (User $recipient) use ($vehicle, $reminder, $timestamp): bool {
-                return VehicleLicenceExpiryReminder::query()->insertOrIgnore([
+            $newRecipients = $recipients->filter(function (User $recipient) use ($vehicle, $reminder, $reminderModel, $timestamp): bool {
+                return $reminderModel::query()->insertOrIgnore([
                     'vehicle_id' => $vehicle->id,
                     'user_id' => $recipient->id,
                     'expiry_date' => $reminder['date']->toDateString(),
@@ -97,12 +136,21 @@ class SendVehicleLicenceExpiryReminders extends Command
                 return 0;
             }
 
-            $this->notifications->vehicleLicenceExpiryReminder(
-                $vehicle,
-                $reminder['label'],
-                $reminder['date'],
-                $newRecipients,
-            );
+            if ($isInsurance) {
+                $this->notifications->vehicleInsuranceExpiryReminder(
+                    $vehicle,
+                    $reminder['label'],
+                    $reminder['date'],
+                    $newRecipients,
+                );
+            } else {
+                $this->notifications->vehicleLicenceExpiryReminder(
+                    $vehicle,
+                    $reminder['label'],
+                    $reminder['date'],
+                    $newRecipients,
+                );
+            }
 
             return $newRecipients->count();
         });
