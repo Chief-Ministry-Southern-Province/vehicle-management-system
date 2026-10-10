@@ -56,12 +56,11 @@ flowchart LR
     SPA <-->|private WebSocket| REVERB
     SPA --> LS
     SPA -->|route preview and text search| OSRM
-    SPA -->|Sri Lanka location search| NOM
     API --> AUTH --> RBAC --> DOMAIN
     DOMAIN <--> DB
     DOMAIN <--> FILES
     DOMAIN -->|authoritative route calculation| OSRM
-    DOMAIN -->|reverse geocoding| NOM
+    DOMAIN -->|place search and reverse geocoding| NOM
     DOMAIN --> NOTIFY
     NOTIFY --> DB
     NOTIFY -->|workflow invalidation| REVERB
@@ -679,7 +678,7 @@ All listed endpoints are below `/api`. Except login and password recovery, they 
 | Push | `GET /push-subscriptions/public-key`; `POST/DELETE /push-subscriptions` | Authenticated owner |
 | Users/departments/backups | `POST /register`; `GET /users`; `PATCH|DELETE /users/{user}`; department writes; `POST /system/database-backups` | Deputy secretary or system administrator |
 | Department directory | `GET /departments` | Authenticated |
-| Personal requests | create/list/detail/cancel, route preview, reverse geocode | Authenticated with ownership on records |
+| Personal requests | create/list/detail/cancel, route preview, multi-result place search, reverse geocode | Authenticated with ownership on records |
 | Department review | `/department/vehicle-requests...` | Department officer plus department isolation |
 | Deputy workflow | `/approvals/...` recommendation, allocation, reallocation | Deputy secretary |
 | Senior recommendation | `/senior-recommendations/vehicle-requests...` | Senior deputy secretary |
@@ -730,7 +729,7 @@ flowchart LR
     USERS --> SMS
 ```
 
-The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, issue reports, and scheduled licence-expiry reminders. The scheduler invokes `vehicles:send-licence-expiry-reminders` and `drivers:send-licence-expiry-reminders` daily at 08:00 Asia/Colombo; they find records whose `revenue_license_expiry` or `licence_renewal_date` is one calendar month or one week away and alert active Subject Officers and Assistant/Deputy Secretaries. Vehicle reminders use the full notification and supplementary SMS path, while driver reminders use durable in-app, real-time, and Web Push notifications only. A durable delivery record is unique per vehicle/driver, recipient, expiry date, and reminder interval, preventing duplicate notices while allowing an updated expiry date to generate its own future reminders. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. It requires the gateway response body to begin with `OK`; an HTTP 200 response beginning with `Err` is a rejected submission and is logged with a sanitized result code. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
+The service chooses recipients for submission, recommendation/rejection, allocation/reallocation, final decisions, cancellation, trip start/completion, issue reports, and scheduled licence-expiry reminders. The scheduler invokes `vehicles:send-licence-expiry-reminders` and `drivers:send-licence-expiry-reminders` daily at 08:00 Asia/Colombo; they find records whose `revenue_license_expiry` or `licence_renewal_date` is one calendar month or one week away and alert active Subject Officers and Assistant/Deputy Secretaries. A linked active driver account additionally receives its own driver-licence reminder. Both reminder types use the full notification and supplementary SMS path. A durable delivery record is unique per vehicle/driver, recipient, expiry date, and reminder interval, preventing duplicate notices while allowing an updated expiry date to generate its own future reminders. Payloads contain a title, message, internal request identifiers, and a role-dashboard path; they must not contain sensitive personal data. The SMS service normalizes Sri Lankan local mobile numbers to TEXTIT.BIZ's required international numeric format and sends `id`, `pw`, `to`, and `text` over HTTPS. It requires the gateway response body to begin with `OK`; an HTTP 200 response beginning with `Err` is a rejected submission and is logged with a sanitized result code. SMS is supplementary: a provider failure is logged but never reverses a durable database notification or completed workflow transition.
 
 The SPA subscribes once per signed-in user and refreshes the affected route immediately on a Reverb workflow event; it does not use minute polling. The notification menu still reads the durable unread list on its initial load and when opened. The service worker can display notifications when the SPA is closed. Web Push requires HTTPS in production; iOS/iPadOS users must install the site to the Home Screen.
 
@@ -757,7 +756,7 @@ Uploads are untrusted input. MIME type, size, path, authorization, and deletion 
 
 ### 13.2 Geocoding
 
-- Frontend search: `VITE_GEOCODING_API_URL`, restricted to `countrycodes=lk`.
+- Backend place search: `GEOCODING_SEARCH_API_URL`, restricted to Sri Lanka, cached for 12 hours, and limited by `GEOCODING_SEARCH_RESULT_LIMIT`.
 - Backend reverse lookup: `GEOCODING_REVERSE_API_URL`.
 - Backend identity: `GEOCODING_USER_AGENT`.
 - Backend timeout: `GEOCODING_TIMEOUT`.

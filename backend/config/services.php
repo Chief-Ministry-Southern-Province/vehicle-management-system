@@ -42,7 +42,9 @@ return [
     ],
 
     'geocoding' => [
+        'search_url' => env('GEOCODING_SEARCH_API_URL', 'https://nominatim.openstreetmap.org/search'),
         'reverse_url' => env('GEOCODING_REVERSE_API_URL', 'https://nominatim.openstreetmap.org/reverse'),
+        'search_limit' => (int) env('GEOCODING_SEARCH_RESULT_LIMIT', 20),
         'timeout' => (int) env('GEOCODING_TIMEOUT', 10),
         'user_agent' => env('GEOCODING_USER_AGENT', 'VMS-GOV/1.0 ('.env('APP_URL', 'http://localhost').')'),
     ],

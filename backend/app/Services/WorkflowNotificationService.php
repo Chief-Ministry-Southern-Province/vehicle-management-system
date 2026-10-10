@@ -154,7 +154,7 @@ class WorkflowNotificationService
         );
     }
 
-    /** Send an in-app, real-time, and Web Push reminder without an SMS. */
+    /** Send a driver-licence reminder through the standard notification and SMS channels. */
     public function driverLicenceExpiryReminder(Driver $driver, string $timeframe, \DateTimeInterface $expiryDate, iterable|User|null $recipients): void
     {
         $name = $driver->full_name ?: 'Driver';
@@ -168,7 +168,6 @@ class WorkflowNotificationService
             $message,
             null,
             'driver_licence_expiry_reminder',
-            false,
         );
     }
 
@@ -266,6 +265,7 @@ class WorkflowNotificationService
             'Journey completed' => "VMS - Complete: Your journey for {$reference} is complete. Thank you.",
             'Vehicle issue reported' => "VMS - Alert: A vehicle issue was reported for {$reference}. Please review it.",
             'Vehicle revenue licence renewal reminder' => Str::limit("VMS - Licence Alert: {$message}", 320, '...'),
+            'Driver licence renewal reminder' => Str::limit("VMS - Licence Alert: {$message}", 320, '...'),
             default => Str::limit("VMS - Update: {$title}: {$message}", 120, '...'),
         };
 

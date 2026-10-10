@@ -136,13 +136,13 @@ Verify the schedule carefully: departure and expected-return times cannot be edi
 ### 5.2 Method A: map locations
 
 1. Select **Choose locations on map**.
-2. Type the starting location and use **Find on map**, or select the starting point on the map.
-3. Repeat for the ending location.
+2. Type the starting location and use **Find on map**, then choose the correct Sri Lankan match from the displayed list; alternatively, select the starting point directly on the map.
+3. Repeat for the ending location. For local landmarks, include the town or district in the search (for example, **Baddegama bus stand**) and choose the most specific returned match.
 4. Check that both selected points and their labels are correct. Selections must lie inside the supported Sri Lankan territory.
 5. Wait for address lookup and driving-route calculation to finish.
 6. Review **Calculated Distance** and the route preview.
 
-Typing a place name alone may not be enough: both points must be resolved to coordinates. The server recalculates the driving route on submission, so a failed directions service may prevent submission even if a preview appeared earlier. If a readable address cannot be found, coordinates may be shown as the location label.
+Typing a place name alone may not be enough: both points must be resolved to coordinates by choosing a result or selecting the map. Search returns several matching Sri Lankan places where the map provider has coverage; if a landmark is not listed, choose its nearby town from the results and place the exact point on the map. The server recalculates the driving route on submission, so a failed directions service may prevent submission even if a preview appeared earlier. If a readable address cannot be found, coordinates may be shown as the location label.
 
 ### 5.3 Method B: pre-defined journey
 
@@ -335,7 +335,7 @@ Open **Driver Directory** for fleet maintenance or **Driver Details** for the re
 
 Driver information includes ID, full name, NIC, birth date, address, contact number, blood group, licence number/type/expiry, duty/account state, vehicle allocation, and available journey history. Licence expiry badges show red for a past date and green for today or a future date; missing/invalid dates have a neutral appearance.
 
-The system sends every active Subject Officer and Assistant/Deputy Secretary a VMS notification one calendar month and one week before a driver's saved licence expiry date. Keep the driver's licence date current when it is renewed.
+The system sends the linked active driver, and every active Subject Officer and Assistant/Deputy Secretary, a VMS notification and an SMS one calendar month and one week before a driver's saved licence expiry date. Keep the driver's licence date and registered mobile number current when it is renewed.
 
 Subject Officers can create, edit, and delete directory records through the available controls. Save changes and re-open the profile to confirm them. Creating a directory record is separate from creating a login account. For a driver who must sign in, the administrator should use **Create Employee**, select Driver, and complete the additional driver fields; that workflow creates the linked account and directory information together.
 
@@ -500,7 +500,7 @@ Simply viewing a work page through the sidebar or dismissing a temporary pop-up 
 | Trip start/completion | Requester receives progress updates. |
 | Driver issue | Requester, Subject Officer, and Deputy Secretary receive issue notifications. |
 | Vehicle revenue-licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive reminders one calendar month and one week before expiry. |
-| Driver licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive notifications one calendar month and one week before expiry. |
+| Driver licence expiry | The linked active driver, plus active Subject Officers and Assistant/Deputy Secretaries, receive notifications and SMS reminders one calendar month and one week before expiry. |
 | Registration/password recovery | The account mobile receives a temporary-password SMS when the gateway accepts the request. |
 
 ### 15.3 SMS messages
