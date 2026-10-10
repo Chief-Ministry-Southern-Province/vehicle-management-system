@@ -154,6 +154,24 @@ class WorkflowNotificationService
         );
     }
 
+    /** Send a vehicle-insurance reminder through the established notification and SMS channels. */
+    public function vehicleInsuranceExpiryReminder(Vehicle $vehicle, string $timeframe, \DateTimeInterface $expiryDate, iterable|User|null $recipients): void
+    {
+        $vehicleName = trim(collect([$vehicle->make, $vehicle->model])->filter()->join(' '));
+        $vehicleName = $vehicleName ?: $vehicle->vehicle_type ?: 'Vehicle';
+        $registration = $vehicle->registration_number ?: 'unregistered vehicle';
+        $expiry = $expiryDate->format('Y-m-d');
+        $message = "Insurance for {$vehicleName} ({$registration}) expires on {$expiry}, {$timeframe} from today. Please arrange renewal.";
+
+        $this->send(
+            $recipients,
+            'Vehicle insurance renewal reminder',
+            $message,
+            null,
+            'vehicle_insurance_expiry_reminder',
+        );
+    }
+
     /** Send a driver-licence reminder through the standard notification and SMS channels. */
     public function driverLicenceExpiryReminder(Driver $driver, string $timeframe, \DateTimeInterface $expiryDate, iterable|User|null $recipients): void
     {
@@ -265,6 +283,7 @@ class WorkflowNotificationService
             'Journey completed' => "VMS - Complete: Your journey for {$reference} is complete. Thank you.",
             'Vehicle issue reported' => "VMS - Alert: A vehicle issue was reported for {$reference}. Please review it.",
             'Vehicle revenue licence renewal reminder' => Str::limit("VMS - Licence Alert: {$message}", 320, '...'),
+            'Vehicle insurance renewal reminder' => Str::limit("VMS - Insurance Alert: {$message}", 320, '...'),
             'Driver licence renewal reminder' => Str::limit("VMS - Licence Alert: {$message}", 320, '...'),
             default => Str::limit("VMS - Update: {$title}: {$message}", 120, '...'),
         };

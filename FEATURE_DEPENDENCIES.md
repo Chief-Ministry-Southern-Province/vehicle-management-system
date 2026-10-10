@@ -68,7 +68,7 @@ These packages support development and CI rather than an end-user feature.
 
 1. Install the locked dependency trees with `npm ci` in `frontend/` and `composer install` in `backend/`.
 2. Configure only public browser values in `frontend/.env`: `VITE_API_URL`, `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, `VITE_REVERB_SCHEME`, optional map endpoints, and `VITE_GOOGLE_CLIENT_ID`. Never put SMS, VAPID private, database, Reverb secret, or other secrets in a `VITE_*` variable.
-3. Configure server-only integrations in `backend/.env`: database settings, `FRONTEND_URL`, `BROADCAST_CONNECTION=reverb`, the `REVERB_*` server/app values and allowed SPA origins, map service settings, VAPID values, and optional `TEXTIT_*` credentials. Run `php artisan reverb:start` alongside the Laravel API in each environment. Run `php artisan schedule:run` every minute (or supervise `php artisan schedule:work`) so the daily vehicle- and driver-licence expiry reminders are dispatched.
+3. Configure server-only integrations in `backend/.env`: database settings, `FRONTEND_URL`, `BROADCAST_CONNECTION=reverb`, the `REVERB_*` server/app values and allowed SPA origins, map service settings, VAPID values, and optional `TEXTIT_*` credentials. Run `php artisan reverb:start` alongside the Laravel API in each environment. Run `php artisan schedule:run` every minute (or supervise `php artisan schedule:work`) so the daily vehicle revenue-licence, vehicle-insurance, and driver-licence expiry reminders are dispatched.
 4. For Web Push, run `php artisan webpush:vapid` once per environment and retain the generated key pair.
 5. For MySQL/MariaDB database backups, install or configure `mysqldump` (or set `DATABASE_DUMP_BINARY`); no PHP package supplies it.
 
