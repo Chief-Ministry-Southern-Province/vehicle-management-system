@@ -335,7 +335,7 @@ Open **Driver Directory** for fleet maintenance or **Driver Details** for the re
 
 Driver information includes ID, full name, NIC, birth date, address, contact number, blood group, licence number/type/expiry, duty/account state, vehicle allocation, and available journey history. Licence expiry badges show red for a past date and green for today or a future date; missing/invalid dates have a neutral appearance.
 
-The system sends every active Subject Officer and Assistant/Deputy Secretary a VMS notification one calendar month and one week before a driver's saved licence expiry date. Keep the driver's licence date current when it is renewed.
+The system sends the linked active driver, and every active Subject Officer and Assistant/Deputy Secretary, a VMS notification and an SMS one calendar month and one week before a driver's saved licence expiry date. Keep the driver's licence date and registered mobile number current when it is renewed.
 
 Subject Officers can create, edit, and delete directory records through the available controls. Save changes and re-open the profile to confirm them. Creating a directory record is separate from creating a login account. For a driver who must sign in, the administrator should use **Create Employee**, select Driver, and complete the additional driver fields; that workflow creates the linked account and directory information together.
 
@@ -500,7 +500,7 @@ Simply viewing a work page through the sidebar or dismissing a temporary pop-up 
 | Trip start/completion | Requester receives progress updates. |
 | Driver issue | Requester, Subject Officer, and Deputy Secretary receive issue notifications. |
 | Vehicle revenue-licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive reminders one calendar month and one week before expiry. |
-| Driver licence expiry | Active Subject Officers and Assistant/Deputy Secretaries receive notifications one calendar month and one week before expiry. |
+| Driver licence expiry | The linked active driver, plus active Subject Officers and Assistant/Deputy Secretaries, receive notifications and SMS reminders one calendar month and one week before expiry. |
 | Registration/password recovery | The account mobile receives a temporary-password SMS when the gateway accepts the request. |
 
 ### 15.3 SMS messages

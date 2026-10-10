@@ -15,7 +15,7 @@ class SendDriverLicenceExpiryReminders extends Command
 {
     protected $signature = 'drivers:send-licence-expiry-reminders';
 
-    protected $description = 'Send due driver-licence expiry reminders to fleet officers.';
+    protected $description = 'Send due driver-licence expiry reminders to drivers and fleet officers.';
 
     public function __construct(private readonly WorkflowNotificationService $notifications)
     {
@@ -25,16 +25,10 @@ class SendDriverLicenceExpiryReminders extends Command
     public function handle(): int
     {
         $today = now(config('app.local_timezone'))->startOfDay();
-        $recipients = User::query()
+        $fleetRecipients = User::query()
             ->whereIn('role', ['subject_officer', 'deputy_secretary'])
             ->where('status', 'active')
             ->get();
-
-        if ($recipients->isEmpty()) {
-            $this->info('No active Subject Officers or Assistant/Deputy Secretaries to notify.');
-
-            return self::SUCCESS;
-        }
 
         $sent = 0;
 
@@ -42,9 +36,10 @@ class SendDriverLicenceExpiryReminders extends Command
             Driver::query()
                 ->whereDate('licence_renewal_date', $reminder['date']->toDateString())
                 ->orderBy('id')
-                ->chunkById(100, function (Collection $drivers) use ($recipients, $reminder, &$sent): void {
+                ->with('user')
+                ->chunkById(100, function (Collection $drivers) use ($fleetRecipients, $reminder, &$sent): void {
                     foreach ($drivers as $driver) {
-                        $sent += $this->sendReminder($driver, $recipients, $reminder);
+                        $sent += $this->sendReminder($driver, $fleetRecipients, $reminder);
                     }
                 });
         }
@@ -79,6 +74,11 @@ class SendDriverLicenceExpiryReminders extends Command
      */
     private function sendReminder(Driver $driver, Collection $recipients, array $reminder): int
     {
+        $recipients = $recipients
+            ->merge(collect([$driver->user])->filter(fn ($user): bool => $user instanceof User && $user->isDriver() && $user->isActive()))
+            ->unique('id')
+            ->values();
+
         return DB::transaction(function () use ($driver, $recipients, $reminder): int {
             $timestamp = now();
             $newRecipients = $recipients->filter(function (User $recipient) use ($driver, $reminder, $timestamp): bool {
