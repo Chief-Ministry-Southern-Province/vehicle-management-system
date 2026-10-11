@@ -40,24 +40,24 @@ function StatCard({ title, value, description, icon, tone, wide = false, viewLab
   const palette = tones[tone];
 
   return (
-    <article className={`group relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white bg-linear-to-br p-3 shadow-[0_2px_7px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 sm:min-h-32 sm:rounded-[20px] sm:p-4 sm:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.35)] sm:hover:-translate-y-1 sm:hover:shadow-[0_18px_38px_-20px_rgba(15,23,42,0.35)] ${palette.surface} ${palette.ring} ${wide ? "col-span-2 md:col-span-1" : ""}`}>
+    <article className={`group relative min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white bg-linear-to-br p-2.5 shadow-[0_2px_7px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 sm:rounded-2xl sm:p-3 sm:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.35)] sm:hover:-translate-y-1 sm:hover:shadow-[0_18px_38px_-20px_rgba(15,23,42,0.35)] ${palette.surface} ${palette.ring} ${wide ? "col-span-2 md:col-span-1" : ""}`}>
       <div className="flex items-start justify-between gap-2">
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-sm text-white shadow-lg transition-transform duration-300 group-hover:scale-105 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-xl ${palette.icon}`}>
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-linear-to-br text-xs text-white shadow-lg transition-transform duration-300 group-hover:scale-105 sm:h-10 sm:w-10 sm:rounded-xl sm:text-base ${palette.icon}`}>
           {icon}
         </div>
-        <p className="min-w-0 text-right text-2xl font-extrabold leading-none tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+        <p className="min-w-0 text-right text-xl font-extrabold leading-none tracking-tight text-slate-950 dark:text-white sm:text-3xl">
           {value}
         </p>
       </div>
 
-      <p className="mt-2 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-xs sm:tracking-[0.08em]">
+      <p className="mt-1.5 text-[10px] font-bold uppercase leading-4 tracking-wide text-slate-600 dark:text-slate-300 sm:mt-2 sm:text-xs sm:tracking-[0.08em]">
         {title}
       </p>
-      <p className="mt-0.5 line-clamp-2 text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:mt-1.5 sm:text-sm">
+      <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-400 dark:text-slate-500 sm:text-xs">
         {description}
       </p>
 
-      <div className="mt-2 flex items-end justify-between sm:mt-3">
+      <div className="mt-1.5 flex items-end justify-between sm:mt-2">
         <span className="text-[10px] font-bold text-slate-500 transition group-hover:text-slate-700 dark:text-slate-400 sm:text-xs">{viewLabel} <FiArrowRight className="ml-1 inline text-sm" aria-hidden="true" /></span>
         <span className="flex h-8 items-end gap-1 opacity-40" aria-hidden="true">
           {[40, 65, 48, 85].map((height, index) => <i key={index} style={{ height: `${height}%` }} className={`w-1.5 rounded-full bg-linear-to-t ${palette.accent}`} />)}
