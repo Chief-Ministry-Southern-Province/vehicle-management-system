@@ -4,6 +4,8 @@ import { clampToSriLankaView, isWithinSriLanka, SRI_LANKA_CENTER } from "../../u
 
 const TILE_SIZE = 256;
 const MIN_ZOOM = 7;
+const MAX_ZOOM = 16;
+const WHEEL_DELTA_PER_ZOOM_LEVEL = 12;
 
 function getRouteViewport(routeCoordinates) {
   const longitudes = routeCoordinates.map(([lng]) => lng);
@@ -93,12 +95,31 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
     if (!element) return undefined;
     const handleNativeWheel = (event) => {
       event.preventDefault();
-      wheelDeltaRef.current += event.deltaY;
-      if (Math.abs(wheelDeltaRef.current) < 40) return;
-      setViewport((current) => ({
-        ...current,
-        zoom: Math.max(MIN_ZOOM, Math.min(16, current.zoom + (wheelDeltaRef.current < 0 ? 1 : -1))),
-      }));
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
+      const scaledDelta = event.ctrlKey ? delta * 4 : delta;
+      if (Math.sign(wheelDeltaRef.current) && Math.sign(wheelDeltaRef.current) !== Math.sign(scaledDelta)) {
+        wheelDeltaRef.current = 0;
+      }
+      wheelDeltaRef.current += scaledDelta;
+      if (Math.abs(wheelDeltaRef.current) < WHEEL_DELTA_PER_ZOOM_LEVEL) return;
+
+      const zoomChange = wheelDeltaRef.current < 0 ? 1 : -1;
+      setViewport((current) => {
+        const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, current.zoom + zoomChange));
+        if (nextZoom === current.zoom) return current;
+
+        const bounds = element.getBoundingClientRect();
+        const offset = { x: event.clientX - bounds.left - bounds.width / 2, y: event.clientY - bounds.top - bounds.height / 2 };
+        const currentCenterPixel = project(current.center, current.zoom);
+        const anchor = unproject({ x: currentCenterPixel.x + offset.x, y: currentCenterPixel.y + offset.y }, current.zoom);
+        const nextAnchorPixel = project(anchor, nextZoom);
+
+        return {
+          ...current,
+          center: clampToSriLankaView(unproject({ x: nextAnchorPixel.x - offset.x, y: nextAnchorPixel.y - offset.y }, nextZoom)),
+          zoom: nextZoom,
+        };
+      });
       wheelDeltaRef.current = 0;
     };
     element.addEventListener("wheel", handleNativeWheel, { passive: false });
@@ -111,7 +132,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
   }));
   const setZoom = (nextZoom) => setViewport((current) => ({
     ...current,
-    zoom: Math.max(MIN_ZOOM, typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom),
+    zoom: Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, typeof nextZoom === "function" ? nextZoom(current.zoom) : nextZoom)),
   }));
   const panBy = (x, y) => setViewport((current) => {
     const currentCenterPixel = project(current.center, current.zoom);
@@ -198,7 +219,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
       const distance = pointerDistance(currentPoints);
       const baseline = gestureRef.current.pinchDistance || pointerDistance(previousPoints);
       if (distance >= baseline * 1.06) {
-        setZoom((value) => Math.min(16, value + 1));
+        setZoom((value) => Math.min(MAX_ZOOM, value + 1));
         gestureRef.current.pinchDistance = distance;
       } else if (distance <= baseline / 1.06) {
         setZoom((value) => Math.max(MIN_ZOOM, value - 1));
@@ -269,7 +290,7 @@ export default function LocationMapPicker({ start, end, routeCoordinates, focusP
           {[[startPosition, "A", "bg-emerald-600"], [endPosition, "B", "bg-rose-600"]].map(([position, label, color]) => position && <span key={label} className={`pointer-events-none absolute z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full border-2 border-white text-xs font-black text-white shadow-lg ${color}`} style={{ left: `${(position.left / width) * 100}%`, top: `${(position.top / height) * 100}%` }}>{label}</span>)}
         </div>
         <div className="absolute right-2 top-2 flex flex-col gap-1 sm:right-3 sm:top-3" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
-          <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(16, value + 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiPlus /></button>
+          <button type="button" aria-label={translate("Zoom in")} onClick={() => setZoom((value) => Math.min(MAX_ZOOM, value + 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiPlus /></button>
           <button type="button" aria-label={translate("Zoom out")} onClick={() => setZoom((value) => Math.max(MIN_ZOOM, value - 1))} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiMinus /></button>
           <button type="button" aria-label={translate("Center saved route")} onClick={() => routeCoordinates?.length ? setViewport((current) => ({ ...current, ...getRouteViewport(routeCoordinates) })) : setCenter(SRI_LANKA_CENTER)} className="rounded-lg bg-white p-1.5 text-sm shadow sm:p-2"><FiCrosshair /></button>
         </div>
