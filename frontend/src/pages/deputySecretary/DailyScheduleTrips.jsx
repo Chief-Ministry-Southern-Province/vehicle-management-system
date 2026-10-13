@@ -95,19 +95,20 @@ function TripCard({ journey, dayStart }) {
   const left = ((visibleStart - DAY_START) / (DAY_END - DAY_START)) * 100;
   const width = Math.max(((visibleEnd - visibleStart) / (DAY_END - DAY_START)) * 100, 3.5);
   const vehicle = journey.allocated_vehicle || {};
+  const route = [journey.starting_location, journey.destination].filter(Boolean).join(" - ") || requestNumber(journey.id);
 
   return (
     <article
       className={`absolute top-2 bottom-2 overflow-hidden rounded-lg border px-2.5 py-2 shadow-sm transition hover:z-20 hover:min-w-52 hover:shadow-md ${style.card}`}
       style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
-      title={`${journey.purpose || "Trip"} • ${formatTime(journey.departure_at)} – ${formatTime(journey.expected_return_at)}`}
+      title={`${route} • ${formatTime(journey.departure_at)} – ${formatTime(journey.expected_return_at)}`}
     >
       <div className="flex items-center gap-1.5 truncate text-xs font-bold">
         <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
         {formatTime(journey.departure_at)} – {formatTime(journey.expected_return_at)}
       </div>
       <p className="mt-1 truncate text-xs font-semibold">
-        {journey.purpose || journey.destination || requestNumber(journey.id)}
+        {route}
       </p>
       <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] opacity-80">
         <FiTruck className="shrink-0" />
