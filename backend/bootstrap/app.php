@@ -23,9 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
         'middleware' => ['api', 'auth:sanctum'],
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        // Required for SPA cookie-based auth if you switch from token-only later.
-        $middleware->statefulApi();
-
         // Register the alias used in routes: middleware('role:secretary')
         $middleware->alias([
             'role' => RoleMiddleware::class,

@@ -94,14 +94,14 @@ The browser is an untrusted client. Client route guards improve navigation, but 
 VMS-GOV/
 ├── frontend/                         # Production React SPA
 │   ├── public/
-│   │   ├── push-sw.js                # Background Web Push handler
-│   │   └── manifest.webmanifest      # Installable web-app metadata
+│   │   └── push-sw.js                # Background Web Push handler
 │   ├── src/
 │   │   ├── api/authApi.jsx           # Shared REST client functions
 │   │   ├── components/               # Shared and role/domain UI components
 │   │   ├── context/                  # Auth, role, and language providers
 │   │   ├── i18n/                     # English, Sinhala, and Tamil text
 │   │   ├── layouts/                  # Dashboard shell
+│   │   ├── manifest.webmanifest      # Vite-managed installable web-app metadata
 │   │   ├── pages/                    # Route-level screens
 │   │   ├── routes/ProtectedRoute.jsx # Client navigation guard
 │   │   ├── utils/                    # Maps, dates, push, mapping, PDF exports
@@ -798,7 +798,7 @@ Current architectural risks to account for:
 
 ```mermaid
 flowchart LR
-    B[Browser localhost:5173]
+    B[Browser localhost:5174/vms]
     V[Vite development server]
     L[Laravel 127.0.0.1:8000]
     S[(SQLite database)]

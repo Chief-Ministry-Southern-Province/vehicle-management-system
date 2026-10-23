@@ -155,7 +155,7 @@ function ApplicationRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/vms">
       <ApplicationRoutes />
     </BrowserRouter>
   )

@@ -4,7 +4,7 @@ import {
   savePushSubscription,
 } from "../api/authApi";
 
-const SERVICE_WORKER_URL = "/push-sw.js";
+const SERVICE_WORKER_URL = `${import.meta.env.BASE_URL}push-sw.js`;
 
 export const supportsPushNotifications = () =>
   typeof window !== "undefined" &&
