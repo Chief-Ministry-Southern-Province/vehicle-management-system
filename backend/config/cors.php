@@ -1,5 +1,15 @@
 <?php
 
+$frontendUrl = env('FRONTEND_URL', 'http://localhost:5174/vms');
+$frontendScheme = parse_url($frontendUrl, PHP_URL_SCHEME);
+$frontendHost = parse_url($frontendUrl, PHP_URL_HOST);
+$frontendPort = parse_url($frontendUrl, PHP_URL_PORT);
+
+// The browser's Origin header never contains the SPA's deployment path.
+$frontendOrigin = $frontendScheme && $frontendHost
+    ? $frontendScheme.'://'.$frontendHost.($frontendPort ? ':'.$frontendPort : '')
+    : rtrim($frontendUrl, '/');
+
 return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
@@ -8,8 +18,8 @@ return [
 
     // Replace with your actual frontend URL(s) in production.
     'allowed_origins' => [
-        env('FRONTEND_URL', 'http://localhost:5173'), // Vite default
-        'http://localhost:3000', 
+        $frontendOrigin,
+        'http://localhost:3000',
         'https://vehicle-management-system-lilac-alpha.vercel.app',                     // CRA default, if used instead
     ],
 

@@ -46,7 +46,7 @@ The repository README contains the product overview. When README and executable 
 ```text
 Browser
   -> React 19 single-page application (frontend/, Vite 8)
-  -> JSON/multipart REST API at /api (backend/, Laravel 12, PHP 8.2+)
+  -> JSON/multipart REST API at /api (backend/, Laravel 12, PHP 8.4+)
   -> Laravel Sanctum bearer-token authentication and server-side RBAC
   -> Laravel Reverb private WebSocket channels for workflow invalidations
   -> SQL database (SQLite by default; MySQL configuration is available)
@@ -76,7 +76,7 @@ Important locations:
 - `backend/database/migrations/`: canonical schema history.
 - `backend/database/seeders/`: demo users, vehicles, and drivers.
 - `backend/tests/Feature/`: workflow and authorization regression tests.
-- `.github/workflows/ci.yml`: CI; currently lints/builds the frontend on pushes and PRs to `main`/`develop`. The backend job is currently commented out.
+- `.github/workflows/ci.yml`: CI; lints/builds the frontend and runs the Laravel backend test suite on PHP 8.4 for pushes and pull requests to `main`/`develop`, then deploys the backend to AWS EC2 after both jobs pass on pushes to `main`.
 - `SYSTEM_ARCHITECTURE.md`: complete implemented system architecture, including diagrams, layer boundaries, data flows, deployment topology, and representative code patterns.
 - `ROLE_DEPENDENT_VEHICLE_REQUEST_WORKFLOW.md`: role-routing matrix and end-to-end request, recommendation, allocation, final-decision, driver, cancellation, issue, and notification workflow reference.
 
@@ -216,6 +216,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 ## 7. Frontend behavior
 
 - `AuthProvider` owns token/user session state; the token is currently stored in `localStorage` as `token`.
+- API authentication is the stateless Sanctum bearer-token flow. Do not enable Laravel's stateful SPA middleware unless the frontend is deliberately migrated to cookie authentication and first obtains a CSRF cookie; public login from an allowed frontend origin must not require CSRF state.
 - `RoleProvider` and `ProtectedRoute` control role-aware navigation. Add explicit `allowedRoles` to every sensitive route; do not rely only on hiding sidebar links.
 - System administrators may access the Administration Panel's Create Employee page plus dedicated `/usermanagement`, `/departmentmanagement`, and `/databasemanagement` pages. The retired `/systemchanges` path redirects to User Management for existing bookmarks. These client checks align with the administration-only backend routes.
 - System administrators alone may use `/odometersettings` to change the persisted global meter-reading requirement. It defaults to required. The driver schedule consumes the returned policy so its start and completion inputs are required only while the policy is enabled; an optional blank reading is not sent as a fabricated value. Status actions remain server-validated against the current policy and return it after a successful action, so a browser-held policy cannot weaken the workflow rule.
@@ -253,7 +254,7 @@ Use route-model binding keys exactly as declared: vehicle registration number an
 - The Subject Officer and deputy secretary Fuel Analysis screen lists completed requests with request number, vehicle registration, driver name, start-to-destination route, allocated round-trip distance (`distance_km * 2`), actual distance, and a View more dialog with request, passenger, schedule, allocation, approval, attachment, and odometer details. The Journey Route column displays only the first comma-separated place name for each endpoint (for example, Matara - Galle); View more retains full addresses and missing labels retain coordinate fallbacks. Fuel Analysis filters combine case-insensitive partial vehicle-registration and driver-name matches with optional inclusive completion-date bounds using `journey_completed_at` in Asia/Colombo. Missing or invalid completion timestamps are excluded only when a date bound is set; reversed ranges show a validation message and no results. Clear filters resets all four inputs. The stat cards are replaced by two monthly bar charts: allocated round-trip versus actual distance (km), and Extra Fuel (L), with month/year on the horizontal axes. Both charts and table footer totals follow the filters. Charts group by completion month in Asia/Colombo, sort chronologically, exclude invalid/missing completion timestamps, and reuse the table total rules (including consolidated actual-distance deduplication and per-request Extra Fuel sums). Missing measurements remain null rather than zero. Allocated totals sum each request's planned round trip, including consolidated members. Actual totals count consolidated requests with the same vehicle, driver, start/completion timestamps, and meter readings once. Missing distances display as not recorded and are excluded; zero remains valid. Planned distance never substitutes for actual mileage. The Extra Fuel (L) footer totals the displayed requests' two-decimal Extra Fuel values, including negative values and consolidated member rows, skips missing values, and shows not recorded if none are available. The Extra Fuel (L) column uses the requested formula `(actual_distance_km - allocated round-trip distance) * allocated_vehicle.fuel_efficiency`, preserves negative results, and shows not recorded for missing distances or missing/invalid efficiency. It uses the stored numeric efficiency without unit conversion; vehicle efficiency units currently include km/l, l/100km, and km/kwh, so this requested formula is not a unit-normalized liters estimate.
 - The deputy secretary vehicle-details screen revalidates vehicle data when opened, every minute, and whenever the page regains focus or visibility. Its selected image must always be reconciled with the latest `image_urls` response so deleted fleet images disappear from both the gallery and header preview.
 - API errors should preserve server validation messages and use the established toast/UI patterns.
-- Laravel applies the configured CORS policy to ordinary API responses and reapplies it to API errors rendered from failures raised before the normal CORS middleware can run. This lets allowed frontend origins read the real HTTP error status/body. Production `FRONTEND_URL` must exactly match the deployed SPA origin, without a trailing slash.
+- Laravel applies the configured CORS policy to ordinary API responses and reapplies it to API errors rendered from failures raised before the normal CORS middleware can run. This lets allowed frontend origins read the real HTTP error status/body. `FRONTEND_URL` is the complete public SPA URL, including a deployment base path such as `/vms` and without a trailing slash; CORS derives the scheme/host/port origin because browser Origin headers never include paths.
 - Keep the SPA deploy fallback in `frontend/vercel.json` and do not commit generated `dist/` changes unless a release process explicitly requires them.
 
 ### 7.1 Route and map field contract
@@ -282,7 +283,7 @@ Required behavior:
 
 ## 8. Local setup and commands
 
-Prerequisites: PHP 8.2+, Composer, Node.js 20+, npm, and the selected database driver.
+Prerequisites: PHP 8.4+, Composer, Node.js 20+, npm, and the selected database driver.
 
 Backend setup (from `backend/`):
 
@@ -310,7 +311,7 @@ npm ci
 npm run dev
 ```
 
-The Vite development URL defaults to `http://localhost:5173`; ensure `FRONTEND_URL`/CORS and the frontend API base agree with the actual hosts.
+The Vite development URL is `http://localhost:5174/vms`. Vite's base, React Router basename, PWA manifest/scope, service-worker registration, `FRONTEND_URL`/CORS, and generated workflow links must retain the `/vms` deployment path; the frontend API base remains independently configured through `VITE_API_URL`.
 If another service occupies port 8000 or 8080, run the API with `php artisan serve --host=127.0.0.1 --port=8001` and Reverb with `php artisan reverb:start --host=127.0.0.1 --port=8081`. Set a single `VITE_API_URL=http://127.0.0.1:8001/api`, match `REVERB_PORT`, `REVERB_SERVER_PORT`, and `VITE_REVERB_PORT` to 8081, and match the frontend app key to the backend app key. Avoid duplicate environment definitions, especially empty Reverb credentials preceding configured values. Clear Laravel configuration and restart Reverb and Vite after environment changes.
 als
 Quality commands:
@@ -450,7 +451,7 @@ A task is complete only when, as applicable:
 
 ## 13. Known implementation notes and current gaps
 
-- CI currently validates only frontend lint/build; backend CI is present but commented out. Run backend tests locally until it is enabled.
+- CI validates frontend lint/build and the Laravel backend test suite on PHP 8.4 before production deployment.
 - Configure `VITE_API_URL` per frontend environment. Local development normally uses `http://127.0.0.1:8000/api`; deployed frontends must use the public HTTPS API origin.
 - The root README describes MySQL/Linux/Nginx as deployment targets, while Laravel defaults locally to SQLite and no production infrastructure is stored here.
 - Some pages are role-specific by navigation but call `withAuth` without an explicit role list. Tighten client guards when touching those routes; the API middleware remains authoritative.

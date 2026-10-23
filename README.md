@@ -61,7 +61,7 @@ Frontend:
 
 Backend:
 
-- PHP 8.2+ and Laravel 12
+- PHP 8.4+ and Laravel 12
 - Laravel Sanctum bearer-token authentication
 - Laravel Web Push notification channel with VAPID authentication
 - TEXTIT.BIZ HTTP SMS gateway for optional workflow SMS delivery
@@ -128,7 +128,7 @@ VMS-GOV/
 
 ## Prerequisites
 
-- PHP 8.2+ with required Laravel extensions
+- PHP 8.4+ with required Laravel extensions
 - Composer
 - Node.js 20+
 - npm
@@ -182,7 +182,7 @@ Useful settings include:
 ```dotenv
 APP_URL=http://127.0.0.1:8000
 APP_LOCAL_TIMEZONE=Asia/Colombo
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5174/vms
 BROADCAST_CONNECTION=reverb
 REVERB_APP_ID=<reverb-app-id>
 REVERB_APP_KEY=<reverb-public-key>
@@ -224,7 +224,7 @@ npm ci
 npm run dev
 ```
 
-The client normally starts at `http://localhost:5173`. Its API base is configured with `VITE_API_URL` in `frontend/.env` and falls back to `http://127.0.0.1:8000/api`. For deployment, update that configuration and ensure backend CORS `FRONTEND_URL` matches the frontend origin.
+The client starts at `http://localhost:5174/vms`. Its API base is configured with `VITE_API_URL` in `frontend/.env` and falls back to `http://127.0.0.1:8000/api`. `FRONTEND_URL` stores the complete public SPA URL, including `/vms`; Laravel derives the path-free `http://localhost:5174` browser origin for CORS. Authentication remains stateless and uses the returned Sanctum bearer token, so login does not require a CSRF cookie.
 
 Copy `frontend/.env.example` to `frontend/.env` and set its public Reverb values to the matching backend app key, host, port, and scheme. `VITE_REVERB_APP_KEY` is public; never expose `REVERB_APP_SECRET`. Rebuild or restart Vite after changing any `VITE_*` value. The API and `php artisan reverb:start` must both remain running for new bell notifications, sidebar badges, and in-app alerts to appear without refreshing the page.
 
