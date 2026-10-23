@@ -46,7 +46,7 @@ The repository README contains the product overview. When README and executable 
 ```text
 Browser
   -> React 19 single-page application (frontend/, Vite 8)
-  -> JSON/multipart REST API at /api (backend/, Laravel 12, PHP 8.2+)
+  -> JSON/multipart REST API at /api (backend/, Laravel 12, PHP 8.4+)
   -> Laravel Sanctum bearer-token authentication and server-side RBAC
   -> Laravel Reverb private WebSocket channels for workflow invalidations
   -> SQL database (SQLite by default; MySQL configuration is available)
@@ -76,7 +76,7 @@ Important locations:
 - `backend/database/migrations/`: canonical schema history.
 - `backend/database/seeders/`: demo users, vehicles, and drivers.
 - `backend/tests/Feature/`: workflow and authorization regression tests.
-- `.github/workflows/ci.yml`: CI; currently lints/builds the frontend on pushes and PRs to `main`/`develop`. The backend job is currently commented out.
+- `.github/workflows/ci.yml`: CI; lints/builds the frontend and runs the Laravel backend test suite on PHP 8.4 for pushes and pull requests to `main`/`develop`, then deploys the backend to AWS EC2 after both jobs pass on pushes to `main`.
 - `SYSTEM_ARCHITECTURE.md`: complete implemented system architecture, including diagrams, layer boundaries, data flows, deployment topology, and representative code patterns.
 - `ROLE_DEPENDENT_VEHICLE_REQUEST_WORKFLOW.md`: role-routing matrix and end-to-end request, recommendation, allocation, final-decision, driver, cancellation, issue, and notification workflow reference.
 
@@ -282,7 +282,7 @@ Required behavior:
 
 ## 8. Local setup and commands
 
-Prerequisites: PHP 8.2+, Composer, Node.js 20+, npm, and the selected database driver.
+Prerequisites: PHP 8.4+, Composer, Node.js 20+, npm, and the selected database driver.
 
 Backend setup (from `backend/`):
 
@@ -450,7 +450,7 @@ A task is complete only when, as applicable:
 
 ## 13. Known implementation notes and current gaps
 
-- CI currently validates only frontend lint/build; backend CI is present but commented out. Run backend tests locally until it is enabled.
+- CI validates frontend lint/build and the Laravel backend test suite on PHP 8.4 before production deployment.
 - Configure `VITE_API_URL` per frontend environment. Local development normally uses `http://127.0.0.1:8000/api`; deployed frontends must use the public HTTPS API origin.
 - The root README describes MySQL/Linux/Nginx as deployment targets, while Laravel defaults locally to SQLite and no production infrastructure is stored here.
 - Some pages are role-specific by navigation but call `withAuth` without an explicit role list. Tighten client guards when touching those routes; the API middleware remains authoritative.

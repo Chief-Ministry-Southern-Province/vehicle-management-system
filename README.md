@@ -61,7 +61,7 @@ Frontend:
 
 Backend:
 
-- PHP 8.2+ and Laravel 12
+- PHP 8.4+ and Laravel 12
 - Laravel Sanctum bearer-token authentication
 - Laravel Web Push notification channel with VAPID authentication
 - TEXTIT.BIZ HTTP SMS gateway for optional workflow SMS delivery
@@ -128,7 +128,7 @@ VMS-GOV/
 
 ## Prerequisites
 
-- PHP 8.2+ with required Laravel extensions
+- PHP 8.4+ with required Laravel extensions
 - Composer
 - Node.js 20+
 - npm

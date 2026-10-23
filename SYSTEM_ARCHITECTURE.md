@@ -79,7 +79,7 @@ The browser is an untrusted client. Client route guards improve navigation, but 
 | Client communication | Axios, Laravel Echo, Pusher protocol client | JSON/multipart REST commands and authenticated WebSocket workflow invalidations |
 | Client state | React Context, `localStorage` | Authentication, role, language, and theme state |
 | UI support | Recharts, Lucide/React Icons, react-hot-toast | Charts, icons, and feedback |
-| API | PHP 8.2+, Laravel 12 | Routing, validation, orchestration, serialization |
+| API | PHP 8.4+, Laravel 12 | Routing, validation, orchestration, serialization |
 | Authentication | Laravel Sanctum 4 | Bearer-token creation and validation |
 | Persistence | Eloquent ORM | Entities, relationships, casts, and queries |
 | Database | SQLite by default; MySQL supported | Transactional application data |
