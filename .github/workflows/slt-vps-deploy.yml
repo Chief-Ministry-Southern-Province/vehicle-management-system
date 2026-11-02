@@ -1,0 +1,102 @@
+name: Deploy to SLT VPS
+
+on:
+  push:
+    branches:
+      - slt-vps-deploy
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vms-slt-vps-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy application
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+
+    steps:
+      - name: Deploy to SLT VPS
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SLTVPS_HOST }}
+          username: ${{ secrets.SLTVPS_USER }}
+          port: ${{ secrets.SLTVPS_PORT }}
+          key: ${{ secrets.SLTVPS_SSH_KEY }}
+          command_timeout: 25m
+          script: |
+            set -Eeuo pipefail
+
+            PROJECT_DIR="/var/www/vehicle-management-system"
+            BACKEND_DIR="$PROJECT_DIR/backend"
+            FRONTEND_DIR="$PROJECT_DIR/frontend"
+            DEPLOY_BRANCH="slt-vps-deploy"
+            MAINTENANCE_ENABLED=false
+
+            cleanup() {
+              if [ "$MAINTENANCE_ENABLED" = true ] && [ -f "$BACKEND_DIR/artisan" ]; then
+                cd "$BACKEND_DIR"
+                php artisan up || true
+              fi
+            }
+
+            trap cleanup ERR
+
+            echo "Opening project directory..."
+            cd "$PROJECT_DIR"
+
+            test -f "$BACKEND_DIR/artisan"
+            test -f "$BACKEND_DIR/composer.lock"
+            test -f "$FRONTEND_DIR/package-lock.json"
+            test -f "$BACKEND_DIR/.env"
+            test -f "$FRONTEND_DIR/.env"
+
+            echo "Fetching $DEPLOY_BRANCH..."
+            git fetch origin "$DEPLOY_BRANCH"
+            git checkout "$DEPLOY_BRANCH"
+            git pull --ff-only origin "$DEPLOY_BRANCH"
+
+            echo "Installing frontend dependencies..."
+            cd "$FRONTEND_DIR"
+            npm ci --no-audit --no-fund
+
+            echo "Building the React application..."
+            npm run build
+
+            echo "Installing backend dependencies..."
+            cd "$BACKEND_DIR"
+            composer install \
+              --no-dev \
+              --prefer-dist \
+              --optimize-autoloader \
+              --no-interaction \
+              --no-progress
+
+            echo "Enabling Laravel maintenance mode..."
+            php artisan down --retry=60
+            MAINTENANCE_ENABLED=true
+
+            echo "Clearing stale Laravel caches..."
+            php artisan optimize:clear
+
+            echo "Running migrations..."
+            php artisan migrate --force
+
+            echo "Building Laravel production caches..."
+            php artisan optimize
+
+            echo "Restarting queue workers and Reverb..."
+            php artisan queue:restart
+            php artisan reverb:restart
+
+            echo "Disabling Laravel maintenance mode..."
+            php artisan up
+            MAINTENANCE_ENABLED=false
+            trap - ERR
+
+            echo "Deployment completed at commit $(git -C "$PROJECT_DIR" rev-parse --short HEAD)."

@@ -77,6 +77,7 @@ Important locations:
 - `backend/database/seeders/`: demo users, vehicles, and drivers.
 - `backend/tests/Feature/`: workflow and authorization regression tests.
 - `.github/workflows/ci.yml`: CI; lints/builds the frontend and runs the Laravel backend test suite on PHP 8.4 for pushes and pull requests to `main`/`develop`, then deploys the backend to AWS EC2 after both jobs pass on pushes to `main`.
+- `.github/workflows/slt-vps-deploy.yml`: production deployment for pushes to `slt-vps-deploy` or a manual dispatch. It updates `/var/www/vehicle-management-system`, builds `frontend/`, installs production dependencies and migrates/optimizes `backend/`, then signals the supervised queue workers and Reverb server to restart.
 - `SYSTEM_ARCHITECTURE.md`: complete implemented system architecture, including diagrams, layer boundaries, data flows, deployment topology, and representative code patterns.
 - `ROLE_DEPENDENT_VEHICLE_REQUEST_WORKFLOW.md`: role-routing matrix and end-to-end request, recommendation, allocation, final-decision, driver, cancellation, issue, and notification workflow reference.
 
