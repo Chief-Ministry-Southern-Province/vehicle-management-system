@@ -1,3 +1,13 @@
+self.addEventListener("install", () => self.skipWaiting());
+
+const appBaseUrl = new URL(self.registration.scope);
+const appUrl = (path = "") => {
+  const value = String(path);
+  if (/^https?:\/\//i.test(value)) return value;
+
+  return new URL(value.replace(/^\/+/, ""), appBaseUrl).href;
+};
+
 self.addEventListener("push", (event) => {
   let payload;
 
@@ -10,15 +20,15 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "Vehicle Management System";
   const options = {
     body: payload.body || "You have a new workflow update.",
-    icon: payload.icon || "/national-emblem.png",
-    badge: payload.badge || "/national-emblem.png",
+    icon: appUrl(payload.icon || "national-emblem.png"),
+    badge: appUrl(payload.badge || "national-emblem.png"),
     tag: payload.tag,
     renotify: Boolean(payload.renotify),
     requireInteraction: Boolean(payload.requireInteraction),
     vibrate: payload.vibrate || [200, 100, 200],
     data: {
       ...(payload.data || {}),
-      url: payload.data?.url || "/",
+      url: appUrl(payload.data?.url),
     },
   };
 
@@ -34,11 +44,11 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = new URL(event.notification.data?.url || "/", self.location.origin).href;
+  const targetUrl = appUrl(event.notification.data?.url);
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clientList) => {
-      const appClient = clientList.find((client) => new URL(client.url).origin === self.location.origin);
+      const appClient = clientList.find((client) => client.url.startsWith(self.registration.scope));
 
       if (appClient) {
         if ("navigate" in appClient && appClient.url !== targetUrl) await appClient.navigate(targetUrl);

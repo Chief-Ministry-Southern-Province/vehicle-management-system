@@ -1,6 +1,6 @@
 <?php
 
-$configuredAllowedOrigins = env('REVERB_ALLOWED_ORIGINS', env('FRONTEND_URL', 'http://localhost:5173'));
+$configuredAllowedOrigins = env('REVERB_ALLOWED_ORIGINS', env('FRONTEND_URL', 'http://localhost:5174/vms'));
 
 // Reverb compares the hostname parsed from the browser Origin header. Accept
 // full SPA origins in environment files (for example https://vms.example.lk)

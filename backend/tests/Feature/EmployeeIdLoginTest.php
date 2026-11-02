@@ -27,6 +27,26 @@ class EmployeeIdLoginTest extends TestCase
             ->assertJsonStructure(['data' => ['token']]);
     }
 
+    public function test_frontend_origin_login_uses_bearer_token_flow_without_csrf_cookie(): void
+    {
+        $user = User::factory()->create([
+            'employee_id' => 'EMP-LOGIN-ORIGIN-001',
+        ]);
+
+        config(['sanctum.stateful' => ['localhost:5174']]);
+
+        $this->withHeaders([
+            'Origin' => 'http://localhost:5174',
+            'Referer' => 'http://localhost:5174/vms/',
+        ])->postJson('/api/login', [
+            'employee_id' => 'EMP-LOGIN-ORIGIN-001',
+            'password' => 'password',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.user.id', $user->id)
+            ->assertJsonStructure(['data' => ['token']]);
+    }
+
     public function test_email_is_not_accepted_as_the_login_identifier(): void
     {
         User::factory()->create(['email' => 'employee@example.gov.lk']);
